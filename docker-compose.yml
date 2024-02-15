@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis
+
+  db:
+    image: postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/lafiga-api
+      - bundler_gems:/user/local/bundle/
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+volumes: 
+    postgres:
+    bundler_gems:
