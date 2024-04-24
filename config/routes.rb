@@ -1,11 +1,24 @@
 Rails.application.routes.draw do
 
+  resources :users, only: [:show, :update, :index, :create], param: :_username
   post '/authenticate', to: 'authentication#login'
   post '/auth/logout', to: 'authentication#logout'
 
-  resources :users, only: [:show, :update, :index, :create], param: :_username 
   namespace :api do
     namespace :v1 do
+      namespace :admin do
+        resources :characters, only: [:index, :show, :create, :update, :destroy]
+      end
+
+      namespace :public do
+        resources :characters, only: [:index, :show]
+      end
+      
+      namespace :player do
+        resources :characters, only: [:index, :show, :create, :update, :destroy]
+      end
+
+      
     end
   end
 
