@@ -12,13 +12,15 @@ Rails.application.routes.draw do
 
       namespace :public do
         resources :characters, only: [:index, :show]
+        resources :groups, only: [:index, :show]
+        resources :schedules, only: [:index, :show]
       end
       
       namespace :player do
         resources :characters, only: [:index, :show, :create, :update, :destroy]
+        resources :groups, only: [:index, :show, :create, :update, :destroy]
+        resources :schedules, only: [:index, :show, :create, :update, :destroy]
       end
-
-      
     end
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_04_24_204526) do
+ActiveRecord::Schema.define(version: 2024_08_01_133617) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,8 @@ ActiveRecord::Schema.define(version: 2024_04_24_204526) do
     t.bigint "user_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "group_id"
+    t.index ["group_id"], name: "index_characters_on_group_id"
     t.index ["user_id"], name: "index_characters_on_user_id"
   end
 
@@ -37,9 +39,29 @@ ActiveRecord::Schema.define(version: 2024_04_24_204526) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "groups", force: :cascade do |t|
+    t.string "name"
+    t.integer "season", default: 0
+    t.integer "day", null: false
+    t.integer "year"
+    t.text "description"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "roles", force: :cascade do |t|
     t.string "name"
     t.string "permissions", default: [], array: true
+  end
+
+  create_table "schedules", force: :cascade do |t|
+    t.integer "status", default: 1, null: false
+    t.bigint "date_dimension_id", null: false
+    t.integer "group_id", null: false
+    t.string "title", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["date_dimension_id"], name: "index_schedules_on_date_dimension_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -60,5 +82,7 @@ ActiveRecord::Schema.define(version: 2024_04_24_204526) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "characters", "groups"
   add_foreign_key "characters", "users"
+  add_foreign_key "schedules", "date_dimensions"
 end

@@ -11,14 +11,11 @@ class Api::V1::Public::CharactersController < ApplicationController
         render json: {character: @character}, status: 200
     end
 
-
     private
 
     def get_character
-        begin
-            @character = Character.find(params[:id])
-        rescue ActiveRecord::RecordNotFound => exception 
-            render json: { errors: exception }, status: :not_found
-        end
+        @character = Character.find(params[:id])
+    rescue ActiveRecord::RecordNotFound => e
+        render json: { error: e.message }, status: :not_found
     end
 end
