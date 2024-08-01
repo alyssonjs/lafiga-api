@@ -5,7 +5,7 @@ services:
     image: redis
 
   db:
-    image: postgres
+    image: postgres:14
     volumes:
       - ./tmp/db:/var/lib/postgresql/data
     environment:

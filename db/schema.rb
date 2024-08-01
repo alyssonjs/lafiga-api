@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_26_202420) do
+ActiveRecord::Schema.define(version: 2024_04_24_204526) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,6 +22,19 @@ ActiveRecord::Schema.define(version: 2024_02_26_202420) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_characters_on_user_id"
+  end
+
+  create_table "date_dimensions", force: :cascade do |t|
+    t.date "date"
+    t.integer "year"
+    t.integer "month"
+    t.integer "day"
+    t.integer "day_of_week"
+    t.string "day_name"
+    t.boolean "is_weekend"
+    t.boolean "available"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "roles", force: :cascade do |t|
