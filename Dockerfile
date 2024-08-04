@@ -12,7 +12,7 @@ WORKDIR /lafiga-api
 COPY Gemfile /lafiga-api/Gemfile
 COPY Gemfile.lock /lafiga-api/Gemfile.lock
 
-# Instala o Bundler e as gemas necessárias
+# Instala o Bundler e as gemas necessárias comentando
 RUN gem install bundler:2.2.17
 RUN bundle install
 
