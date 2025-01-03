@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.3'
+ruby '3.2.2'
 # Postgresql
 gem 'pg', '>= 0.18', '< 2.0'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
@@ -20,7 +20,8 @@ gem 'puma', '~> 4.1'
 gem 'jwt'
 gem 'simple_command'
 gem 'rack-cors'
-gem 'carrierwave'   
+gem 'carrierwave'
+gem 'psych', '~> 3.3.4'
 
 # Use ActiveModel has_secure_password
 gem 'bcrypt', '~> 3.1.16'
