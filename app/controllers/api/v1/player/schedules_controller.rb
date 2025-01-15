@@ -3,7 +3,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
   before_action :set_schedule, only: [:show, :update, :destroy]
 
   def index
-    schedules = Schedule.all
+    schedules = @current_user.schedules
     render json: {schedules: schedules}, status: 200 
   end
 
@@ -12,6 +12,8 @@ class Api::V1::Player::SchedulesController < ApplicationController
   end
 
   def create
+    @group = @current_user.groups.find(schedule_params[:group_id])
+
     @schedule = Schedule.new(schedule_params)
     
     if @schedule.save
@@ -19,7 +21,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
     else
       render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordInvalid => e
+  rescue StandardError => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
@@ -29,22 +31,22 @@ class Api::V1::Player::SchedulesController < ApplicationController
     else
       render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordInvalid => e
+  rescue StandardError => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
   def destroy
     @schedule.destroy
-    head :no_content
-  rescue ActiveRecord::RecordNotFound => e
+    render json: {message: "Deletado com sucesso"}, status: 200
+  rescue StandardError => e
     render json: { error: e.message }, status: :not_found
   end
 
   private
 
   def set_schedule
-    @schedule = Schedule.find(params[:id])
-  rescue ActiveRecord::RecordNotFound => e
+    @schedule = @current_user.schedules.find(params[:id])
+  rescue StandardError => e
     render json: { error: e.message }, status: :not_found
   end
 

@@ -20,7 +20,7 @@ class Api::V1::Player::CharactersController < ApplicationController
     else
       render json: { errors: character.errors.full_messages }, status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordInvalid
+  rescue StandardError => e
     render json: {errors: e.message}, status: 422
   end
 
@@ -31,14 +31,14 @@ class Api::V1::Player::CharactersController < ApplicationController
     else
       render json: { errors: @character.errors.full_messages }, status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordInvalid => e
+  rescue StandardError => e
     render json: {errors: e.message}
   end
 
   def destroy
     @character.destroy
     render json: {message: "Deletado com sucesso"}, status: 200
-  rescue ActiveRecord::RecordNotFound => e
+  rescue StandardError => e
     render json: {errors: e.message} 
   end
 
@@ -52,7 +52,7 @@ class Api::V1::Player::CharactersController < ApplicationController
 
   def get_character
     @character =  @current_user.characters.find(params[:id])
-  rescue ActiveRecord::RecordNotFound => e 
+  rescue StandardError => e 
     render json: { errors: e.message }, status: :not_found
   end
 end

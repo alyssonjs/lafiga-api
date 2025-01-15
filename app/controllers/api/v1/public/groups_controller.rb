@@ -14,7 +14,7 @@ class Api::V1::Public::GroupsController < ApplicationController
 
   def set_group
     @group = Group.find(params[:id])
-  rescue ActiveRecord::RecordNotFound => e
+  rescue StandardError => e
     render json: { error: e.message }, status: :not_found
   end
 end

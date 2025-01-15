@@ -19,8 +19,8 @@ roles.each { |role| Role.create!(role) }
 
 # Criando usuários
 users = [
-  { name: 'Alice', username: 'alice123', email: 'alice@example.com', phone: '1234567890', password_digest: 'password', role_id: Role.find_by(name: 'Admin').id },
-  { name: 'Bob', username: 'bob456', email: 'bob@example.com', phone: '9876543210', password_digest: 'password', role_id: Role.find_by(name: 'User').id }
+  { name: 'Alice', username: 'alice123', email: 'alice@example.com', phone: '1234567890', password: 'password', role_id: Role.find_by(name: 'Admin').id },
+  { name: 'Bob', username: 'bob456', email: 'bob@example.com', phone: '9876543210', password: 'password', role_id: Role.find_by(name: 'User').id }
 ]
 users.each { |user| User.create!(user) }
 
@@ -66,5 +66,55 @@ tokens = [
   { token: 'xyz789' }
 ]
 tokens.each { |token| ValidateJwtToken.create!(token) }
+
+# Criando Raças
+races = [
+  {name: 'Anão'},
+  {name: 'Elfo'},
+  {name: 'Humano'},
+  {name: 'Meio-Orc'},
+  {name: 'Gnomo'},
+]
+races.each {|race| Race.create!(race)}
+
+#Criando Sub Raças
+sub_races = [
+  {name: 'Anão da Montanha', race_id: Race.find_by(name: 'Anão').id},
+  {name: 'Anão da Colina', race_id: Race.find_by(name: 'Anão').id},
+  {name: 'Alto Elfo', race_id: Race.find_by(name: 'Elfo').id},
+  {name: 'Elfo da Floresta', race_id: Race.find_by(name: 'Elfo').id},
+  {name: 'Elfo Negro', race_id: Race.find_by(name: 'Elfo').id},
+  {name: 'Gnomo da Rocha', race_id: Race.find_by(name: 'Gnomo').id},
+  {name: 'Gnomo da Floresta', race_id: Race.find_by(name: 'Gnomo').id}
+]
+sub_races.each {|sub_race| SubRace.create!(sub_race)}
+
+# Criando Classes
+klasses = [
+  {name: 'Bardo'},
+  {name: 'Bárbaro'},
+  {name: 'Bruxo'},
+  {name: 'Clérigo'},
+  {name: 'Druida'},
+  {name: 'Feiticeiro'},
+  {name: 'Guerreiro'},
+  {name: 'Ladino'},
+  {name: 'Mago'},
+]
+klasses.each {|klass| Klass.create!(klass)}
+
+#Criando Sub Classes
+sub_klasses = [
+  {name: 'Caminho do Furioso', klass_id: Klass.find_by(name: 'Bárbaro').id},
+  {name: 'Caminho do Guerreiro Totêmico', klass_id: Klass.find_by(name: 'Bárbaro').id},
+  {name: 'Colégio do Conhecimento', klass_id: Klass.find_by(name: 'Bardo').id},
+  {name: 'Colégio da Bravura', klass_id: Klass.find_by(name: 'Bardo').id},
+  {name: 'Arquifada', klass_id: Klass.find_by(name: 'Bruxo').id},
+  {name: 'Corruptor', klass_id: Klass.find_by(name: 'Bruxo').id},
+  {name: 'Grande Antigo', klass_id: Klass.find_by(name: 'Bruxo').id}
+  {name: 'Círculo da Terra', klass_id: Klass.find_by(name: 'Druida').id}
+  {name: 'Círculo da Lua', klass_id: Klass.find_by(name: 'Druida').id}
+]
+sub_klasses.each {|sub_klass| SubKlass.create!(sub_klass)}
 
 puts 'Seed data loaded successfully!'
