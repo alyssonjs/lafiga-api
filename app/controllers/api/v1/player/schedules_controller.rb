@@ -12,17 +12,9 @@ class Api::V1::Player::SchedulesController < ApplicationController
   end
 
   def create
-    @group = @current_user.groups.find(schedule_params[:group_id])
-
-    @schedule = Schedule.new(schedule_params)
-    
-    if @schedule.save
-      render json: @schedule, status: :created
-    else
-      render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
-    end
-  rescue StandardError => e
-    render json: { error: e.message }, status: :unprocessable_entity
+    schedule_service = ScheduleService.new(schedule_params)
+    @schedule = schedule_service.call
+    render json: @schedule.result, status: :created
   end
 
   def update

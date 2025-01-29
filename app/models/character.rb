@@ -4,4 +4,7 @@ class Character < ApplicationRecord
   
   belongs_to :user
   belongs_to :group, optional: true
+  
+  has_one :sheet
+  has_one :schedule_character
 end

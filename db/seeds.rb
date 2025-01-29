@@ -7,6 +7,10 @@ Group.destroy_all
 DateDimension.destroy_all
 User.destroy_all
 Role.destroy_all
+Race.destroy_all
+SubRace.destroy_all
+Klass.destroy_all
+SubKlass.destroy_all
 ValidateJwtToken.destroy_all
 
 # Criando roles
@@ -116,5 +120,10 @@ sub_klasses = [
   {name: 'Círculo da Lua', klass_id: Klass.find_by(name: 'Druida').id}
 ]
 sub_klasses.each {|sub_klass| SubKlass.create!(sub_klass)}
+
+sheeet = [
+  {character_id: Character.first.id, race_id: Race.first.id, sub_race_id: SubRace.first.id},
+  {character_id: Character.last.id, race_id: Race.find_by(name: 'Humano').id}
+]
 
 puts 'Seed data loaded successfully!'
