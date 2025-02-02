@@ -14,7 +14,7 @@ class Api::V1::Public::SchedulesController < ApplicationController
 
   def set_schedule
     @schedule = Schedule.find(params[:id])
-  rescue ActiveRecord::RecordNotFound => e
+  rescue StandardError => e
     render json: { error: e.message }, status: :not_found
   end
 end

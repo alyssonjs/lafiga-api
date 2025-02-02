@@ -31,3 +31,6 @@
 
 en:
   hello: "Hello world"
+  create_schedule:
+    message: "Qualquer coisa"
+    status: :unauthorized

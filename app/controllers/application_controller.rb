@@ -20,7 +20,7 @@ class ApplicationController < ActionController::API
             return
         end
 
-        render json: { error: 'Access deneid! You must be an administator.' }, status: 401 if @current_user.role.name != "ADMIN"
+        render json: { error: 'Access deneid! You must be an administator.' }, status: 401 if @current_user.role.name != "Admin"
     end
 end
   

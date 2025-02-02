@@ -7,6 +7,10 @@ class User < ApplicationRecord
     validates :role_id, presence: true
 
     has_many :characters
+    has_many :groups, through: :characters
+    has_many :schedules, through: :groups
+    has_many :sheets, through: :characters
+    has_many :sheet_klasses, through: :sheets
+    
     belongs_to :role
-
 end
