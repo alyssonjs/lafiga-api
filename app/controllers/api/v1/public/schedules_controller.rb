@@ -3,7 +3,7 @@ class Api::V1::Public::SchedulesController < ApplicationController
 
   def index
     @schedules = Schedule.all
-    render json: @schedules
+    render json: @schedules, include: [:group, :date_dimension]
   end
 
   def show
