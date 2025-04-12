@@ -52,7 +52,7 @@ date_dimensions = (1..5).map do |i|
     day_of_week: (Date.today + i.days).cwday,
     day_name: (Date.today + i.days).strftime('%A'),
     is_weekend: [(Date.today + i.days).saturday?, (Date.today + i.days).sunday?].any?,
-    available: [true, false].sample
+    available: true
   }
 end
 date_dimensions.each { |dd| DateDimension.create!(dd) }
@@ -115,8 +115,8 @@ sub_klasses = [
   {name: 'Colégio da Bravura', klass_id: Klass.find_by(name: 'Bardo').id},
   {name: 'Arquifada', klass_id: Klass.find_by(name: 'Bruxo').id},
   {name: 'Corruptor', klass_id: Klass.find_by(name: 'Bruxo').id},
-  {name: 'Grande Antigo', klass_id: Klass.find_by(name: 'Bruxo').id}
-  {name: 'Círculo da Terra', klass_id: Klass.find_by(name: 'Druida').id}
+  {name: 'Grande Antigo', klass_id: Klass.find_by(name: 'Bruxo').id},
+  {name: 'Círculo da Terra', klass_id: Klass.find_by(name: 'Druida').id},
   {name: 'Círculo da Lua', klass_id: Klass.find_by(name: 'Druida').id}
 ]
 sub_klasses.each {|sub_klass| SubKlass.create!(sub_klass)}
