@@ -24,8 +24,8 @@ class Api::V1::Admin::GroupsController < ApplicationController
   end
 
   def update
-    if @group.update(group_params)
-      render json: {groups: @group}, status: 200 
+    if @group.update!(group_params)
+      render json: @group, status: 200
     else
       render json: { errors: @group.errors.full_messages }, status: :unprocessable_entity
     end

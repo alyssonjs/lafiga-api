@@ -19,7 +19,7 @@ class Api::V1::Admin::SchedulesController < ApplicationController
 
   def update
     if @schedule.update(schedule_params)
-      render json: {schedules: @schedule}, status: 200 
+      render json: @schedule, include: [:group], status: 200 
     else
       render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
     end

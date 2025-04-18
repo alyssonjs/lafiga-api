@@ -1,5 +1,5 @@
 class AuthenticationController < ApplicationController
-  before_action :authorize_request, except: [:login, :logout]
+  before_action :authorize_request, except: [:login, :logout, :signup]
 
   def login
     @user = User.find_by_email(params[:email])
@@ -28,11 +28,35 @@ class AuthenticationController < ApplicationController
     end
   end
 
+  def signup
+    @user = User.new(signup_params)
+    if @user.save
+
+      token = JsonWebToken.encode(user_id: @user.id)
+      exp   = 24.hours.from_now.strftime("%m-%d-%Y %H:%M")
+
+      render json: {
+        token:        token,
+        message:      'Signup realizado com sucesso!',
+        exp:          exp,
+        user_infos:   @user,
+        role:         @user.role.name,
+        permissions:  @user.role.permissions
+      }, status: :created
+    else
+      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
   
   attr_accessor :email, :password
 
   def login_params
     params.permit(:email, :password)
+  end
+
+  def signup_params
+    params.permit(:name, :username, :email, :password, :password_confirmation, :role_id)
   end
 end

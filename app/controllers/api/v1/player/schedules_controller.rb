@@ -14,12 +14,12 @@ class Api::V1::Player::SchedulesController < ApplicationController
   def create
     schedule_service = ScheduleService.new(schedule_params)
     @schedule = schedule_service.call
-    render json: @schedule.result, status: :created
+    render json: @schedule.result, include: [:group], status: :created
   end
 
   def update
     if @schedule.update(schedule_params)
-      render json: {schedules: @schedule}, status: 200 
+      render json: @schedule, include: [:group], status: 200 
     else
       render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
     end
