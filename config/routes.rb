@@ -19,6 +19,7 @@ Rails.application.routes.draw do
         resources :sheets, only: [:index, :show, :create, :update, :destroy]
         resources :sheet_klasses, only: [:index, :show, :create, :update, :destroy]
         resources :roles, only: [:index]
+        resources :date_dimensions, only: [:update]
       end
 
       namespace :player do

@@ -13,8 +13,8 @@ class Api::V1::Admin::SchedulesController < ApplicationController
 
   def create
     schedule_service = ScheduleService.new(schedule_params)
-    @schedule = schedule_service.call
-    render json: @schedule.result, status: :created
+    p @schedule = schedule_service.call
+    render json: {schedule: @schedule.result }, include: [:group], status: :created
   end
 
   def update

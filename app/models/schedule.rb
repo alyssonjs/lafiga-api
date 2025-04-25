@@ -4,7 +4,7 @@ class Schedule < ApplicationRecord
   belongs_to :date_dimension
   belongs_to :group
 
-  has_many :schedule_characters
+  has_many :schedule_characters, dependent: :destroy
 
   validates :status, :date_dimension_id, :title, presence: true
   before_save :check_date_availability

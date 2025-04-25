@@ -19,13 +19,13 @@ class ScheduleService
       characters = schedule.group.characters
 
       characters.each do |character|
-        ScheduleCharacter.create!(character_id: character.id, schedule_id: schedule.id)
+       ScheduleCharacter.create!(character_id: character.id, schedule_id: schedule.id)
       end 
       schedule
     end
-  rescue ActiveRecord::Rollback => e
-    raise StandardError.new, e.message
-  rescue StandardError => e
-    raise StandardError.new, e.message
+  # rescue ActiveRecord::Rollback => e
+  #   raise StandardError.new, e.message
+  # rescue StandardError => e
+  #   raise StandardError.new, e.message
   end
 end
