@@ -43,7 +43,7 @@ class Api::V1::Admin::CharactersController < ApplicationController
     private
   
     def character_params
-      params.permit(
+      params.require(:character).permit(
         :name, :background, :user_id, :group_id
       )
     end

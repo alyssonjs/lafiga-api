@@ -9,12 +9,12 @@ class Api::V1::Admin::UsersController < ApplicationController
     end
   
     def show
-      render json: {user: @user}, status: 200
+      render json: { user: @user }, include: [:role, :characters], status: 200
     end
   
     def update
       if @user.update(user_params)
-        render json: {user: @user}, status: 200
+        render json: {user: @user}, include: [:role, :characters], status: 200
       else
         render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
       end

@@ -2,7 +2,10 @@ class Api::V1::Public::SchedulesController < ApplicationController
   before_action :set_schedule, only: [:show]
 
   def index
-    @schedules = Schedule.all
+    @schedules = Schedule
+    .joins(:date_dimension)
+    .where(date_dimensions: { date: Date.current.. })
+    
     render json: @schedules, include: [:group, :date_dimension]
   end
 

@@ -45,7 +45,7 @@ class Api::V1::Player::CharactersController < ApplicationController
   private
 
   def character_params
-    params.permit(
+    params.require(:character).permit(
       :name, :background, :group_id
     )
   end

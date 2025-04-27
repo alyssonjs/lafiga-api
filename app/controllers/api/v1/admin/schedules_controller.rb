@@ -4,17 +4,17 @@ class Api::V1::Admin::SchedulesController < ApplicationController
 
   def index
     schedules = Schedule.all
-    render json: {schedules: schedules}, status: 200 
+    render json: {schedules: schedules}, include: [:group], status: 200 
   end
 
   def show
-    render json: {schedules: @schedule}, status: 200 
+    render json: {schedules: @schedule}, include: [:group], status: 200 
   end
 
   def create
     schedule_service = ScheduleService.new(schedule_params)
-    p @schedule = schedule_service.call
-    render json: {schedule: @schedule.result }, include: [:group], status: :created
+    @schedule = schedule_service.call
+    render json: { schedule: @schedule.result }, include: [:group], status: :created
   end
 
   def update
