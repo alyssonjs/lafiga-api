@@ -8,7 +8,7 @@ class Api::V1::Player::GroupsController < ApplicationController
   end
 
   def show
-    render json: {groups: @groups}, status: 200 
+    render json: {group: @group}, status: 200
   end
 
   def create
@@ -25,7 +25,7 @@ class Api::V1::Player::GroupsController < ApplicationController
 
   def update
     if @group.update(group_params)
-      render json: {groups: @groups}, status: 200 
+      render json: {group: @group}, status: 200
     else
       render json: { errors: @group.errors.full_messages }, status: :unprocessable_entity
     end

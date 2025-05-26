@@ -19,7 +19,6 @@ class Api::V1::Admin::CharactersController < ApplicationController
       else
         render json: { errors: character.errors.full_messages }, status: :unprocessable_entity
       end
-      render json: {character: character}, status: 200
     rescue ActiveRecord::RecordInvalid => e
       render json: {errors: e.message}, status: 422 
     end
@@ -46,7 +45,7 @@ class Api::V1::Admin::CharactersController < ApplicationController
   
     def character_params
       params.permit(
-        :name, :background, :user_id, :grouo_id
+        :name, :background, :user_id, :group_id
       )
     end
   

@@ -8,7 +8,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
   end
 
   def show
-    render json: {schedules: @schedule}, status: 200 
+    render json: {schedule: @schedule}, status: 200
   end
 
   def create
@@ -25,7 +25,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
 
   def update
     if @schedule.update(schedule_params)
-      render json: {schedules: @schedule}, status: 200 
+      render json: {schedule: @schedule}, status: 200
     else
       render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
     end
