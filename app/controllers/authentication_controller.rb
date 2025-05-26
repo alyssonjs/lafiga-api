@@ -19,7 +19,7 @@ class AuthenticationController < ApplicationController
   def logout
     revoke = ValidateJwtToken.find_by(token: request.headers['Authorization'])
     if revoke
-      render json: { message: 'Logout sucessfull!' }, status: :ok
+      render json: { message: 'Logout successful!' }, status: :ok
     else
       render json: { error: 'Invalid credentials!' }, status: :unauthorized
     end

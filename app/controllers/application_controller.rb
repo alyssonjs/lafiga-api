@@ -9,18 +9,18 @@ class ApplicationController < ActionController::API
     def authorize_request
         @current_user = ApiRequestAuth.call(request.headers).result
 
-        render json: { error: 'Access deneid! Please, sign in to update your credentials.' }, status: 401 unless @current_user
+        render json: { error: 'Access denied! Please, sign in to update your credentials.' }, status: 401 unless @current_user
     end
 
     def authorize_admin_request
         @current_user = ApiRequestAuth.call(request.headers).result
         
         unless @current_user
-            render json: { error: 'Access deneid! Please, sign in to update your credentials.' }, status: 401
+            render json: { error: 'Access denied! Please, sign in to update your credentials.' }, status: 401
             return
         end
 
-        render json: { error: 'Access deneid! You must be an administator.' }, status: 401 if @current_user.role.name != "ADMIN"
+        render json: { error: 'Access denied! You must be an administrator.' }, status: 401 if @current_user.role.name != "ADMIN"
     end
 end
   
