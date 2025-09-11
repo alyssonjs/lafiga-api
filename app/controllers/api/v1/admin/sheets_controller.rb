@@ -49,6 +49,13 @@ class Api::V1::Admin::SheetsController < ApplicationController
   end
 
   def sheet_params
-    params.require(:sheet).permit(:character_id, :race_id, :sub_race_id)
+    params.require(:sheet).permit(
+      :character_id,
+      :race_id,
+      :sub_race_id,
+      :str, :dex, :con, :int, :wis, :cha,
+      :hp_max, :hp_current, :temp_hp,
+      :metadata
+    )
   end
 end

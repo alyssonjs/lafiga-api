@@ -5,9 +5,14 @@ class Sheet < ApplicationRecord
   belongs_to :character
   belongs_to :race
   belongs_to :sub_race, optional: true
+  belongs_to :alignment, optional: true
+  belongs_to :background, optional: true
 
   has_many :sheet_klasses
   has_many :klasses, through: :sheet_klasses
+  has_many :sub_klasses, through: :sheet_klasses
+  has_many :sheet_feats, dependent: :destroy
+  has_many :feats, through: :sheet_feats
 
   private
 
