@@ -734,6 +734,60 @@ namespace :dnd do
       # Aplicar overrides manuais para subclasses com dados ausentes
       apply_subclass_overrides!(klass)
 
+      # Importar magias concedidas por Subclasses (ex.: Domínios do Clérigo, Juramentos do Paladino, Círculos do Druida)
+      # 5e API costuma expor em /api/subclasses/:index/spells e/ou /api/2014/subclasses/:index/spells
+      begin
+        subs_for_class = SubKlass.where(klass_id: klass.id)
+        subs_for_class.find_each do |sub|
+          next if sub.api_index.blank?
+          sc_spells = fetch_first([
+            "/api/subclasses/#{sub.api_index}/spells",
+            "/api/2014/subclasses/#{sub.api_index}/spells",
+            "/v1/subclasses/#{sub.api_index}/spells"
+          ]) || {}
+          total = 0
+          (sc_spells['results'] || []).each do |sp|
+            sp_data = fetch(sp['url'])
+            next unless sp_data
+            db_spell = Spell.find_or_initialize_by(api_index: (sp_data['index'] || sp_data['slug'] || sp_data['name'].to_s.parameterize))
+            school_name = sp_data['school'].is_a?(Hash) ? sp_data.dig('school','name') : sp_data['school']
+            db_spell.update!(
+              name:          sp_data['name'],
+              level:         sp_data['level'],
+              school:        school_name,
+              range:         sp_data['range'],
+              components:    Array(sp_data['components']).to_json,
+              material:      sp_data['material'],
+              ritual:        sp_data['ritual'],
+              duration:      sp_data['duration'],
+              concentration: sp_data['concentration'],
+              casting_time:  sp_data['casting_time'],
+              desc:          Array(sp_data['desc']).to_json,
+              higher_level:  Array(sp_data['higher_level']).to_json
+            )
+            # Tentar detectar o nível mínimo a partir de 'prerequisites'
+            min_level = nil
+            begin
+              prereq = Array(sp_data['prerequisites']) + Array(sp['prerequisites'])
+              maybe = prereq.find { |p| p.is_a?(Hash) && (p['level'] || p['minimum_level'] || p['min_level']) }
+              min_level = (maybe && (maybe['level'] || maybe['minimum_level'] || maybe['min_level'])).to_i if maybe
+              min_level = nil if min_level && min_level <= 0
+            rescue
+              min_level = nil
+            end
+            SpellSource.find_or_create_by!(source_type: 'SubKlass', source_id: sub.id, spell_id: db_spell.id) do |ss|
+              ss.always_prepared = true
+              ss.min_class_level = min_level if min_level
+              ss.notes = 'Importado do endpoint de Subclasse — marcado como sempre preparado'
+            end
+            total += 1
+          end
+          puts "  • Subclasse #{sub.name}: #{total} magias vinculadas (sempre preparadas)" if total > 0
+        end
+      rescue => e
+        puts "  • Aviso: falha ao importar magias de subclasses para #{klass.name}: #{e.message}"
+      end
+
       # Importar lista de magias da classe para SpellSource (se endpoint existir)
       class_spells = fetch_first([
         "/api/classes/#{klass.api_index}/spells",
