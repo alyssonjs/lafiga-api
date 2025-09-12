@@ -6,5 +6,6 @@ class Character < ApplicationRecord
   belongs_to :group, optional: true
   
   has_one :sheet
-  has_one :schedule_character
+  has_many :schedule_characters, dependent: :destroy
+  has_many :schedules, through: :schedule_characters
 end

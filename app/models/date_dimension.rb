@@ -1,5 +1,8 @@
 class DateDimension < ApplicationRecord
+  # Mantém o has_one para compatibilidade com o front atual
   has_one :schedule
+  # Adiciona suporte para múltiplas sessões no mesmo dia
+  has_many :schedules
   
   def self.current_date
     today = Date.today

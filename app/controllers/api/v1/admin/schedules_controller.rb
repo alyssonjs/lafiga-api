@@ -3,23 +3,25 @@ class Api::V1::Admin::SchedulesController < ApplicationController
   before_action :set_schedule, only: [:show, :update, :destroy]
 
   def index
-    schedules = Schedule.all
-    render json: {schedules: schedules}, include: [:group], status: 200 
+    schedules = Schedule
+                  .joins(:date_dimension)
+                  .order('date_dimensions.date ASC')
+    render json: {schedules: schedules}, include: [:group, :date_dimension], status: 200 
   end
 
   def show
-    render json: {schedules: @schedule}, include: [:group], status: 200 
+    render json: { schedule: @schedule }, include: [:group, :date_dimension], status: 200 
   end
 
   def create
     schedule_service = ScheduleService.new(schedule_params)
     @schedule = schedule_service.call
-    render json: { schedule: @schedule.result }, include: [:group], status: :created
+    render json: { schedule: @schedule.result }, include: [:group, :date_dimension], status: :created
   end
 
   def update
     if @schedule.update(schedule_params)
-      render json: @schedule, include: [:group], status: 200 
+      render json: { schedule: @schedule }, include: [:group, :date_dimension], status: 200 
     else
       render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
     end

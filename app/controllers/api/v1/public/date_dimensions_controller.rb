@@ -11,12 +11,16 @@ class Api::V1::Public::DateDimensionsController < ApplicationController
 
     dates = DateDimension
               .where(date: start_date..end_date)
-              .includes(schedule: :group)   # pré-carrega a schedule e seu group
+              .includes(schedule: :group, schedules: :group)   # pré-carrega schedule(s) e seu group
               .order(:date)
 
     render json: dates, include: {
       schedule: {
-        include: {group: { include: :characters}},
+        include: { group: { include: :characters } },
+        except: [:created_at, :updated_at]
+      },
+      schedules: {
+        include: { group: { include: :characters } },
         except: [:created_at, :updated_at]
       }
     }, status: :ok
