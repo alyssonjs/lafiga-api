@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_09_10_123000) do
+ActiveRecord::Schema.define(version: 2025_09_11_121000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -43,6 +43,25 @@ ActiveRecord::Schema.define(version: 2025_09_10_123000) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_boards_on_user_id"
+  end
+
+  create_table "channel_memberships", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "channel_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["channel_id"], name: "index_channel_memberships_on_channel_id"
+    t.index ["user_id", "channel_id"], name: "idx_channel_memberships_unique", unique: true
+    t.index ["user_id"], name: "index_channel_memberships_on_user_id"
+  end
+
+  create_table "channels", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.integer "kind", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["slug"], name: "index_channels_on_slug", unique: true
   end
 
   create_table "characters", force: :cascade do |t|
@@ -153,6 +172,19 @@ ActiveRecord::Schema.define(version: 2025_09_10_123000) do
     t.index ["api_index"], name: "index_klasses_on_api_index", unique: true
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.bigint "channel_id", null: false
+    t.bigint "user_id", null: false
+    t.text "content", null: false
+    t.integer "kind", default: 0, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["channel_id"], name: "index_messages_on_channel_id"
+    t.index ["created_at"], name: "index_messages_on_created_at"
+    t.index ["user_id"], name: "index_messages_on_user_id"
+  end
+
   create_table "races", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
@@ -258,9 +290,31 @@ ActiveRecord::Schema.define(version: 2025_09_10_123000) do
     t.integer "hp_current", default: 0, null: false
     t.integer "temp_hp", default: 0, null: false
     t.jsonb "metadata", default: {}, null: false
+    t.bigint "alignment_id"
+    t.bigint "background_id"
+    t.string "background_key"
+    t.integer "current_level", default: 1, null: false
+    t.jsonb "race_choices", default: {}, null: false
+    t.jsonb "class_choices", default: {}, null: false
+    t.jsonb "race_summary", default: {}, null: false
+    t.jsonb "class_summary", default: {}, null: false
+    t.jsonb "background_summary", default: {}, null: false
+    t.jsonb "features_by_level", default: {}, null: false
+    t.jsonb "race_bonuses_applied", default: {}, null: false
+    t.index ["alignment_id"], name: "index_sheets_on_alignment_id"
+    t.index ["background_id"], name: "index_sheets_on_background_id"
+    t.index ["background_key"], name: "index_sheets_on_background_key"
+    t.index ["background_summary"], name: "index_sheets_on_background_summary", using: :gin
     t.index ["character_id"], name: "idx_sheets_unique_character", unique: true
     t.index ["character_id"], name: "index_sheets_on_character_id"
+    t.index ["class_choices"], name: "index_sheets_on_class_choices", using: :gin
+    t.index ["class_summary"], name: "index_sheets_on_class_summary", using: :gin
+    t.index ["current_level"], name: "index_sheets_on_current_level"
+    t.index ["features_by_level"], name: "index_sheets_on_features_by_level", using: :gin
+    t.index ["race_bonuses_applied"], name: "index_sheets_on_race_bonuses_applied", using: :gin
+    t.index ["race_choices"], name: "index_sheets_on_race_choices", using: :gin
     t.index ["race_id"], name: "index_sheets_on_race_id"
+    t.index ["race_summary"], name: "index_sheets_on_race_summary", using: :gin
     t.index ["sub_race_id"], name: "index_sheets_on_sub_race_id"
   end
 
@@ -368,11 +422,15 @@ ActiveRecord::Schema.define(version: 2025_09_10_123000) do
   end
 
   add_foreign_key "boards", "users"
+  add_foreign_key "channel_memberships", "channels"
+  add_foreign_key "channel_memberships", "users"
   add_foreign_key "characters", "groups"
   add_foreign_key "characters", "users"
   add_foreign_key "characters_features", "characters"
   add_foreign_key "characters_features", "features"
   add_foreign_key "class_levels", "klasses"
+  add_foreign_key "messages", "channels"
+  add_foreign_key "messages", "users"
   add_foreign_key "schedule_characters", "characters"
   add_foreign_key "schedule_characters", "schedules"
   add_foreign_key "schedules", "date_dimensions"

@@ -1,3 +1,4 @@
+require 'set'
 class KnownSpellsAggregator
   def initialize(sheet)
     @sheet = sheet
@@ -7,8 +8,11 @@ class KnownSpellsAggregator
     known = SheetKnownSpell.joins(:spell, :sheet_klass).where(sheet_klasses: { sheet_id: @sheet.id })
     by_level = Hash.new { |h,k| h[k] = [] }
     catalog = {}
+    seen_ids = Set.new
     known.each do |ks|
       sp = ks.spell
+      next if seen_ids.include?(sp.id)
+      seen_ids.add(sp.id)
       by_level[sp.level.to_i] << { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
       catalog[sp.id] ||= { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
     end
@@ -19,12 +23,14 @@ class KnownSpellsAggregator
         (row['cantrips'] || []).each do |sp|
           level = (sp['level'] || 0).to_i
           name  = sp['name'] || sp['id']
-          by_level[level] << { id: nil, name: name }
+          entry = { id: nil, name: name }
+          by_level[level] << entry unless by_level[level].any? { |e| (e[:id] && entry[:id] && e[:id] == entry[:id]) || e[:name] == entry[:name] }
         end
         (row['spells'] || []).each do |sp|
           level = (sp['level'] || 1).to_i
           name  = sp['name'] || sp['id']
-          by_level[level] << { id: nil, name: name }
+          entry = { id: nil, name: name }
+          by_level[level] << entry unless by_level[level].any? { |e| (e[:id] && entry[:id] && e[:id] == entry[:id]) || e[:name] == entry[:name] }
         end
       end
 

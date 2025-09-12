@@ -1,4 +1,83 @@
 class EquipmentRules
+  WEAPON_TABLE = {
+    # Simple melee
+    'club'             => { type: 'melee', hands: 1, light: true,                          category: 'simple', damage_die: '1d4' },
+    'clava'            => { type: 'melee', hands: 1, light: true,                          category: 'simple', damage_die: '1d4' },
+    'dagger'           => { type: 'melee', hands: 1, light: true, finesse: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
+    'adaga'            => { type: 'melee', hands: 1, light: true, finesse: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
+    'greatclub'        => { type: 'melee', hands: 2,                                      category: 'simple', damage_die: '1d8' },
+    'mace'             => { type: 'melee', hands: 1,                                      category: 'simple', damage_die: '1d6' },
+    'maça'             => { type: 'melee', hands: 1,                                      category: 'simple', damage_die: '1d6' },
+    'sickle'           => { type: 'melee', hands: 1, light: true,                         category: 'simple', damage_die: '1d4' },
+    'foice'            => { type: 'melee', hands: 1, light: true,                         category: 'simple', damage_die: '1d4' },
+    'spear'            => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
+    'lança'            => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
+    'quarterstaff'     => { type: 'melee', hands: 1, versatile: true,                     category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
+    'cajado'           => { type: 'melee', hands: 1, versatile: true,                     category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
+    'handaxe'          => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6' },
+    'machadinha'       => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6' },
+    'javelin'          => { type: 'melee', hands: 1, thrown: true, range: '30/120',       category: 'simple', damage_die: '1d6' },
+    'azagaia'          => { type: 'melee', hands: 1, thrown: true, range: '30/120',       category: 'simple', damage_die: '1d6' },
+    'light-hammer'     => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
+    'martelo-leve'     => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
+
+    # Simple ranged
+    'light-crossbow'   => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d8' },
+    'besta-leve'       => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d8' },
+    'dart'             => { type: 'ranged', hands: 1, finesse: true,                      category: 'simple', damage_die: '1d4' },
+    'dardo'            => { type: 'ranged', hands: 1, finesse: true,                      category: 'simple', damage_die: '1d4' },
+    'shortbow'         => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d6' },
+    'arco-curto'       => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d6' },
+    'sling'            => { type: 'ranged', hands: 1,                                     category: 'simple', damage_die: '1d4' },
+    'funda'            => { type: 'ranged', hands: 1,                                     category: 'simple', damage_die: '1d4' },
+
+    # Martial melee
+    'battleaxe'        => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8' },
+    'machado-de-batalha'=>{ type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8' },
+    'flail'            => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
+    'glaive'           => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
+    'halberd'          => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
+    'alabarda'         => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
+    'greataxe'         => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d12' },
+    'machado-grande'   => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d12' },
+    'greatsword'       => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '2d6' },
+    'montante'         => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '2d6' },
+    'maul'             => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '2d6' },
+    'lance'            => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d12' },
+    'lanca-de-cavalaria'=>{ type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d12' },
+    'longsword'        => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
+    'espada-longa'     => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
+    'espada-bastarda'  => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
+    'morningstar'      => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
+    'maça-estrela'     => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
+    'pike'             => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10', reach: true, heavy: true },
+    'pique'            => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
+    'rapier'           => { type: 'melee', hands: 1, finesse: true,                       category: 'martial', damage_die: '1d8' },
+    'scimitar'         => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
+    'escimitarra'      => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
+    'shortsword'       => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
+    'espada-curta'     => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
+    'trident'          => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'martial', damage_die: '1d6', versatile_die: '1d8' },
+    'tridente'         => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'martial', damage_die: '1d6', versatile_die: '1d8' },
+    'war-pick'         => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
+    'picareta-de-guerra'=>{ type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
+    'warhammer'        => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
+    'martelo-de-guerra'=> { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
+    'whip'             => { type: 'melee', hands: 1, finesse: true, reach: true,          category: 'martial', damage_die: '1d4' },
+    'chicote'          => { type: 'melee', hands: 1, finesse: true, reach: true,          category: 'martial', damage_die: '1d4' },
+
+    # Martial ranged
+    'blowgun'          => { type: 'ranged', hands: 1,                                     category: 'martial', damage_die: '1' },
+    'zarabatana'       => { type: 'ranged', hands: 1,                                     category: 'martial', damage_die: '1' },
+    'hand-crossbow'    => { type: 'ranged', hands: 1, loading: true, light: true,         category: 'martial', damage_die: '1d6', range: '30/120' },
+    'besta-de-mao'     => { type: 'ranged', hands: 1, loading: true, light: true,         category: 'martial', damage_die: '1d6', range: '30/120' },
+    'heavy-crossbow'   => { type: 'ranged', hands: 2, loading: true, heavy: true,         category: 'martial', damage_die: '1d10', range: '100/400' },
+    'besta-pesada'     => { type: 'ranged', hands: 2, loading: true, heavy: true,         category: 'martial', damage_die: '1d10', range: '100/400' },
+    'longbow'          => { type: 'ranged', hands: 2, heavy: true,                         category: 'martial', damage_die: '1d8', range: '150/600' },
+    'arco-longo'       => { type: 'ranged', hands: 2, heavy: true,                         category: 'martial', damage_die: '1d8', range: '150/600' },
+    'net'              => { type: 'ranged', hands: 1, special: true,                       category: 'martial', damage_die: '' },
+    'rede'             => { type: 'ranged', hands: 1, special: true,                       category: 'martial', damage_die: '' }
+  }.freeze
   ARMOR_TABLE = {
     # Light armor
     'padded'           => { cat: 'light',  base: 11, dex_cap: nil, stealth_dis: true,  str_req: nil },
@@ -104,10 +183,44 @@ class EquipmentRules
       SHIELD_INDEXES.any? { |t| key.include?(t) }
     end
 
+    def is_weapon?(item)
+      return false unless item
+      key = normalize_index(item)
+      return true if WEAPON_TABLE.key?(key)
+      # fallback by category
+      (item.category || '').to_s.downcase.include?('weapon')
+    end
+
     def normalize_index(item)
       key = (item.item_index || item.item_name || '').to_s.downcase
       key.strip.gsub(' ', '-').gsub(/ç/,'c').gsub(/á|à|ã|â/,'a').gsub(/é|ê/,'e').gsub(/í/,'i').gsub(/ó|ô|õ/,'o').gsub(/ú/,'u')
     end
+
+    def weapon_props(item)
+      return nil unless item
+      key = normalize_index(item)
+      row = WEAPON_TABLE[key]
+      unless row
+        # best-effort from props_json
+        props = (item.respond_to?(:props_json) ? item.props_json : (item[:props_json] rescue {})) || {}
+        return {
+          type: props['type'] || (props['ranged'] ? 'ranged' : 'melee'),
+          hands: (props['hands'] || (props['two_handed'] ? 2 : 1)).to_i,
+          light: !!props['light'],
+          finesse: !!props['finesse'],
+          versatile: !!props['versatile'],
+          category: props['category'],
+          damage_die: props['damage_die'],
+          versatile_die: props['versatile_die'],
+          heavy: !!props['heavy'],
+          reach: !!props['reach'],
+          loading: !!props['loading'],
+          special: !!props['special'],
+          thrown: !!props['thrown'],
+          range: props['range']
+        }
+      end
+      row
+    end
   end
 end
-

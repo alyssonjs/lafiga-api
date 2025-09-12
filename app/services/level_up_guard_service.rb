@@ -100,26 +100,25 @@ class LevelUpGuardService
       end
     end
 
-    # 4) Background (tratar como obrigatório para avançar)
+    # 4) Background
+    # Observação: relaxamos o bloqueio de subida de nível por ausência de background
+    # para permitir criações programáticas de ficha/classe em lote. Mantemos apenas logs.
     if current_level >= 1
       bg = meta['background_summary']
-      # aceitar fallback de meta.background simples
       if (bg.blank? || bg['key'].blank?) && (meta['background'].to_s.strip.empty?)
-        missing << 'Background não definido na ficha'
+        Rails.logger.warn 'LevelUpGuardService: Background ausente; prosseguindo mesmo assim.'
       elsif bg.present?
-        # Verificação mínima de proficiências do background
         begin
           bg_rule = BackgroundRules.find(bg['key'])
           if bg_rule
-            # Skills do background devem existir e bater com o mínimo
             need = Array(bg_rule[:skills]).size
             chosen_sk = Array(bg['skills'])
             if chosen_sk.size < need
-              missing << "Background incompleto: defina #{need} perícias (restam #{need - chosen_sk.size})"
+              Rails.logger.warn "LevelUpGuardService: Background incompleto (skills #{chosen_sk.size}/#{need}); prosseguindo."
             end
           end
         rescue NameError
-          # BackgroundRules não instalado; considera-se apenas presença
+          # Sem catálogo de background, não abortar
         end
       end
     end

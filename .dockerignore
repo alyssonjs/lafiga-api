@@ -1,0 +1,33 @@
+.git
+.gitignore
+.github
+.vscode
+.idea
+.DS_Store
+
+# Runtime and local state
+tmp
+log
+storage
+coverage
+
+# Bundler local cache (mounted at runtime)
+.bundle
+vendor/bundle
+
+# Node or other deps accidentally present
+node_modules
+
+# Tests and docs not needed for image
+spec
+test
+docs
+
+# Env and secrets
+.env
+translate-key.json
+
+# Misc
+*.log
+*.tmp
+*.swp

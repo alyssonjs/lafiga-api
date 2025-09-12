@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  mount ActionCable.server => '/cable'
+
   resources :users, only: [:show, :update, :index, :create], param: :_username
   post '/authenticate', to: 'authentication#login'
   post '/auth/logout', to: 'authentication#logout'
@@ -40,6 +42,13 @@ Rails.application.routes.draw do
         resources :sheet_known_spells, only: [:index, :create, :destroy]
         resources :sheet_prepared_spells, only: [:index, :create, :destroy]
         resources :characters_features, only: [:index, :update]
+
+        resources :channels, only: [:index, :create] do
+          collection do
+            post :direct
+          end
+          resources :channel_messages, path: 'messages', only: [:index, :create]
+        end
       end
 
       namespace :public do

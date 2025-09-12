@@ -19,7 +19,24 @@ class ClassRules
     {
       instruments: INSTRUMENTS,
       fighting_styles: FIGHTING_STYLES,
-      skills_all: SKILLS_ALL
+      skills_all: SKILLS_ALL,
+      invocations_core: [
+        'Agonizing Blast', 'Armor of Shadows', 'Devil\'s Sight', 'Fiendish Vigor',
+        'Mask of Many Faces', 'Misty Visions', 'Eldritch Sight', 'Beast Speech',
+        'Book of Ancient Secrets'
+      ],
+      # Ranger specific dictionaries
+      ranger_favored_enemy_types: [
+        'Aberrações','Bestas','Celestiais','Constructos','Dragões','Elementais','Fadas',
+        'Infernais','Gigantes','Monstruosidades','Lodos','Plantas','Mortos‑vivos',
+        'Humanoides (2 raças)'
+      ],
+      ranger_favored_terrain_types: [
+        'Ártico','Costeiro','Deserto','Floresta','Pradaria','Montanha','Pântano','Subterrâneo'
+      ],
+      ranger_humanoid_races: [
+        'Humano','Elfo','Anão','Halfling','Gnomo','Orc','Goblinoide','Gnoll','Kobold','Hobgoblin','Bugbear','Tritão','Draconato'
+      ]
     }
   end
 
@@ -219,7 +236,19 @@ class ClassRules
       features_level1: ['Inimigo Favorito','Explorador Nato'],
       subclass: { choose_level: 3, options: { hunter: { id: 'hunter', name: 'Caçador' }, beast_master: { id: 'beast_master', name: 'Mestre das Feras' } } },
       spellcasting: { type: 'half', casting_ability: 'WIS', preparation: 'known', cantrips_known_at_1: 0, spells_known_at_1: 0, ritual: false, focus: nil, list: 'ranger' },
-      required_choices_at_level: { 2 => { fighting_style: { choose: 1, options: FIGHTING_STYLES } } }
+      required_choices_at_level: {
+        1 => {
+          favored_enemy: { choose: 1, options: :ranger_favored_enemy_types },
+          favored_terrain: { choose: 1, options: :ranger_favored_terrain_types }
+        },
+        2 => { fighting_style: { choose: 1, options: FIGHTING_STYLES } },
+        6 => {
+          favored_enemy: { choose: 1, options: :ranger_favored_enemy_types },
+          favored_terrain: { choose: 1, options: :ranger_favored_terrain_types }
+        },
+        10 => { favored_terrain: { choose: 1, options: :ranger_favored_terrain_types } },
+        14 => { favored_enemy: { choose: 1, options: :ranger_favored_enemy_types } }
+      }
     },
 
     rogue: {

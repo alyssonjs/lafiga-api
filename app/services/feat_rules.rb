@@ -199,8 +199,92 @@ class FeatRules
       end
     end
 
-    # Check other prerequisites (level, class, etc.)
-    # TODO: Implement other prerequisite checks as needed
+    # Check spellcasting capability if required
+    if prereqs[:spellcasting]
+      has_casting = false
+      begin
+        meta = sheet.metadata || {}
+        cs = meta['class_summary'] || {}
+        has_casting ||= cs['spellcasting'].present?
+      rescue StandardError
+        # ignore
+      end
+      begin
+        has_casting ||= sheet.sheet_klasses.joins(:klass).where.not(spellcasting: nil).exists?
+      rescue StandardError
+        # association might not exist yet during character creation; be permissive
+      end
+      unless has_casting
+        Rails.logger.error "Prerequisite failed: requires spellcasting"
+        return false
+      end
+    end
+
+    # Check race prerequisite if specified (by id or name)
+    if prereqs[:race]
+      allowed = Array(prereqs[:race]).map { |x| x.to_s.downcase }
+      begin
+        meta = sheet.metadata || {}
+        rname = (meta.dig('race_summary','name') || meta.dig('race_summary','id') || '').to_s.downcase
+        if rname.empty?
+          # fallback to persisted race association name if available
+          rname = sheet.race&.name.to_s.downcase if sheet.respond_to?(:race)
+        end
+        unless allowed.include?(rname)
+          Rails.logger.error "Prerequisite failed: race not allowed (#{rname} not in #{allowed})"
+          return false
+        end
+      rescue StandardError
+        # if cannot determine, do not block
+      end
+    end
+
+    # Check proficiencies prerequisite (armor/weapons/skills/tools)
+    if prereqs[:proficiencies]
+      begin
+        required = prereqs[:proficiencies]
+        meta = sheet.metadata || {}
+        cs = meta['class_summary'] || {}
+        armor = Array(cs['armor_proficiencies']).map(&:to_s).map(&:downcase)
+        weapons = Array(cs['weapon_proficiencies']).map(&:to_s).map(&:downcase)
+        skills = Array(cs['skills']).map(&:to_s).map(&:downcase)
+        tools = Array(cs['tools']).map(&:to_s).map(&:downcase)
+        if required[:armor]
+          Array(required[:armor]).each do |a|
+            unless armor.any? { |x| x.include?(a.to_s.downcase) }
+              Rails.logger.error "Prerequisite failed: armor proficiency #{a}"
+              return false
+            end
+          end
+        end
+        if required[:weapons]
+          Array(required[:weapons]).each do |w|
+            unless weapons.any? { |x| x.include?(w.to_s.downcase) }
+              Rails.logger.error "Prerequisite failed: weapon proficiency #{w}"
+              return false
+            end
+          end
+        end
+        if required[:skills]
+          Array(required[:skills]).each do |s|
+            unless skills.any? { |x| x.include?(s.to_s.downcase) }
+              Rails.logger.error "Prerequisite failed: skill proficiency #{s}"
+              return false
+            end
+          end
+        end
+        if required[:tools]
+          Array(required[:tools]).each do |t|
+            unless tools.any? { |x| x.include?(t.to_s.downcase) }
+              Rails.logger.error "Prerequisite failed: tool proficiency #{t}"
+              return false
+            end
+          end
+        end
+      rescue StandardError
+        # permissive when not enough context
+      end
+    end
 
     Rails.logger.info "All prerequisites met"
     true

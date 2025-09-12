@@ -1,8 +1,14 @@
 # syntax=docker/dockerfile:1
 FROM ruby:3.2.2
 
-# Instala o cliente do PostgreSQL e outras dependências do sistema
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev postgresql-client
+# Instala dependências do sistema em uma única camada para evitar índices desatualizados
+RUN apt-get update -qq \
+ && apt-get install -y --no-install-recommends \
+      build-essential \
+      libpq-dev \
+      postgresql-client \
+      redis-tools \
+ && rm -rf /var/lib/apt/lists/*
 
 # Cria e define o diretório de trabalho
 RUN mkdir /lafiga-api

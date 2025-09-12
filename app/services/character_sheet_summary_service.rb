@@ -22,6 +22,19 @@ class CharacterSheetSummaryService
       spells = KnownSpellsAggregator.new(@sheet).call
       equipment = EquipmentProfileService.new(@sheet).call rescue { inventory: [], equipped: {}, ac: { ac: (10 + CharacterRules.modifier(@sheet.dex)), source: 'Sem armadura' } }
 
+      # Fighting Style modifiers (AC, weapon bonuses)
+      begin
+        fs = FightingStyleRules.new(@sheet, equipment: equipment).call
+        if fs[:ac_bonus].to_i > 0
+          equipment[:ac] = (equipment[:ac] || {})
+          equipment[:ac][:ac] = (equipment[:ac][:ac].to_i + fs[:ac_bonus].to_i)
+          equipment[:ac][:source] = [equipment[:ac][:source], 'Estilo de Luta'].compact.join(' + ')
+        end
+        equipment[:mods] = fs
+      rescue => _e
+        # ignore FS computation errors
+      end
+
       {
         sheet: {
           id: @sheet.id,
@@ -56,10 +69,66 @@ class CharacterSheetSummaryService
   private
 
   def build_abilities(sheet)
-    scores = {
-      str: sheet.str, dex: sheet.dex, con: sheet.con,
-      int: sheet.int, wis: sheet.wis, cha: sheet.cha
+    base = {
+      str: sheet.str.to_i, dex: sheet.dex.to_i, con: sheet.con.to_i,
+      int: sheet.int.to_i, wis: sheet.wis.to_i, cha: sheet.cha.to_i
     }
+    meta = sheet.metadata || {}
+    inc = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }
+
+    # Race bonuses applied (already normalized to keys)
+    begin
+      rb = meta['race_bonuses_applied'] || {}
+      inc[:str] += rb['str'].to_i
+      inc[:dex] += rb['dex'].to_i
+      inc[:con] += rb['con'].to_i
+      inc[:int] += rb['int'].to_i
+      inc[:wis] += rb['wis'].to_i
+      inc[:cha] += rb['cha'].to_i
+    rescue; end
+
+    # ASIs from per-level choices
+    begin
+      per = (meta.dig('class_choices','per_level') || {}).values
+      per.each do |row|
+        asi = row.is_a?(Hash) ? row['asi'] : nil
+        next unless asi.is_a?(Hash)
+        if asi['mode'] == 'attributes'
+          attrs = Array(asi['attributes'])
+          map = { 'STR'=>'str','DEX'=>'dex','DES'=>'dex','CON'=>'con','INT'=>'int','WIS'=>'wis','SAB'=>'wis','CHA'=>'cha','CAR'=>'cha' }
+          if attrs.length == 1
+            k = map[attrs.first.to_s.upcase]
+            inc[k.to_sym] += 2 if k
+          else
+            attrs.first(2).each do |a|
+              k = map[a.to_s.upcase]
+              inc[k.to_sym] += 1 if k
+            end
+          end
+        end
+      end
+    rescue; end
+
+    # Ability bonuses from feats stored in metadata
+    begin
+      feats_meta = Array(meta['feats'])
+      feats_meta.each do |f|
+        ab = f['ability_bonuses'] || {}
+        ab.each do |k, v|
+          key = k.to_s.downcase
+          map = { 'str'=>:str, 'dex'=>:dex, 'con'=>:con, 'int'=>:int, 'wis'=>:wis, 'cha'=>:cha, 'for'=>:str, 'des'=>:dex, 'sab'=>:wis, 'car'=>:cha }
+          sym = map[key]
+          inc[sym] += v.to_i if sym
+        end
+      end
+    rescue; end
+
+    # Final clamped scores (PHB cap 20)
+    scores = base.transform_keys(&:to_sym).transform_values.with_index { |_,| 0 }
+    scores.each_key do |k|
+      val = base[k].to_i + inc[k].to_i
+      scores[k] = [val, 20].min
+    end
     mods = scores.transform_values { |v| CharacterRules.modifier(v) }
     { scores: scores, mods: mods }
   end
@@ -322,7 +391,9 @@ class CharacterSheetSummaryService
       }
     end
 
-    feats.uniq { |f| f[:feat_id] }
+    # De-dup feats coming from metadata (string keys) and DB (symbol keys)
+    # Ensure we consider both symbol and string keys when uniquing by feat_id
+    feats.uniq { |f| f[:feat_id] || f['feat_id'] }
   end
 
   def sync_characters_features!
