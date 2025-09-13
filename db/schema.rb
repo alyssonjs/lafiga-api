@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_09_11_121000) do
+ActiveRecord::Schema.define(version: 2025_09_13_101500) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -120,6 +120,7 @@ ActiveRecord::Schema.define(version: 2025_09_11_121000) do
     t.boolean "available"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["date"], name: "idx_date_dimensions_unique_date", unique: true
   end
 
   create_table "feats", force: :cascade do |t|
@@ -172,6 +173,35 @@ ActiveRecord::Schema.define(version: 2025_09_11_121000) do
     t.index ["api_index"], name: "index_klasses_on_api_index", unique: true
   end
 
+  create_table "magic_items", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.string "rarity"
+    t.string "category"
+    t.string "sub_category"
+    t.boolean "requires_attunement", default: false, null: false
+    t.string "attunement_note"
+    t.decimal "weight_kg", precision: 8, scale: 2
+    t.decimal "value_gp", precision: 10, scale: 2
+    t.string "source"
+    t.boolean "cursed", default: false
+    t.text "curse_text"
+    t.integer "charges"
+    t.string "recharge"
+    t.jsonb "bonuses", default: {}
+    t.jsonb "properties", default: {}
+    t.text "description"
+    t.text "tags", default: [], array: true
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "effects", default: []
+    t.index ["category"], name: "index_magic_items_on_category"
+    t.index ["name"], name: "index_magic_items_on_name"
+    t.index ["rarity"], name: "index_magic_items_on_rarity"
+    t.index ["slug"], name: "index_magic_items_on_slug", unique: true
+    t.index ["tags"], name: "index_magic_items_on_tags", using: :gin
+  end
+
   create_table "messages", force: :cascade do |t|
     t.bigint "channel_id", null: false
     t.bigint "user_id", null: false
@@ -200,6 +230,7 @@ ActiveRecord::Schema.define(version: 2025_09_11_121000) do
     t.bigint "character_id", null: false
     t.bigint "schedule_id", null: false
     t.integer "status", default: 1, null: false
+    t.index ["character_id", "schedule_id"], name: "idx_schedule_characters_unique_character_schedule", unique: true
     t.index ["character_id"], name: "index_schedule_characters_on_character_id"
     t.index ["schedule_id"], name: "index_schedule_characters_on_schedule_id"
   end
@@ -211,6 +242,7 @@ ActiveRecord::Schema.define(version: 2025_09_11_121000) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "group_id"
+    t.index ["date_dimension_id"], name: "idx_schedules_unique_date_dimension", unique: true
     t.index ["date_dimension_id"], name: "index_schedules_on_date_dimension_id"
     t.index ["group_id"], name: "index_schedules_on_group_id"
   end

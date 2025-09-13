@@ -35,6 +35,44 @@ class CharacterSheetSummaryService
         # ignore FS computation errors
       end
 
+      # Magic Items modifiers (AC, weapon bonuses)
+      begin
+        mi = MagicItemRules.new(@sheet, equipment: equipment).call
+        if mi[:ac_bonus].to_i > 0
+          equipment[:ac] = (equipment[:ac] || {})
+          equipment[:ac][:ac] = (equipment[:ac][:ac].to_i + mi[:ac_bonus].to_i)
+          equipment[:ac][:source] = [equipment[:ac][:source], 'Itens Mágicos'].compact.join(' + ')
+        end
+        if mi[:weapon_mods]
+          equipment[:mods] ||= {}
+          equipment[:mods][:weapon_mods] ||= { main_hand: { attack: 0, damage: 0, offhand_add_ability: false }, off_hand: { attack: 0, damage: 0, offhand_add_ability: false } }
+          [:main_hand, :off_hand].each do |hand|
+            wm = equipment[:mods][:weapon_mods][hand] || { attack: 0, damage: 0 }
+            add = (mi[:weapon_mods][hand] || {})
+            wm[:attack] = wm[:attack].to_i + add[:attack].to_i
+            wm[:damage] = wm[:damage].to_i + add[:damage].to_i
+            equipment[:mods][:weapon_mods][hand] = wm
+          end
+        end
+      rescue => _e
+        # ignore magic item computation errors
+      end
+
+      # Apply speed penalties from armor and encumbrance
+      begin
+        base_ft = movement[:speed_ft].to_i
+        pen = 0
+        pen += 10 if equipment.dig(:ac, :speed_penalty)
+        pen += equipment.dig(:carry, :speed_penalty_ft).to_i
+        if pen > 0 && base_ft > 0
+          movement[:speed_ft] = [5, base_ft - pen].max
+          # Convert to meters (1 ft = 0.3048 m)
+          movement[:speed_m] = ((movement[:speed_ft].to_i * 0.3048).round(1))
+        end
+      rescue => _e
+        # ignore movement adjustments if any error
+      end
+
       {
         sheet: {
           id: @sheet.id,
@@ -123,11 +161,11 @@ class CharacterSheetSummaryService
       end
     rescue; end
 
-    # Final clamped scores (PHB cap 20)
+    # Final scores (allow values above 20)
     scores = base.transform_keys(&:to_sym).transform_values.with_index { |_,| 0 }
     scores.each_key do |k|
       val = base[k].to_i + inc[k].to_i
-      scores[k] = [val, 20].min
+      scores[k] = val
     end
     mods = scores.transform_values { |v| CharacterRules.modifier(v) }
     { scores: scores, mods: mods }

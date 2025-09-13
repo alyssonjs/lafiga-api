@@ -122,8 +122,93 @@ class EquipmentRules
       set
     end
 
+    def effective_scores(sheet)
+      base = {
+        str: sheet.str.to_i, dex: sheet.dex.to_i, con: sheet.con.to_i,
+        int: sheet.int.to_i, wis: sheet.wis.to_i, cha: sheet.cha.to_i
+      }
+      meta = sheet.metadata || {}
+      inc = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }
+
+      # Race bonuses
+      begin
+        rb = meta['race_bonuses_applied'] || {}
+        inc[:str] += rb['str'].to_i
+        inc[:dex] += rb['dex'].to_i
+        inc[:con] += rb['con'].to_i
+        inc[:int] += rb['int'].to_i
+        inc[:wis] += rb['wis'].to_i
+        inc[:cha] += rb['cha'].to_i
+      rescue; end
+
+      # ASIs from per-level choices
+      begin
+        per = (meta.dig('class_choices','per_level') || {}).values
+        per.each do |row|
+          asi = row.is_a?(Hash) ? row['asi'] : nil
+          next unless asi.is_a?(Hash)
+          if asi['mode'] == 'attributes'
+            attrs = Array(asi['attributes'])
+            map = { 'STR'=>'str','DEX'=>'dex','DES'=>'dex','CON'=>'con','INT'=>'int','WIS'=>'wis','SAB'=>'wis','CHA'=>'cha','CAR'=>'cha' }
+            if attrs.length == 1
+              k = map[attrs.first.to_s.upcase]
+              inc[k.to_sym] += 2 if k
+            else
+              attrs.first(2).each do |a|
+                k = map[a.to_s.upcase]
+                inc[k.to_sym] += 1 if k
+              end
+            end
+          elsif asi['mode'] == 'feat'
+            # Some feats grant ability bonuses via choices
+            choices = asi['choices'] || {}
+            begin
+              ab = choices['ability_bonuses'] || {}
+              ab.each { |k,v| key = k.to_s.downcase; map = { 'str'=>:str,'dex'=>:dex,'con'=>:con,'int'=>:int,'wis'=>:wis,'cha'=>:cha,'for'=>:str,'des'=>:dex,'sab'=>:wis,'car'=>:cha }; sym = map[key]; inc[sym] += v.to_i if sym }
+            rescue; end
+          end
+        end
+      rescue; end
+
+      # Ability bonuses from feats in metadata
+      begin
+        feats_meta = Array(meta['feats'])
+        feats_meta.each do |f|
+          ab = f['ability_bonuses'] || {}
+          ab.each do |k, v|
+            key = k.to_s.downcase
+            map = { 'str'=>:str, 'dex'=>:dex, 'con'=>:con, 'int'=>:int, 'wis'=>:wis, 'cha'=>:cha, 'for'=>:str, 'des'=>:dex, 'sab'=>:wis, 'car'=>:cha }
+            sym = map[key]
+            inc[sym] += v.to_i if sym
+          end
+        end
+      rescue; end
+
+      out = {}
+      base.each_key do |k|
+        out[k] = base[k] + inc[k]
+      end
+      out
+    end
+
     def dex_mod(sheet)
-      CharacterRules.modifier(sheet.dex)
+      CharacterRules.modifier(effective_scores(sheet)[:dex])
+    end
+
+    def con_mod(sheet)
+      CharacterRules.modifier(effective_scores(sheet)[:con])
+    end
+
+    def wis_mod(sheet)
+      CharacterRules.modifier(effective_scores(sheet)[:wis])
+    end
+
+    def class_names(sheet)
+      begin
+        sheet.sheet_klasses.includes(:klass).map { |sk| (sk.klass&.name || '').downcase }
+      rescue
+        []
+      end
     end
 
     def ac_for(sheet:, armor_item: nil, shield_item: nil)
@@ -131,8 +216,29 @@ class EquipmentRules
       base_unarmored = 10 + dex
 
       if armor_item.nil?
-        ac = base_unarmored
-        return { ac: ac, source: 'Sem armadura', stealth_disadvantage: false, speed_penalty: false }
+        # Unarmored cases: consider Barbarian/Monk Unarmored Defense and shield rules
+        names = class_names(sheet)
+        has_barb = names.any? { |n| n.include?('bárbar') || n.include?('barbar') }
+        has_monk = names.any? { |n| n.include?('monge') || n.include?('monk') }
+
+        base_ac = base_unarmored + (shield_item ? 2 : 0)
+        best = { ac: base_ac, source: shield_item ? 'Sem armadura + Escudo' : 'Sem armadura' }
+
+        if has_barb
+          barb_ac = 10 + dex + con_mod(sheet) + (shield_item ? 2 : 0)
+          if barb_ac > best[:ac]
+            best = { ac: barb_ac, source: shield_item ? 'Sem armadura (Bárbaro) + Escudo' : 'Sem armadura (Bárbaro)' }
+          end
+        end
+
+        if has_monk && !shield_item
+          monk_ac = 10 + dex + wis_mod(sheet)
+          if monk_ac > best[:ac]
+            best = { ac: monk_ac, source: 'Sem armadura (Monge)' }
+          end
+        end
+
+        return best.merge(stealth_disadvantage: false, speed_penalty: false)
       end
 
       idx = normalize_index(armor_item)
@@ -163,7 +269,9 @@ class EquipmentRules
       ac += 2 if shield_item
       speed_pen = row[:cat] == 'heavy' && row[:str_req] && (sheet.str.to_i < row[:str_req].to_i)
 
-      { ac: ac, source: idx, stealth_disadvantage: !!row[:stealth_dis], speed_penalty: !!speed_pen }
+      src = idx
+      src += ' + Escudo' if shield_item
+      { ac: ac, source: src, stealth_disadvantage: !!row[:stealth_dis], speed_penalty: !!speed_pen }
     end
 
     def can_wear?(sheet:, armor_item:)

@@ -14,6 +14,13 @@ Rails.application.routes.draw do
         resources :characters, only: [:index, :show, :create, :update, :destroy]
         resources :groups, only: [:index, :show, :create, :update, :destroy]
         resources :schedules, only: [:index, :show, :create, :update, :destroy]
+        resources :magic_items, only: [:index, :show, :create, :update, :destroy]
+        resources :sheet_items, only: [:index, :create, :update, :destroy] do
+          member do
+            post :equip
+            post :unequip
+          end
+        end
         resources :races, only: [:index, :show, :create, :update, :destroy]
         resources :sub_races, only: [:index, :show, :create, :update, :destroy]
         resources :klasses, only: [:index, :show, :create, :update, :destroy]
@@ -21,12 +28,13 @@ Rails.application.routes.draw do
         resources :sheets, only: [:index, :show, :create, :update, :destroy]
         resources :sheet_klasses, only: [:index, :show, :create, :update, :destroy]
         resources :roles, only: [:index]
-        resources :date_dimensions, only: [:update]
+        resources :date_dimensions, only: [:index, :update]
       end
 
       namespace :player do
         resources :characters, only: [:index, :show, :create, :update, :destroy]
         resources :schedules, only: [:index, :show, :create, :update, :destroy]
+        resources :schedule_characters, only: [:index, :show, :update]
         resources :groups, only: [:index, :show]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
           member do
@@ -42,6 +50,13 @@ Rails.application.routes.draw do
         resources :sheet_known_spells, only: [:index, :create, :destroy]
         resources :sheet_prepared_spells, only: [:index, :create, :destroy]
         resources :characters_features, only: [:index, :update]
+
+        resources :sheet_items, only: [:index, :create, :update, :destroy] do
+          member do
+            post :equip
+            post :unequip
+          end
+        end
 
         resources :channels, only: [:index, :create] do
           collection do
@@ -67,6 +82,7 @@ Rails.application.routes.draw do
         post 'race_rules/apply', to: 'race_rules#apply'
         resources :class_rules, only: [:index, :show]
         post 'class_rules/apply', to: 'class_rules#apply'
+        resources :magic_items, only: [:index, :show]
         resources :backgrounds, only: [:index, :show]
         post 'backgrounds/apply', to: 'backgrounds#apply'
         resources :alignments, only: [:index, :show]

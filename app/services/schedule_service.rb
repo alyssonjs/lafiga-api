@@ -21,6 +21,9 @@ class ScheduleService
       characters.each do |character|
        ScheduleCharacter.create!(character_id: character.id, schedule_id: schedule.id)
       end 
+      # Política de disponibilidade automática (1 sessão por dia global):
+      # ao criar, bloqueia o dia
+      schedule.date_dimension.update!(available: false)
       schedule
     end
   # rescue ActiveRecord::Rollback => e

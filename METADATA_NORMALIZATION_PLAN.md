@@ -122,3 +122,4 @@ Os seguintes serviços precisarão ser atualizados para usar as novas colunas:
 - `ClassProfileService`
 
 
+

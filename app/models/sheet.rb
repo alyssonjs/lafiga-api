@@ -13,6 +13,7 @@ class Sheet < ApplicationRecord
   has_many :sub_klasses, through: :sheet_klasses
   has_many :sheet_feats, dependent: :destroy
   has_many :feats, through: :sheet_feats
+  has_many :sheet_items, dependent: :destroy
 
   private
 

@@ -1,0 +1,690 @@
+---
+weapons:
+  adaga:
+    name: Adaga
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - finesse
+    - light
+    - thrown
+    range: 20/60
+  alabarda:
+    name: Alabarda
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 1d10
+    properties:
+    - two-handed
+  arco-curto:
+    name: Arco Curto
+    type: ranged
+    hands: 2
+    category: simple
+    damage_die: 1d6
+    properties:
+    - ammunition
+    - two-handed
+  arco-longo:
+    name: Arco Longo
+    type: ranged
+    hands: 2
+    category: martial
+    damage_die: 1d8
+    properties:
+    - ammunition
+    - heavy
+    - two-handed
+    range: 150/600
+  azagaia:
+    name: Azagaia
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    properties:
+    - thrown
+    range: 30/120
+  battleaxe:
+    name: Battleaxe
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties:
+    - versatile
+  besta-de-mao:
+    name: Besta De Mao
+    type: ranged
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    properties:
+    - ammunition
+    - light
+    - loading
+    range: 30/120
+  besta-leve:
+    name: Besta Leve
+    type: ranged
+    hands: 2
+    category: simple
+    damage_die: 1d8
+    properties:
+    - ammunition
+    - two-handed
+  besta-pesada:
+    name: Besta Pesada
+    type: ranged
+    hands: 2
+    category: martial
+    damage_die: 1d10
+    properties:
+    - ammunition
+    - heavy
+    - loading
+    - two-handed
+    range: 100/400
+  blowgun:
+    name: Blowgun
+    type: ranged
+    hands: 1
+    category: martial
+    damage_die: '1'
+    properties:
+    - ammunition
+  cajado:
+    name: Cajado
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    versatile_die: 1d8
+    properties:
+    - versatile
+  chicote:
+    name: Chicote
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d4
+    properties:
+    - finesse
+    - reach
+  clava:
+    name: Clava
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - light
+  club:
+    name: Club
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - light
+  dagger:
+    name: Dagger
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - light
+    - finesse
+    - thrown
+    range: 20/60
+  dardo:
+    name: Dardo
+    type: ranged
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - ammunition
+    - finesse
+  dart:
+    name: Dart
+    type: ranged
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - ammunition
+    - finesse
+  escimitarra:
+    name: Escimitarra
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    properties:
+    - finesse
+    - light
+  espada-bastarda:
+    name: Espada Bastarda
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    versatile_die: 1d10
+    properties:
+    - versatile
+  espada-curta:
+    name: Espada Curta
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    properties:
+    - finesse
+    - light
+  espada-longa:
+    name: Espada Longa
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    versatile_die: 1d10
+    properties:
+    - versatile
+  flail:
+    name: Flail
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties: []
+  foice:
+    name: Foice
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - light
+  funda:
+    name: Funda
+    type: ranged
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - ammunition
+  glaive:
+    name: Glaive
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 1d10
+    properties:
+    - two-handed
+  greataxe:
+    name: Greataxe
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 1d12
+    properties:
+    - two-handed
+  greatclub:
+    name: Greatclub
+    type: melee
+    hands: 2
+    category: simple
+    damage_die: 1d8
+    properties:
+    - two-handed
+  greatsword:
+    name: Greatsword
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 2d6
+    properties:
+    - two-handed
+  halberd:
+    name: Halberd
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 1d10
+    properties:
+    - two-handed
+  hand-crossbow:
+    name: Hand Crossbow
+    type: ranged
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    properties:
+    - ammunition
+    - light
+    - loading
+    range: 30/120
+  handaxe:
+    name: Handaxe
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    properties:
+    - light
+    - thrown
+    range: 20/60
+  heavy-crossbow:
+    name: Heavy Crossbow
+    type: ranged
+    hands: 2
+    category: martial
+    damage_die: 1d10
+    properties:
+    - ammunition
+    - heavy
+    - loading
+    - two-handed
+    range: 100/400
+  javelin:
+    name: Javelin
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    properties:
+    - thrown
+    range: 30/120
+  lanca-de-cavalaria:
+    name: Lanca De Cavalaria
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d12
+    properties: []
+  lance:
+    name: Lance
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d12
+    properties: []
+  lança:
+    name: Lança
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    versatile_die: 1d8
+    properties:
+    - thrown
+    - versatile
+    range: 20/60
+  light-crossbow:
+    name: Light Crossbow
+    type: ranged
+    hands: 2
+    category: simple
+    damage_die: 1d8
+    properties:
+    - ammunition
+    - two-handed
+  light-hammer:
+    name: Light Hammer
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - light
+    - thrown
+    range: 20/60
+  longbow:
+    name: Longbow
+    type: ranged
+    hands: 2
+    category: martial
+    damage_die: 1d8
+    properties:
+    - ammunition
+    - heavy
+    - two-handed
+    range: 150/600
+  longsword:
+    name: Longsword
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    versatile_die: 1d10
+    properties:
+    - versatile
+  mace:
+    name: Mace
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    properties: []
+  machadinha:
+    name: Machadinha
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    properties:
+    - light
+    - thrown
+    range: 20/60
+  machado-de-batalha:
+    name: Machado De Batalha
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties:
+    - versatile
+  machado-grande:
+    name: Machado Grande
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 1d12
+    properties:
+    - two-handed
+  martelo-de-guerra:
+    name: Martelo De Guerra
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    versatile_die: 1d10
+    properties:
+    - versatile
+  martelo-leve:
+    name: Martelo Leve
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - light
+    - thrown
+    range: 20/60
+  maul:
+    name: Maul
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 2d6
+    properties:
+    - two-handed
+  maça:
+    name: Maça
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    properties: []
+  maça-estrela:
+    name: Maça Estrela
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties: []
+  montante:
+    name: Montante
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 2d6
+    properties:
+    - two-handed
+  morningstar:
+    name: Morningstar
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties: []
+  net:
+    name: Net
+    type: ranged
+    hands: 1
+    category: martial
+    damage_die: ''
+    properties:
+    - ammunition
+    - special
+  picareta-de-guerra:
+    name: Picareta De Guerra
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties: []
+  pike:
+    name: Pike
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 1d10
+    properties:
+    - heavy
+    - reach
+    - two-handed
+  pique:
+    name: Pique
+    type: melee
+    hands: 2
+    category: martial
+    damage_die: 1d10
+    properties:
+    - two-handed
+  quarterstaff:
+    name: Quarterstaff
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    versatile_die: 1d8
+    properties:
+    - versatile
+  rapier:
+    name: Rapier
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties:
+    - finesse
+  rede:
+    name: Rede
+    type: ranged
+    hands: 1
+    category: martial
+    damage_die: ''
+    properties:
+    - ammunition
+    - special
+  scimitar:
+    name: Scimitar
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    properties:
+    - finesse
+    - light
+  shortbow:
+    name: Shortbow
+    type: ranged
+    hands: 2
+    category: simple
+    damage_die: 1d6
+    properties:
+    - ammunition
+    - two-handed
+    range: 80/320
+  shortsword:
+    name: Shortsword
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    properties:
+    - finesse
+    - light
+  sickle:
+    name: Sickle
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - light
+  sling:
+    name: Sling
+    type: ranged
+    hands: 1
+    category: simple
+    damage_die: 1d4
+    properties:
+    - ammunition
+  spear:
+    name: Spear
+    type: melee
+    hands: 1
+    category: simple
+    damage_die: 1d6
+    versatile_die: 1d8
+    properties:
+    - thrown
+    - versatile
+    range: 20/60
+  trident:
+    name: Trident
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    versatile_die: 1d8
+    properties:
+    - thrown
+    - versatile
+    range: 20/60
+  tridente:
+    name: Tridente
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d6
+    versatile_die: 1d8
+    properties:
+    - thrown
+    - versatile
+    range: 20/60
+  war-pick:
+    name: War Pick
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    properties: []
+  warhammer:
+    name: Warhammer
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d8
+    versatile_die: 1d10
+    properties:
+    - versatile
+  whip:
+    name: Whip
+    type: melee
+    hands: 1
+    category: martial
+    damage_die: 1d4
+    properties:
+    - finesse
+    - reach
+  zarabatana:
+    name: Zarabatana
+    type: ranged
+    hands: 1
+    category: martial
+    damage_die: '1'
+    properties:
+    - ammunition
+armors:
+  breastplate:
+    cat: medium
+    base: 14
+    dex_cap: 2
+    stealth_dis: false
+  chain-mail:
+    cat: heavy
+    base: 16
+    dex_cap: 0
+    stealth_dis: true
+    str_req: 13
+  chain-shirt:
+    cat: medium
+    base: 13
+    dex_cap: 2
+    stealth_dis: false
+  half-plate:
+    cat: medium
+    base: 15
+    dex_cap: 2
+    stealth_dis: true
+  hide:
+    cat: medium
+    base: 12
+    dex_cap: 2
+    stealth_dis: false
+  leather:
+    cat: light
+    base: 11
+    dex_cap:
+    stealth_dis: false
+  padded:
+    cat: light
+    base: 11
+    stealth_dis: true
+  plate:
+    cat: heavy
+    base: 18
+    dex_cap: 0
+    stealth_dis: true
+    str_req: 15
+  ring-mail:
+    cat: heavy
+    base: 14
+    dex_cap: 0
+    stealth_dis: true
+  scale-mail:
+    cat: medium
+    base: 14
+    dex_cap: 2
+    stealth_dis: true
+  splint:
+    cat: heavy
+    base: 17
+    dex_cap: 0
+    stealth_dis: true
+    str_req: 15
+  studded-leather:
+    cat: light
+    base: 12
+    stealth_dis: false
+shields:
+- shield
+- escudo

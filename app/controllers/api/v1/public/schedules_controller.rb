@@ -3,14 +3,15 @@ class Api::V1::Public::SchedulesController < ApplicationController
 
   def index
     @schedules = Schedule
-    .joins(:date_dimension)
-    .where(date_dimensions: { date: Date.current.. })
-    
-    render json: @schedules, include: [:group, :date_dimension]
+      .joins(:date_dimension)
+      .where(date_dimensions: { date: Date.current.. })
+      .order('date_dimensions.date ASC')
+
+    render json: { schedules: @schedules.as_json(include: [:group, :date_dimension]) }
   end
 
   def show
-    render json: @schedule
+    render json: { schedule: @schedule }, include: [:group, :date_dimension]
   end
 
   private

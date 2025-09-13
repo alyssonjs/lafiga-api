@@ -3,23 +3,35 @@ class Api::V1::Player::SchedulesController < ApplicationController
   before_action :set_schedule, only: [:show, :update, :destroy]
 
   def index
-    schedules = @current_user.schedules
-    render json: {schedules: schedules}, include: [:group],status: 200 
+    schedules = @current_user
+                  .schedules
+                  .joins(:date_dimension)
+                  .order('date_dimensions.date ASC')
+    render json: {schedules: schedules}, include: [:group, :date_dimension], status: 200 
   end
 
   def show
-    render json: {schedules: @schedule}, include: [:group], status: 200
+    render json: { schedule: @schedule }, include: [:group, :date_dimension], status: 200
   end
 
   def create
-    schedule_service = ScheduleService.new(schedule_params)
+    # Security: ensure the chosen group belongs to current user
+    gid = schedule_params[:group_id]
+    unless @current_user.groups.exists?(id: gid)
+      return render json: { error: 'Grupo inválido para este usuário' }, status: :forbidden
+    end
+
+    # Players always create schedules as 'waiting'
+    attrs = schedule_params.merge(status: :waiting)
+
+    schedule_service = ScheduleService.new(attrs)
     @schedule = schedule_service.call
-    render json: { schedule: @schedule.result }, include: [:group], status: :created
+    render json: { schedule: @schedule.result }, include: [:group, :date_dimension], status: :created
   end
 
   def update
     if @schedule.update(schedule_params)
-      render json: @schedule, include: [:group], status: 200 
+      render json: { schedule: @schedule }, include: [:group, :date_dimension], status: 200 
     else
       render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
     end
