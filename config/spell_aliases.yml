@@ -124,5 +124,24 @@
 # === Detectar Magia (detect-magic) — typo "dectar" ===
 "dectar magia": detect-magic
 
+# === Orbe Cromática (chromatic-orb) — genero/acento errados no XLSX ===
+# DB: "Orbe Cromática". "Orbe Cromatica" ja cai no indice transliterado; estes nao.
+"orbe cromatico": chromatic-orb
+
+# === imported_sheets.json / XLSX — typos que nao batem no Spell.name nem no indice ===
+"armadura de agatis": armor-of-agathys
+"curar ferimento em massa": mass-cure-wounds
+"falar com planta": speak-with-plants
+"chicote de espinho": thorn-whip
+"cupula anti-vida": antilife-shell
+"destruição destontoante": staggering-smite
+"dicipar magia": dispel-magic
+"força famtasmagoriga": phantasmal-force
+"invisibiidade": invisibility
+"proteção ocntra laminas": blade-ward
+"repreenção infernal": hellish-rebuke
+"sonhos": dream
+"vinhas esmagadoras": pt-vinha-esmagadora
+
 # === Adicionar mais conforme aparecerem em logs do LevelUpService:
 # > grep "spell nao resolvida" log/development.log
