@@ -5,12 +5,12 @@ class AuthenticationController < ApplicationController
     @user = User.find_by_email(params[:email])
     if @user&.authenticate(params[:password])
 
-      token = JsonWebToken.encode(user_id: @user.id)
-      time = Time.now + 24.hours.to_i
+      exp_at = JsonWebToken.default_expiration
+      token = JsonWebToken.encode({ user_id: @user.id }, exp_at)
       render json: { token: token, message: 'Login success!',
-                      exp: time.strftime("%m-%d-%Y %H:%M"),
+                      exp: exp_at.strftime("%m-%d-%Y %H:%M"),
                       user_infos: @user,
-                      role: @user.role.name,
+                      role: serialize_role(@user.role.name),
                       permissions: @user.role.permissions
                     },
                       status: :ok
@@ -32,15 +32,16 @@ class AuthenticationController < ApplicationController
     @user = User.new(signup_params)
     if @user.save
 
-      token = JsonWebToken.encode(user_id: @user.id)
-      exp   = 24.hours.from_now.strftime("%m-%d-%Y %H:%M")
+      exp_at = JsonWebToken.default_expiration
+      token = JsonWebToken.encode({ user_id: @user.id }, exp_at)
+      exp   = exp_at.strftime("%m-%d-%Y %H:%M")
 
       render json: {
         token:        token,
         message:      'Signup realizado com sucesso!',
         exp:          exp,
         user_infos:   @user,
-        role:         @user.role.name,
+        role:         serialize_role(@user.role.name),
         permissions:  @user.role.permissions
       }, status: :created
     else
@@ -49,7 +50,7 @@ class AuthenticationController < ApplicationController
   end
 
   private
-  
+
   attr_accessor :email, :password
 
   def login_params
@@ -58,5 +59,20 @@ class AuthenticationController < ApplicationController
 
   def signup_params
     params.permit(:name, :username, :email, :password, :password_confirmation, :role_id)
+  end
+
+  # O front (UserContext) compara `user.role === 'dm'` em minúsculas. O banco
+  # guarda capitalizado ('DM', 'Player', 'Admin') porque o `Role.name` é a
+  # chave canônica do back (usada em policies). Aqui no payload de auth a
+  # gente normaliza pra lowercase pra bater com o contrato do front.
+  #
+  # `Admin` vira `dm` (alias legado: enquanto não migramos os usuários
+  # antigos, qualquer Admin é tratado como DM no front também).
+  def serialize_role(role_name)
+    return 'guest' if role_name.blank?
+    normalized = role_name.to_s.downcase
+    return 'dm' if normalized == 'admin'
+    return 'player' if normalized == 'user' # legado: 'User' role no seed antigo
+    normalized
   end
 end

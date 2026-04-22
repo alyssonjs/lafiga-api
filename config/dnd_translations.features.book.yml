@@ -1,0 +1,1060 @@
+# Camada editorial alinhada ao Livro do Jogador (PHB). Material extra (outros caminhos/domínios): docs/novos_arquetipos.txt.
+# Ordem rake: build_features_pt → merge_features_pt → merge_features_book (ver lib/tasks/dnd_translations_sync.rake).
+# Após alterar o livro-texo ou política de glossário, rode: ruby scripts/apply_livro_book_feature_patches.rb
+
+---
+features:
+  action-surge-2-uses: Surto de Ação (2 usos)
+  additional-fighting-style: Estilo de Combate adicional
+  additional-magical-secrets: Segredos Arcanos adicionais
+  arcane-recovery: Recuperação Arcana
+  arcane-tradition: Tradição Arcana
+  arcane-tradition-improvement-1: Recurso de tradição arcana
+  arcane-tradition-improvement-2: Recurso de tradição arcana
+  arcane-tradition-improvement-3: Recurso de tradição arcana
+  archdruid: Arquidruida
+  aura-improvements: Melhorias de aura
+  aura-of-courage: Aura de Coragem
+  aura-of-devotion: Aura de Devoção
+  aura-of-protection: Aura de Proteção
+  barbarian-ability-score-improvement-1: Aumento de Valor de Atributo
+  barbarian-ability-score-improvement-2: Aumento de Valor de Atributo
+  barbarian-ability-score-improvement-3: Aumento de Valor de Atributo
+  barbarian-ability-score-improvement-4: Aumento de Valor de Atributo
+  barbarian-ability-score-improvement-5: Aumento de Valor de Atributo
+  barbarian-extra-attack: Ataque Extra
+  barbarian-unarmored-defense: Defesa sem Armadura
+  bard-ability-score-improvement-1: Aumento de Valor de Atributo
+  bard-ability-score-improvement-2: Aumento de Valor de Atributo
+  bard-ability-score-improvement-3: Aumento de Valor de Atributo
+  bard-ability-score-improvement-4: Aumento de Valor de Atributo
+  bard-ability-score-improvement-5: Aumento de Valor de Atributo
+  bard-college: Faculdade de Bardo
+  bard-college-improvement-1: Recurso da faculdade de bardo
+  bard-college-improvement-2: Recurso da faculdade de bardo
+  bard-expertise-1: Expertise
+  bard-expertise-2: Expertise
+  beast-spells: Magias de Fera
+  blessed-healer: Curandeiro Abençoado
+  blindsense: Sentido às Cegas
+  bonus-cantrip: Truque bônus
+  bonus-proficiencies: Proficiências bônus
+  bonus-proficiency: Proficiência bônus
+  brutal-critical-1-die: Crítico Brutal (1 dado)
+  brutal-critical-2-dice: Crítico Brutal (2 dados)
+  brutal-critical-3-dice: Crítico Brutal (3 dados)
+  channel-divinity: Canalizar Divindade
+  channel-divinity-1-rest: Canalizar Divindade (1/descanso)
+  channel-divinity-2-rest: Canalizar Divindade (2/descanso)
+  channel-divinity-3-rest: Canalizar Divindade (3/descanso)
+  channel-divinity-preserve-life: 'Canalizar Divindade: Preservar Vida'
+  channel-divinity-sacred-weapon: 'Canalizar Divindade: Arma Sagrada'
+  channel-divinity-turn-the-unholy: 'Canalizar Divindade: Afastar o Ímpio'
+  channel-divinity-turn-undead: 'Canalizar Divindade: Repreender Mortos-vivos'
+  cleansing-touch: Toque Purificador
+  cleric-ability-score-improvement-1: Aumento de Valor de Atributo
+  cleric-ability-score-improvement-2: Aumento de Valor de Atributo
+  cleric-ability-score-improvement-3: Aumento de Valor de Atributo
+  cleric-ability-score-improvement-4: Aumento de Valor de Atributo
+  cleric-ability-score-improvement-5: Aumento de Valor de Atributo
+  cunning-action: Ação Ardilosa
+  cutting-words: Palavras Cortantes
+  danger-sense: Senso de Perigo
+  dark-ones-blessing: Benção do Senhor das Trevas
+  dark-ones-own-luck: Sorte do Senhor das Trevas
+  defensive-tactics: Táticas Defensivas
+  deflect-missiles: Desviar Projéteis
+  destroy-undead-cr-1-2-or-below: Destruir Mortos-vivos (ND 1/2 ou inferior)
+  destroy-undead-cr-1-or-below: Destruir Mortos-vivos (ND 1 ou inferior)
+  destroy-undead-cr-2-or-below: Destruir Mortos-vivos (ND 2 ou inferior)
+  destroy-undead-cr-3-or-below: Destruir Mortos-vivos (ND 3 ou inferior)
+  destroy-undead-cr-4-or-below: Destruir Mortos-vivos (ND 4 ou inferior)
+  diamond-soul: Alma de Diamante
+  disciple-of-life: Discípulo da Vida
+  divine-domain: Domínio Divino
+  divine-domain-improvement-1: Recurso de domínio divino
+  divine-domain-improvement-2: Recurso de domínio divino
+  divine-domain-improvement-3: Recurso de domínio divino
+  divine-domain-improvement-4: Recurso de domínio divino
+  divine-health: Saúde Divina
+  divine-intervention: Intervenção Divina
+  divine-intervention-improvement: Intervenção Divina aprimorada
+  divine-sense: Sentido Divino
+  divine-smite: Golpe Divino
+  divine-strike: Impacto Divino
+  domain-spells-1: Magias de Domínio
+  domain-spells-2: Magias de Domínio
+  domain-spells-3: Magias de Domínio
+  domain-spells-4: Magias de Domínio
+  domain-spells-5: Magias de Domínio
+  draconic-presence: Presença Dracônica
+  draconic-resilience: Resiliência Dracônica
+  dragon-ancestor: Ancestral Dragão
+  dragon-wings: Asas de Dragão
+  druid-ability-score-improvement-1: Aumento de Valor de Atributo
+  druid-ability-score-improvement-2: Aumento de Valor de Atributo
+  druid-ability-score-improvement-3: Aumento de Valor de Atributo
+  druid-ability-score-improvement-4: Aumento de Valor de Atributo
+  druid-ability-score-improvement-5: Aumento de Valor de Atributo
+  druid-circle: Círculo Druidico
+  druid-circle-improvement-1: Recurso do círculo druidico
+  druid-circle-improvement-2: Recurso do círculo druidico
+  druid-circle-improvement-3: Recurso do círculo druidico
+  druid-lands-stride: Passo da Terra
+  druid-timeless-body: Corpo Atemporal
+  druidic: Druídico
+  eldritch-invocations: Invocações místicas
+  eldritch-master: Mestre das Invocações
+  elemental-affinity: Afinidade Elemental
+  elusive: Elusivo
+  empowered-evocation: Evocação Potente
+  empty-body: Corpo Vazio
+  evocation-savant: Talentoso em Evocação
+  extra-attack-1: Ataque Extra
+  extra-attack-2: Ataque Extra (2)
+  extra-attack-3: Ataque Extra (3)
+  fast-hands: Mãos Ágeis
+  fast-movement: Movimento Rápido
+  favored-enemy-1-type: Inimigo Favorecido (1 tipo)
+  favored-enemy-2-types: Inimigo Favorecido (2 tipos)
+  favored-enemy-3-enemies: Inimigo Favorecido (3 inimigos)
+  feral-instinct: Instinto Selvagem
+  feral-senses: Sentidos Selvagens
+  fiendish-resilience: Resiliência Infernal
+  fighter-ability-score-improvement-1: Aumento de Valor de Atributo
+  fighter-ability-score-improvement-2: Aumento de Valor de Atributo
+  fighter-ability-score-improvement-3: Aumento de Valor de Atributo
+  fighter-ability-score-improvement-4: Aumento de Valor de Atributo
+  fighter-ability-score-improvement-5: Aumento de Valor de Atributo
+  fighter-ability-score-improvement-6: Aumento de Valor de Atributo
+  fighter-ability-score-improvement-7: Aumento de Valor de Atributo
+  fighter-fighting-style: Estilo de Combate
+  flexible-casting-converting-spell-slot: 'Magia Flexível: Converter espaço de magia'
+  flexible-casting-creating-spell-slots: 'Magia Flexível: Criar espaços de magia'
+  flurry-of-blows: Rajada de Golpes
+  foe-slayer: Matador de Inimigos
+  font-of-magic: Fonte de Magia
+  frenzy: Frenesi
+  hide-in-plain-sight: Esconder-se à Vista
+  holy-nimbus: Auréola Sagrada
+  hunters-prey: Preda do Caçador
+  hurl-through-hell: Arremesso ao Inferno
+  improved-critical: Crítico Aprimorado
+  improved-divine-smite: Golpe Divino Aprimorado
+  indomitable-1-use: Inquebrantável (1 uso)
+  indomitable-2-uses: Inquebrantável (2 usos)
+  indomitable-3-uses: Inquebrantável (3 usos)
+  indomitable-might: Força Indomável
+  intimidating-presence: Presença Intimidante
+  ki: Ki
+  ki-empowered-strikes: Golpes Infundidos com Ki
+  lay-on-hands: Imposição de Mãos
+  magical-secrets-1: Segredos Arcanos
+  magical-secrets-2: Segredos Arcanos
+  magical-secrets-3: Segredos Arcanos
+  martial-archetype: Arquétipo Marcial
+  martial-archetype-improvement-1: Recurso de arquétipo marcial
+  martial-archetype-improvement-2: Recurso de arquétipo marcial
+  martial-archetype-improvement-3: Recurso de arquétipo marcial
+  martial-archetype-improvement-4: Recurso de arquétipo marcial
+  martial-arts: Artes marciais
+  metamagic-1: Metamagia
+  metamagic-2: Metamagia
+  metamagic-3: Metamagia
+  mindless-rage: Fúria Irracional
+  monastic-tradition: Tradição Monástica
+  monastic-tradition-improvement-1: Recurso de tradição monástica
+  monastic-tradition-improvement-2: Recurso de tradição monástica
+  monastic-tradition-improvement-3: Recurso de tradição monástica
+  monk-ability-score-improvement-1: Aumento de Valor de Atributo
+  monk-ability-score-improvement-2: Aumento de Valor de Atributo
+  monk-ability-score-improvement-3: Aumento de Valor de Atributo
+  monk-ability-score-improvement-4: Aumento de Valor de Atributo
+  monk-ability-score-improvement-5: Aumento de Valor de Atributo
+  monk-evasion: Evasão
+  monk-extra-attack: Ataque Extra
+  monk-timeless-body: Corpo Atemporal
+  monk-unarmored-defense: Defesa sem Armadura
+  multiattack: Multiataque
+  mystic-arcanum-6th-level: Arcano Místico (6º nível)
+  mystic-arcanum-7th-level: Arcano Místico (7º nível)
+  mystic-arcanum-8th-level: Arcano Místico (8º nível)
+  mystic-arcanum-9th-level: Arcano Místico (9º nível)
+  natural-explorer-1-terrain-type: Explorador Natural (1 tipo de terreno)
+  natural-explorer-2-terrain-types: Explorador Natural (2 tipos de terreno)
+  natural-explorer-3-terrain-types: Explorador Natural (3 tipos de terreno)
+  natural-recovery: Recuperação Natural
+  natures-sanctuary: Santuário da Natureza
+  natures-ward: Proteção da Natureza
+  oath-spells: Magias de Juramento
+  open-hand-technique: Técnica da Palma Aberta
+  otherworldly-patron: Patrono de Outro Mundo
+  otherworldly-patron-improvement-1: Recurso de patrono de outro mundo
+  otherworldly-patron-improvement-2: Recurso de patrono de outro mundo
+  otherworldly-patron-improvement-3: Recurso de patrono de outro mundo
+  overchannel: Sobrecarga Arcana
+  pact-boon: Dádiva do Pacto
+  pact-magic: Magia de Pacto
+  paladin-ability-score-improvement-1: Aumento de Valor de Atributo
+  paladin-ability-score-improvement-2: Aumento de Valor de Atributo
+  paladin-ability-score-improvement-3: Aumento de Valor de Atributo
+  paladin-ability-score-improvement-4: Aumento de Valor de Atributo
+  paladin-ability-score-improvement-5: Aumento de Valor de Atributo
+  paladin-extra-attack: Ataque Extra
+  paladin-fighting-style: Estilo de Combate
+  patient-defense: Defesa Paciente
+  peerless-skill: Perícia Inigualável
+  perfect-self: Eu Perfeito
+  persistent-rage: Fúria Persistente
+  potent-cantrip: Truque Potente
+  primal-champion: Campeão Primal
+  primal-path: Caminho Primal
+  primal-path-improvement-1: Recurso de caminho
+  primal-path-improvement-2: Recurso de caminho
+  primal-path-improvement-3: Recurso de caminho
+  primeval-awareness: Consciência Primeva
+  purity-of-body: Pureza Corporal
+  purity-of-spirit: Pureza do Espírito
+  quivering-palm: Palma Trêmula
+  rage: Fúria
+  ranger-ability-score-improvement-1: Aumento de Valor de Atributo
+  ranger-ability-score-improvement-2: Aumento de Valor de Atributo
+  ranger-ability-score-improvement-3: Aumento de Valor de Atributo
+  ranger-ability-score-improvement-4: Aumento de Valor de Atributo
+  ranger-ability-score-improvement-5: Aumento de Valor de Atributo
+  ranger-archetype: Arquétipo de Patrulheiro
+  ranger-archetype-improvement-1: Recurso de arquétipo de patrulheiro
+  ranger-archetype-improvement-2: Recurso de arquétipo de patrulheiro
+  ranger-archetype-improvement-3: Recurso de arquétipo de patrulheiro
+  ranger-extra-attack: Ataque Extra
+  ranger-fighting-style: Estilo de Combate
+  ranger-lands-stride: Passo da Terra
+  reckless-attack: Ataque Imprudente
+  relentless-rage: Fúria Implacável
+  reliable-talent: Talento Confiável
+  remarkable-athlete: Atleta Notável
+  retaliation: Retaliação
+  rogue-ability-score-improvement-1: Aumento de Valor de Atributo
+  rogue-ability-score-improvement-2: Aumento de Valor de Atributo
+  rogue-ability-score-improvement-3: Aumento de Valor de Atributo
+  rogue-ability-score-improvement-4: Aumento de Valor de Atributo
+  rogue-ability-score-improvement-5: Aumento de Valor de Atributo
+  rogue-ability-score-improvement-6: Aumento de Valor de Atributo
+  rogue-evasion: Evasão
+  rogue-expertise-1: Expertise
+  rogue-expertise-2: Expertise
+  roguish-archetype: Arquétipo Ladino
+  roguish-archetype-improvement-1: Recurso de arquétipo ladino
+  roguish-archetype-improvement-2: Recurso de arquétipo ladino
+  roguish-archetype-improvement-3: Recurso de arquétipo ladino
+  sacred-oath: Juramento Sagrado
+  sacred-oath-improvement-1: Recurso de juramento sagrado
+  sacred-oath-improvement-2: Recurso de juramento sagrado
+  sacred-oath-improvement-3: Recurso de juramento sagrado
+  sculpt-spells: Esculpir Magias
+  second-story-work: Trabalho de Segundo Andar
+  signature-spell: Magia Assinatura
+  slippery-mind: Mente Escorregadia
+  slow-fall: Queda Suave
+  sneak-attack: Ataque Furtivo
+  sorcerer-ability-score-improvement-1: Aumento de Valor de Atributo
+  sorcerer-ability-score-improvement-2: Aumento de Valor de Atributo
+  sorcerer-ability-score-improvement-3: Aumento de Valor de Atributo
+  sorcerer-ability-score-improvement-4: Aumento de Valor de Atributo
+  sorcerer-ability-score-improvement-5: Aumento de Valor de Atributo
+  sorcerous-origin: Origem Sorrateira
+  sorcerous-origin-improvement-1: Recurso de origem sorrateira
+  sorcerous-origin-improvement-2: Recurso de origem sorrateira
+  sorcerous-origin-improvement-3: Recurso de origem sorrateira
+  sorcerous-restoration: Restauração Sorrateira
+  spell-mastery: Maestria Arcana
+  spellcasting-bard: 'Conjuração: Bardo'
+  spellcasting-cleric: 'Conjuração: Clérigo'
+  spellcasting-druid: 'Conjuração: Druida'
+  spellcasting-paladin: 'Conjuração: Paladino'
+  spellcasting-ranger: 'Conjuração: Patrulheiro'
+  spellcasting-sorcerer: 'Conjuração: Feiticeiro'
+  spellcasting-wizard: 'Conjuração: Mago'
+  step-of-the-wind: Passo do Vento
+  stillness-of-mind: Serenidade Mental
+  stroke-of-luck: Golpe de Sorte
+  stunning-strike: Golpe Atordoante
+  superior-critical: Crítico Superior
+  superior-hunters-defense: Defesa Superior do Caçador
+  superior-inspiration: Inspiração Superior
+  supreme-healing: Cura Suprema
+  supreme-sneak: Furtividade Suprema
+  survivor: Sobrevivente
+  thiefs-reflexes: Reflexos de Ladrão
+  thieves-cant: Gíria dos Ladrões
+  tongue-of-the-sun-and-moon: Língua do Sol e da Lua
+  tranquility: Tranquilidade
+  unarmored-movement-1: Movimento sem Armadura
+  unarmored-movement-2: Movimento sem Armadura
+  uncanny-dodge: Esquiva Sobrenatural
+  use-magic-device: Usar Dispositivo Mágico
+  vanish: Desaparecer
+  warlock-ability-score-improvement-1: Aumento de Valor de Atributo
+  warlock-ability-score-improvement-2: Aumento de Valor de Atributo
+  warlock-ability-score-improvement-3: Aumento de Valor de Atributo
+  warlock-ability-score-improvement-4: Aumento de Valor de Atributo
+  warlock-ability-score-improvement-5: Aumento de Valor de Atributo
+  wholeness-of-body: Integridade Corporal
+  wild-shape-cr-1-2-or-below-no-flying-speed: Forma Selvagem (ND 1/2 ou inferior, sem voo)
+  wild-shape-cr-1-4-or-below-no-flying-or-swim-speed: Forma Selvagem (ND 1/4 ou inferior, sem voo nem natação)
+  wild-shape-cr-1-or-below: Forma Selvagem (ND 1 ou inferior)
+  wizard-ability-score-improvement-1: Aumento de Valor de Atributo
+  wizard-ability-score-improvement-2: Aumento de Valor de Atributo
+  wizard-ability-score-improvement-3: Aumento de Valor de Atributo
+  wizard-ability-score-improvement-4: Aumento de Valor de Atributo
+  wizard-ability-score-improvement-5: Aumento de Valor de Atributo
+feature_descs:
+  action-surge-1-use: |-
+    A partir do 2º nível, pode se esforçar além dos limites normais por um instante. No seu turno, pode realizar uma ação adicional além da sua ação normal e de uma possível ação bônus.
+
+    Depois de usar esse recurso, precisa terminar um descanso curto ou longo antes de usá-lo de novo. A partir do 17º nível, pode usá-lo duas vezes antes de descansar, mas apenas uma vez no mesmo turno.
+  action-surge-2-uses: |-
+    A partir do 2º nível, pode se esforçar além dos limites normais por um instante. No seu turno, pode realizar uma ação adicional além da sua ação normal e de uma possível ação bônus.
+
+    Depois de usar esse recurso, precisa terminar um descanso curto ou longo antes de usá-lo de novo. A partir do 17º nível, pode usá-lo duas vezes antes de descansar, mas apenas uma vez no mesmo turno.
+  arcane-recovery: |-
+    Você aprendeu a recuperar parte de sua energia mágica estudando o grimório. Uma vez por dia, ao terminar um descanso curto, pode escolher espaços de magia gastos para recuperar. Os espaços podem somar um nível total igual ou inferior à metade do seu nível de mago (arredondado para cima), e nenhum pode ser de 6º nível ou superior.
+
+    Por exemplo, se for um mago de 4º nível, pode recuperar até dois níveis de espaços: um espaço de 2º nível ou dois de 1º nível.
+  arcane-tradition: |-
+    Quando alcança o 2º nível, você escolhe uma tradição arcana, moldando sua prática de magia por uma das oito escolas, como Evocação.
+
+    Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  arcane-tradition-improvement-1: |-
+    Quando alcança o 2º nível, você escolhe uma tradição arcana, moldando sua prática de magia por uma das oito escolas, como Evocação.
+
+    Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  arcane-tradition-improvement-2: |-
+    Quando alcança o 2º nível, você escolhe uma tradição arcana, moldando sua prática de magia por uma das oito escolas, como Evocação.
+
+    Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  arcane-tradition-improvement-3: |-
+    Quando alcança o 2º nível, você escolhe uma tradição arcana, moldando sua prática de magia por uma das oito escolas, como Evocação.
+
+    Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  archdruid: |-
+    No 20º nível, você pode usar Forma Selvagem um número ilimitado de vezes.
+
+    Além disso, pode ignorar os componentes verbais e somáticos de suas magias de druida, bem como componentes materiais sem custo que não sejam consumidos pela magia. Recebe esse benefício tanto na forma normal quanto na forma de fera da Forma Selvagem.
+  aura-improvements: No 18º nível, o alcance de suas auras aumenta para 30 pés.
+  aura-of-courage: |-
+    A partir do 10º nível, você e criaturas aliadas a até 10 pés de você não podem ficar amedrontadas enquanto você estiver consciente.
+
+    No 18º nível, o alcance dessa aura aumenta para 30 pés.
+  aura-of-protection: |-
+    A partir do 6º nível, sempre que você ou uma criatura aliada a até 10 pés de você precisar fazer um teste de resistência, a criatura recebe um bônus no teste igual ao seu modificador de Carisma (mínimo +1). Você precisa estar consciente para conceder esse bônus.
+
+    No 18º nível, o alcance dessa aura aumenta para 30 pés.
+  barbarian-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  barbarian-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  barbarian-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  barbarian-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  barbarian-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  barbarian-extra-attack: A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno.
+  barbarian-unarmored-defense: Quando você não estiver vestindo qualquer armadura, sua Classe de Armadura será 10 + seu modificador de Destreza + seu modificador de Constituição. Você pode usar um escudo e continuar a receber esse benefício.
+  bard-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  bard-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  bard-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  bard-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  bard-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  bard-college: No 3º nível, você aprofunda as técnicas avançadas de uma faculdade de bardo à sua escolha, como a Faculdade do Lore. Sua escolha concede recursos no 3º nível e novamente no 6º e 14º níveis.
+  bard-college-improvement-1: No 3º nível, você aprofunda as técnicas avançadas de uma faculdade de bardo à sua escolha, como a Faculdade do Lore. Sua escolha concede recursos no 3º nível e novamente no 6º e 14º níveis.
+  bard-college-improvement-2: No 3º nível, você aprofunda as técnicas avançadas de uma faculdade de bardo à sua escolha, como a Faculdade do Lore. Sua escolha concede recursos no 3º nível e novamente no 6º e 14º níveis.
+  bard-expertise-1: No 3º nível, escolha duas perícias nas quais é proficiente. Seu bônus de proficiência é dobrado em qualquer teste de atributo que use uma dessas perícias. No 10º nível, pode escolher outras duas perícias para receber o mesmo benefício.
+  bard-expertise-2: No 3º nível, escolha duas perícias nas quais é proficiente. Seu bônus de proficiência é dobrado em qualquer teste de atributo que use uma dessas perícias. No 10º nível, pode escolher outras duas perícias para receber o mesmo benefício.
+  bardic-inspiration-d10: |-
+    Você pode inspirar outros com palavras ou música como estímulo. Para isso, usa uma ação bônus no seu turno para escolher uma criatura além de você a até 60 pés que possa ouvi-lo. Essa criatura recebe um dado de Inspiração de Bardo, um d6. Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de atributo, rolagem de ataque ou teste de resistência que fizer. A criatura pode esperar até rolar o d20 antes de decidir usar o dado de inspiração, mas precisa decidir antes que o Mestre diga se o teste passou ou falhou. Depois de rolar o dado de inspiração, ele se perde. Uma criatura só pode ter um dado de inspiração de cada vez.
+
+    Pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez). Recupera os usos gastos ao terminar um descanso longo.
+
+    Seu dado de Inspiração de Bardo muda em certos níveis nesta classe: vira d8 no 5º nível, d10 no 10º e d12 no 15º.
+  bardic-inspiration-d12: |-
+    Você pode inspirar outros com palavras ou música como estímulo. Para isso, usa uma ação bônus no seu turno para escolher uma criatura além de você a até 60 pés que possa ouvi-lo. Essa criatura recebe um dado de Inspiração de Bardo, um d6. Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de atributo, rolagem de ataque ou teste de resistência que fizer. A criatura pode esperar até rolar o d20 antes de decidir usar o dado de inspiração, mas precisa decidir antes que o Mestre diga se o teste passou ou falhou. Depois de rolar o dado de inspiração, ele se perde. Uma criatura só pode ter um dado de inspiração de cada vez.
+
+    Pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez). Recupera os usos gastos ao terminar um descanso longo.
+
+    Seu dado de Inspiração de Bardo muda em certos níveis nesta classe: vira d8 no 5º nível, d10 no 10º e d12 no 15º.
+  bardic-inspiration-d6: |-
+    Você pode inspirar outros com palavras ou música como estímulo. Para isso, usa uma ação bônus no seu turno para escolher uma criatura além de você a até 60 pés que possa ouvi-lo. Essa criatura recebe um dado de Inspiração de Bardo, um d6. Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de atributo, rolagem de ataque ou teste de resistência que fizer. A criatura pode esperar até rolar o d20 antes de decidir usar o dado de inspiração, mas precisa decidir antes que o Mestre diga se o teste passou ou falhou. Depois de rolar o dado de inspiração, ele se perde. Uma criatura só pode ter um dado de inspiração de cada vez.
+
+    Pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez). Recupera os usos gastos ao terminar um descanso longo.
+
+    Seu dado de Inspiração de Bardo muda em certos níveis nesta classe: vira d8 no 5º nível, d10 no 10º e d12 no 15º.
+  bardic-inspiration-d8: |-
+    Você pode inspirar outros com palavras ou música como estímulo. Para isso, usa uma ação bônus no seu turno para escolher uma criatura além de você a até 60 pés que possa ouvi-lo. Essa criatura recebe um dado de Inspiração de Bardo, um d6. Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de atributo, rolagem de ataque ou teste de resistência que fizer. A criatura pode esperar até rolar o d20 antes de decidir usar o dado de inspiração, mas precisa decidir antes que o Mestre diga se o teste passou ou falhou. Depois de rolar o dado de inspiração, ele se perde. Uma criatura só pode ter um dado de inspiração de cada vez.
+
+    Pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez). Recupera os usos gastos ao terminar um descanso longo.
+
+    Seu dado de Inspiração de Bardo muda em certos níveis nesta classe: vira d8 no 5º nível, d10 no 10º e d12 no 15º.
+  beast-spells: A partir do 18º nível, você pode conjurar muitas de suas magias de druida em qualquer forma que assuma com Forma Selvagem. Pode realizar componentes somáticos e verbais de uma magia de druida em forma de fera, mas não pode fornecer componentes materiais.
+  blindsense: A partir do 14º nível, se você puder ouvir, fica ciente da posição de qualquer criatura escondida ou invisível a até 10 pés de você.
+  brutal-critical-1-die: |-
+    A partir do 9º nível, você pode rolar um dado de dano de arma adicional quando estiver determinando o dano extra de um acerto crítico com uma arma corpo a corpo.
+
+    Isso aumenta para dois dados adicionais no 13º nível e três dados adicionais no 17º nível.
+  brutal-critical-2-dice: |-
+    A partir do 9º nível, você pode rolar um dado de dano de arma adicional quando estiver determinando o dano extra de um acerto crítico com uma arma corpo a corpo.
+
+    Isso aumenta para dois dados adicionais no 13º nível e três dados adicionais no 17º nível.
+  brutal-critical-3-dice: |-
+    A partir do 9º nível, você pode rolar um dado de dano de arma adicional quando estiver determinando o dano extra de um acerto crítico com uma arma corpo a corpo.
+
+    Isso aumenta para dois dados adicionais no 13º nível e três dados adicionais no 17º nível.
+  channel-divinity: |-
+    Seu juramento permite que você canalize energia divina para abastecer efeitos mágicos. Cada opção de Canalizar Divindade concedida por um juramento explica como usá-la.
+
+    Quando você usa o seu Canalizar Divindade, você escolhe qual opção usar. Você deve terminar um descanso curto ou longo para poder usar seu Canalizar Divindade novamente.
+
+    Alguns efeitos de Canalizar Divindade exigem testes de resistência. Quando você usar um efeito assim desta classe, a CD é igual à CD de resistência às suas magias de paladino.
+  channel-divinity-1-rest: |-
+    No 2º nível, você se torna capaz de canalizar energia diretamente de sua divindade, utilizando-a como combustível para efeitos mágicos. Você começa com dois efeitos: Expulsar Mortos-vivos e um efeito determinado pelo seu domínio. Alguns domínios conferem efeitos adicionais conforme você avança de nível, como consta na descrição de cada domínio.
+
+    Quando você usar seu Canalizar Divindade, você escolhe qual efeito quer criar. Você precisa terminar um descanso curto ou longo para usar a característica de novo.
+
+    Alguns efeitos requerem teste de resistência. Quando você usar um desses efeitos, a CD é igual a das suas magias de clérigo.
+
+    A partir do 6º nível, você pode Canalizar Divindade duas vezes entre descansos e a partir do 18º nível, três vezes entre descansos. Você recupera os usos dessa característica quando termina um descanso curto ou longo.
+  channel-divinity-2-rest: A partir do 6º nível, você pode Canalizar Divindade duas vezes entre descansos e a partir do 18º nível, três vezes entre descansos. Você recupera os usos dessa característica quando termina um descanso curto ou longo.
+  channel-divinity-3-rest: A partir do 6º nível, você pode Canalizar Divindade duas vezes entre descansos e a partir do 18º nível, três vezes entre descansos. Você recupera os usos dessa característica quando termina um descanso curto ou longo.
+  channel-divinity-turn-undead: |-
+    Usando uma ação, você levanta seu símbolo sagrado e murmura uma prece repreendendo os mortos-vivos. Cada morto-vivo que puder ver ou ouvir você em um raio de 9 metros a partir de você deve fazer um teste de resistência de Sabedoria. Se falhar, a criatura está expulsa por 1 minuto ou até sofrer algum dano.
+
+    Uma criatura expulsa deve usar seu turno para fugir da melhor forma possível e de forma alguma pode aproximar-se a mais de 9 metros de você por vontade própria. Ela também não pode usar reações. Como uma ação, a criatura pode apenas realizar uma Disparada ou tentar escapar de um efeito que a impeça de se mover. Se não há lugar para ir, a criatura pode usar a ação Esquivar.
+  cleansing-touch: |-
+    A partir do 14º nível, você pode usar sua ação para encerrar uma magia sobre você ou sobre uma criatura voluntária que tocar.
+
+    Pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez). Recupera os usos gastos ao terminar um descanso longo.
+  cleric-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  cleric-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  cleric-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  cleric-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  cleric-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  countercharm: No 6º nível, você pode usar notas musicais ou palavras de poder para perturbar efeitos que influenciam a mente. Como ação, pode iniciar uma apresentação que dura até o fim do seu próximo turno. Nesse tempo, você e criaturas aliadas a até 30 pés de você têm vantagem em testes de resistência contra ficar amedrontadas ou enfeitiçadas. A criatura precisa poder ouvi-lo para receber o benefício. A apresentação termina antes se você ficar incapacitado, silenciado ou encerrá-la voluntariamente (sem gastar ação).
+  cunning-action: A partir do 2º nível, seu raciocínio rápido e agilidade permitem agir com velocidade. Você pode usar uma ação bônus em cada um dos seus turnos em combate. Essa ação só pode ser usada para as ações Disparar, Desengajar ou Esconder-se.
+  danger-sense: |-
+    No 2º nível, você adquire um sentido sobrenatural de quando as coisas próximas não estão como deveriam, concedendo a você uma chance maior quando estiver evitando perigos.
+
+    Você possui vantagem em testes de resistência de Destreza contra efeitos que você possa ver, como armadilhas e magias. Para receber esse benefício você não pode estar cego, surdo ou incapacitado.
+  deflect-missiles: |-
+    A partir do 3º nível, pode usar sua reação para desviar ou apanhar o projétil quando for atingido por um ataque à distância com arma. Ao fazê-lo, o dano que sofre do ataque é reduzido em 1d10 + seu modificador de Destreza + seu nível de monge.
+
+    Se reduzir o dano a 0, pode pegar o projétil se for pequeno o bastante para segurar numa mão e tiver pelo menos uma mão livre. Se pegar assim, pode gastar 1 ponto de ki para fazer um ataque à distância com a arma ou munição que acabou de pegar, como parte da mesma reação. Faz esse ataque com proficiência, independentemente de proficiências com armas, e o projétil conta como arma de monge no ataque, com alcance normal de 20 pés e longo de 60 pés.
+  destroy-undead-cr-1-2-or-below: |-
+    A partir do 5º nível, quando um morto-vivo falhar no teste de resistência contra a sua característica Expulsar Mortos-vivos, ele é instantaneamente destruído se o Nível de Desafio dele for menor ou igual ao valor da tabela Destruir Mortos-vivos, de acordo com seu nível de clérigo.
+
+    Nível de clérigo | Destrói mortos-vivos de ND
+    5º | 1/2 ou menor
+    8º | 1 ou menor
+    11º | 2 ou menor
+    14º | 3 ou menor
+    17º | 4 ou menor
+  destroy-undead-cr-1-or-below: |-
+    A partir do 5º nível, quando um morto-vivo falhar no teste de resistência contra a sua característica Expulsar Mortos-vivos, ele é instantaneamente destruído se o Nível de Desafio dele for menor ou igual ao valor da tabela Destruir Mortos-vivos, de acordo com seu nível de clérigo.
+
+    Nível de clérigo | Destrói mortos-vivos de ND
+    5º | 1/2 ou menor
+    8º | 1 ou menor
+    11º | 2 ou menor
+    14º | 3 ou menor
+    17º | 4 ou menor
+  destroy-undead-cr-2-or-below: |-
+    A partir do 5º nível, quando um morto-vivo falhar no teste de resistência contra a sua característica Expulsar Mortos-vivos, ele é instantaneamente destruído se o Nível de Desafio dele for menor ou igual ao valor da tabela Destruir Mortos-vivos, de acordo com seu nível de clérigo.
+
+    Nível de clérigo | Destrói mortos-vivos de ND
+    5º | 1/2 ou menor
+    8º | 1 ou menor
+    11º | 2 ou menor
+    14º | 3 ou menor
+    17º | 4 ou menor
+  destroy-undead-cr-3-or-below: |-
+    A partir do 5º nível, quando um morto-vivo falhar no teste de resistência contra a sua característica Expulsar Mortos-vivos, ele é instantaneamente destruído se o Nível de Desafio dele for menor ou igual ao valor da tabela Destruir Mortos-vivos, de acordo com seu nível de clérigo.
+
+    Nível de clérigo | Destrói mortos-vivos de ND
+    5º | 1/2 ou menor
+    8º | 1 ou menor
+    11º | 2 ou menor
+    14º | 3 ou menor
+    17º | 4 ou menor
+  destroy-undead-cr-4-or-below: |-
+    A partir do 5º nível, quando um morto-vivo falhar no teste de resistência contra a sua característica Expulsar Mortos-vivos, ele é instantaneamente destruído se o Nível de Desafio dele for menor ou igual ao valor da tabela Destruir Mortos-vivos, de acordo com seu nível de clérigo.
+
+    Nível de clérigo | Destrói mortos-vivos de ND
+    5º | 1/2 ou menor
+    8º | 1 ou menor
+    11º | 2 ou menor
+    14º | 3 ou menor
+    17º | 4 ou menor
+  diamond-soul: |-
+    A partir do 14º nível, sua maestria do ki lhe concede proficiência em todos os testes de resistência.
+
+    Além disso, sempre que falhar em um teste de resistência, pode gastar 1 ponto de ki para rolar de novo e usar o segundo resultado.
+  divine-domain: 'Escolha um domínio relacionado à sua divindade: Conhecimento, Enganação, Guerra, Luz, Natureza, Tempestade ou Vida. Cada domínio é detalhado ao final da descrição da classe e, cada um, fornece exemplos dos deuses associados a eles. Essa escolha, realizada no 1º nível, concede magias de domínio e outras características. Ela também concede a você outras formas de utilizar seu Canalizar Divindade quando você ganhá-lo no 2º nível, bem como outros benefícios no 6º, 8º e 17º níveis.'
+  divine-domain-improvement-1: 'Escolha um domínio relacionado à sua divindade: Conhecimento, Enganação, Guerra, Luz, Natureza, Tempestade ou Vida. Cada domínio é detalhado ao final da descrição da classe e, cada um, fornece exemplos dos deuses associados a eles. Essa escolha, realizada no 1º nível, concede magias de domínio e outras características. Ela também concede a você outras formas de utilizar seu Canalizar Divindade quando você ganhá-lo no 2º nível, bem como outros benefícios no 6º, 8º e 17º níveis.'
+  divine-domain-improvement-2: 'Escolha um domínio relacionado à sua divindade: Conhecimento, Enganação, Guerra, Luz, Natureza, Tempestade ou Vida. Cada domínio é detalhado ao final da descrição da classe e, cada um, fornece exemplos dos deuses associados a eles. Essa escolha, realizada no 1º nível, concede magias de domínio e outras características. Ela também concede a você outras formas de utilizar seu Canalizar Divindade quando você ganhá-lo no 2º nível, bem como outros benefícios no 6º, 8º e 17º níveis.'
+  divine-domain-improvement-3: 'Escolha um domínio relacionado à sua divindade: Conhecimento, Enganação, Guerra, Luz, Natureza, Tempestade ou Vida. Cada domínio é detalhado ao final da descrição da classe e, cada um, fornece exemplos dos deuses associados a eles. Essa escolha, realizada no 1º nível, concede magias de domínio e outras características. Ela também concede a você outras formas de utilizar seu Canalizar Divindade quando você ganhá-lo no 2º nível, bem como outros benefícios no 6º, 8º e 17º níveis.'
+  divine-domain-improvement-4: 'Escolha um domínio relacionado à sua divindade: Conhecimento, Enganação, Guerra, Luz, Natureza, Tempestade ou Vida. Cada domínio é detalhado ao final da descrição da classe e, cada um, fornece exemplos dos deuses associados a eles. Essa escolha, realizada no 1º nível, concede magias de domínio e outras características. Ela também concede a você outras formas de utilizar seu Canalizar Divindade quando você ganhá-lo no 2º nível, bem como outros benefícios no 6º, 8º e 17º níveis.'
+  divine-health: No 3º nível, a magia divina que percorre você torna você imune a doenças.
+  divine-intervention: |-
+    A partir do 10º nível, você pode invocar sua divindade para intervir em seu favor quando a necessidade for grande.
+
+    Implorar ajuda exige usar sua ação. Descreva a assistência desejada e role dados percentuais. Se o resultado for igual ou inferior ao seu nível de clérigo, a divindade intervém. O Mestre escolhe a natureza da intervenção; o efeito de uma magia de clérigo ou de domínio seria apropriado.
+
+    Se a divindade intervir, não pode usar esse recurso de novo por 7 dias. Caso contrário, pode usá-lo de novo após terminar um descanso longo.
+
+    No 20º nível, seu pedido de intervenção tem sucesso automaticamente, sem rolagem.
+  divine-intervention-improvement: No 20º nível, seu pedido de intervenção tem sucesso automaticamente, sem necessidade de rolagem.
+  divine-sense: |-
+    A presença de um mal forte se manifesta aos seus sentidos como odor nocivo, e um bem poderoso soa como música celestial. Como ação, pode abrir a percepção para detectar tais forças. Até o fim do seu próximo turno, você sabe a localização de qualquer celestial, infernal ou morto-vivo a até 60 pés que não esteja atrás de cobertura total. Você sabe o tipo (celestial, infernal ou morto-vivo) de qualquer ser cuja presença sente, mas não sua identidade. No mesmo raio, também detecta a presença de qualquer lugar ou objeto consagrado ou profanado, como com a magia consagrar.
+
+    Pode usar esse recurso um número de vezes igual a 1 + seu modificador de Carisma. Ao terminar um descanso longo, recupera todos os usos gastos.
+  divine-smite: A partir do 2º nível, ao acertar uma criatura com um ataque corpo a corpo com arma, pode gastar um espaço de magia para causar dano radiante ao alvo, além do dano da arma. O dano extra é 2d8 para um espaço de 1º nível, mais 1d8 para cada nível acima do 1º, até no máximo 5d8. O dano aumenta em 1d8 se o alvo for um morto-vivo ou um infernal.
+  domain-spells-1: |-
+    Cada domínio tem uma lista de magias – as magias de domínio – que você adquire nos níveis especificados pelo seu domínio. Quando você ganha uma magia de domínio, você sempre a tem preparada, e essa magia não conta no número de magias que você pode preparar a cada dia.
+
+    Se você tem uma magia de domínio que não aparece na lista de magias de clérigo, mesmo assim ela é uma magia de clérigo para você.
+  domain-spells-2: |-
+    Cada domínio tem uma lista de magias – as magias de domínio – que você adquire nos níveis especificados pelo seu domínio. Quando você ganha uma magia de domínio, você sempre a tem preparada, e essa magia não conta no número de magias que você pode preparar a cada dia.
+
+    Se você tem uma magia de domínio que não aparece na lista de magias de clérigo, mesmo assim ela é uma magia de clérigo para você.
+  domain-spells-3: |-
+    Cada domínio tem uma lista de magias – as magias de domínio – que você adquire nos níveis especificados pelo seu domínio. Quando você ganha uma magia de domínio, você sempre a tem preparada, e essa magia não conta no número de magias que você pode preparar a cada dia.
+
+    Se você tem uma magia de domínio que não aparece na lista de magias de clérigo, mesmo assim ela é uma magia de clérigo para você.
+  domain-spells-4: |-
+    Cada domínio tem uma lista de magias – as magias de domínio – que você adquire nos níveis especificados pelo seu domínio. Quando você ganha uma magia de domínio, você sempre a tem preparada, e essa magia não conta no número de magias que você pode preparar a cada dia.
+
+    Se você tem uma magia de domínio que não aparece na lista de magias de clérigo, mesmo assim ela é uma magia de clérigo para você.
+  domain-spells-5: |-
+    Cada domínio tem uma lista de magias – as magias de domínio – que você adquire nos níveis especificados pelo seu domínio. Quando você ganha uma magia de domínio, você sempre a tem preparada, e essa magia não conta no número de magias que você pode preparar a cada dia.
+
+    Se você tem uma magia de domínio que não aparece na lista de magias de clérigo, mesmo assim ela é uma magia de clérigo para você.
+  druid-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  druid-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  druid-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  druid-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  druid-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  druid-circle: No 2º nível, você escolhe se identificar com um círculo de druidas, como o Círculo da Terra. Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  druid-circle-improvement-1: No 2º nível, você escolhe se identificar com um círculo de druidas, como o Círculo da Terra. Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  druid-circle-improvement-2: No 2º nível, você escolhe se identificar com um círculo de druidas, como o Círculo da Terra. Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  druid-circle-improvement-3: No 2º nível, você escolhe se identificar com um círculo de druidas, como o Círculo da Terra. Sua escolha concede recursos no 2º nível e novamente no 6º, 10º e 14º níveis.
+  druid-timeless-body: A partir do 18º nível, a magia primordial que você empunha faz você envelhecer mais devagar. A cada 10 anos que passam, seu corpo envelhece apenas 1 ano.
+  druidic: Você conhece o druídico, a língua secreta dos druidas. Pode falar a língua e usá-la para deixar mensagens ocultas. Você e outros que conhecem essa língua percebem automaticamente tal mensagem. Outros percebem a presença da mensagem com um teste bem-sucedido de Sabedoria (Percepção) contra CD 15, mas não a decifram sem magia.
+  eldritch-invocations: |-
+    No estudo de lore oculto, você desenterrou invocações místicas, fragmentos de conhecimento proibido que lhe conferem poder mágico duradouro.
+
+    No 2º nível, você ganha duas invocações místicas à sua escolha. As opções estão detalhadas ao fim da descrição da classe. Ao alcançar certos níveis de bruxo, ganha invocações adicionais à escolha, conforme a coluna Invocações conhecidas da tabela do Bruxo.
+
+    Além disso, ao ganhar um nível nesta classe, pode substituir uma invocação que conhece por outra que pudesse aprender nesse nível.
+  eldritch-master: |-
+    No 20º nível, você pode recorrer à reserva interior de poder místico enquanto implora seu patrono para recuperar espaços de magia gastos. Pode passar 1 minuto suplicando ajuda ao patrono para recuperar todos os espaços gastos do seu recurso Magia de Pacto.
+
+    Depois de recuperar espaços com esse recurso, precisa terminar um descanso longo antes de fazê-lo de novo.
+  elusive: A partir do 18º nível, você é tão evasivo que raramente os atacantes levam vantagem sobre você. Nenhuma rolagem de ataque tem vantagem contra você enquanto você não estiver incapacitado.
+  empty-body: |-
+    A partir do 18º nível, você pode usar sua ação para gastar 4 pontos de ki e ficar invisível por 1 minuto. Nesse período, também tem resistência a todo dano, exceto de força.
+
+    Além disso, pode gastar 8 pontos de ki para conjurar a magia projeção astral sem precisar de componentes materiais. Ao fazê-lo, não pode levar outras criaturas com você.
+  extra-attack-1: A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno. O número de ataques sobe para três ao alcançar o 11º nível nesta classe e para quatro ao alcançar o 20º nível nesta classe.
+  extra-attack-2: A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno. O número de ataques sobe para três ao alcançar o 11º nível nesta classe e para quatro ao alcançar o 20º nível nesta classe.
+  extra-attack-3: A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno. O número de ataques sobe para três ao alcançar o 11º nível nesta classe e para quatro ao alcançar o 20º nível nesta classe.
+  fast-movement: A partir do 5º nível, seu deslocamento aumenta em 3 metros enquanto você não estiver vestindo uma armadura pesada.
+  favored-enemy-1-type: |-
+    A partir do 1º nível, você tem experiência significativa estudando, rastreando, caçando e até conversando com certo tipo de inimigo.
+
+    Escolha um tipo de inimigo favorecido: aberrações, bestas, celestiais, constructos, dragões, elementais, fadas, infernais, gigantes, monstruosidades, lodo, plantas ou mortos-vivos. Em alternativa, pode escolher duas raças de humanoides (como gnolls e orcs) como inimigos favorecidos.
+
+    Você tem vantagem em testes de Sabedoria (Sobrevivência) para rastrear esses inimigos, bem como em testes de Inteligência para recordar informações sobre eles.
+
+    Ao ganhar esse recurso, também aprende uma língua à sua escolha falada pelos inimigos favorecidos, se falarem alguma.
+
+    Você escolhe um inimigo favorecido adicional, bem como uma língua associada, no 6º e no 14º nível. À medida que sobe de nível, suas escolhas devem refletir os tipos de monstros que encontrou nas aventuras.
+  favored-enemy-2-types: |-
+    A partir do 1º nível, você tem experiência significativa estudando, rastreando, caçando e até conversando com certo tipo de inimigo.
+
+    Escolha um tipo de inimigo favorecido: aberrações, bestas, celestiais, constructos, dragões, elementais, fadas, infernais, gigantes, monstruosidades, lodo, plantas ou mortos-vivos. Em alternativa, pode escolher duas raças de humanoides (como gnolls e orcs) como inimigos favorecidos.
+
+    Você tem vantagem em testes de Sabedoria (Sobrevivência) para rastrear esses inimigos, bem como em testes de Inteligência para recordar informações sobre eles.
+
+    Ao ganhar esse recurso, também aprende uma língua à sua escolha falada pelos inimigos favorecidos, se falarem alguma.
+
+    Você escolhe um inimigo favorecido adicional, bem como uma língua associada, no 6º e no 14º nível. À medida que sobe de nível, suas escolhas devem refletir os tipos de monstros que encontrou nas aventuras.
+  favored-enemy-3-enemies: |-
+    A partir do 1º nível, você tem experiência significativa estudando, rastreando, caçando e até conversando com certo tipo de inimigo.
+
+    Escolha um tipo de inimigo favorecido: aberrações, bestas, celestiais, constructos, dragões, elementais, fadas, infernais, gigantes, monstruosidades, lodo, plantas ou mortos-vivos. Em alternativa, pode escolher duas raças de humanoides (como gnolls e orcs) como inimigos favorecidos.
+
+    Você tem vantagem em testes de Sabedoria (Sobrevivência) para rastrear esses inimigos, bem como em testes de Inteligência para recordar informações sobre eles.
+
+    Ao ganhar esse recurso, também aprende uma língua à sua escolha falada pelos inimigos favorecidos, se falarem alguma.
+
+    Você escolhe um inimigo favorecido adicional, bem como uma língua associada, no 6º e no 14º nível. À medida que sobe de nível, suas escolhas devem refletir os tipos de monstros que encontrou nas aventuras.
+  feral-instinct: |-
+    No 7º nível, seu instinto está tão apurado que você recebe vantagem nas jogadas de iniciativa.
+
+    Além disso, se você estiver surpreso no começo de um combate e não estiver incapacitado, você pode agir normalmente no seu primeiro turno, mas apenas se você entrar em fúria antes de realizar qualquer outra coisa neste turno.
+  feral-senses: |-
+    No 18º nível, você ganha sentidos preternaturais que ajudam a lutar contra criaturas que não vê. Ao atacar uma criatura que não vê, sua incapacidade de vê-la não impõe desvantagem nas rolagens de ataque contra ela.
+
+    Também fica ciente da posição de qualquer criatura invisível a até 30 pés de você, desde que a criatura não esteja escondida de você e você não esteja cego nem surdo.
+  fighter-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  fighter-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  fighter-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  fighter-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  fighter-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  fighter-ability-score-improvement-6: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  fighter-ability-score-improvement-7: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  fighter-fighting-style: Você adota um estilo de combate como especialidade. Escolha uma das opções a seguir. Não pode escolher a mesma opção de Estilo de Combate mais de uma vez, mesmo que possa escolher de novo mais tarde.
+  flexible-casting-converting-spell-slot: Como ação bônus no seu turno, você pode gastar um espaço de magia e receber um número de pontos de feitiçaria igual ao nível desse espaço.
+  flexible-casting-creating-spell-slots: |-
+    Você pode transformar pontos de feitiçaria não gastos em um espaço de magia como ação bônus no seu turno. A tabela Criar Espaços de Magia mostra o custo para criar um espaço de determinado nível. Você pode criar espaços de magia de até 5º nível.
+
+    Qualquer espaço criado com esse recurso desaparece quando você termina um descanso longo.
+  flurry-of-blows: Imediatamente depois de usar a ação Atacar no seu turno, você pode gastar 1 ponto de ki para realizar dois ataques desarmados como ação bônus.
+  foe-slayer: No 20º nível, você se torna um caçador incomparável de seus inimigos. Uma vez em cada um dos seus turnos, pode somar seu modificador de Sabedoria à rolagem de ataque ou à rolagem de dano de um ataque que fizer contra um de seus inimigos favorecidos. Pode usar esse recurso antes ou depois da rolagem, mas antes de quaisquer efeitos da rolagem serem aplicados.
+  font-of-inspiration: A partir do 5º nível, você recupera todos os usos gastos de Inspiração de Bardo quando termina um descanso curto ou longo.
+  font-of-magic: |-
+    No 2º nível, você acessa um poço profundo de magia interior. Esse poço é representado por pontos de feitiçaria, que permitem criar vários efeitos mágicos.
+
+    Pontos de feitiçaria
+
+    Você tem 2 pontos de feitiçaria e ganha mais ao alcançar níveis mais altos, conforme a coluna Pontos de feitiçaria da tabela do Feiticeiro. Nunca pode ter mais pontos de feitiçaria do que o indicado na tabela para seu nível. Recupera todos os pontos gastos ao terminar um descanso longo.
+  hide-in-plain-sight: |-
+    A partir do 10º nível, pode passar 1 minuto criando camuflagem para si. Precisa ter acesso a lama fresca, terra, plantas, fuligem e outros materiais naturais para isso.
+
+    Depois de camuflado assim, pode tentar se esconder encostando-se a uma superfície sólida, como árvore ou parede, pelo menos tão alta e larga quanto você. Recebe +10 em testes de Destreza (Furtividade) enquanto permanecer imóvel e não realizar ações. Ao se mover ou realizar uma ação ou reação, precisa se camuflar de novo para receber o benefício.
+  improved-divine-smite: No 11º nível, você está tão imbuído de poder justo que todos os seus golpes corpo a corpo com arma carregam energia divina. Sempre que acertar uma criatura com um ataque corpo a corpo com arma, ela sofre 1d8 de dano radiante extra. Se também usar Golpe Divino no ataque, some esse dano ao dano extra do Golpe Divino.
+  indomitable-1-use: A partir do 9º nível, você pode rolar de novo um teste de resistência em que tenha falhado. Se o fizer, deve usar o novo resultado, e não pode usar esse recurso de novo até terminar um descanso longo. Pode usá-lo duas vezes entre descansos longos a partir do 13º nível e três vezes entre descansos longos a partir do 17º nível.
+  indomitable-2-uses: A partir do 9º nível, você pode rolar de novo um teste de resistência em que tenha falhado. Se o fizer, deve usar o novo resultado, e não pode usar esse recurso de novo até terminar um descanso longo. Pode usá-lo duas vezes entre descansos longos a partir do 13º nível e três vezes entre descansos longos a partir do 17º nível.
+  indomitable-3-uses: A partir do 9º nível, você pode rolar de novo um teste de resistência em que tenha falhado. Se o fizer, deve usar o novo resultado, e não pode usar esse recurso de novo até terminar um descanso longo. Pode usá-lo duas vezes entre descansos longos a partir do 13º nível e três vezes entre descansos longos a partir do 17º nível.
+  indomitable-might: A partir do 18º nível, se o total de um teste de Força seu for menor que o seu valor de Força, você pode usar esse valor no lugar do resultado.
+  jack-of-all-trades: A partir do 2º nível, você pode somar metade do seu bônus de proficiência, arredondado para baixo, a qualquer teste de atributo que ainda não inclua seu bônus de proficiência.
+  ki: |-
+    A partir do 2º nível, seu treinamento permite canalizar a energia mística do ki. Seu acesso a essa energia é representado por pontos de ki. Seu nível de monge determina quantos pontos você tem, conforme a coluna Pontos de ki da tabela do Monge.
+
+    Você pode gastar esses pontos para alimentar vários recursos de ki. Começa sabendo três: Rajada de Golpes, Defesa Paciente e Passo do Vento. Aprende mais conforme ganha níveis nesta classe.
+
+    Ao gastar um ponto de ki, ele fica indisponível até terminar um descanso curto ou longo, quando recobra todos os pontos gastos meditando pelo menos 30 minutos do descanso.
+
+    Alguns recursos de ki exigem que o alvo faça teste de resistência. A CD do teste é calculada assim:
+
+    CD do ki = 8 + seu bônus de proficiência + seu modificador de Sabedoria
+  ki-empowered-strikes: A partir do 6º nível, seus ataques desarmados contam como mágicos para superar resistência e imunidade a ataques e dano não mágicos.
+  lay-on-hands: |-
+    Seu toque abençoado pode curar ferimentos. Você tem um reservatório de cura que se renova quando faz um descanso longo. Com esse reservatório, pode restaurar um total de pontos de vida igual ao seu nível de paladino × 5.
+
+    Como ação, pode tocar uma criatura e retirar poder do reservatório para restaurar pontos de vida a ela, até o máximo que restar no reservatório.
+
+    Em alternativa, pode gastar 5 pontos de vida do reservatório para curar a criatura de uma doença ou neutralizar um veneno que a aflige. Pode curar várias doenças e neutralizar vários venenos num único uso de Imposição de Mãos, gastando PV do reservatório separadamente para cada um.
+
+    Esse recurso não afeta mortos-vivos nem constructos.
+  magical-secrets-1: |-
+    No 10º nível, você colheu conhecimento mágico de ampla variedade de disciplinas. Escolha duas magias de qualquer classe, inclusive esta. Cada magia escolhida deve ser de um nível que você possa conjurar, conforme a tabela do Bardo, ou um truque.
+
+    As magias escolhidas contam como magias de bardo para você e entram no número da coluna Magias Conhecidas da tabela do Bardo.
+
+    Você aprende duas magias adicionais de qualquer classe no 14º nível e de novo no 18º nível.
+  magical-secrets-2: |-
+    No 10º nível, você colheu conhecimento mágico de ampla variedade de disciplinas. Escolha duas magias de qualquer classe, inclusive esta. Cada magia escolhida deve ser de um nível que você possa conjurar, conforme a tabela do Bardo, ou um truque.
+
+    As magias escolhidas contam como magias de bardo para você e entram no número da coluna Magias Conhecidas da tabela do Bardo.
+
+    Você aprende duas magias adicionais de qualquer classe no 14º nível e de novo no 18º nível.
+  magical-secrets-3: |-
+    No 10º nível, você colheu conhecimento mágico de ampla variedade de disciplinas. Escolha duas magias de qualquer classe, inclusive esta. Cada magia escolhida deve ser de um nível que você possa conjurar, conforme a tabela do Bardo, ou um truque.
+
+    As magias escolhidas contam como magias de bardo para você e entram no número da coluna Magias Conhecidas da tabela do Bardo.
+
+    Você aprende duas magias adicionais de qualquer classe no 14º nível e de novo no 18º nível.
+  martial-archetype: No 3º nível, você escolhe um arquétipo que busca emular em estilos e técnicas de combate, como o Campeão. O arquétipo concede recursos no 3º nível e novamente no 7º, 10º, 15º e 18º níveis.
+  martial-archetype-improvement-1: No 3º nível, você escolhe um arquétipo que busca emular em estilos e técnicas de combate, como o Campeão. O arquétipo concede recursos no 3º nível e novamente no 7º, 10º, 15º e 18º níveis.
+  martial-archetype-improvement-2: No 3º nível, você escolhe um arquétipo que busca emular em estilos e técnicas de combate, como o Campeão. O arquétipo concede recursos no 3º nível e novamente no 7º, 10º, 15º e 18º níveis.
+  martial-archetype-improvement-3: No 3º nível, você escolhe um arquétipo que busca emular em estilos e técnicas de combate, como o Campeão. O arquétipo concede recursos no 3º nível e novamente no 7º, 10º, 15º e 18º níveis.
+  martial-archetype-improvement-4: No 3º nível, você escolhe um arquétipo que busca emular em estilos e técnicas de combate, como o Campeão. O arquétipo concede recursos no 3º nível e novamente no 7º, 10º, 15º e 18º níveis.
+  martial-arts: |-
+    No 1º nível, sua prática de artes marciais lhe dá maestria em estilos de combate que usam ataques desarmados e armas de monge, que são espadas curtas e quaisquer armas corpo a corpo simples que não tenham as propriedades duas mãos ou pesada.
+
+    Você recebe os benefícios a seguir enquanto estiver desarmado ou empunhando apenas armas de monge e não estiver usando armadura nem escudo:
+
+    - Pode usar Destreza em vez de Força nas rolagens de ataque e dano de ataques desarmados e armas de monge.
+
+    - Pode rolar um d4 no lugar do dano normal do ataque desarmado ou da arma de monge. Esse dado muda conforme sobe de nível de monge, conforme a coluna Artes marciais da tabela do Monge.
+
+    - Ao usar a ação Atacar com ataque desarmado ou arma de monge no seu turno, pode realizar um ataque desarmado como ação bônus. Por exemplo, se usar a ação Atacar com um bordão, também pode dar um ataque desarmado como ação bônus, desde que ainda não tenha usado ação bônus nesse turno.
+
+    Certos mosteiros usam formas especializadas de armas de monge. Por exemplo, pode usar um porrete de duas hastes ligadas por corrente curta (nunchaku) ou uma foice com lâmina mais curta e reta (kama). Seja qual for o nome da arma de monge, use as estatísticas de jogo fornecidas para a arma.
+  metamagic-1: |-
+    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamagia à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
+
+    Só pode usar uma opção de Metamagia em uma magia ao conjurá-la, salvo indicação em contrário.
+  metamagic-2: |-
+    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamagia à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
+
+    Só pode usar uma opção de Metamagia em uma magia ao conjurá-la, salvo indicação em contrário.
+  metamagic-3: |-
+    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamagia à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
+
+    Só pode usar uma opção de Metamagia em uma magia ao conjurá-la, salvo indicação em contrário.
+  monastic-tradition: Quando alcança o 3º nível, você se dedica a uma tradição monástica, como o Caminho da Palma Aberta. Sua tradição concede recursos no 3º nível e novamente no 6º, 11º e 17º níveis.
+  monastic-tradition-improvement-1: Quando alcança o 3º nível, você se dedica a uma tradição monástica, como o Caminho da Palma Aberta. Sua tradição concede recursos no 3º nível e novamente no 6º, 11º e 17º níveis.
+  monastic-tradition-improvement-2: Quando alcança o 3º nível, você se dedica a uma tradição monástica, como o Caminho da Palma Aberta. Sua tradição concede recursos no 3º nível e novamente no 6º, 11º e 17º níveis.
+  monastic-tradition-improvement-3: Quando alcança o 3º nível, você se dedica a uma tradição monástica, como o Caminho da Palma Aberta. Sua tradição concede recursos no 3º nível e novamente no 6º, 11º e 17º níveis.
+  monk-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  monk-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  monk-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  monk-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  monk-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  monk-evasion: No 7º nível, sua agilidade instintiva permite escapar de certos efeitos de área, como o sopro elétrico de um dragão azul ou a magia bola de fogo. Quando sofrer um efeito que permita um teste de resistência de Destreza para sofrer apenas metade do dano, em vez disso não sofre dano algum se passar no teste, e sofre apenas metade se falhar.
+  monk-extra-attack: A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno.
+  monk-timeless-body: No 15º nível, seu ki o sustenta de modo que você não sofre a fragilidade da velhice e não pode envelhecer por magia. Ainda pode morrer de velhice, porém. Além disso, não precisa mais de comida nem água.
+  monk-unarmored-defense: A partir do 1º nível, enquanto não estiver usando armadura nem empunhando um escudo, sua CA é 10 + seu modificador de Destreza + seu modificador de Sabedoria.
+  mystic-arcanum-6th-level: |-
+    No 11º nível, seu patrono lhe confere um segredo mágico chamado arcano místico. Escolha uma magia de 6º nível da lista do bruxo como esse arcano.
+
+    Pode conjurar sua magia de arcano uma vez sem gastar espaço de magia. Precisa terminar um descanso longo antes de fazê-lo de novo.
+
+    Em níveis mais altos, ganha mais magias de bruxo à escolha que podem ser conjuradas assim: uma de 7º nível no 13º, uma de 8º nível no 15º e uma de 9º nível no 17º. Recupera todos os usos do Arcano Místico ao terminar um descanso longo.
+  mystic-arcanum-7th-level: |-
+    No 11º nível, seu patrono lhe confere um segredo mágico chamado arcano místico. Escolha uma magia de 6º nível da lista do bruxo como esse arcano.
+
+    Pode conjurar sua magia de arcano uma vez sem gastar espaço de magia. Precisa terminar um descanso longo antes de fazê-lo de novo.
+
+    Em níveis mais altos, ganha mais magias de bruxo à escolha que podem ser conjuradas assim: uma de 7º nível no 13º, uma de 8º nível no 15º e uma de 9º nível no 17º. Recupera todos os usos do Arcano Místico ao terminar um descanso longo.
+  mystic-arcanum-8th-level: |-
+    No 11º nível, seu patrono lhe confere um segredo mágico chamado arcano místico. Escolha uma magia de 6º nível da lista do bruxo como esse arcano.
+
+    Pode conjurar sua magia de arcano uma vez sem gastar espaço de magia. Precisa terminar um descanso longo antes de fazê-lo de novo.
+
+    Em níveis mais altos, ganha mais magias de bruxo à escolha que podem ser conjuradas assim: uma de 7º nível no 13º, uma de 8º nível no 15º e uma de 9º nível no 17º. Recupera todos os usos do Arcano Místico ao terminar um descanso longo.
+  mystic-arcanum-9th-level: |-
+    No 11º nível, seu patrono lhe confere um segredo mágico chamado arcano místico. Escolha uma magia de 6º nível da lista do bruxo como esse arcano.
+
+    Pode conjurar sua magia de arcano uma vez sem gastar espaço de magia. Precisa terminar um descanso longo antes de fazê-lo de novo.
+
+    Em níveis mais altos, ganha mais magias de bruxo à escolha que podem ser conjuradas assim: uma de 7º nível no 13º, uma de 8º nível no 15º e uma de 9º nível no 17º. Recupera todos os usos do Arcano Místico ao terminar um descanso longo.
+  natural-explorer-1-terrain-type: |-
+    Você conhece bem um tipo de ambiente natural e é hábil em viajar e sobreviver nessas regiões. Escolha um tipo de terreno favorecido: ártico, costa, deserto, floresta, planície, montanha ou pântano. Ao fazer um teste de Inteligência ou Sabedoria relacionado ao terreno favorecido, seu bônus de proficiência é dobrado se estiver usando uma perícia em que é proficiente.
+
+    Enquanto viaja por uma hora ou mais em terreno favorecido, recebe os benefícios a seguir:
+
+    - Terreno difícil não reduz o deslocamento do grupo.
+
+    - O grupo não se perde exceto por meios mágicos.
+
+    - Mesmo ocupado com outra atividade durante a viagem (como forragear, navegar ou rastrear), você permanece alerta ao perigo.
+
+    - Se viajar sozinho, pode se mover furtivamente em ritmo normal.
+
+    - Ao forragear, encontra o dobro de comida do habitual.
+
+    - Ao rastrear outras criaturas, também descobre o número exato delas, os tamanhos e há quanto tempo passaram pela área.
+
+    Você escolhe tipos adicionais de terreno favorecido no 6º e no 10º nível.
+  natural-explorer-2-terrain-types: |-
+    Você conhece bem um tipo de ambiente natural e é hábil em viajar e sobreviver nessas regiões. Escolha um tipo de terreno favorecido: ártico, costa, deserto, floresta, planície, montanha ou pântano. Ao fazer um teste de Inteligência ou Sabedoria relacionado ao terreno favorecido, seu bônus de proficiência é dobrado se estiver usando uma perícia em que é proficiente.
+
+    Enquanto viaja por uma hora ou mais em terreno favorecido, recebe os benefícios a seguir:
+
+    - Terreno difícil não reduz o deslocamento do grupo.
+
+    - O grupo não se perde exceto por meios mágicos.
+
+    - Mesmo ocupado com outra atividade durante a viagem (como forragear, navegar ou rastrear), você permanece alerta ao perigo.
+
+    - Se viajar sozinho, pode se mover furtivamente em ritmo normal.
+
+    - Ao forragear, encontra o dobro de comida do habitual.
+
+    - Ao rastrear outras criaturas, também descobre o número exato delas, os tamanhos e há quanto tempo passaram pela área.
+
+    Você escolhe tipos adicionais de terreno favorecido no 6º e no 10º nível.
+  natural-explorer-3-terrain-types: |-
+    Você conhece bem um tipo de ambiente natural e é hábil em viajar e sobreviver nessas regiões. Escolha um tipo de terreno favorecido: ártico, costa, deserto, floresta, planície, montanha ou pântano. Ao fazer um teste de Inteligência ou Sabedoria relacionado ao terreno favorecido, seu bônus de proficiência é dobrado se estiver usando uma perícia em que é proficiente.
+
+    Enquanto viaja por uma hora ou mais em terreno favorecido, recebe os benefícios a seguir:
+
+    - Terreno difícil não reduz o deslocamento do grupo.
+
+    - O grupo não se perde exceto por meios mágicos.
+
+    - Mesmo ocupado com outra atividade durante a viagem (como forragear, navegar ou rastrear), você permanece alerta ao perigo.
+
+    - Se viajar sozinho, pode se mover furtivamente em ritmo normal.
+
+    - Ao forragear, encontra o dobro de comida do habitual.
+
+    - Ao rastrear outras criaturas, também descobre o número exato delas, os tamanhos e há quanto tempo passaram pela área.
+
+    Você escolhe tipos adicionais de terreno favorecido no 6º e no 10º nível.
+  oath-spells: |-
+    Cada juramento tem uma lista de magias associadas. Você recebe acesso a essas magias nos níveis indicados na descrição do juramento. Depois de ganhar acesso a uma magia de juramento, você sempre a tem preparada. Magias de juramento não contam contra o número de magias que pode preparar por dia.
+
+    Se ganhar uma magia de juramento que não consta na lista de magias de paladino, a magia ainda conta como magia de paladino para você.
+  otherworldly-patron: No 1º nível, você firmou um pacto com um ser de outro mundo à sua escolha, como o Infernal. Sua escolha concede recursos no 1º nível e novamente no 6º, 10º e 14º níveis.
+  otherworldly-patron-improvement-1: No 1º nível, você firmou um pacto com um ser de outro mundo à sua escolha, como o Infernal. Sua escolha concede recursos no 1º nível e novamente no 6º, 10º e 14º níveis.
+  otherworldly-patron-improvement-2: No 1º nível, você firmou um pacto com um ser de outro mundo à sua escolha, como o Infernal. Sua escolha concede recursos no 1º nível e novamente no 6º, 10º e 14º níveis.
+  otherworldly-patron-improvement-3: No 1º nível, você firmou um pacto com um ser de outro mundo à sua escolha, como o Infernal. Sua escolha concede recursos no 1º nível e novamente no 6º, 10º e 14º níveis.
+  pact-boon: No 3º nível, seu patrono de outro mundo concede um presente pelo seu serviço leal. Você ganha um dos seguintes recursos, à sua escolha.
+  pact-magic: Sua pesquisa arcana e a magia concedida por seu patrono lhe deram facilidade com magias.
+  paladin-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  paladin-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  paladin-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  paladin-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  paladin-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  paladin-extra-attack: A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno.
+  paladin-fighting-style: No 2º nível, você adota um estilo de combate como especialidade. Escolha uma das opções a seguir. Não pode escolher a mesma opção de Estilo de Combate mais de uma vez, mesmo que possa escolher de novo mais tarde.
+  patient-defense: Você pode gastar 1 ponto de ki para usar a ação Esquivar como ação bônus no seu turno.
+  perfect-self: No 20º nível, quando você rola iniciativa e não tem pontos de ki restantes, recupera 4 pontos de ki.
+  persistent-rage: A partir do 15º nível, sua fúria é tão brutal que ela só termina prematuramente se você cair inconsciente ou se você decidir terminá-la.
+  primal-champion: No 20º nível, você incorpora os poderes da natureza. Seus valores de Força e Constituição aumentam em 4. Seu máximo para esses valores agora é 24.
+  primal-path: No 3º nível, você escolhe um caminho que molda a natureza da sua fúria. Escolha o Caminho do Berserker ou o Caminho do Guerreiro Totêmico, ambos detalhados ao fim da descrição da classe. Sua escolha concede recursos no 3º nível e novamente nos níveis 6, 10 e 14.
+  primal-path-improvement-1: No 3º nível, você escolhe um caminho que molda a natureza da sua fúria. Escolha o Caminho do Berserker ou o Caminho do Guerreiro Totêmico, ambos detalhados ao fim da descrição da classe. Sua escolha concede recursos no 3º nível e novamente nos níveis 6, 10 e 14.
+  primal-path-improvement-2: No 3º nível, você escolhe um caminho que molda a natureza da sua fúria. Escolha o Caminho do Berserker ou o Caminho do Guerreiro Totêmico, ambos detalhados ao fim da descrição da classe. Sua escolha concede recursos no 3º nível e novamente nos níveis 6, 10 e 14.
+  primal-path-improvement-3: No 3º nível, você escolhe um caminho que molda a natureza da sua fúria. Escolha o Caminho do Berserker ou o Caminho do Guerreiro Totêmico, ambos detalhados ao fim da descrição da classe. Sua escolha concede recursos no 3º nível e novamente nos níveis 6, 10 e 14.
+  primeval-awareness: 'A partir do 3º nível, você pode usar sua ação e gastar um espaço de magia de patrulheiro para focar a percepção na região ao redor. Por 1 minuto por nível do espaço gasto, pode sentir se os seguintes tipos de criaturas estão presentes em até 1 milha de você (ou até 6 milhas se estiver em terreno favorecido): aberrações, celestiais, dragões, elementais, fadas, infernais e mortos-vivos. O recurso não revela localização nem quantidade.'
+  purity-of-body: No 10º nível, sua maestria sobre o ki que percorre você torna você imune a doenças e veneno.
+  rage: |-
+    Em batalha, você luta com uma ferocidade primitiva. No seu turno, você pode entrar em fúria com uma ação bônus.
+
+    Enquanto estiver em fúria, você recebe os seguintes benefícios se você não estiver vestindo uma armadura pesada:
+    • Você tem vantagem em testes de Força e testes de resistência de Força.
+    • Quando você desferir um ataque com arma corpo a corpo usando Força, você recebe um bônus nas jogadas de dano que aumenta à medida que você adquire níveis de bárbaro, como mostrado na coluna Dano de Fúria na tabela O Bárbaro.
+    • Você possui resistência contra dano de concussão, cortante e perfurante.
+
+    Se você for capaz de conjurar magias, você não poderá conjurá-las ou se concentrar nelas enquanto estiver em fúria.
+
+    Sua fúria dura por 1 minuto. Ela termina prematuramente se você cair inconsciente ou se seu turno acabar e você não tiver atacado nenhuma criatura hostil desde seu último turno ou tiver sofrido dano nesse período. Você também pode terminar sua fúria no seu turno com uma ação bônus.
+
+    Quando você tiver usado a quantidade de fúrias mostrada para o seu nível de bárbaro na coluna Fúrias da tabela O Bárbaro, você precisará terminar um descanso longo antes de poder entrar em fúria novamente.
+  ranger-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  ranger-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  ranger-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  ranger-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  ranger-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  ranger-archetype: No 3º nível, você escolhe um arquétipo que busca emular, como o Caçador. Sua escolha concede recursos no 3º nível e novamente no 7º, 11º e 15º níveis.
+  ranger-archetype-improvement-1: No 3º nível, você escolhe um arquétipo que busca emular, como o Caçador. Sua escolha concede recursos no 3º nível e novamente no 7º, 11º e 15º níveis.
+  ranger-archetype-improvement-2: No 3º nível, você escolhe um arquétipo que busca emular, como o Caçador. Sua escolha concede recursos no 3º nível e novamente no 7º, 11º e 15º níveis.
+  ranger-archetype-improvement-3: No 3º nível, você escolhe um arquétipo que busca emular, como o Caçador. Sua escolha concede recursos no 3º nível e novamente no 7º, 11º e 15º níveis.
+  ranger-extra-attack: A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno.
+  ranger-fighting-style: No 2º nível, você adota um estilo de combate particular como especialidade. Escolha uma das opções a seguir. Não pode escolher a mesma opção de Estilo de Combate mais de uma vez, mesmo que possa escolher de novo mais tarde.
+  ranger-lands-stride: |-
+    A partir do 8º nível, mover-se por terreno difícil não mágico não custa movimento extra. Também pode atravessar plantas não mágicas sem ser desacelerado por elas e sem sofrer dano de espinhos, farpas ou perigos semelhantes.
+
+    Além disso, tem vantagem em testes de resistência contra plantas criadas ou manipuladas magicamente para atrapalhar o deslocamento, como as criadas pela magia enredar.
+  reckless-attack: A partir do 2º nível, você pode desistir de toda preocupação com sua defesa para atacar com um desespero feroz. Quando você fizer o seu primeiro ataque no turno, você pode decidir atacar descuidadamente. Fazer isso lhe concede vantagem nas jogadas de ataque com armas corpo a corpo usando Força durante seu turno; porém, as jogadas de ataque feitas contra você possuem vantagem até o início do seu próximo turno.
+  relentless-rage: |-
+    A partir do 11º nível, sua fúria pode manter você lutando independentente da gravidade dos seus ferimentos. Se você cair para 0 pontos de vida enquanto estiver em fúria e não morrer, você pode realizar um teste de resistência de Constituição CD 10. Se você for bem sucedido, você volta para 1 ponto de vida ao invés disso.
+
+    Cada vez que você utilizar essa característica após a primeira, a CD aumenta em 5. Assim que você terminar um descanso curto ou longo a CD volta para 10.
+  reliable-talent: No 11º nível, você refinou as perícias escolhidas até quase a perfeição. Sempre que fizer um teste de atributo que permita somar seu bônus de proficiência, pode tratar um resultado de d20 de 9 ou menos como 10.
+  rogue-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  rogue-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  rogue-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  rogue-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  rogue-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  rogue-ability-score-improvement-6: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  rogue-evasion: A partir do 7º nível, você pode escapar com agilidade de certos efeitos de área, como o sopro flamejante de um dragão vermelho ou a magia tempestade de gelo. Quando sofrer um efeito que permita um teste de resistência de Destreza para sofrer apenas metade do dano, em vez disso não sofre dano algum se passar no teste, e sofre apenas metade se falhar.
+  rogue-expertise-1: |-
+    No 1º nível, escolha duas perícias nas quais é proficiente, ou uma perícia e proficiência com ferramentas de ladrão. Seu bônus de proficiência é dobrado em qualquer teste de atributo que use uma dessas proficiências.
+
+    No 6º nível, pode escolher mais duas proficiências (em perícias ou com ferramentas de ladrão) para receber esse benefício.
+  rogue-expertise-2: |-
+    No 1º nível, escolha duas perícias nas quais é proficiente, ou uma perícia e proficiência com ferramentas de ladrão. Seu bônus de proficiência é dobrado em qualquer teste de atributo que use uma dessas proficiências.
+
+    No 6º nível, pode escolher mais duas proficiências (em perícias ou com ferramentas de ladrão) para receber esse benefício.
+  roguish-archetype: No 3º nível, você escolhe um arquétipo que emula no exercício de suas habilidades de ladino, como o Ladrão. Outros arquétipos aparecem no material-fonte original. Sua escolha concede recursos no 3º nível e de novo no 9º, 13º e 17º níveis.
+  roguish-archetype-improvement-1: No 3º nível, você escolhe um arquétipo que emula no exercício de suas habilidades de ladino, como o Ladrão. Outros arquétipos aparecem no material-fonte original. Sua escolha concede recursos no 3º nível e de novo no 9º, 13º e 17º níveis.
+  roguish-archetype-improvement-2: No 3º nível, você escolhe um arquétipo que emula no exercício de suas habilidades de ladino, como o Ladrão. Outros arquétipos aparecem no material-fonte original. Sua escolha concede recursos no 3º nível e de novo no 9º, 13º e 17º níveis.
+  roguish-archetype-improvement-3: No 3º nível, você escolhe um arquétipo que emula no exercício de suas habilidades de ladino, como o Ladrão. Outros arquétipos aparecem no material-fonte original. Sua escolha concede recursos no 3º nível e de novo no 9º, 13º e 17º níveis.
+  sacred-oath: |-
+    Quando alcança o 3º nível, você presta o juramento que o vincula como paladino para sempre. Até então esteve em fase preparatória, comprometido com o caminho mas ainda sem jurar. Agora escolhe um juramento, como o Juramento de Devoção.
+
+    Sua escolha concede recursos no 3º nível e novamente no 7º, 15º e 20º níveis. Esses recursos incluem magias de juramento e o recurso Canalizar Divindade.
+  sacred-oath-improvement-1: |-
+    Quando alcança o 3º nível, você presta o juramento que o vincula como paladino para sempre. Até então esteve em fase preparatória, comprometido com o caminho mas ainda sem jurar. Agora escolhe um juramento, como o Juramento de Devoção.
+
+    Sua escolha concede recursos no 3º nível e novamente no 7º, 15º e 20º níveis. Esses recursos incluem magias de juramento e o recurso Canalizar Divindade.
+  sacred-oath-improvement-2: |-
+    Quando alcança o 3º nível, você presta o juramento que o vincula como paladino para sempre. Até então esteve em fase preparatória, comprometido com o caminho mas ainda sem jurar. Agora escolhe um juramento, como o Juramento de Devoção.
+
+    Sua escolha concede recursos no 3º nível e novamente no 7º, 15º e 20º níveis. Esses recursos incluem magias de juramento e o recurso Canalizar Divindade.
+  sacred-oath-improvement-3: |-
+    Quando alcança o 3º nível, você presta o juramento que o vincula como paladino para sempre. Até então esteve em fase preparatória, comprometido com o caminho mas ainda sem jurar. Agora escolhe um juramento, como o Juramento de Devoção.
+
+    Sua escolha concede recursos no 3º nível e novamente no 7º, 15º e 20º níveis. Esses recursos incluem magias de juramento e o recurso Canalizar Divindade.
+  second-wind: Você dispõe de uma reserva limitada de fôlego para se proteger de danos. No seu turno, pode usar uma ação bônus para recuperar pontos de vida iguais a 1d10 + seu nível de guerreiro. Depois de usar esse recurso, precisa terminar um descanso curto ou longo antes de usá-lo de novo.
+  signature-spell: |-
+    Quando alcança o 20º nível, você domina duas magias poderosas e pode conjurá-las com pouco esforço. Escolha duas magias de mago de 3º nível no grimório como magias assinatura. Você sempre as tem preparadas, elas não contam contra o número de magias preparadas, e pode conjurar cada uma uma vez em 3º nível sem gastar espaço de magia. Depois de fazê-lo, não pode repetir até terminar um descanso curto ou longo.
+
+    Para conjurar em nível superior, precisa gastar espaço de magia normalmente.
+  slippery-mind: No 15º nível, você adquiriu maior fortaleza mental. Você ganha proficiência em testes de resistência de Sabedoria.
+  slow-fall: A partir do 4º nível, você pode usar sua reação ao cair para reduzir qualquer dano de queda que sofra em um valor igual a cinco vezes seu nível de monge.
+  sneak-attack: |-
+    A partir do 1º nível, você sabe como golpear com sutileza e aproveitar a distração do inimigo. Uma vez por turno, pode causar 1d6 de dano extra a uma criatura que acertar com um ataque se tiver vantagem na rolagem de ataque. O ataque deve usar uma arma de acuidade ou à distância.
+
+    Não precisa de vantagem na rolagem se outro inimigo do alvo estiver a 5 pés dele, esse inimigo não estiver incapacitado e você não tiver desvantagem na rolagem.
+
+    O dano extra aumenta conforme seu nível nesta classe, conforme a coluna Ataque Furtivo da tabela do Ladino.
+  song-of-rest-d10: |-
+    A partir do 2º nível, você pode usar música calmante ou discurso para ajudar aliados feridos durante um descanso curto. Se você ou criaturas aliadas que ouçam sua apresentação recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma dessas criaturas recupera 1d6 pontos de vida a mais.
+
+    Os PV extras aumentam em certos níveis nesta classe: para 1d8 no 9º nível, 1d10 no 13º nível e 1d12 no 17º nível.
+  song-of-rest-d12: |-
+    A partir do 2º nível, você pode usar música calmante ou discurso para ajudar aliados feridos durante um descanso curto. Se você ou criaturas aliadas que ouçam sua apresentação recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma dessas criaturas recupera 1d6 pontos de vida a mais.
+
+    Os PV extras aumentam em certos níveis nesta classe: para 1d8 no 9º nível, 1d10 no 13º nível e 1d12 no 17º nível.
+  song-of-rest-d6: |-
+    A partir do 2º nível, você pode usar música calmante ou discurso para ajudar aliados feridos durante um descanso curto. Se você ou criaturas aliadas que ouçam sua apresentação recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma dessas criaturas recupera 1d6 pontos de vida a mais.
+
+    Os PV extras aumentam em certos níveis nesta classe: para 1d8 no 9º nível, 1d10 no 13º nível e 1d12 no 17º nível.
+  song-of-rest-d8: |-
+    A partir do 2º nível, você pode usar música calmante ou discurso para ajudar aliados feridos durante um descanso curto. Se você ou criaturas aliadas que ouçam sua apresentação recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma dessas criaturas recupera 1d6 pontos de vida a mais.
+
+    Os PV extras aumentam em certos níveis nesta classe: para 1d8 no 9º nível, 1d10 no 13º nível e 1d12 no 17º nível.
+  sorcerer-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  sorcerer-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  sorcerer-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  sorcerer-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  sorcerer-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  sorcerous-origin: |-
+    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+
+    Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
+  sorcerous-origin-improvement-1: |-
+    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+
+    Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
+  sorcerous-origin-improvement-2: |-
+    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+
+    Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
+  sorcerous-origin-improvement-3: |-
+    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+
+    Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
+  sorcerous-restoration: No 20º nível, você recupera 4 pontos de feitiçaria gastos sempre que terminar um descanso curto.
+  spell-mastery: |-
+    No 18º nível, você alcançou maestria tal sobre certas magias que pode conjurá-las à vontade. Escolha uma magia de mago de 1º nível e uma de 2º nível que estejam no seu grimório. Pode conjurá-las em seu nível mínimo sem gastar espaço de magia quando as tiver preparadas. Para conjurar em nível superior, precisa gastar espaço de magia normalmente.
+
+    Ao passar 8 horas em estudo, pode trocar uma ou ambas as magias escolhidas por outras do mesmo nível.
+  spellcasting-bard: Você aprendeu a desembaraçar e remodelar o tecido da realidade em harmonia com seus desejos e sua música. Suas magias fazem parte de seu vasto repertório, magia que você pode ajustar a situações diferentes.
+  spellcasting-cleric: |-
+    Como um canalizador de poder divino, você pode conjurar magias de clérigo. Veja o capítulo 10 para as regras gerais de conjuração e o capítulo 11 para a lista de magias de clérigo.
+
+    Truques
+    Você conhece três truques, à sua escolha, da lista de magias de clérigo. Você aprende truques de clérigo adicionais, à sua escolha, em níveis mais altos, como mostrado na coluna Truques Conhecidos da tabela O Clérigo.
+
+    Preparando e conjurando magias
+    A tabela O Clérigo mostra quantos espaços de magia você tem para conjurar suas magias de 1º nível e superiores. Para conjurar uma dessas magias, você precisa gastar um espaço do nível da magia ou superior. Você recupera todos os espaços gastos quando termina um descanso longo.
+
+    Você prepara a lista de magias disponíveis selecionando-as da lista de magias de clérigo. Você seleciona um número de magias igual ao seu modificador de Sabedoria + seu nível de clérigo (mínimo de uma magia). Essas magias devem ser de níveis para os quais você possui espaços de magia.
+
+    Você pode modificar a sua lista de magias preparadas quando termina um descanso longo. Preparar uma nova lista de magias de clérigo requer tempo gasto em preces e meditação: no mínimo 1 minuto por nível de magia para cada magia preparada.
+
+    Habilidade de conjuração
+    Sabedoria é a sua habilidade para você conjurar suas magias de clérigo. O poder de suas magias vem da devoção que você tem ao seu deus. Você usa sua Sabedoria sempre que alguma magia se referir à sua habilidade de conjurar magias. Além disso, você usa o seu modificador de Sabedoria para definir a CD dos testes de resistência para as magias de clérigo que você conjura e quando você realiza uma jogada de ataque com uma magia.
+
+    CD para suas magias = 8 + bônus de proficiência + seu modificador de Sabedoria
+    Modificador de ataque de magia = seu bônus de proficiência + seu modificador de Sabedoria
+
+    Conjuração de ritual
+    Você pode conjurar qualquer magia de clérigo que você conheça como um ritual se ela possuir o descritor ritual.
+
+    Foco de conjuração
+    Você pode usar um símbolo sagrado (encontrado no capítulo 5) como foco de conjuração das suas magias de clérigo.
+  spellcasting-druid: Tirando da essência divina da própria natureza, você pode conjurar magias para moldar essa essência à sua vontade.
+  spellcasting-paladin: No 2º nível, você aprendeu a canalizar magia divina por meio de meditação e oração para conjurar magias como um clérigo.
+  spellcasting-ranger: Quando alcança o 2º nível, você aprendeu a usar a essência mágica da natureza para conjurar magias, de modo semelhante a um druida.
+  spellcasting-sorcerer: Um acontecimento no seu passado, ou na vida de um parente ou ancestral, deixou uma marca duradoura em você, infundindo-o com magia arcana. Essa fonte de magia, seja qual for a origem, alimenta suas magias.
+  spellcasting-wizard: Como estudante de magia arcana, você tem um grimório contendo magias que mostram os primeiros indícios do seu verdadeiro poder.
+  step-of-the-wind: Você pode gastar 1 ponto de ki para usar as ações Desengajar ou Disparar como ação bônus no seu turno, e sua distância de salto é dobrada nesse turno.
+  stillness-of-mind: A partir do 7º nível, você pode usar sua ação para encerrar um efeito sobre você que o esteja enfeitiçando ou amedrontado.
+  stroke-of-luck: |-
+    No 20º nível, você tem uma aptidão incomum para ter sucesso quando mais precisa. Se um ataque seu errar um alvo ao alcance, pode transformar o erro em acerto. Em alternativa, se falhar em um teste de atributo, pode tratar o resultado do d20 como 20.
+
+    Depois de usar esse recurso, não pode usá-lo de novo até terminar um descanso curto ou longo.
+  stunning-strike: A partir do 5º nível, você pode interferir no fluxo de ki no corpo de um oponente. Ao acertar outra criatura com um ataque corpo a corpo com arma, pode gastar 1 ponto de ki para tentar um golpe atordoante. O alvo deve obter sucesso em um teste de resistência de Constituição ou fica atordoado até o fim do seu próximo turno.
+  superior-inspiration: No 20º nível, quando você rola iniciativa e não tem usos de Inspiração de Bardo restantes, recupera um uso.
+  thieves-cant: |-
+    Durante o treinamento de ladino você aprendeu a gíria dos ladrões, uma mistura secreta de dialeto, jargão e código que permite esconder mensagens em conversas aparentemente normais. Somente outra criatura que conheça a gíria entende tais mensagens. Leva quatro vezes mais tempo para transmitir a ideia do que falar a mesma coisa claramente.
+
+    Além disso, você entende sinais e símbolos secretos usados para mensagens curtas e simples, como se uma área é perigosa ou território de guilda de ladrões, se há saque por perto, ou se as pessoas são presas fáceis ou oferecem esconderijo para ladrões fugitivos.
+  tongue-of-the-sun-and-moon: A partir do 13º nível, você aprende a tocar o ki de outras mentes de modo a compreender todas as línguas faladas. Além disso, qualquer criatura que possa entender uma língua entende o que você diz.
+  unarmored-movement-1: |-
+    A partir do 2º nível, seu deslocamento aumenta em 10 pés enquanto não estiver usando armadura nem empunhando escudo. Esse bônus aumenta ao alcançar certos níveis de monge, conforme a tabela do Monge.
+
+    No 9º nível, você pode se mover por superfícies verticais e sobre líquidos no seu turno sem cair durante o movimento.
+  unarmored-movement-2: |-
+    A partir do 2º nível, seu deslocamento aumenta em 10 pés enquanto não estiver usando armadura nem empunhando escudo. Esse bônus aumenta ao alcançar certos níveis de monge, conforme a tabela do Monge.
+
+    No 9º nível, você pode se mover por superfícies verticais e sobre líquidos no seu turno sem cair durante o movimento.
+  uncanny-dodge: A partir do 5º nível, quando um atacante que você possa ver acerta você com um ataque, você pode usar sua reação para reduzir à metade o dano desse ataque contra você.
+  vanish: A partir do 14º nível, você pode usar a ação Esconder-se como ação bônus no seu turno. Além disso, não pode ser rastreado por meios não mágicos, a menos que escolha deixar rastros.
+  warlock-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  warlock-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  warlock-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  warlock-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  warlock-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  wild-shape-cr-1-2-or-below-no-flying-speed: |-
+    A partir do 2º nível, você pode usar sua ação para assumir magicamente a forma de uma fera que já tenha visto. Pode usar esse recurso duas vezes. Recupera os usos gastos ao terminar um descanso curto ou longo.
+
+    Seu nível de druida determina as feras em que pode se transformar, conforme a tabela de formas de fera. No 2º nível, por exemplo, pode virar qualquer fera de ND 1/4 ou inferior que não tenha deslocamento de voo ou natação.
+
+    Pode permanecer em forma de fera por um número de horas igual à metade do seu nível de druida (arredondado para baixo). Depois volta à forma normal, salvo se gastar outro uso do recurso. Pode voltar antes usando uma ação bônus no seu turno. Reverte automaticamente se cair inconsciente, chegar a 0 pontos de vida ou morrer.
+
+    Enquanto transformado, valem as regras a seguir:
+
+    - Seus valores de jogo são substituídos pelos da fera, mas você mantém alinhamento, personalidade e valores de Inteligência, Sabedoria e Carisma. Também mantém todas as proficiências em perícias e testes de resistência, além de ganhar as da criatura. Se a criatura tiver a mesma proficiência que você e o bônus na ficha for maior que o seu, use o bônus da criatura. Se a criatura tiver ações lendárias ou de covil, não pode usá-las.
+
+    - Ao transformar-se, assume os pontos de vida e Dados de Vida da fera. Ao reverter, volta aos pontos de vida que tinha antes da transformação. Porém, se reverter por cair a 0 pontos de vida, qualquer dano excedente passa para sua forma normal. Por exemplo, se sofrer 10 de dano na forma animal e restar apenas 1 ponto de vida, você reverte e sofre 9 de dano. Enquanto o dano excedente não reduzir sua forma normal a 0 pontos de vida, você não fica inconsciente.
+
+    - Não pode conjurar magias, e falar ou realizar ações que exijam mãos fica limitado ao que a forma de fera permite. Transformar-se não interrompe concentração em magia já conjurada, nem impede ações que fazem parte de uma magia já em efeito, como chamar relâmpagos.
+
+    - Mantém o benefício de recursos de classe, raça ou outra fonte e pode usá-los se a nova forma for fisicamente capaz. Porém, não pode usar sentidos especiais, como visão no escuro, a menos que a nova forma também os tenha.
+
+    - Você escolhe se seu equipamento cai no chão no seu espaço, se funde à nova forma ou é vestido por ela. Equipamento vestido funciona normalmente, mas o Mestre decide se é prático para a nova forma usar uma peça, com base na forma e tamanho da criatura. Equipamento não muda de tamanho nem de forma para combinar com a nova forma, e qualquer peça que a nova forma não possa vestir deve cair ao chão ou fundir-se a ela. Equipamento fundido não tem efeito até você deixar a forma.
+  wild-shape-cr-1-4-or-below-no-flying-or-swim-speed: |-
+    A partir do 2º nível, você pode usar sua ação para assumir magicamente a forma de uma fera que já tenha visto. Pode usar esse recurso duas vezes. Recupera os usos gastos ao terminar um descanso curto ou longo.
+
+    Seu nível de druida determina as feras em que pode se transformar, conforme a tabela de formas de fera. No 2º nível, por exemplo, pode virar qualquer fera de ND 1/4 ou inferior que não tenha deslocamento de voo ou natação.
+
+    Pode permanecer em forma de fera por um número de horas igual à metade do seu nível de druida (arredondado para baixo). Depois volta à forma normal, salvo se gastar outro uso do recurso. Pode voltar antes usando uma ação bônus no seu turno. Reverte automaticamente se cair inconsciente, chegar a 0 pontos de vida ou morrer.
+
+    Enquanto transformado, valem as regras a seguir:
+
+    - Seus valores de jogo são substituídos pelos da fera, mas você mantém alinhamento, personalidade e valores de Inteligência, Sabedoria e Carisma. Também mantém todas as proficiências em perícias e testes de resistência, além de ganhar as da criatura. Se a criatura tiver a mesma proficiência que você e o bônus na ficha for maior que o seu, use o bônus da criatura. Se a criatura tiver ações lendárias ou de covil, não pode usá-las.
+
+    - Ao transformar-se, assume os pontos de vida e Dados de Vida da fera. Ao reverter, volta aos pontos de vida que tinha antes da transformação. Porém, se reverter por cair a 0 pontos de vida, qualquer dano excedente passa para sua forma normal. Por exemplo, se sofrer 10 de dano na forma animal e restar apenas 1 ponto de vida, você reverte e sofre 9 de dano. Enquanto o dano excedente não reduzir sua forma normal a 0 pontos de vida, você não fica inconsciente.
+
+    - Não pode conjurar magias, e falar ou realizar ações que exijam mãos fica limitado ao que a forma de fera permite. Transformar-se não interrompe concentração em magia já conjurada, nem impede ações que fazem parte de uma magia já em efeito, como chamar relâmpagos.
+
+    - Mantém o benefício de recursos de classe, raça ou outra fonte e pode usá-los se a nova forma for fisicamente capaz. Porém, não pode usar sentidos especiais, como visão no escuro, a menos que a nova forma também os tenha.
+
+    - Você escolhe se seu equipamento cai no chão no seu espaço, se funde à nova forma ou é vestido por ela. Equipamento vestido funciona normalmente, mas o Mestre decide se é prático para a nova forma usar uma peça, com base na forma e tamanho da criatura. Equipamento não muda de tamanho nem de forma para combinar com a nova forma, e qualquer peça que a nova forma não possa vestir deve cair ao chão ou fundir-se a ela. Equipamento fundido não tem efeito até você deixar a forma.
+  wild-shape-cr-1-or-below: |-
+    A partir do 2º nível, você pode usar sua ação para assumir magicamente a forma de uma fera que já tenha visto. Pode usar esse recurso duas vezes. Recupera os usos gastos ao terminar um descanso curto ou longo.
+
+    Seu nível de druida determina as feras em que pode se transformar, conforme a tabela de formas de fera. No 2º nível, por exemplo, pode virar qualquer fera de ND 1/4 ou inferior que não tenha deslocamento de voo ou natação.
+
+    Pode permanecer em forma de fera por um número de horas igual à metade do seu nível de druida (arredondado para baixo). Depois volta à forma normal, salvo se gastar outro uso do recurso. Pode voltar antes usando uma ação bônus no seu turno. Reverte automaticamente se cair inconsciente, chegar a 0 pontos de vida ou morrer.
+
+    Enquanto transformado, valem as regras a seguir:
+
+    - Seus valores de jogo são substituídos pelos da fera, mas você mantém alinhamento, personalidade e valores de Inteligência, Sabedoria e Carisma. Também mantém todas as proficiências em perícias e testes de resistência, além de ganhar as da criatura. Se a criatura tiver a mesma proficiência que você e o bônus na ficha for maior que o seu, use o bônus da criatura. Se a criatura tiver ações lendárias ou de covil, não pode usá-las.
+
+    - Ao transformar-se, assume os pontos de vida e Dados de Vida da fera. Ao reverter, volta aos pontos de vida que tinha antes da transformação. Porém, se reverter por cair a 0 pontos de vida, qualquer dano excedente passa para sua forma normal. Por exemplo, se sofrer 10 de dano na forma animal e restar apenas 1 ponto de vida, você reverte e sofre 9 de dano. Enquanto o dano excedente não reduzir sua forma normal a 0 pontos de vida, você não fica inconsciente.
+
+    - Não pode conjurar magias, e falar ou realizar ações que exijam mãos fica limitado ao que a forma de fera permite. Transformar-se não interrompe concentração em magia já conjurada, nem impede ações que fazem parte de uma magia já em efeito, como chamar relâmpagos.
+
+    - Mantém o benefício de recursos de classe, raça ou outra fonte e pode usá-los se a nova forma for fisicamente capaz. Porém, não pode usar sentidos especiais, como visão no escuro, a menos que a nova forma também os tenha.
+
+    - Você escolhe se seu equipamento cai no chão no seu espaço, se funde à nova forma ou é vestido por ela. Equipamento vestido funciona normalmente, mas o Mestre decide se é prático para a nova forma usar uma peça, com base na forma e tamanho da criatura. Equipamento não muda de tamanho nem de forma para combinar com a nova forma, e qualquer peça que a nova forma não possa vestir deve cair ao chão ou fundir-se a ela. Equipamento fundido não tem efeito até você deixar a forma.
+  wizard-ability-score-improvement-1: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  wizard-ability-score-improvement-2: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  wizard-ability-score-improvement-3: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  wizard-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
+  wizard-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.

@@ -1,0 +1,626 @@
+[
+  {
+    "tab": "Nayara",
+    "name": "ABIGAIL LE FAY",
+    "class_idx": "wizard",
+    "sub_idx": null,
+    "race_idx": "human",
+    "subrace_idx": "standard",
+    "level": 9,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Fininho",
+    "name": "ADIMAEL",
+    "class_idx": "ranger",
+    "sub_idx": "rastreador_urbano",
+    "race_idx": "elf",
+    "subrace_idx": "wood",
+    "level": 9,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Caio",
+    "name": "STIVI MAGAL",
+    "class_idx": "rogue",
+    "sub_idx": "cacador-de-tesouros",
+    "race_idx": "gnome",
+    "subrace_idx": "rock",
+    "level": 9,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Allan",
+    "name": "Sirius Bastião de Ferro",
+    "class_idx": "fighter",
+    "sub_idx": "cavaleiro-arcano",
+    "race_idx": "human",
+    "subrace_idx": "standard",
+    "level": 7,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "João",
+    "name": "Lenny",
+    "class_idx": "rogue",
+    "sub_idx": "assassino",
+    "race_idx": "half_elf",
+    "subrace_idx": null,
+    "level": 7,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Amani",
+    "name": "Amani Okoye",
+    "class_idx": "paladin",
+    "sub_idx": "juramento-misericordia",
+    "race_idx": "human",
+    "subrace_idx": "standard",
+    "level": 4,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Levi",
+    "name": "Igris Elthred",
+    "class_idx": "fighter",
+    "sub_idx": "champion",
+    "race_idx": "half_orc",
+    "subrace_idx": null,
+    "level": 4,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Ellel",
+    "name": "Ellel Pés Macios",
+    "class_idx": "cozinheiro",
+    "sub_idx": null,
+    "race_idx": "halfling",
+    "subrace_idx": null,
+    "level": 1,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Kalt",
+    "name": "Kalt",
+    "class_idx": "druid",
+    "sub_idx": "circulo-da-terra",
+    "race_idx": "human",
+    "subrace_idx": "variant",
+    "level": 3,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Miguel",
+    "name": "Rolander",
+    "class_idx": "paladin",
+    "sub_idx": null,
+    "race_idx": "human",
+    "subrace_idx": "standard",
+    "level": 7,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Milo",
+    "name": "Milo",
+    "class_idx": "druid",
+    "sub_idx": "circulo-da-lua",
+    "race_idx": "halfling",
+    "subrace_idx": null,
+    "level": 6,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Bult",
+    "name": "Bult Seewell",
+    "class_idx": "barbarian",
+    "sub_idx": "barbaro-cicatrizes-runicas",
+    "race_idx": "minotaur",
+    "subrace_idx": null,
+    "level": 5,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Namari",
+    "name": "Namari",
+    "class_idx": "fighter",
+    "sub_idx": "mestre-de-batalha",
+    "race_idx": "dwarf",
+    "subrace_idx": "hill",
+    "level": 5,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Bellamy",
+    "name": "Bellamy",
+    "class_idx": "warlock",
+    "sub_idx": "archfey",
+    "race_idx": "aarakocra",
+    "subrace_idx": "cypselanos",
+    "level": 5,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Thaindriel",
+    "name": "Thaindriel",
+    "class_idx": "monk",
+    "sub_idx": "sombra",
+    "race_idx": "elf",
+    "subrace_idx": "wood",
+    "level": 6,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Trall",
+    "name": "Thralliant",
+    "class_idx": "barbarian",
+    "sub_idx": "guerreiro-urso",
+    "race_idx": "half_elf",
+    "subrace_idx": null,
+    "level": 5,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Alieksey",
+    "name": "Darkmenos",
+    "class_idx": "warlock",
+    "sub_idx": null,
+    "race_idx": "tiefling",
+    "subrace_idx": "infernal",
+    "level": 5,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Lyra",
+    "name": "Lyra El'Asah",
+    "class_idx": "ranger",
+    "sub_idx": "flagelo-dos-inimigos",
+    "race_idx": "elf",
+    "subrace_idx": "wood",
+    "level": 6,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Shanti",
+    "name": "Shanti",
+    "class_idx": "cleric",
+    "sub_idx": "dominio-da-vida",
+    "race_idx": "half_elf",
+    "subrace_idx": null,
+    "level": 5,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Joe",
+    "name": "Joe",
+    "class_idx": "bard",
+    "sub_idx": "colegio-comedia",
+    "race_idx": "half_elf",
+    "subrace_idx": null,
+    "level": 6,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Kanlu",
+    "name": "Kanlu Wanderblade",
+    "class_idx": "sorcerer",
+    "sub_idx": "feiticaria-da-espada",
+    "race_idx": "elf",
+    "subrace_idx": "wood",
+    "level": 8,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Orsik",
+    "name": "Orsik Stoneforge",
+    "class_idx": "cleric",
+    "sub_idx": "dominio-da-guerra",
+    "race_idx": "dwarf",
+    "subrace_idx": null,
+    "level": 7,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Torres",
+    "name": "Vallen Evenwood",
+    "class_idx": "fighter",
+    "sub_idx": null,
+    "race_idx": "human",
+    "subrace_idx": "standard",
+    "level": 1,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Lucinano",
+    "name": "Avalon Mellion",
+    "class_idx": "wizard",
+    "sub_idx": "navegacao-planar",
+    "race_idx": "elf",
+    "subrace_idx": "high",
+    "level": 4,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Ruric",
+    "name": "Ruric",
+    "class_idx": "barbarian",
+    "sub_idx": "furioso-imortal",
+    "race_idx": "half_orc",
+    "subrace_idx": null,
+    "level": 6,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Ainor",
+    "name": "Ainor",
+    "class_idx": "bard",
+    "sub_idx": "colegio-fortuna",
+    "race_idx": "human",
+    "subrace_idx": "variant",
+    "level": 5,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Aberrama",
+    "name": "Aberama Gold",
+    "class_idx": "fighter",
+    "sub_idx": "atirador_inigualavel",
+    "race_idx": "tiefling",
+    "subrace_idx": "infernal",
+    "level": 8,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Ysari",
+    "name": "Ysari Nyrae’vell",
+    "class_idx": "cleric",
+    "sub_idx": "dominio-da-tempestade",
+    "race_idx": "aarakocra",
+    "subrace_idx": null,
+    "level": 4,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Jamerson",
+    "name": "Erlingorn",
+    "class_idx": "ranger",
+    "sub_idx": null,
+    "race_idx": "halfling",
+    "subrace_idx": "stout",
+    "level": 3,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Rorinar",
+    "name": "Rorinar",
+    "class_idx": "barbarian",
+    "sub_idx": "guerreiro-urso",
+    "race_idx": "dwarf",
+    "subrace_idx": "hill",
+    "level": 4,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Valac",
+    "name": "Valac Gigamaquia",
+    "class_idx": "wizard",
+    "sub_idx": "maestria-dos-automatos",
+    "race_idx": "gnome",
+    "subrace_idx": "rock",
+    "level": 4,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Sabrino",
+    "name": "Sabrino",
+    "class_idx": "warlock",
+    "sub_idx": "great_old_one",
+    "race_idx": "half_elf",
+    "subrace_idx": null,
+    "level": 4,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Nikos",
+    "name": "Nikos",
+    "class_idx": "monk",
+    "sub_idx": null,
+    "race_idx": "human",
+    "subrace_idx": "standard",
+    "level": 3,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Sanda",
+    "name": "Sanda",
+    "class_idx": "monk",
+    "sub_idx": "caminho_mestre_bebado",
+    "race_idx": "human",
+    "subrace_idx": "variant",
+    "level": 3,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Modelo",
+    "name": null,
+    "class_idx": null,
+    "sub_idx": null,
+    "race_idx": null,
+    "subrace_idx": null,
+    "level": 1,
+    "skipped": true,
+    "issues": [
+
+    ],
+    "warns": [
+      "skipped (template / fora do escopo de teste)"
+    ]
+  },
+  {
+    "tab": "Angelina",
+    "name": "Angelina",
+    "class_idx": "warlock",
+    "sub_idx": "patrono-morte",
+    "race_idx": "tiefling",
+    "subrace_idx": "infernal",
+    "level": 10,
+    "skipped": false,
+    "issues": [
+
+    ],
+    "warns": [
+
+    ]
+  },
+  {
+    "tab": "Drugoy",
+    "name": "Drugoy",
+    "class_idx": "barbarian",
+    "sub_idx": "berserker",
+    "race_idx": null,
+    "subrace_idx": null,
+    "level": 10,
+    "skipped": true,
+    "issues": [
+
+    ],
+    "warns": [
+      "skipped (template / fora do escopo de teste)"
+    ]
+  },
+  {
+    "tab": "Tony Ramos",
+    "name": "Tony Ramos",
+    "class_idx": "druid",
+    "sub_idx": "verdejante",
+    "race_idx": null,
+    "subrace_idx": null,
+    "level": 10,
+    "skipped": true,
+    "issues": [
+
+    ],
+    "warns": [
+      "skipped (template / fora do escopo de teste)"
+    ]
+  },
+  {
+    "tab": "Pandora",
+    "name": "Pandora",
+    "class_idx": "bard",
+    "sub_idx": "colegio-pavor",
+    "race_idx": null,
+    "subrace_idx": null,
+    "level": 10,
+    "skipped": true,
+    "issues": [
+
+    ],
+    "warns": [
+      "skipped (template / fora do escopo de teste)"
+    ]
+  }
+]

@@ -16,13 +16,13 @@ class FeaturesAggregator
       next unless klass
       ClassLevel.includes(:features).where(klass_id: klass.id).where('level <= ?', sk.level.to_i).each do |cl|
         cl.features.each do |f|
-          items << { id: f.id, level: cl.level, name: f.name, desc: f.description, source: 'Klass', show: (show_map[f.id]&.dig(:show) != false), pref_id: show_map[f.id]&.dig(:id) }
+          items << { id: f.id, level: cl.level, name: f.localized_name, desc: f.localized_description, source: 'Klass', show: (show_map[f.id]&.dig(:show) != false), pref_id: show_map[f.id]&.dig(:id) }
         end
       end
       if sk.sub_klass
         SubKlassLevel.includes(:features).where(sub_klass_id: sk.sub_klass_id).where('level <= ?', sk.level.to_i).each do |sl|
           sl.features.each do |f|
-            items << { id: f.id, level: sl.level, name: f.name, desc: f.description, source: 'SubKlass', show: (show_map[f.id]&.dig(:show) != false), pref_id: show_map[f.id]&.dig(:id) }
+            items << { id: f.id, level: sl.level, name: f.localized_name, desc: f.localized_description, source: 'SubKlass', show: (show_map[f.id]&.dig(:show) != false), pref_id: show_map[f.id]&.dig(:id) }
           end
         end
       end

@@ -1,0 +1,67 @@
+# Catálogo de recursos de classe (Fase C — runtime_state.class_resources_used).
+#
+# Cada entrada eh consumida por:
+#   - Sheets::Runtime::ResourceCatalog (lookup canonico)
+#   - Sheets::Runtime::ApplyShortRestService (zera recursos com recharge: short)
+#   - Sheets::Runtime::ApplyLongRestService  (zera recursos com recharge: short OU long)
+#
+# Frontend mantem `front-lafiga/src/app/data/classCombatData.ts` (display-only).
+# Spec de paridade (api/spec/services/sheets/runtime/resource_catalog_parity_spec.rb)
+# garante que toda chave usada no frontend esteja aqui — fonte unica de verdade
+# para reset.
+#
+# Conventions:
+#   - key: snake_case, igual ao key consumido em runtime_state.class_resources_used
+#   - recharge: 'short' | 'long'
+#   - classes: lista de api_index das classes que tem o recurso (informativo)
+#
+# Notas:
+#   - bardic_inspiration: a partir do nivel 5 (Font of Inspiration, PHB pg. 54)
+#     a recarga vira em descanso curto. Modelado via `recharge_at_level` (P2.14).
+#   - ki recarrega em SR mas tambem zera em LR (regra geral: tudo que recarrega
+#     em SR tambem recarrega em LR).
+#
+# Schema estendido (P2.14):
+#   - `recharge`: 'short' | 'long' (recarga base, qualquer nivel)
+#   - `recharge_at_level`: opcional. Hash { level => 'short' | 'long' } com
+#     overrides aplicados quando o personagem atinge esse nivel ou superior.
+#     ResourceCatalog.recharge_for(key, level: ) calcula o efetivo.
+---
+rage:
+  recharge: long
+  classes: [barbarian]
+bardic_inspiration:
+  recharge: long
+  recharge_at_level:
+    5: short
+  classes: [bard]
+channel_divinity:
+  recharge: short
+  classes: [cleric, paladin]
+wild_shape:
+  recharge: short
+  classes: [druid]
+second_wind:
+  recharge: short
+  classes: [fighter]
+action_surge:
+  recharge: short
+  classes: [fighter]
+indomitable:
+  recharge: long
+  classes: [fighter]
+ki:
+  recharge: short
+  classes: [monk]
+divine_sense:
+  recharge: long
+  classes: [paladin]
+lay_on_hands:
+  recharge: long
+  classes: [paladin]
+sorcery_points:
+  recharge: long
+  classes: [sorcerer]
+arcane_recovery:
+  recharge: long
+  classes: [wizard]

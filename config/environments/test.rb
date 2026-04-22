@@ -43,4 +43,8 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  # Request specs: Rack::Test usa www.example.com; host! pode usar localhost.
+  config.hosts << 'www.example.com'
+  config.hosts << 'localhost'
 end

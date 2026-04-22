@@ -19,7 +19,13 @@ class Api::V1::Player::SheetKlassesController < ApplicationController
 
     # Se for nível > 1, use LevelUpService para aplicar progressão e conceder features
     if desired_level > 1
-      service = LevelUpService.call(sheet_id: sheet.id, klass_id: permitted[:klass_id], levels: desired_level, sub_klass_id: sub_id)
+      service = LevelUpService.call(
+        sheet_id: sheet.id,
+        klass_id: permitted[:klass_id],
+        levels: desired_level,
+        sub_klass_id: sub_id,
+        **level_up_hp_opts(permitted)
+      )
       if service.success?
         sk = sheet.sheet_klasses.find_by!(klass_id: permitted[:klass_id])
         render json: sk, status: :created
@@ -53,7 +59,13 @@ class Api::V1::Player::SheetKlassesController < ApplicationController
     if new_level > @sheet_klass.level
       delta = new_level - @sheet_klass.level
       Rails.logger.info "Calling LevelUpService with delta=#{delta}, sub_klass_id=#{sub_klass_id}"
-      service = LevelUpService.call(sheet_id: @sheet_klass.sheet_id, klass_id: @sheet_klass.klass_id, levels: delta, sub_klass_id: sub_klass_id)
+      service = LevelUpService.call(
+        sheet_id: @sheet_klass.sheet_id,
+        klass_id: @sheet_klass.klass_id,
+        levels: delta,
+        sub_klass_id: sub_klass_id,
+        **level_up_hp_opts(permitted)
+      )
       if service.success?
         @sheet_klass.reload
         Rails.logger.info "LevelUpService successful, new level=#{@sheet_klass.level}"
@@ -97,7 +109,15 @@ class Api::V1::Player::SheetKlassesController < ApplicationController
   end
 
   def sheet_klass_params
-    params.require(:sheet_klass).permit(:sheet_id, :klass_id, :sub_klass_id, :level)
+    params.require(:sheet_klass).permit(:sheet_id, :klass_id, :sub_klass_id, :level, hp_rolls: [])
+  end
+
+  # Repassa rolagens de PV por passo do LevelUpService (1 valor por nível ganho).
+  def level_up_hp_opts(permitted)
+    raw = permitted[:hp_rolls]
+    return {} if raw.blank?
+
+    { hp_rolls: Array(raw).map(&:to_i) }
   end
 
   # Accepts numeric ID or slug (api_index). If a slug is given, resolves to ID.
@@ -109,7 +129,39 @@ class Api::V1::Player::SheetKlassesController < ApplicationController
     end
     scope = SubKlass.all
     scope = scope.where(klass_id: klass_id) if klass_id.present?
-    sub = scope.find_by!(api_index: str)
+
+    # Build candidate list including common PT/EN aliases
+    base = str.downcase
+    synonyms = {
+      'eldritch_knight' => ['eldritch_knight','eldritch-knight','cavaleiro-arcano','cavaleiro_arcano','cavaleiro arcano'],
+      'battle_master'   => ['battle_master','battlemaster','mestre-de-batalha','mestre_de_batalha','mestre de batalha'],
+      'battlemaster'    => ['battle_master','battlemaster','mestre-de-batalha','mestre_de_batalha','mestre de batalha']
+    }
+    candidates = [base, base.tr('_','-'), base.tr('-','_')]
+    candidates += (synonyms[base] || [])
+    candidates = candidates.map(&:downcase).uniq
+
+    # 1) Exact api_index within klass scope
+    sub = scope.where('LOWER(api_index) IN (?)', candidates).first
+    # 2) Name match within klass scope
+    if sub.nil?
+      candidates.each do |q|
+        sub = scope.where('LOWER(name) = ? OR LOWER(name) LIKE ?', q, "%#{q}%").first
+        break if sub
+      end
+    end
+    # 3) Global search (without klass scope) as a last resort
+    if sub.nil?
+      global = SubKlass.all
+      sub = global.where('LOWER(api_index) IN (?)', candidates).first
+      if sub.nil?
+        candidates.each do |q|
+          sub = global.where('LOWER(name) = ? OR LOWER(name) LIKE ?', q, "%#{q}%").first
+          break if sub
+        end
+      end
+    end
+    raise ActiveRecord::RecordNotFound, "SubKlass '#{str}' não encontrada" unless sub
     sub.id
   end
 

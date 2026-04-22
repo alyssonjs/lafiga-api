@@ -1,0 +1,80 @@
+# syntax=docker/dockerfile:1
+# =============================================================================
+# Stage 1: builder — install gems with native deps, then strip caches
+# =============================================================================
+FROM ruby:3.2.2-slim AS builder
+
+ENV BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_DEPLOYMENT=1 \
+    BUNDLE_FROZEN=1 \
+    BUNDLE_JOBS=4 \
+    LANG=C.UTF-8
+
+RUN apt-get update -qq \
+ && apt-get install -y --no-install-recommends \
+      build-essential \
+      git \
+      libpq-dev \
+      pkg-config \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /lafiga-api
+
+COPY Gemfile Gemfile.lock ./
+RUN gem install bundler:2.6.6 \
+ && bundle install \
+ && rm -rf "${BUNDLE_PATH}/ruby/3.2.0/cache" \
+           "${BUNDLE_PATH}/ruby/3.2.0/gems/*/spec" \
+           "${BUNDLE_PATH}/ruby/3.2.0/gems/*/test"
+
+# =============================================================================
+# Stage 2: runtime — only runtime deps, no compilers
+# =============================================================================
+FROM ruby:3.2.2-slim AS runtime
+
+ENV BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_DEPLOYMENT=1 \
+    RAILS_ENV=production \
+    RAILS_LOG_TO_STDOUT=1 \
+    RAILS_SERVE_STATIC_FILES=0 \
+    LANG=C.UTF-8 \
+    TZ=America/Sao_Paulo
+
+RUN apt-get update -qq \
+ && apt-get install -y --no-install-recommends \
+      libpq5 \
+      postgresql-client \
+      tzdata \
+      curl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Non-root user
+RUN groupadd --system --gid 1000 lafiga \
+ && useradd --system --uid 1000 --gid lafiga --create-home --shell /bin/bash lafiga
+
+WORKDIR /lafiga-api
+
+COPY --from=builder ${BUNDLE_PATH} ${BUNDLE_PATH}
+
+COPY --chown=lafiga:lafiga . /lafiga-api
+
+# Pre-compile bootsnap to speed up boot (best-effort; ignore failures so the
+# image still builds even if some optional initializer can't load at build time)
+RUN SECRET_KEY_BASE=dummy_for_bootsnap \
+    bundle exec bootsnap precompile --gemfile app/ lib/ config/ || true
+
+# tmp/ and log/ are excluded by .dockerignore (huge dev caches), so we
+# create them fresh inside the image with the right ownership.
+RUN mkdir -p tmp/pids tmp/cache log storage \
+ && chown -R lafiga:lafiga /lafiga-api
+
+USER lafiga
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -fsS http://localhost:3000/up || exit 1
+
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb", "-p", "3000", "-b", "tcp://0.0.0.0"]

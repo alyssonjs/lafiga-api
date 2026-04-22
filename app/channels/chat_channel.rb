@@ -19,17 +19,19 @@ class ChatChannel < ApplicationCable::Channel
     end
   end
 
+  # Authenticates the JWT passed via `params[:token]` (subscribe payload).
+  # Uses the same JsonWebToken helper + blacklist as the HTTP layer
+  # (ApiRequestAuth) so that revoking a token via ValidateJwtToken also
+  # cuts off the WebSocket subscription.
   def authenticate_token(token)
     return nil if token.blank?
-    secret = ENV['JWT_SECRET'] || Rails.application.secret_key_base
-    begin
-      decoded = JWT.decode(token, secret, true, { algorithm: 'HS256' })
-      payload = decoded[0] || {}
-      uid = payload['user_id'] || payload['id']
-      User.find_by(id: uid)
-    rescue => _e
-      nil
-    end
+    return nil if ValidateJwtToken.where(token: token).exists?
+
+    payload = JsonWebToken.decode(token)
+    uid = payload[:user_id] || payload[:id]
+    User.find_by(id: uid)
+  rescue ExceptionHandler::InvalidToken, JWT::DecodeError, StandardError
+    nil
   end
 end
 

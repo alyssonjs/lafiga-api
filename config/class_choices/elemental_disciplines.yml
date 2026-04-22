@@ -1,0 +1,210 @@
+# Disciplinas Elementais — Caminho dos Quatro Elementos (Monge) — D&D 5e PHB.
+# Schema: api/config/class_choices/SCHEMA.md
+#
+# Slugs seguem o padrão `ed-*` (elemental discipline), 1:1 com o id do front
+# (front-lafiga/src/app/data/monkDisciplines.ts → ElementalDiscipline.id).
+#
+# `cost` representa o custo em pontos de Ki:
+#   integer  → custo fixo
+#   variable → custo variável detalhado em mechanical_summary
+#              (ex.: Shape the Flowing River usa 0 ou 1 Ki).
+#
+# Prereqs.level → nível mínimo de Monge (subclasse Caminho dos Quatro Elementos).
+# O elemento (fire/water/earth/air/multi) NÃO é exposto no schema canônico — é
+# metadado puramente visual mantido no fallback estático do front.
+# `replicates_spell` (PHB) também é metadado descritivo embutido no
+# mechanical_summary aqui — o cálculo de slot/efeito vive no engine de magias.
+
+# === DISPONÍVEIS NO NÍVEL 3 ===
+
+- slug: ed-fangs-of-fire-snake
+  name_pt: Presas da Serpente de Fogo
+  name_en: Fangs of the Fire Snake
+  description: |
+    Quando usa a ação Atacar, pode gastar 1 ponto de Ki para que ataques desarmados neste turno tenham alcance de 3m. Um acerto causa 1d10 de dano de fogo extra.
+  mechanical_summary: "1 Ki: ataques desarmados 3m alcance + 1d10 fogo"
+  cost: 1
+  classes:
+    - monk
+
+- slug: ed-fist-of-four-thunders
+  name_pt: Punho dos Quatro Trovões
+  name_en: Fist of Four Thunders
+  description: |
+    Pode gastar 2 pontos de Ki para conjurar Onda Trovejante (Thunderwave).
+  mechanical_summary: "2 Ki: Onda Trovejante (2d8 trovão)"
+  cost: 2
+  classes:
+    - monk
+
+- slug: ed-fist-of-unbroken-air
+  name_pt: Punho do Ar Ininterrupto
+  name_en: Fist of Unbroken Air
+  description: |
+    Cria explosão de ar comprimido. Ação, criatura a até 9m: 3d10 de dano contundente + empurrada 6m + knocked prone (TR FOR = metade, sem empurrão). +1d10 por Ki extra (máx 3).
+  mechanical_summary: "2+ Ki: 3d10 contundente + empurrão 6m + derruba"
+  cost: 2
+  classes:
+    - monk
+
+- slug: ed-rush-of-gale-spirits
+  name_pt: Ímpeto dos Espíritos do Vendaval
+  name_en: Rush of the Gale Spirits
+  description: |
+    Pode gastar 2 pontos de Ki para conjurar Rajada de Vento (Gust of Wind).
+  mechanical_summary: "2 Ki: Rajada de Vento (linha 18m, empurra)"
+  cost: 2
+  classes:
+    - monk
+
+- slug: ed-shape-the-flowing-river
+  name_pt: Moldar o Rio Fluente
+  name_en: Shape the Flowing River
+  description: |
+    Ação para controlar água livre em cubo de 9m dentro de 36m: mover, congelar (5 min), mudar forma. Pode gastar 1 Ki para causar 2d10 frio em criaturas na água.
+  mechanical_summary: "0-1 Ki: controla água em cubo 9m; 1 Ki: 2d10 frio"
+  cost: variable
+  classes:
+    - monk
+
+- slug: ed-sweeping-cinder-strike
+  name_pt: Golpe das Cinzas Varridas
+  name_en: Sweeping Cinder Strike
+  description: |
+    Pode gastar 2 pontos de Ki para conjurar Mãos Flamejantes (Burning Hands).
+  mechanical_summary: "2 Ki: Mãos Flamejantes (3d6 fogo, cone 4.5m)"
+  cost: 2
+  classes:
+    - monk
+
+- slug: ed-water-whip
+  name_pt: Chicote de Água
+  name_en: Water Whip
+  description: |
+    Ação bônus, criatura a até 9m: 3d10 de dano contundente + pode puxá-la 7.5m em direção a você ou derrubá-la (TR DES = metade, sem efeito). +1d10 por Ki extra (máx 3).
+  mechanical_summary: "2+ Ki: 3d10 contundente + puxa 7.5m ou derruba"
+  cost: 2
+  classes:
+    - monk
+
+- slug: ed-clench-of-north-wind
+  name_pt: Aperto do Vento Norte
+  name_en: Clench of the North Wind
+  description: |
+    Pode gastar 3 pontos de Ki para conjurar Imobilizar Pessoa (Hold Person).
+  mechanical_summary: "3 Ki: Imobilizar Pessoa (paralisa, TR SAB)"
+  cost: 3
+  classes:
+    - monk
+
+- slug: ed-gong-of-summit
+  name_pt: Gongo do Cume
+  name_en: Gong of the Summit
+  description: |
+    Pode gastar 3 pontos de Ki para conjurar Despedaçar (Shatter).
+  mechanical_summary: "3 Ki: Despedaçar (3d8 trovão, esfera 3m)"
+  cost: 3
+  classes:
+    - monk
+
+# === REQUER NÍVEL 6+ ===
+
+- slug: ed-flames-of-phoenix
+  name_pt: Chamas da Fênix
+  name_en: Flames of the Phoenix
+  description: |
+    Pode gastar 4 pontos de Ki para conjurar Bola de Fogo (Fireball).
+  mechanical_summary: "4 Ki: Bola de Fogo (8d6 fogo, esfera 6m)"
+  cost: 4
+  classes:
+    - monk
+  prereqs:
+    level: 6
+
+- slug: ed-mist-stance
+  name_pt: Postura da Névoa
+  name_en: Mist Stance
+  description: |
+    Pode gastar 4 pontos de Ki para conjurar Forma Gasosa em si mesmo.
+  mechanical_summary: "4 Ki: Forma Gasosa (1h, concentração)"
+  cost: 4
+  classes:
+    - monk
+  prereqs:
+    level: 6
+
+- slug: ed-ride-the-wind
+  name_pt: Cavalgar o Vento
+  name_en: Ride the Wind
+  description: |
+    Pode gastar 4 pontos de Ki para conjurar Voo (Fly) em si mesmo.
+  mechanical_summary: "4 Ki: Voo (18m, 10 min, concentração)"
+  cost: 4
+  classes:
+    - monk
+  prereqs:
+    level: 6
+
+# === REQUER NÍVEL 11+ ===
+
+- slug: ed-eternal-mountain-defense
+  name_pt: Defesa da Montanha Eterna
+  name_en: Eternal Mountain Defense
+  description: |
+    Pode gastar 5 pontos de Ki para conjurar Pele de Pedra (Stoneskin) em si mesmo.
+  mechanical_summary: "5 Ki: Pele de Pedra (resist. dano não-mágico)"
+  cost: 5
+  classes:
+    - monk
+  prereqs:
+    level: 11
+
+- slug: ed-river-of-hungry-flame
+  name_pt: Rio de Chama Faminta
+  name_en: River of Hungry Flame
+  description: |
+    Pode gastar 5 pontos de Ki para conjurar Muralha de Fogo (Wall of Fire).
+  mechanical_summary: "5 Ki: Muralha de Fogo (5d8 fogo)"
+  cost: 5
+  classes:
+    - monk
+  prereqs:
+    level: 11
+
+- slug: ed-wave-of-rolling-earth
+  name_pt: Onda da Terra Rolante
+  name_en: Wave of Rolling Earth
+  description: |
+    Pode gastar 6 pontos de Ki para conjurar Muralha de Pedra (Wall of Stone).
+  mechanical_summary: "6 Ki: Muralha de Pedra"
+  cost: 6
+  classes:
+    - monk
+  prereqs:
+    level: 11
+
+# === REQUER NÍVEL 17+ ===
+
+- slug: ed-breath-of-winter
+  name_pt: Sopro do Inverno
+  name_en: Breath of Winter
+  description: |
+    Pode gastar 6 pontos de Ki para conjurar Cone de Frio (Cone of Cold).
+  mechanical_summary: "6 Ki: Cone de Frio (8d8 frio, cone 18m)"
+  cost: 6
+  classes:
+    - monk
+  prereqs:
+    level: 17
+
+- slug: ed-eye-of-hurricane
+  name_pt: Olho do Furacão
+  name_en: Eye of the Hurricane
+  description: |
+    Cria aura de ventos furiosos em 9m por 1 minuto (concentração). Ataques à distância contra você e aliados na área têm desvantagem.
+  mechanical_summary: "4 Ki: desvant. ataques à dist. em aura 9m"
+  cost: 4
+  classes:
+    - monk
+  prereqs:
+    level: 17

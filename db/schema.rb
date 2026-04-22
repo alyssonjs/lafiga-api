@@ -10,10 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_09_13_101500) do
+ActiveRecord::Schema.define(version: 2026_04_22_180000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
 
   create_table "alignments", force: :cascade do |t|
     t.string "api_index", null: false
@@ -36,13 +57,54 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.index ["api_index"], name: "index_backgrounds_on_api_index", unique: true
   end
 
-  create_table "boards", force: :cascade do |t|
-    t.string "name"
-    t.binary "data"
+  create_table "battle_maps", force: :cascade do |t|
     t.bigint "user_id", null: false
+    t.bigint "group_id"
+    t.string "name", null: false
+    t.integer "width", null: false
+    t.integer "height", null: false
+    t.integer "cell_size_px", default: 32, null: false
+    t.jsonb "cells", default: [], null: false
+    t.jsonb "tokens", default: [], null: false
+    t.jsonb "fog"
+    t.text "background_image_url"
+    t.float "grid_opacity", default: 1.0
+    t.integer "schema_version", default: 1, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["user_id"], name: "index_boards_on_user_id"
+    t.jsonb "walls", default: [], null: false
+    t.jsonb "measurements", default: [], null: false
+    t.jsonb "drawings", default: [], null: false
+    t.jsonb "player_permissions", default: {"pencil"=>false, "measure"=>true}, null: false
+    t.float "background_image_offset_x", default: 0.0, null: false
+    t.float "background_image_offset_y", default: 0.0, null: false
+    t.string "distance_display_unit", default: "m", null: false
+    t.decimal "cell_world_ft", precision: 6, scale: 2, default: "5.0", null: false
+    t.jsonb "aoe_placements", default: [], null: false
+    t.string "fog_mode", default: "hidden_cells", null: false
+    t.index ["group_id", "updated_at"], name: "index_battle_maps_on_group_id_and_updated_at"
+    t.index ["group_id"], name: "index_battle_maps_on_group_id"
+    t.index ["user_id", "updated_at"], name: "index_battle_maps_on_user_id_and_updated_at"
+    t.index ["user_id"], name: "index_battle_maps_on_user_id"
+  end
+
+  create_table "campaign_notes", force: :cascade do |t|
+    t.bigint "group_id", null: false
+    t.bigint "schedule_id"
+    t.bigint "user_id", null: false
+    t.string "title", default: "", null: false
+    t.text "body", default: "", null: false
+    t.integer "kind", default: 0, null: false
+    t.integer "visibility", default: 0, null: false
+    t.boolean "pinned", default: false, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["group_id", "kind"], name: "index_campaign_notes_on_group_id_and_kind"
+    t.index ["group_id", "pinned"], name: "index_campaign_notes_on_group_id_and_pinned"
+    t.index ["group_id", "updated_at"], name: "index_campaign_notes_on_group_id_and_updated_at"
+    t.index ["group_id"], name: "index_campaign_notes_on_group_id"
+    t.index ["schedule_id"], name: "index_campaign_notes_on_schedule_id"
+    t.index ["user_id"], name: "index_campaign_notes_on_user_id"
   end
 
   create_table "channel_memberships", force: :cascade do |t|
@@ -64,13 +126,26 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.index ["slug"], name: "index_channels_on_slug", unique: true
   end
 
+  create_table "character_dm_level_unlocks", force: :cascade do |t|
+    t.bigint "character_id", null: false
+    t.bigint "unlocked_by_user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["character_id"], name: "index_character_dm_level_unlocks_on_character_id", unique: true
+    t.index ["unlocked_by_user_id"], name: "index_character_dm_level_unlocks_on_unlocked_by_user_id"
+  end
+
   create_table "characters", force: :cascade do |t|
     t.string "name"
     t.text "background"
     t.bigint "user_id", null: false
+    t.bigint "group_id"
+    t.integer "status", default: 0, null: false
+    t.integer "current_step"
+    t.jsonb "draft_data", default: {}
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "group_id"
+    t.text "dm_notes"
     t.index ["group_id"], name: "index_characters_on_group_id"
     t.index ["user_id"], name: "index_characters_on_user_id"
   end
@@ -80,14 +155,16 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.bigint "feature_id", null: false
     t.string "source"
     t.integer "level"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
     t.string "source_type"
     t.bigint "source_id"
     t.integer "gained_at_level"
     t.boolean "show", default: true, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["character_id", "feature_id", "show"], name: "idx_char_features_show"
     t.index ["character_id", "feature_id"], name: "idx_char_features_unique", unique: true
+    t.index ["character_id"], name: "index_characters_features_on_character_id"
+    t.index ["feature_id"], name: "index_characters_features_on_feature_id"
     t.index ["source_type", "source_id"], name: "idx_char_features_source"
   end
 
@@ -109,6 +186,71 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.index ["feature_id"], name: "index_class_levels_features_on_feature_id"
   end
 
+  create_table "combat_combatants", force: :cascade do |t|
+    t.bigint "combat_state_id", null: false
+    t.string "combatable_type", null: false
+    t.bigint "combatable_id", null: false
+    t.string "name", null: false
+    t.integer "initiative"
+    t.integer "initiative_bonus", default: 0, null: false
+    t.integer "position", null: false
+    t.integer "hp_current", default: 0, null: false
+    t.integer "hp_max", default: 0, null: false
+    t.integer "ac", default: 10, null: false
+    t.integer "temp_hp", default: 0, null: false
+    t.boolean "is_delayed", default: false, null: false
+    t.boolean "is_concentrating", default: false, null: false
+    t.string "concentration_spell"
+    t.boolean "is_stabilized", default: false, null: false
+    t.boolean "is_dead", default: false, null: false
+    t.jsonb "conditions", default: [], null: false
+    t.jsonb "actions_used", default: {"action"=>false, "movement"=>false, "reaction"=>false, "bonus_action"=>false}, null: false
+    t.jsonb "death_saves", default: {"failures"=>0, "successes"=>0}, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "tie_break_dex", default: 10, null: false
+    t.index ["combat_state_id", "position"], name: "index_combat_combatants_on_state_and_position", unique: true
+    t.index ["combat_state_id"], name: "index_combat_combatants_on_combat_state_id"
+    t.index ["combatable_type", "combatable_id"], name: "index_combat_combatants_on_combatable"
+    t.index ["combatable_type", "combatable_id"], name: "index_combat_combatants_on_combatable_type_and_combatable_id"
+  end
+
+  create_table "combat_npcs", force: :cascade do |t|
+    t.bigint "schedule_id", null: false
+    t.string "name", null: false
+    t.integer "hp_current", default: 0, null: false
+    t.integer "hp_max", default: 0, null: false
+    t.integer "ac", default: 10, null: false
+    t.integer "base_ac"
+    t.integer "speed"
+    t.string "cr"
+    t.integer "proficiency_bonus"
+    t.string "monster_id"
+    t.jsonb "stats", default: {}, null: false
+    t.jsonb "saving_throws", default: {}, null: false
+    t.jsonb "skills", default: {}, null: false
+    t.jsonb "attacks", default: [], null: false
+    t.jsonb "equipment", default: {}, null: false
+    t.text "notes", default: "", null: false
+    t.datetime "defeated_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id"
+    t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id_alive", where: "(defeated_at IS NULL)"
+  end
+
+  create_table "combat_states", force: :cascade do |t|
+    t.bigint "schedule_id", null: false
+    t.boolean "active", default: false, null: false
+    t.integer "round", default: 0, null: false
+    t.integer "current_turn_index", default: 0, null: false
+    t.datetime "started_at"
+    t.datetime "ended_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["schedule_id"], name: "index_combat_states_on_schedule_id", unique: true
+  end
+
   create_table "date_dimensions", force: :cascade do |t|
     t.date "date"
     t.integer "year"
@@ -123,6 +265,22 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.index ["date"], name: "idx_date_dimensions_unique_date", unique: true
   end
 
+  create_table "diary_entries", force: :cascade do |t|
+    t.bigint "character_id", null: false
+    t.bigint "schedule_id"
+    t.string "title", default: "", null: false
+    t.text "content", default: "", null: false
+    t.string "font_family", default: "Caveat", null: false
+    t.integer "font_size", default: 16, null: false
+    t.string "text_color", default: "#3e2723", null: false
+    t.string "page_color", default: "#f5e6d3", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["character_id", "updated_at"], name: "index_diary_entries_on_character_id_and_updated_at"
+    t.index ["character_id"], name: "index_diary_entries_on_character_id"
+    t.index ["schedule_id"], name: "index_diary_entries_on_schedule_id"
+  end
+
   create_table "feats", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -131,6 +289,9 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.text "proficiency_bonuses"
     t.text "features"
     t.string "api_index"
+    t.json "special_rules"
+    t.json "cantrips"
+    t.json "spells"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["api_index"], name: "index_feats_on_api_index"
@@ -140,10 +301,10 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
   create_table "features", force: :cascade do |t|
     t.string "api_index", null: false
     t.string "name", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
     t.integer "category", default: 0, null: false
     t.text "description"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["api_index"], name: "index_features_on_api_index", unique: true
   end
 
@@ -162,6 +323,39 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.text "description"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "cover_image_url"
+    t.bigint "dm_user_id"
+    t.index ["dm_user_id"], name: "index_groups_on_dm_user_id"
+    t.index ["dm_user_id"], name: "index_groups_on_dm_user_id_not_null", where: "(dm_user_id IS NOT NULL)"
+  end
+
+  create_table "items", force: :cascade do |t|
+    t.string "api_index", null: false
+    t.string "name", null: false
+    t.string "kind", null: false
+    t.string "category"
+    t.decimal "value_gp", precision: 10, scale: 2
+    t.decimal "weight_kg", precision: 8, scale: 2
+    t.string "rarity"
+    t.boolean "requires_attunement", default: false, null: false
+    t.string "attunement_note"
+    t.string "sub_category"
+    t.boolean "cursed", default: false
+    t.text "curse_text"
+    t.integer "charges"
+    t.string "recharge"
+    t.string "source"
+    t.text "description"
+    t.text "tags", default: [], array: true
+    t.jsonb "props", default: {}
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["api_index"], name: "index_items_on_api_index", unique: true
+    t.index ["category"], name: "index_items_on_category"
+    t.index ["kind"], name: "index_items_on_kind"
+    t.index ["props"], name: "index_items_on_props", using: :gin
+    t.index ["rarity"], name: "index_items_on_rarity"
+    t.index ["tags"], name: "index_items_on_tags", using: :gin
   end
 
   create_table "klasses", force: :cascade do |t|
@@ -192,9 +386,9 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.jsonb "properties", default: {}
     t.text "description"
     t.text "tags", default: [], array: true
+    t.jsonb "effects", default: []
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.jsonb "effects", default: []
     t.index ["category"], name: "index_magic_items_on_category"
     t.index ["name"], name: "index_magic_items_on_name"
     t.index ["rarity"], name: "index_magic_items_on_rarity"
@@ -215,10 +409,49 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
+  create_table "monsters", force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "name", null: false
+    t.string "name_en"
+    t.string "size"
+    t.string "monster_type"
+    t.string "alignment"
+    t.string "cr", default: "0", null: false
+    t.float "cr_numeric", default: 0.0, null: false
+    t.integer "xp", default: 0, null: false
+    t.integer "ac"
+    t.integer "hp"
+    t.string "source", default: "srd", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["cr_numeric"], name: "index_monsters_on_cr_numeric"
+    t.index ["monster_type"], name: "index_monsters_on_monster_type"
+    t.index ["name"], name: "index_monsters_on_name"
+    t.index ["payload"], name: "index_monsters_on_payload", using: :gin
+    t.index ["slug"], name: "index_monsters_on_slug", unique: true
+    t.index ["source"], name: "index_monsters_on_source"
+  end
+
+  create_table "race_traits", force: :cascade do |t|
+    t.bigint "race_id", null: false
+    t.bigint "trait_id", null: false
+    t.bigint "sub_race_id"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["race_id", "trait_id", "sub_race_id"], name: "idx_race_traits_unique", unique: true
+    t.index ["race_id"], name: "index_race_traits_on_race_id"
+    t.index ["sub_race_id"], name: "index_race_traits_on_sub_race_id"
+    t.index ["trait_id"], name: "index_race_traits_on_trait_id"
+  end
+
   create_table "races", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "api_index"
+    t.index ["api_index"], name: "index_races_on_api_index", unique: true
   end
 
   create_table "roles", force: :cascade do |t|
@@ -238,13 +471,40 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
   create_table "schedules", force: :cascade do |t|
     t.integer "status", default: 1, null: false
     t.bigint "date_dimension_id", null: false
+    t.bigint "group_id"
     t.string "title", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "group_id"
-    t.index ["date_dimension_id"], name: "idx_schedules_unique_date_dimension", unique: true
-    t.index ["date_dimension_id"], name: "index_schedules_on_date_dimension_id"
+    t.text "description"
+    t.text "summary"
+    t.integer "xp_awarded", default: 0, null: false
+    t.datetime "started_at"
+    t.datetime "ended_at"
+    t.jsonb "highlights", default: [], null: false
+    t.string "scheduled_time"
+    t.string "campaign_name"
+    t.bigint "battle_map_id"
+    t.text "dm_notes"
+    t.index ["battle_map_id"], name: "index_schedules_on_battle_map_id"
+    t.index ["campaign_name"], name: "index_schedules_on_campaign_name"
+    t.index ["group_id", "date_dimension_id"], name: "idx_schedules_active_per_group_date", unique: true, where: "((group_id IS NOT NULL) AND (status <> 4))"
     t.index ["group_id"], name: "index_schedules_on_group_id"
+    t.index ["highlights"], name: "index_schedules_on_highlights", using: :gin
+    t.index ["status"], name: "index_schedules_on_status"
+  end
+
+  create_table "session_logs", force: :cascade do |t|
+    t.bigint "schedule_id", null: false
+    t.integer "kind", default: 0, null: false
+    t.string "actor"
+    t.text "message", default: "", null: false
+    t.jsonb "roll_result"
+    t.datetime "posted_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["schedule_id", "kind"], name: "index_session_logs_on_schedule_id_and_kind"
+    t.index ["schedule_id", "posted_at"], name: "index_session_logs_on_schedule_and_posted_at_desc", order: { posted_at: :desc }
+    t.index ["schedule_id"], name: "index_session_logs_on_schedule_id"
   end
 
   create_table "sheet_feats", force: :cascade do |t|
@@ -271,8 +531,10 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.string "source"
     t.jsonb "props_json"
     t.text "notes"
+    t.bigint "item_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["item_id"], name: "index_sheet_items_on_item_id"
     t.index ["sheet_id", "item_index"], name: "index_sheet_items_on_sheet_id_and_item_index"
     t.index ["sheet_id"], name: "index_sheet_items_on_sheet_id"
   end
@@ -282,6 +544,8 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.bigint "klass_id", null: false
     t.bigint "sub_klass_id"
     t.integer "level", limit: 2
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["klass_id"], name: "index_sheet_klasses_on_klass_id"
     t.index ["sheet_id", "klass_id"], name: "idx_sheet_klasses_unique_sheet_klass", unique: true
     t.index ["sheet_id"], name: "index_sheet_klasses_on_sheet_id"
@@ -295,7 +559,11 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.string "source"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "uses_per_rest"
+    t.integer "uses_remaining", default: 0
     t.index ["sheet_klass_id", "spell_id"], name: "idx_known_spells_unique", unique: true
+    t.index ["source"], name: "index_sheet_known_spells_on_source"
+    t.index ["uses_per_rest"], name: "index_sheet_known_spells_on_uses_per_rest"
   end
 
   create_table "sheet_prepared_spells", force: :cascade do |t|
@@ -308,20 +576,27 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.index ["sheet_id", "spell_id"], name: "idx_prepared_spells_unique", unique: true
   end
 
+  create_table "sheet_runtime_states", force: :cascade do |t|
+    t.bigint "sheet_id", null: false
+    t.jsonb "death_saves", default: {"stable"=>false, "failures"=>0, "successes"=>0}, null: false
+    t.jsonb "hit_dice_used", default: {}, null: false
+    t.integer "exhaustion", default: 0, null: false
+    t.jsonb "conditions", default: [], null: false
+    t.jsonb "concentration"
+    t.jsonb "spell_slots_used", default: {}, null: false
+    t.jsonb "class_resources_used", default: {}, null: false
+    t.datetime "last_short_rest_at"
+    t.datetime "last_long_rest_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "active_effects", default: [], null: false
+    t.index ["sheet_id"], name: "index_sheet_runtime_states_on_sheet_id", unique: true
+  end
+
   create_table "sheets", force: :cascade do |t|
     t.bigint "character_id", null: false
     t.bigint "sub_race_id"
     t.bigint "race_id", null: false
-    t.integer "str"
-    t.integer "dex"
-    t.integer "con"
-    t.integer "int"
-    t.integer "wis"
-    t.integer "cha"
-    t.integer "hp_max", default: 0, null: false
-    t.integer "hp_current", default: 0, null: false
-    t.integer "temp_hp", default: 0, null: false
-    t.jsonb "metadata", default: {}, null: false
     t.bigint "alignment_id"
     t.bigint "background_id"
     t.string "background_key"
@@ -333,6 +608,22 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.jsonb "background_summary", default: {}, null: false
     t.jsonb "features_by_level", default: {}, null: false
     t.jsonb "race_bonuses_applied", default: {}, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.integer "str"
+    t.integer "dex"
+    t.integer "con"
+    t.integer "int"
+    t.integer "wis"
+    t.integer "cha"
+    t.integer "hp_max", default: 0, null: false
+    t.integer "hp_current", default: 0, null: false
+    t.integer "temp_hp", default: 0, null: false
+    t.jsonb "avatar_customization", default: {}, null: false
+    t.integer "experience_points", default: 0, null: false
+    t.jsonb "coins", default: {"cp"=>0, "ep"=>0, "gp"=>0, "pp"=>0, "sp"=>0}, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "coin_pouches", default: [], null: false
     t.index ["alignment_id"], name: "index_sheets_on_alignment_id"
     t.index ["background_id"], name: "index_sheets_on_background_id"
     t.index ["background_key"], name: "index_sheets_on_background_key"
@@ -342,6 +633,7 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.index ["class_choices"], name: "index_sheets_on_class_choices", using: :gin
     t.index ["class_summary"], name: "index_sheets_on_class_summary", using: :gin
     t.index ["current_level"], name: "index_sheets_on_current_level"
+    t.index ["experience_points"], name: "index_sheets_on_experience_points"
     t.index ["features_by_level"], name: "index_sheets_on_features_by_level", using: :gin
     t.index ["race_bonuses_applied"], name: "index_sheets_on_race_bonuses_applied", using: :gin
     t.index ["race_choices"], name: "index_sheets_on_race_choices", using: :gin
@@ -372,10 +664,10 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.integer "cantrips_known"
     t.integer "spells_known"
     t.text "spell_slots"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
     t.integer "pact_slot_level"
     t.text "pact_slots"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["class_level_id"], name: "index_spellcastings_on_class_level_id"
   end
 
@@ -414,7 +706,8 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.string "subclass_flavor"
     t.text "description"
     t.text "levels_json"
-    t.index ["api_index"], name: "index_sub_klasses_on_api_index", unique: true
+    t.index ["api_index"], name: "index_sub_klasses_on_api_index"
+    t.index ["klass_id", "api_index"], name: "idx_sub_klasses_unique_klass_api", unique: true
     t.index ["klass_id"], name: "index_sub_klasses_on_klass_id"
   end
 
@@ -423,6 +716,8 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.bigint "race_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "api_index"
+    t.index ["race_id", "api_index"], name: "index_sub_races_on_race_id_and_api_index", unique: true
     t.index ["race_id"], name: "index_sub_races_on_race_id"
   end
 
@@ -444,6 +739,7 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.bigint "role_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "progression_settings", default: {}, null: false
     t.index ["role_id"], name: "index_users_on_role_id"
   end
 
@@ -453,22 +749,58 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  add_foreign_key "boards", "users"
+  create_table "weapons", force: :cascade do |t|
+    t.string "api_index", null: false
+    t.string "name", null: false
+    t.string "category"
+    t.string "range_type"
+    t.integer "hands"
+    t.string "damage_die"
+    t.string "versatile_die"
+    t.string "range"
+    t.jsonb "properties", default: []
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["api_index"], name: "index_weapons_on_api_index", unique: true
+    t.index ["category"], name: "index_weapons_on_category"
+    t.index ["range_type"], name: "index_weapons_on_range_type"
+  end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "battle_maps", "groups"
+  add_foreign_key "battle_maps", "users"
+  add_foreign_key "campaign_notes", "groups"
+  add_foreign_key "campaign_notes", "schedules"
+  add_foreign_key "campaign_notes", "users"
   add_foreign_key "channel_memberships", "channels"
   add_foreign_key "channel_memberships", "users"
+  add_foreign_key "character_dm_level_unlocks", "characters"
+  add_foreign_key "character_dm_level_unlocks", "users", column: "unlocked_by_user_id"
   add_foreign_key "characters", "groups"
   add_foreign_key "characters", "users"
   add_foreign_key "characters_features", "characters"
   add_foreign_key "characters_features", "features"
   add_foreign_key "class_levels", "klasses"
+  add_foreign_key "combat_combatants", "combat_states"
+  add_foreign_key "combat_npcs", "schedules"
+  add_foreign_key "combat_states", "schedules"
+  add_foreign_key "diary_entries", "characters"
+  add_foreign_key "diary_entries", "schedules"
+  add_foreign_key "groups", "users", column: "dm_user_id"
   add_foreign_key "messages", "channels"
   add_foreign_key "messages", "users"
+  add_foreign_key "race_traits", "races"
+  add_foreign_key "race_traits", "sub_races"
+  add_foreign_key "race_traits", "traits"
   add_foreign_key "schedule_characters", "characters"
   add_foreign_key "schedule_characters", "schedules"
+  add_foreign_key "schedules", "battle_maps"
   add_foreign_key "schedules", "date_dimensions"
   add_foreign_key "schedules", "groups"
+  add_foreign_key "session_logs", "schedules"
   add_foreign_key "sheet_feats", "feats"
   add_foreign_key "sheet_feats", "sheets"
+  add_foreign_key "sheet_items", "items"
   add_foreign_key "sheet_items", "sheets"
   add_foreign_key "sheet_klasses", "klasses"
   add_foreign_key "sheet_klasses", "sheets"
@@ -477,6 +809,7 @@ ActiveRecord::Schema.define(version: 2025_09_13_101500) do
   add_foreign_key "sheet_known_spells", "spells"
   add_foreign_key "sheet_prepared_spells", "sheets"
   add_foreign_key "sheet_prepared_spells", "spells"
+  add_foreign_key "sheet_runtime_states", "sheets"
   add_foreign_key "sheets", "characters"
   add_foreign_key "sheets", "races"
   add_foreign_key "sheets", "sub_races"

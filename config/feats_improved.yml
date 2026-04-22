@@ -1,0 +1,811 @@
+# Feats com regras especiais melhoradas para o sistema
+feats:
+  adepto_elemental:
+    key_aliases: ["elemental_adept"]
+    name: "Adepto Elemental"
+    description: "Suas magias ignoram resistências de um tipo de dano escolhido e melhoram rolagens mínimas."
+    prerequisites:
+      spellcasting: true
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      magic_modifiers:
+        elemental_focus:
+          implementation: "elemental_adept"
+          parameters: { damage_type_choice: ["ácido","elétrico","fogo","frio","trovão"], ones_count_as: 2 }
+    features:
+      name: "Canalização Elemental"
+      desc: "Escolha ácido, elétrico, fogo, frio ou trovão; suas magias ignoram resistência a esse tipo e 1s nos dados viram 2."
+
+  adepto_marcial:
+    key_aliases: ["martial_adept"]
+    name: "Adepto Marcial"
+    description: "Você aprende manobras de Mestre de Batalha e ganha 1 dado de superioridade (d6)."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      maneuvers:
+        choose: 2
+        options:
+          - { id: "aparar", name: "Aparar" }
+          - { id: "ameacador", name: "Ataque Ameaçador" }
+          - { id: "encontrao", name: "Ataque de Encontrão" }
+          - { id: "desarmar", name: "Ataque Desarmante" }
+          - { id: "trespassante", name: "Ataque Trespassante" }
+          - { id: "provocante", name: "Ataque Provocante" }
+          - { id: "derrubar", name: "Derrubar" }
+          - { id: "distrativo", name: "Golpe Distrativo" }
+          - { id: "ripostar", name: "Contra-Atacar" }
+          - { id: "preciso", name: "Ataque Preciso" }
+      superiority_die:
+        implementation: "grant_superiority_die"
+        parameters: { count: 1, die: "d6" }
+    features:
+      name: "Técnicas de Combate"
+      desc: "Aprende 2 manobras (Mestre de Batalha) e ganha 1 dado de superioridade (d6)."
+
+  atleta:
+    key_aliases: ["athlete"]
+    name: "Atleta"
+    description: "Treinamento físico intenso melhora sua mobilidade."
+    prerequisites: {}
+    ability_bonuses:
+      choose: { amount: 1, options: ["str","dex"] }
+    proficiency_bonuses: {}
+    special_rules:
+      movement_modifiers:
+        stand_up_cost_reduced:
+          implementation: "stand_up_cost"
+          parameters: { cost_ft: 5 }
+        climb_no_extra_movement:
+          implementation: "climb_no_extra_cost"
+          parameters: {}
+        jump_with_5ft_run:
+          implementation: "reduced_run_up_for_jump"
+          parameters: { distance_ft: 5 }
+    features:
+      name: "Condicionamento"
+      desc: "+1 FOR/DEX; levantar custa 1,5m; escalar não custa extra; salto com corrida usando apenas 1,5m."
+
+  ator:
+    key_aliases: ["actor"]
+    name: "Ator"
+    description: "Mímica e dramaturgia aprimoradas."
+    prerequisites: {}
+    ability_bonuses: { cha: 1 }
+    proficiency_bonuses: {}
+    special_rules:
+      skill_modifiers:
+        skill_advantage:
+          implementation: "skill_advantage"
+          parameters: ["Atuação","Enganação"]
+      social_modifiers:
+        mimicry:
+          implementation: "voice_mimicry"
+          parameters: { requires_listen_min: 1 }
+    features:
+      name: "Performance Versátil"
+      desc: "+1 CAR; vantagem em Atuação/Enganação ao personificar; pode imitar vozes/sons após 1 min ouvindo."
+
+  especialista_em_briga:
+    key_aliases: ["tavern_brawler"]
+    name: "Especialista em Briga"
+    description: "Você transforma qualquer coisa em arma – inclusive seus punhos."
+    prerequisites: {}
+    ability_bonuses:
+      choose: { amount: 1, options: ["str","con"] }
+    proficiency_bonuses: {}
+    special_rules:
+      unarmed_modifiers:
+        unarmed_damage_die:
+          implementation: "unarmed_damage_die"
+          parameters: { die: "d4" }
+      combat_modifiers:
+        bonus_action_grapple_on_hit:
+          implementation: "bonus_action_grapple_on_hit"
+          parameters: {}
+    features:
+      name: "Briga de Taverna"
+      desc: "+1 FOR/CON; dano desarmado 1d4; após atingir com desarmado/arma improvisada, pode agarrar (ação bônus)."
+
+  investida_poderosa:
+    key_aliases: ["charger"]
+    name: "Investida Poderosa"
+    description: "Transforma sua Disparada em impacto."
+    prerequisites: {}
+    special_rules:
+      combat_modifiers:
+        bonus_action_shove:
+          implementation: "bonus_action_attack_or_shove_after_dash"
+          parameters: { min_move_ft: 10, damage_bonus: 5 }
+    features:
+      name: "Impulso Ofensivo"
+      desc: "Após Disparada, ação bônus: ataque CC/empurrão; se mover 3m em linha reta antes, +5 no dano do ataque."
+
+  maestria_em_armadura_media:
+    key_aliases: ["medium_armor_master"]
+    name: "Maestria em Armadura Média"
+    description: "Movimenta-se melhor e aproveita mais sua Destreza em armaduras médias."
+    prerequisites:
+      proficiencies: { armors: ["média"] }
+    special_rules:
+      stealth_conditions:
+        implementation: "stealth_conditions"
+        parameters: { no_disadvantage_in_medium_armor: true }
+      defense_modifiers:
+        dex_cap_plus_three:
+          implementation: "medium_armor_dex_cap"
+          parameters: { dex_cap: 3, requires_dex: 16 }
+    features:
+      name: "Ajuste Preciso"
+      desc: "Sem desvantagem de Furtividade em armadura média; com DES 16+, adiciona +3 à CA (em vez de +2)."
+
+  maestria_em_armadura_pesada:
+    key_aliases: ["heavy_armor_master"]
+    name: "Maestria em Armadura Pesada"
+    description: "Seu treinamento em armadura pesada reduz golpes."
+    prerequisites:
+      proficiencies: { armors: ["pesada"] }
+    ability_bonuses: { str: 1 }
+    special_rules:
+      defense_modifiers:
+        damage_resistance:
+          implementation: "reduce_nonmagical_bps_damage"
+          parameters: { reduce: 3 }
+    features:
+      name: "Peso que Protege"
+      desc: "+1 FOR; em armadura pesada, reduz em 3 dano de contusão/corte/perfuração de ataques não-mágicos."
+
+  matador_de_conjuradores:
+    key_aliases: ["mage_slayer"]
+    name: "Matador de Conjuradores"
+    description: "Especialista em punir conjuradores adjacentes."
+    prerequisites: {}
+    special_rules:
+      combat_modifiers:
+        reaction_attack_on_cast:
+          implementation: "reaction_melee_attack_when_adjacent_casts"
+          parameters: { range_m: 1.5 }
+        impose_concentration_disadvantage:
+          implementation: "disadvantage_on_concentration_when_hit"
+          parameters: {}
+        advantage_on_saves_vs_adjacent_spells:
+          implementation: "advantage_on_saves_vs_adjacent_caster"
+          parameters: { range_m: 1.5 }
+    features:
+      name: "Antimagia Agressiva"
+      desc: "Reação: ataque CC quando alvo adjacente conjura; alvos atingidos têm desvantagem para manter concentração; vantagem em testes contra magias conjuradas adjacentes."
+
+  resistente:
+    key_aliases: ["durable","duravel"]
+    name: "Resistente"
+    description: "Constituição reforçada e recuperação eficiente."
+    prerequisites: {}
+    ability_bonuses: { con: 1 }
+    special_rules:
+      dice_modifiers:
+        hit_points_bonus:
+          implementation: "hit_points_per_level"
+          parameters: { bonus_per_level: 0, retroactive: false }
+      hit_dice_minimum_heal:
+        implementation: "hit_die_minimum_heal"
+        parameters: { minimum: "2x_con_mod", minimum_floor: 2 }
+    features:
+      name: "Recuperação Constante"
+      desc: "+1 CON; ao rolar Dado de Vida para curar, cura no mínimo 2×mod.CON (mínimo 2)."
+  mobilidade:
+    name: "Mobilidade"
+    description: "Sua velocidade e agilidade superam os oponentes."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      movement_modifiers:
+        speed_bonus:
+          implementation: "add_to_speed"
+          parameters: { bonus: 3, unit: "metros" }
+        difficult_terrain_immunity:
+          implementation: "ignore_difficult_terrain"
+          parameters: { condition: "disparada" }
+      combat_modifiers:
+        opportunity_attack_immunity:
+          implementation: "no_oa_after_attack"
+          parameters: { condition: "após_atacar_criatura" }
+    features:
+      name: "Agilidade de Combate"
+      desc: "Deslocamento +3 m; terreno difícil é ignorado quando usa Disparada; após atacar uma criatura, ela não tem OA contra você neste turno."
+
+  atirador_eximio:
+    key_aliases: ["sharpshooter","atirador_agucado"]
+    name: "Atirador Exímio"
+    description: "Treino rigoroso com armas de ataque à distância."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        cover_immunity:
+          implementation: "ignore_cover_types"
+          parameters: ["leve", "média"]
+        range_advantage:
+          implementation: "no_long_range_disadvantage"
+          parameters: { weapon_type: "ranged" }
+        power_attack:
+          implementation: "power_attack_option"
+          parameters: { attack_penalty: -5, damage_bonus: 10, weapon_type: "ranged" }
+    features:
+      name: "Precisão Letal"
+      desc: "Ignora coberturas leve/média; não sofre desvantagem em alcance longo; opção de −5 no ataque para +10 no dano."
+
+  sniper_magico:
+    key_aliases: ["spell_sniper"]
+    name: "Sniper Mágico"
+    description: "Conjurador focado em ataques de precisão à distância."
+    prerequisites:
+      spellcasting: true
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        cover_immunity:
+          implementation: "ignore_cover_types"
+          parameters: ["leve", "média"]
+        spell_range_double:
+          implementation: "double_spell_range"
+          parameters: { spell_type: "ataque_à_distância" }
+      magic_modifiers:
+        learn_cantrip:
+          implementation: "learn_cantrip"
+          parameters: { type: "ataque_à_distância", class_choice: true }
+    features:
+      name: "Magias de Precisão"
+      description: "Dobra o alcance de magias de ataque à distância; ignora cobertura leve/média; aprende 1 truque de ataque à distância."
+
+  mestre_de_armas_grandes:
+    key_aliases: ["great_weapon_master"]
+    name: "Mestre de Armas Grandes"
+    description: "Usa o peso de armas pesadas a seu favor."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        bonus_action_attack:
+          implementation: "bonus_action_attack_on_crit_or_kill"
+          parameters: { trigger: ["crítico", "reduzir_a_0_pv"], attack_type: "corpo_a_corpo" }
+        power_attack:
+          implementation: "power_attack_option"
+          parameters: { attack_penalty: -5, damage_bonus: 10, weapon_type: "pesada" }
+    features:
+      name: "Ataques Poderosos"
+      desc: "Ataque extra (ação bônus) ao critar/abater; opção de golpe poderoso com armas pesadas."
+
+  mestre_de_armas_duplas:
+    key_aliases: ["dual_wielder"]
+    name: "Mestre de Armas Duplas"
+    description: "Luta com duas armas ao mesmo tempo."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      equipment_modifiers:
+        armor_class_bonus:
+          implementation: "equipment_ac_bonus"
+          parameters: { condition: "duas_armas", bonus: 1 }
+        weapon_restriction_removal:
+          implementation: "remove_weapon_restriction"
+          parameters: "armas_duplas_não_leves"
+        dual_wield_draw:
+          implementation: "dual_wield_draw"
+          parameters: { action: "sacar_ou_guardar", weapons: 2 }
+    features:
+      name: "Combate Duplo"
+      desc: "+1 CA com duas armas; pode usar armas de uma mão não-leves; sacar/guardar duas armas de uma vez."
+
+  sortudo:
+    key_aliases: ["lucky"]
+    name: "Sortudo"
+    description: "Sorte incomum inclina as probabilidades a seu favor."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      dice_modifiers:
+        luck_points:
+          implementation: "luck_points"
+          parameters: { points: 3, recovery: "descanso_longo", uses: ["ataque", "teste", "salvaguarda", "forçar_rerrolar_inimigo"] }
+    features:
+      name: "Pontos de Sorte"
+      desc: "3 pontos de sorte para rerrolar d20 (seu ou do inimigo contra você); recupera após descanso longo."
+
+  robusto:
+    key_aliases: ["tough"]
+    name: "Robusto"
+    description: "Vitalidade excepcional."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      dice_modifiers:
+        hit_points_bonus:
+          implementation: "hit_points_per_level"
+          parameters: { bonus_per_level: 2, retroactive: true }
+    features:
+      name: "PV Aumentados"
+      desc: "+2 PV por nível (retroativo ao adquirir)."
+
+  conjurador_de_batalha:
+    key_aliases: ["war_caster"]
+    name: "Conjurador de Batalha"
+    description: "Treino para conjurar em combate."
+    prerequisites:
+      spellcasting: true
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      magic_modifiers:
+        somatic_components_with_hands_full:
+          implementation: "somatic_with_hands_full"
+          parameters: { equipment: ["armas", "escudo"] }
+        spell_as_opportunity_attack:
+          implementation: "spell_as_oa"
+          parameters: { spell_action: "1 ação", target_restriction: "único alvo" }
+    features:
+      name: "Concentração e Gestos"
+      desc: "Pode S com mãos ocupadas; ao invés de OA, conjura magia de 1 ação de alvo único."
+
+  especialista_em_besta:
+    key_aliases: ["crossbow_expert"]
+    name: "Especialista em Besta"
+    description: "Prática extensiva com bestas."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      equipment_modifiers:
+        weapon_property_ignore:
+          implementation: "ignore_weapon_property"
+          parameters: { property: "recarga", weapon_type: "bestas" }
+      combat_modifiers:
+        range_advantage:
+          implementation: "no_close_range_disadvantage"
+          parameters: { weapon_type: "ranged", condition: "1,5m_de_criatura_hostil" }
+        bonus_action_attack:
+          implementation: "bonus_action_attack"
+          parameters: { weapon: "besta_de_mão", condition: "após_ataque_com_arma_de_uma_mão" }
+    features:
+      name: "Domínio de Bestas"
+      desc: "Ignora recarga das bestas; sem desvantagem a 1,5 m; ação bônus com besta de mão após atacar com arma de 1 mão."
+
+  observador:
+    key_aliases: ["observant"]
+    name: "Observador"
+    description: "Atenção a detalhes e memória aguçada."
+    prerequisites:
+      ability_score: { wis: 13 }
+    ability_bonuses: { wis: 1, int: 1 }
+    proficiency_bonuses:
+      skills: ["Percepção"]
+    special_rules:
+      skill_modifiers:
+        skill_advantage:
+          implementation: "skill_advantage"
+          parameters: ["Investigação", "Percepção"]
+        lip_reading:
+          implementation: "lip_reading"
+          parameters: { condition: "compreender_idioma", range: "visão" }
+    features:
+      name: "Leitura Labial e Percepção Afiada"
+      desc: "Vantagem em Investigação/Percepção; lê lábios se entender o idioma."
+
+  mestre_do_escudo:
+    key_aliases: ["shield_master"]
+    name: "Mestre do Escudo"
+    description: "Domina o uso do escudo para ataque e defesa."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        bonus_action_shove:
+          implementation: "bonus_action_shove"
+          parameters: { trigger: "após_ataque", requires: "escudo" }
+        shield_bonus_to_dex_save:
+          implementation: "shield_bonus_to_dex_save"
+          parameters: { self_only: true }
+        shield_master_reaction:
+          implementation: "shield_master_reaction"
+          parameters: { reaction: true, requires: "escudo" }
+    features:
+      name: "Controle Defensivo"
+      desc: "Empurrão (ação bônus) ao atacar; adiciona escudo a testes de DES que afetem só você; reduz a 0 com reação em DES por metade."
+
+  duelista_defensivo:
+    key_aliases: ["defensive_duelist"]
+    name: "Duelista Defensivo"
+    description: "Reage com perícia para se proteger."
+    prerequisites:
+      ability_score: { dex: 13 }
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      defense_modifiers:
+        reaction_ac_bonus:
+          implementation: "reaction_ac_bonus"
+          parameters: "proficiency_bonus"
+    features:
+      name: "Reação Defensiva"
+      desc: "Com arma de finesse, usa reação para adicionar proficiência à CA contra um ataque corpo a corpo."
+
+  mestre_arma_de_haste:
+    key_aliases: ["polearm_master"]
+    name: "Mestre de Arma de Haste"
+    description: "Controle de alcance e uso da outra extremidade."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        bonus_action_attack:
+          implementation: "bonus_action_attack"
+          parameters: { damage: "1d4", damage_type: "concussão", weapon: "extremidade" }
+        opportunity_attack_enhancement:
+          implementation: "oa_on_enter_reach"
+          parameters: { weapon_list: ["glaive", "alabarda", "lança_longa", "bordão"] }
+    features:
+      name: "Controle de Alcance"
+      desc: "Ataque extra (ação bônus) com extremidade; OA dispara quando entram no seu alcance."
+
+  sentinela:
+    key_aliases: ["sentinel"]
+    name: "Sentinela"
+    description: "Pune inimigos que baixam a guarda."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        opportunity_attack_enhancement:
+          implementation: "oa_reduce_movement_to_zero"
+          parameters: {}
+        provoke_oa_ignores_disengage:
+          implementation: "oa_even_if_disengage"
+          parameters: {}
+        protect_ally_reaction:
+          implementation: "melee_reaction_against_attacker"
+          parameters: { range_m: 1.5 }
+    features:
+      name: "Trava de Alcance"
+      desc: "OA zera deslocamento; inimigos ainda provocam OA após Desengajar; reação contra inimigo adjacente que atacar outro."
+
+  perito:
+    key_aliases: ["skilled"]
+    name: "Perito"
+    description: "Versatilidade em perícias e ferramentas."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses:
+      skills_or_tools:
+        choose: { amount: 3, options: ["qualquer perícia ou ferramenta"] }
+    special_rules: {}
+    features:
+      name: "Treinamento Amplo"
+      desc: "Proficiência em três perícias e/ou ferramentas à escolha."
+
+  poliglota:
+    key_aliases: ["linguist"]
+    name: "Poliglota"
+    description: "Estudioso de idiomas e códigos."
+    prerequisites: {}
+    ability_bonuses: { int: 1 }
+    proficiency_bonuses: { languages_choose: 3 }
+    special_rules:
+      utility_modifiers:
+        create_cipher:
+          implementation: "create_cipher"
+          parameters: { decipher_dc: "int_mod + proficiency_bonus", alt: ["instructor_help", "magic"] }
+    features:
+      name: "Criptografia"
+      desc: "Cria cifra escrita; outros decifram com instrução, teste de INT (CD INT+prof) ou magia."
+
+  protecao_leve:
+    key_aliases: ["lightly_armored"]
+    name: "Proteção Leve"
+    description: "Treino com armaduras leves."
+    prerequisites: {}
+    ability_bonuses: { str: 1 }
+    proficiency_bonuses: { armors: ["leve"] }
+    special_rules: {}
+    features:
+      name: "Armadura Leve"
+      desc: "Ganha proficiência com armaduras leves e +1 FOR."
+
+  protecao_moderada:
+    key_aliases: ["moderately_armored"]
+    name: "Proteção Moderada"
+    description: "Treino com armaduras médias e escudos."
+    prerequisites:
+      proficiencies: { armors: ["leve"] }
+    ability_bonuses: { str: 1 }
+    proficiency_bonuses: { armors: ["média"], shields: true }
+    special_rules: {}
+    features:
+      name: "Armadura Média + Escudo"
+      desc: "Proficiência com armaduras médias e escudos e +1 FOR."
+
+  protecao_pesada:
+    key_aliases: ["heavily_armored","especialista_em_armadura"]
+    name: "Proteção Pesada"
+    description: "Treino com armaduras pesadas."
+    prerequisites:
+      proficiencies: { armors: ["média"] }
+    ability_bonuses: { str: 1 }
+    proficiency_bonuses: { armors: ["pesada"] }
+    special_rules: {}
+    features:
+      name: "Armadura Pesada"
+      desc: "Proficiência com armaduras pesadas e +1 FOR."
+
+  duelista_montado:
+    key_aliases: ["mounted_combatant"]
+    name: "Duelista Montado"
+    description: "Domina combate montado."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        advantage_vs_smaller:
+          implementation: "advantage_melee_vs_smaller_than_mount"
+          parameters: {}
+        redirect_attack_to_self:
+          implementation: "redirect_attack_from_mount"
+          parameters: { once_per_turn: true }
+        mount_evasion_like:
+          implementation: "dex_save_half_to_zero_for_mount"
+          parameters: { on_success: "no_damage" }
+    features:
+      name: "Controle de Montaria"
+      desc: "Vantagem vs. criaturas menores que a montaria; pode fazer ataques contra a montaria mirarem em você; DES/½ vira 0 p/ montaria se passar."
+
+  atacante_selvagem:
+    key_aliases: ["savage_attacker"]
+    name: "Atacante Selvagem"
+    description: "Brutalidade amplifica seus golpes."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      dice_modifiers:
+        damage_reroll:
+          implementation: "damage_reroll"
+          parameters: { frequency: "once_per_turn", attack_type: "melee" }
+    features:
+      name: "Dano Brutal"
+      desc: "Uma vez por turno, pode rerrolar dados de dano de ataque corpo a corpo e escolher o resultado."
+
+  sorrateiro:
+    key_aliases: ["skulker"]
+    name: "Sorrateiro"
+    description: "Mestre em mover-se nas sombras."
+    prerequisites:
+      ability_score: { dex: 13 }
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      movement_modifiers:
+        stealth_conditions:
+          implementation: "stealth_in_light_obscurement"
+          parameters: {}
+      combat_modifiers:
+        missed_ranged_attack_does_not_reveal:
+          implementation: "stay_hidden_on_missed_ranged_attack"
+          parameters: {}
+      skill_modifiers:
+        dim_light_no_disadvantage_on_perception:
+          implementation: "remove_dim_light_perception_disadvantage"
+          parameters: {}
+    features:
+      name: "Predador das Sombras"
+      desc: "Pode se esconder quando levemente obscurecido; errar um ataque à distância não revela sua posição; penumbra não impõe desvantagem em Percepção (visão)."
+
+  lider_inspirador:
+    key_aliases: ["inspiring_leader"]
+    name: "Líder Inspirador"
+    description: "Você encoraja aliados com um discurso vigoroso."
+    prerequisites:
+      ability_score: { cha: 13 }
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      temporary_hp_modifiers:
+        inspiring_speech:
+          implementation: "grant_temp_hp_after_speech"
+          parameters:
+            cast_time: "10_minutos"
+            targets_max: 6
+            include_self: true
+            amount_formula: { level: "self_level", ability_mod: "cha_mod", sum: true }
+            cooldown: { per_target: true, refresh: ["short_rest", "long_rest"] }
+    features:
+      name: "Discurso Inspirador"
+      desc: "Após 10 min, até 6 criaturas (incluindo você) ganham PV temporários iguais ao seu nível + mod. de Carisma; cada criatura só pode receber novamente após descanso curto ou longo."
+
+  resiliente:
+    key_aliases: ["resilient"]
+    name: "Resiliente"
+    description: "Sua experiência fortaleceu um atributo."
+    prerequisites: {}
+    ability_bonuses:
+      choose: { amount: 1, options: ["for", "des", "con", "int", "sab", "car"] }
+    proficiency_bonuses: {}
+    special_rules:
+      skill_modifiers:
+        saving_throw_advantage:
+          implementation: "saving_throw_advantage"
+          parameters: { condition: "atributo_escolhido" }
+    features:
+      name: "Treinamento em Resistência"
+      desc: "+1 em um atributo escolhido e proficiência nos testes de resistência desse atributo."
+
+  explorador_de_cavernas:
+    key_aliases: ["dungeon_delver"]
+    name: "Explorador de Cavernas"
+    description: "Alerta a armadilhas e portas secretas."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      skill_modifiers:
+        skill_advantage:
+          implementation: "skill_advantage"
+          parameters: ["Percepção", "Investigação"]
+        saving_throw_advantage:
+          implementation: "saving_throw_advantage"
+          parameters: { condition: "armadilhas" }
+      defense_modifiers:
+        damage_resistance:
+          implementation: "damage_resistance"
+          parameters: ["armadilhas"]
+      exploration_modifiers:
+        search_traps_at_normal_pace:
+          implementation: "trap_search_no_slowdown"
+          parameters: {}
+    features:
+      name: "Farejador de Perigos"
+      desc: "Vantagem para achar portas secretas; vantagem em salvaguardas contra armadilhas e resistência ao dano delas; pode procurar armadilhas em ritmo normal."
+
+  curandeiro:
+    key_aliases: ["healer"]
+    name: "Curandeiro"
+    description: "Você domina primeiros socorros no campo de batalha."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      healing_modifiers:
+        stabilize_restores_1hp:
+          implementation: "healers_kit_stabilize_plus_1hp"
+          parameters: {}
+        battle_medic_heal:
+          implementation: "healers_kit_restore_hp_action"
+          parameters:
+            resource: "healers_kit_use"
+            heal_formula:
+              base_die: "1d6"
+              flat_bonus: 4
+              plus_target_hd: true
+            cooldown: { per_target: true, refresh: ["short_rest", "long_rest"] }
+    features:
+      name: "Kit de Primeiros Socorros Aprimorado"
+      desc: "Ao estabilizar com kit, o alvo recupera 1 PV; como ação, gasta 1 uso do kit para curar 1d6+4 + dados de vida do alvo (1/descanso por alvo)."
+
+  imobilizador:
+    key_aliases: ["grappler"]
+    name: "Imobilizador"
+    description: "Aperto de ferro no corpo a corpo."
+    prerequisites:
+      ability_score: { str: 13 }
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        advantage_vs_grappled:
+          implementation: "advantage_on_attack_vs_grappled_target"
+          parameters: {}
+        pin_as_action:
+          implementation: "attempt_pin_grappled_target"
+          parameters:
+            result: { attacker: "restrained", target: "restrained" }
+            duration: "while_grappled"
+            escape: { action: "escape_grapple" }
+    features:
+      name: "Aperto de Ferro"
+      desc: "Vantagem nas jogadas de ataque contra criatura que você esteja agarrando; pode usar ação para tentar imobilizar (ambos ficam Restritos até escape)."
+
+  magico_iniciante:
+    key_aliases: ["magic_initiate"]
+    name: "Mágico Iniciante"
+    description: "Aprende truques e uma magia de 1º nível de uma lista de classe."
+    prerequisites: {}
+    # PHB 5e: Magic Initiate NAO e half-feat — nao concede +1 atributo. Antes
+    # desta correcao, este YAML declarava `choose { amount:1, options:[int,wis,cha] }`,
+    # divergindo de feats.yml legacy, de FeatRules::RULES (Ruby) e do front
+    # (featsData.ts). A divergencia foi flagrada pela Camada B+
+    # (front-lafiga/src/app/data/__tests__/feats.parity.bdd.test.ts).
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    cantrips:
+      choose:
+        amount: 2
+        class_options: ["mago", "bruxo", "bardo", "clérigo", "druida", "feiticeiro", "paladino", "patrulheiro"]
+    spells:
+      choose:
+        amount: 1
+        level: 1
+        class_options: ["mago", "bruxo", "bardo", "clérigo", "druida", "feiticeiro", "paladino", "patrulheiro"]
+    special_rules:
+      magic_modifiers:
+        cast_first_level_once:
+          implementation: "cast_known_spell_without_slot"
+          parameters: { spell_level: 1, uses: 1, recovery: "long_rest", ability: "chosen_class_ability" }
+    features:
+      name: "Magias Iniciais"
+      desc: "Aprende 2 truques e 1 magia de 1º nível da mesma lista escolhida; pode conjurar a magia de 1º nível 1x por descanso longo sem gastar espaço."
+
+  conjurador_de_ritual:
+    key_aliases: ["ritual_caster"]
+    name: "Conjurador de Ritual"
+    description: "Aprende rituais e mantém um livro de rituais."
+    prerequisites:
+      ability_score:
+        int_or_wis: 13
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      magic_modifiers:
+        ritual_book:
+          implementation: "ritual_book_init"
+          parameters: { level: 1, count: 2, class_choice: ["bardo", "bruxo", "clérigo", "druida", "feiticeiro", "mago"] }
+        ritual_copying:
+          implementation: "copy_ritual_cost"
+          parameters: { time_per_level_hours: 2, gold_per_level: 50 }
+        ritual_casting:
+          implementation: "cast_from_book_as_ritual_only"
+          parameters: { requires_book_in_hand: true }
+    features:
+      name: "Livro de Rituais"
+      desc: "Ganha livro com 2 rituais de 1º nível; pode copiar e conjurar como ritual do livro."
+
+  especialista_em_armas:
+    key_aliases: ["weapon_master"]
+    name: "Especialista em Armas"
+    description: "Você desenvolveu uma habilidade especial com armas."
+    prerequisites: {}
+    ability_bonuses:
+      choose: { amount: 1, options: ["str","dex"] }
+    proficiency_bonuses:
+      weapons:
+        choose: { amount: 4, options: ["arma_simples","arma_marcial"] }
+    special_rules: {}
+    features:
+      name: "Domínio de Armas"
+      desc: "Você ganha proficiência com quatro armas à sua escolha e +1 em FOR ou DES."
+
+  especialista_em_escudo:
+    key_aliases: ["shield_expert"]
+    name: "Especialista em Escudo"
+    description: "Você desenvolveu uma habilidade especial com escudos."
+    prerequisites: {}
+    ability_bonuses:
+      choose: { amount: 1, options: ["str","dex"] }
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        shield_as_improvised_weapon:
+          implementation: "shield_as_improvised_weapon"
+          parameters: { damage_die: "1d4", damage_type: "concussão" }
+    features:
+      name: "Golpes com Escudo"
+      desc: "Você pode usar um escudo como arma improvisada (1d4 de dano concussão) e recebe +1 em FOR ou DES."

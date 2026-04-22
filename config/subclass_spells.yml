@@ -1,0 +1,149 @@
+# YAML para magias de subclasses (sempre preparadas)
+# Estrutura:
+# <classe_api_index>:
+#   <subclasse_api_index>:
+#     always_prepared:
+#       - { name: "Bênção", min_level: 1 }
+#       - { name: "Escudo da Fé", min_level: 1 }
+#
+# Observações:
+# - Os nomes das magias devem existir na tabela Spell (em PT no seu banco)
+# - min_level é opcional; se omitido, a magia fica sempre preparada a partir do nível 1 da classe
+# - Use `rake subclasses:import_spells` para importar os vínculos
+
+# Exemplo para um Domínio do Clérigo personalizado:
+# cleric:
+#   dominio-agua:
+#     always_prepared:
+#       - { name: "Criar ou Destruir Água", min_level: 1 }
+#       - { name: "Neblina", min_level: 1 }
+
+cleric:
+  dominio-agua:
+    always_prepared:
+      - { name: "Criar ou Destruir Água", min_level: 1 }
+      - { name: "Névoa Obscurecente", min_level: 1 }
+      - { name: "Respirar na Água", min_level: 3 }
+      - { name: "Andar na Água", min_level: 3 }
+      - { name: "Tempestade de Gelo", min_level: 7 }
+      - { name: "Controlar Água", min_level: 7 }
+      - { name: "Cone de Frio", min_level: 9 }
+      - { name: "Conjurar Elemental", min_level: 9 }
+
+  dominio-criacao:
+    always_prepared:
+      - { name: "Serviçal Invisível", min_level: 1 }
+      - { name: "Criar ou Destruir Água", min_level: 1 }
+      - { name: "Ajuda", min_level: 3 }
+      - { name: "Arma Espiritual", min_level: 3 }
+      - { name: "Criar Alimentos e Água", min_level: 5 }
+      - { name: "Clarividência", min_level: 5 }
+      - { name: "Pele de Pedra", min_level: 7 }
+      - { name: "Fabricar", min_level: 7 }
+      - { name: "Animar Objetos", min_level: 9 }
+      - { name: "Muralha de Pedra", min_level: 9 }
+
+  dominio-mente:
+    always_prepared:
+      - { name: "Comando", min_level: 1 }
+      - { name: "Sono", min_level: 1 }
+      - { name: "Acalmar Emoções", min_level: 3 }
+      - { name: "Detectar Pensamentos", min_level: 3 }
+      - { name: "Padrão Hipnótico", min_level: 5 }
+      - { name: "Clarividência", min_level: 5 }
+      - { name: "Confusão", min_level: 7 }
+      - { name: "Dominar Besta", min_level: 7 }
+      - { name: "Dominar Pessoa", min_level: 9 }
+      - { name: "Telecinese", min_level: 9 }
+
+  dominio-terra:
+    always_prepared:
+      - { name: "Detectar Armadilhas", min_level: 1 }
+      - { name: "Passos Longos", min_level: 1 }
+      - { name: "Casca de Árvore", min_level: 3 }
+      - { name: "Localizar Objetos", min_level: 3 }
+      - { name: "Proteção contra Energia", min_level: 5 }
+      - { name: "Não Detecção", min_level: 5 }
+      - { name: "Pele de Pedra", min_level: 7 }
+      - { name: "Moldar Pedra", min_level: 7 }
+      - { name: "Muralha de Pedra", min_level: 9 }
+      - { name: "Conjurar Elemental", min_level: 9 }
+
+paladin:
+  juramento-danacao:
+    always_prepared:
+      - { name: "Comando", min_level: 1 }
+      - { name: "Flagelo", min_level: 1 }
+      - { name: "Cegueira/Surdez", min_level: 3 }
+      - { name: "Imobilizar Pessoa", min_level: 3 }
+      - { name: "Impor Maldição", min_level: 5 }
+      - { name: "Medo", min_level: 5 }
+      - { name: "Círculo Mágico", min_level: 7 }
+      - { name: "Banimento", min_level: 7 }
+      - { name: "Coluna de Chamas", min_level: 9 }
+      - { name: "Imobilizar Monstro", min_level: 9 }
+
+  juramento-equilibrio:
+    always_prepared:
+      - { name: "Bênção", min_level: 1 }
+      - { name: "Flagelo", min_level: 1 }
+      - { name: "Acalmar Emoções", min_level: 3 }
+      - { name: "Imobilizar Pessoa", min_level: 3 }
+      - { name: "Dissipar Magia", min_level: 5 }
+      - { name: "Lentidão", min_level: 5 }
+      - { name: "Banimento", min_level: 7 }
+      - { name: "Movimento Livre", min_level: 7 }
+      - { name: "Restauração Maior", min_level: 9 }
+      - { name: "Imobilizar Monstro", min_level: 9 }
+
+  juramento-liberdade:
+    always_prepared:
+      - { name: "Retirada Apressada", min_level: 1 }
+      - { name: "Passos Longos", min_level: 1 }
+      - { name: "Levitar", min_level: 3 }
+      - { name: "Acalmar Emoções", min_level: 3 }
+      - { name: "Remover Maldição", min_level: 5 }
+      - { name: "Dissipar Magia", min_level: 5 }
+      - { name: "Movimento Livre", min_level: 7 }
+      - { name: "Porta Dimensional", min_level: 7 }
+      - { name: "Restauração Maior", min_level: 9 }
+      - { name: "Passagem pela Rocha", min_level: 9 }
+
+  juramento-misericordia:
+    always_prepared:
+      - { name: "Curar Ferimentos", min_level: 1 }
+      - { name: "Escudo da Fé", min_level: 1 }
+      - { name: "Ajuda", min_level: 3 }
+      - { name: "Acalmar Emoções", min_level: 3 }
+      - { name: "Revivificar", min_level: 5 }
+      - { name: "Aura de Vitalidade", min_level: 5 }
+      - { name: "Proteção contra a Morte", min_level: 7 }
+      - { name: "Guardião da Fé", min_level: 7 }
+      - { name: "Restauração Maior", min_level: 9 }
+      - { name: "Cura em Massa", min_level: 9 }
+
+  juramento-ordenacao:
+    always_prepared:
+      - { name: "Comando", min_level: 1 }
+      - { name: "Santuário", min_level: 1 }
+      - { name: "Zona da Verdade", min_level: 3 }
+      - { name: "Acalmar Emoções", min_level: 3 }
+      - { name: "Dissipar Magia", min_level: 5 }
+      - { name: "Lentidão", min_level: 5 }
+      - { name: "Banimento", min_level: 7 }
+      - { name: "Guardião da Fé", min_level: 7 }
+      - { name: "Comunhão", min_level: 9 }
+      - { name: "Imobilizar Monstro", min_level: 9 }
+
+  juramento-pureza:
+    always_prepared:
+      - { name: "Detectar o Bem e o Mal", min_level: 1 }
+      - { name: "Proteção contra o Bem e o Mal", min_level: 1 }
+      - { name: "Restauração Menor", min_level: 3 }
+      - { name: "Zona da Verdade", min_level: 3 }
+      - { name: "Remover Maldição", min_level: 5 }
+      - { name: "Proteção contra Energia", min_level: 5 }
+      - { name: "Proteção contra a Morte", min_level: 7 }
+      - { name: "Banimento", min_level: 7 }
+      - { name: "Restauração Maior", min_level: 9 }
+      - { name: "Coluna de Chamas", min_level: 9 }

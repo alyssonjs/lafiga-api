@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :spell do
-    api_index { "MyString" }
-    name { "MyString" }
+    sequence(:api_index) { |n| "spec_spell_#{n}_#{SecureRandom.hex(4)}" }
+    sequence(:name) { |n| "Spec Spell #{n}" }
     level { 1 }
     school { "MyString" }
     range { "MyString" }

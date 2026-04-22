@@ -233,137 +233,10 @@ namespace :dnd do
       MISSING[category.to_s][key.to_s] ||= original
     end
 
-    # --- manual overrides for missing/poor subclass data -------------------
-    SUBCLASS_OVERRIDES = {
-      'barbarian' => {
-        'totem-warrior' => {
-          name: 'Caminho do Guerreiro Totêmico',
-          flavor: 'Primal Path',
-          description: 'Bárbaros que seguem espíritos animais para obter poderes em fúria.',
-          levels: [
-            { level: 3, features: [
-              { name: 'Buscador de Espíritos', description: 'Aprende ritos xamânicos e escolhe um Espírito Totêmico.' },
-              { name: 'Espírito Totêmico', description: 'Benefícios do animal escolhido quando em fúria.' }
-            ]},
-            { level: 6, features: [ { name: 'Aspecto da Besta', description: 'Bônus passivo do totem escolhido.' } ]},
-            { level: 10, features: [ { name: 'Andarilho Espiritual', description: 'Comunica-se/interage com espíritos.' } ]},
-            { level: 14, features: [ { name: 'Afinidade Totêmica', description: 'Benefício adicional do totem quando em fúria.' } ]}
-          ]
-        }
-      },
-      'bard' => {
-        'college-of-valor' => {
-          name: 'Colégio do Valor',
-          flavor: 'Bard College',
-          description: 'Bardos treinados para o campo de batalha, combinando magia e combate marcial.',
-          levels: [
-            { level: 3, features: [
-              { name: 'Proficiências Bônus', description: 'Proficiência com armaduras médias, escudos e armas marciais.' },
-              { name: 'Inspiração de Combate', description: 'Aliados podem usar o dado de Inspiração para dano ou CA (reação).' }
-            ]},
-            { level: 6, features: [ { name: 'Ataque Extra', description: 'Realiza dois ataques ao usar a ação de Ataque.' } ]},
-            { level: 14, features: [ { name: 'Magia de Batalha', description: 'Após conjurar magia (ação), faz um ataque com arma como ação bônus.' } ]}
-          ]
-        }
-      },
-      'warlock' => {
-        'archfey' => {
-          name: 'Pacto — Arquifada', flavor: 'Otherworldly Patron', description: 'Ilusões e controle feérico.',
-          levels: [ {level:1,features:[{name:'Presença Feérica', description:'Ameaça/encanto em área curta.'}]}, {level:6,features:[{name:'Evasão Feérica', description:'Teleporte curto ao sofrer dano.'}]}, {level:10,features:[{name:'Manto da Sombra Feérica', description:'Furtividade/ilusão aprimorada.'}]}, {level:14,features:[{name:'Banquete dos Sonhos', description:'Encantar/adormecer inimigos.'}]} ]
-        },
-        'great-old-one' => {
-          name: 'Pacto — O Grande Antigo', flavor: 'Otherworldly Patron', description: 'Poderes psíquicos e telepatia.',
-          levels: [ {level:1,features:[{name:'Sussurros Telepáticos', description:'Telepatia com criaturas.'}]}, {level:6,features:[{name:'Defesa Entrópica', description:'Impor desvantagem a ataques.'}]}, {level:10,features:[{name:'Mente Insondável', description:'Resistência a leitura de mente.'}]}, {level:14,features:[{name:'Criatura Tétrica', description:'Efeito/servo enlouquecedor.'}]} ]
-        }
-      },
-      'cleric' => {
-        'light' => { name: 'Domínio da Luz', flavor: 'Divine Domain', description: 'Magias de fogo/luz e controle de brilho.', levels: [ {level:1,features:[{name:'Bênção da Luz', description:'Magias do domínio sempre preparadas.'}]}, {level:2,features:[{name:'Canalizar: Cegante', description:'Explosão de luz que cega.'}]}, {level:6,features:[{name:'Luz Radiante', description:'Dano extra radiante.'}]}, {level:8,features:[{name:'Golpe Abençoado', description:'Dano radiante adicional em ataque.'}]}, {level:17,features:[{name:'Aura de Luz', description:'Aura brilhante poderosa.'}]} ] },
-        'knowledge' => { name: 'Domínio do Conhecimento', flavor: 'Divine Domain', description: 'Perícias e saber divino.', levels: [ {level:1,features:[{name:'Bênçãos do Conhecimento', description:'Perícias/idiomas; domínios de magia.'}]}, {level:2,features:[{name:'Canalizar: Conhecimento', description:'Inspiração de saber temporário.'}]}, {level:6,features:[{name:'Leituras', description:'Entendimento ampliado.'}]}, {level:8,features:[{name:'Golpe Abençoado', description:'Dano adicional.'}]}, {level:17,features:[{name:'Saber Supremo', description:'Conhecimento extraordinário.'}]} ] },
-        'nature' => { name: 'Domínio da Natureza', flavor: 'Divine Domain', description: 'Afinidade com a natureza.', levels: [ {level:1,features:[{name:'Iniciado Druídico', description:'Cantrip druídico; magias do domínio.'}]}, {level:2,features:[{name:'Canalizar: Encantar Natureza', description:'Acalmar/encantar animais/plantas.'}]}, {level:6,features:[{name:'Dampenar Elementos', description:'Reduz dano elemental (reação).'}]}, {level:8,features:[{name:'Golpe Abençoado', description:'Dano adicional.'}]}, {level:17,features:[{name:'Mestre da Natureza', description:'Comandar criaturas naturais.'}]} ] },
-        'tempest' => { name: 'Domínio da Tempestade', flavor: 'Divine Domain', description: 'Trovão/relâmpago e retaliação.', levels: [ {level:1,features:[{name:'Ira das Tempestades', description:'Reação: dano elétrico/trovoada.'}]}, {level:2,features:[{name:'Canalizar: Destruição', description:'Maximiza dano elétrico/trovoada.'}]}, {level:6,features:[{name:'Retaliação Trovejante', description:'Empurra/derruba inimigos.'}]}, {level:8,features:[{name:'Golpe Abençoado', description:'Dano adicional.'}]}, {level:17,features:[{name:'Tempestade Divina', description:'Grande poder tempestuoso.'}]} ] },
-        'trickery' => { name: 'Domínio da Trapaça', flavor: 'Divine Domain', description: 'Ilusão, duplicidade e furtividade.', levels: [ {level:1,features:[{name:'Bênção da Trapaça', description:'Vantagem em Furtividade para aliado.'}]}, {level:2,features:[{name:'Canalizar: Duplicidade', description:'Cria duplicata ilusória.'}]}, {level:6,features:[{name:'Duplicidade Aprimorada', description:'Múltiplas ilusões.'}]}, {level:8,features:[{name:'Golpe Abençoado', description:'Dano adicional.'}]}, {level:17,features:[{name:'Mestre da Trapaça', description:'Ilusões poderosas.'}]} ] },
-        'war' => { name: 'Domínio da Guerra', flavor: 'Divine Domain', description: 'Combate marcial sob bênção.', levels: [ {level:1,features:[{name:'Discípulo da Guerra', description:'Proficiências marciais; magias do domínio.'}]}, {level:2,features:[{name:'Canalizar: Guia de Guerra', description:'Ataque adicional como reação.'}]}, {level:6,features:[{name:'Golpes Abençoados', description:'Bônus de dano.'}]}, {level:8,features:[{name:'Golpe Abençoado', description:'Dano adicional.'}]}, {level:17,features:[{name:'Avatar de Batalha', description:'Poder marcial supremo.'}]} ] }
-      },
-      'druid' => {
-        'moon' => { name: 'Círculo da Lua', flavor: 'Druid Circle', description: 'Forma Selvagem poderosa e versátil.', levels: [ {level:2,features:[{name:'Forma Selvagem Aprimorada', description:'Transformações mais fortes.'}]}, {level:6,features:[{name:'Ataques Primais', description:'Ataques contam como mágicos.'}]}, {level:10,features:[{name:'Forma Elemental', description:'Acesso a formas elementais.'}]}, {level:14,features:[{name:'Forma Incansável', description:'Sustentação superior.'}]} ] }
-      },
-      'fighter' => {
-        'battle-master' => { name: 'Mestre de Batalha', flavor: 'Martial Archetype', description: 'Maneuvers e dados de superioridade.', levels: [ {level:3,features:[{name:'Superioridade em Combate', description:'Maneuvers + dados.'}]}, {level:7,features:[{name:'Conhecimento de Campo', description:'Benefícios táticos.'}]}, {level:10,features:[{name:'Maneuvers Adicionais', description:'Novas opções.'}]}, {level:15,features:[{name:'Esquiva Superior', description:'Defesa melhorada.'}]}, {level:18,features:[{name:'Supremacia', description:'Dados aprimorados.'}]} ] },
-        'eldritch-knight' => { name: 'Cavaleiro Arcano', flavor: 'Martial Archetype (third-caster)', description: 'Conjuração leve (Abjuração/Evocação).', levels: [ {level:3,features:[{name:'Magias & Laço de Arma', description:'Ganha cantrips/magias e vínculo.'}]}, {level:7,features:[{name:'Guerreiro Arcano', description:'Defesas/Reações mágicas.'}]}, {level:10,features:[{name:'Ataque Místico', description:'Combina ataques e magia.'}]}, {level:15,features:[{name:'Teleporte de Guerra', description:'Movimento mágico.'}]}, {level:18,features:[{name:'Assalto Arcano', description:'Explosões/controle.'}]} ] }
-      },
-      'monk' => {
-        'shadow' => { name: 'Caminho da Sombra', flavor: 'Monastic Tradition', description: 'Furtividade e mobilidade sombria.', levels: [ {level:3,features:[{name:'Artes da Sombra', description:'Técnicas de ki sombrias.'}]}, {level:6,features:[{name:'Passo das Sombras', description:'Teleporte entre sombras.'}]}, {level:11,features:[{name:'Manto das Sombras', description:'Invisibilidade/escuro.'}]}, {level:17,features:[{name:'Forma das Sombras', description:'Mestria sombria.'}]} ] },
-        'four-elements' => { name: 'Caminho dos Quatro Elementos', flavor: 'Monastic Tradition', description: 'Disciplinas elementais de ki.', levels: [ {level:3,features:[{name:'Discípulo dos Elementos', description:'Escolhe disciplinas.'}]}, {level:6,features:[{name:'Aprimorar Disciplinas', description:'Novas opções.'}]}, {level:11,features:[{name:'Controle Elemental', description:'Efeitos mais fortes.'}]}, {level:17,features:[{name:'Mestre Elemental', description:'Poderes elevados.'}]} ] }
-      },
-      'paladin' => {
-        'ancients' => { name: 'Juramento dos Anciões', flavor: 'Sacred Oath', description: 'Luz/natureza protetiva.', levels: [ {level:3,features:[{name:'Juramento & Magias do Juramento', description:'Lista de magias + Channel Divinity.'}]}, {level:7,features:[{name:'Aura Protetiva', description:'Resistências/controle.'}]}, {level:15,features:[{name:'Sentinela da Luz', description:'Proteções especiais.'}]}, {level:20,features:[{name:'Forma Ancestral', description:'Transformação sagrada.'}]} ] },
-        'vengeance' => { name: 'Juramento da Vingança', flavor: 'Sacred Oath', description: 'Perseguir e punir inimigos.', levels: [ {level:3,features:[{name:'Juramento & Magias do Juramento', description:'Lista de magias + Channel Divinity focada em caça.'}]}, {level:7,features:[{name:'Aura de Vingança', description:'Controle contra fuga.'}]}, {level:15,features:[{name:'Vingador Implacável', description:'Mobilidade/reação contra alvo marcado.'}]}, {level:20,features:[{name:'Anjo da Vingança', description:'Forma ofensiva.'}]} ] }
-      },
-      'ranger' => {
-        'beast-master' => { name: 'Mestre das Feras', flavor: 'Ranger Conclave', description: 'Companheiro animal e sinergia.', levels: [ {level:3,features:[{name:'Companheiro Animal', description:'Escolhe e vincula uma besta.'}]}, {level:7,features:[{name:'Cooperação Tática', description:'Ações coordenadas.'}]}, {level:11,features:[{name:'Fera Extraordinária', description:'Aprimoramentos ao companheiro.'}]}, {level:15,features:[{name:'Sinergia Perfeita', description:'Grande eficácia conjunta.'}]} ] }
-      },
-      'rogue' => {
-        'assassin' => { name: 'Assassino', flavor: 'Roguish Archetype', description: 'Golpes letais e infiltração.', levels: [ {level:3,features:[{name:'Assassinar', description:'Vantagem e críticos contra surpreendidos.'}]}, {level:9,features:[{name:'Imitação', description:'Falsificar identidades.'}]}, {level:13,features:[{name:'Infiltração', description:'Assumir personas.'}]}, {level:17,features:[{name:'Golpe Mortal', description:'Críticos devastadores.'}]} ] },
-        'arcane-trickster' => { name: 'Trapaceiro Arcano', flavor: 'Roguish Archetype (third-caster)', description: 'Conjuração leve (Ilusão/Encantamento).', levels: [ {level:3,features:[{name:'Mão Mágica Arcana', description:'Cantrips e mão mágica aprimorada.'}]}, {level:9,features:[{name:'Truques Místicos', description:'Controle adicional.'}]}, {level:13,features:[{name:'Truque Invisível', description:'Infiltração mágica.'}]}, {level:17,features:[{name:'Mestre Arcano', description:'Uso eficiente de truques.'}]} ] }
-      },
-      'sorcerer' => {
-        'wild-magic' => { name: 'Magia Selvagem', flavor: 'Sorcerous Origin', description: 'Surtos de magia caótica e metamagia dinâmica.', levels: [ {level:1,features:[{name:'Surto de Magia Selvagem', description:'Efeitos aleatórios após conjuração.'}]}, {level:6,features:[{name:'Marés do Caos', description:'Vantagem ocasional; recarga com surto.'}]}, {level:14,features:[{name:'Controle do Caos', description:'Manipular resultados de surto.'}]}, {level:18,features:[{name:'Tempestade Mágica', description:'Grande caos mágico.'}]} ] }
-      },
-      'wizard' => {
-        'abjuration' => { name: 'Escola de Abjuração', flavor: 'Arcane Tradition', description: 'Defesas e proteções mágicas.', levels: [ {level:2,features:[{name:'Salvaguarda Arcana', description:'Escudo protetor; custos reduzidos.'}]}, {level:6,features:[{name:'Proteção Projetada', description:'Desviar dano de aliados.'}]}, {level:10,features:[{name:'Abjuração Aprimorada', description:'Reservas maiores.'}]}, {level:14,features:[{name:'Resistência Arcana', description:'Defesas potentes.'}]} ] },
-        'conjuration' => { name: 'Escola de Conjuração', flavor: 'Arcane Tradition', description: 'Conjurar/teleportar com eficiência.', levels: [ {level:2,features:[{name:'Conjurador Sábio', description:'Custos reduzidos; conjurar objetos.'}]}, {level:6,features:[{name:'Recuperar Conjuração', description:'Criar objetos simples.'}]}, {level:10,features:[{name:'Teletransporte Focado', description:'Teleporte melhorado.'}]}, {level:14,features:[{name:'Conjuração Duradoura', description:'Invocações persistentes.'}]} ] },
-        'divination' => { name: 'Escola de Adivinhação', flavor: 'Arcane Tradition', description: 'Controle de probabilidades e presságios.', levels: [ {level:2,features:[{name:'Presságio', description:'Substitui rolagens com dados de presságio.'}]}, {level:6,features:[{name:'Olho do Vidente', description:'Vigiar à distância.'}]}, {level:10,features:[{name:'Oportunidade Calculada', description:'Apoio às rolagens de aliados.'}]}, {level:14,features:[{name:'Presságios Maiores', description:'Mais/maiores presságios.'}]} ] },
-        'enchantment' => { name: 'Escola de Encantamento', flavor: 'Arcane Tradition', description: 'Encantos e controle de mentes.', levels: [ {level:2,features:[{name:'Encantador', description:'Custos reduzidos; amigos temporários.'}]}, {level:6,features:[{name:'Hipnotizar', description:'Controle leve de alvos.'}]}, {level:10,features:[{name:'Dividir Encanto', description:'Atinge dois alvos.'}]}, {level:14,features:[{name:'Dominar', description:'Encantamentos poderosos.'}]} ] },
-        'illusion' => { name: 'Escola de Ilusão', flavor: 'Arcane Tradition', description: 'Criação/manipulação de ilusões.', levels: [ {level:2,features:[{name:'Ilusionista', description:'Custos reduzidos; truques adicionais.'}]}, {level:6,features:[{name:'Imagem Maleável', description:'Moldar ilusões.'}]}, {level:10,features:[{name:'Ilusões Persistentes', description:'Duram mais.'}]}, {level:14,features:[{name:'Realidade Ilusória', description:'Torna ilusões parcialmente reais.'}]} ] },
-        'necromancy' => { name: 'Escola de Necromancia', flavor: 'Arcane Tradition', description: 'Controle de vida e morte.', levels: [ {level:2,features:[{name:'Necromante', description:'Custos reduzidos; vitalidade de mortos.'}]}, {level:6,features:[{name:'Ceifar Vida', description:'Recupera vida ao matar com magia.'}]}, {level:10,features:[{name:'Comandar Mortos', description:'Mais mortos-vivos.'}]}, {level:14,features:[{name:'Mestre dos Mortos', description:'Aprimora mortos-vivos.'}]} ] },
-        'transmutation' => { name: 'Escola de Transmutação', flavor: 'Arcane Tradition', description: 'Modificar matéria e forma.', levels: [ {level:2,features:[{name:'Transmutador', description:'Custos reduzidos; pedra da transmutação.'}]}, {level:6,features:[{name:'Forma Menor', description:'Alterações úteis.'}]}, {level:10,features:[{name:'Metamorfose Aprimorada', description:'Transformações melhores.'}]}, {level:14,features:[{name:'Mestre Transmutador', description:'Poderes da pedra de transmutação.'}]} ] }
-      }
-    }.freeze
-
-    def load_yaml_overrides
-      path = Rails.root.join('config','subclass_overrides.yml')
-      return {} unless File.exist?(path)
-      YAML.load_file(path) || {}
-    rescue
-      {}
-    end
-
-    def merged_overrides
-      yaml = load_yaml_overrides
-      if SUBCLASS_OVERRIDES.respond_to?(:deep_merge)
-        # Preferir conteúdo do YAML sobre o interno
-        SUBCLASS_OVERRIDES.deep_merge(yaml)
-      else
-        # fallback shallow merge per top-level class (YAML sobrescreve)
-        SUBCLASS_OVERRIDES.merge(yaml) { |_k, a, b| (a || {}).merge(b || {}) }
-      end
-    end
-
-    def apply_subclass_overrides!(klass)
-      all = merged_overrides
-      overrides = all[klass.api_index]
-      return unless overrides.present?
-      overrides.each do |sub_idx, data|
-        sub = SubKlass.find_or_initialize_by(api_index: sub_idx, klass_id: klass.id)
-        begin
-          parsed_levels = sub.levels_json.present? ? JSON.parse(sub.levels_json) : []
-        rescue
-          parsed_levels = []
-        end
-        needs_levels = parsed_levels.blank?
-        needs_desc   = sub.description.blank?
-        if needs_levels || needs_desc || sub.name.blank?
-          sub.name = data[:name] if data[:name].present?
-          sub.subclass_flavor = data[:flavor] if data[:flavor].present?
-          sub.description = data[:description] if needs_desc && data[:description].present?
-          if needs_levels && data[:levels].present?
-            sub.levels_json = data[:levels].to_json
-          end
-          sub.save!
-          puts "    • Override aplicado: #{sub.api_index} (#{sub.name})"
-        end
-      end
-    end
+    # NOTE: subclass overrides (SUBCLASS_OVERRIDES, load_yaml_overrides, merged_overrides,
+    # apply_subclass_overrides!, apply_subclass_grants!) e a task `dnd:apply_subclass_overrides`
+    # vivem em api/lib/tasks/apply_subclass_overrides.rake (modulo DndImportHelpers).
+    # Esta task chama `DndImportHelpers.apply_subclass_overrides!(klass)` mais abaixo.
 
     def fetch(path, limit = 5)
       raise 'redirect too deep' if limit <= 0
@@ -732,7 +605,9 @@ namespace :dnd do
       end
 
       # Aplicar overrides manuais para subclasses com dados ausentes
-      apply_subclass_overrides!(klass)
+      DndImportHelpers.apply_subclass_overrides!(klass)
+      # Compilar grants/choices declarados para níveis de subclasses
+      DndImportHelpers.apply_subclass_grants!(klass)
 
       # Importar magias concedidas por Subclasses (ex.: Domínios do Clérigo, Juramentos do Paladino, Círculos do Druida)
       # 5e API costuma expor em /api/subclasses/:index/spells e/ou /api/2014/subclasses/:index/spells
@@ -837,6 +712,7 @@ namespace :dnd do
 
     puts "\nImportação concluída!"
   end
+
 
   desc "Extrai Backgrounds do Livro do Jogador e gera YAML em config/backgrounds_phb.yml"
   task extract_backgrounds_yml: :environment do

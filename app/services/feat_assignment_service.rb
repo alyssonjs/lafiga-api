@@ -14,7 +14,7 @@ class FeatAssignmentService
       Rails.logger.info "feat_id: #{@feat_id}"
       Rails.logger.info "choices: #{@choices.inspect}"
       Rails.logger.info "sheet_id: #{@sheet.id}"
-      
+
       # Check if feat exists in rules
       feat_rule = FeatRules.find(@feat_id)
       unless feat_rule
@@ -32,15 +32,7 @@ class FeatAssignmentService
       end
       Rails.logger.info "Pré-requisitos atendidos"
 
-      # Check if sheet already has this feat
-      if @sheet.sheet_feats.exists?(feat_id: @feat_id)
-        Rails.logger.error "Sheet já possui este feat: #{@feat_id}"
-        errors.add(:feat, 'já possui este talento')
-        return nil
-      end
-      Rails.logger.info "Feat não duplicado"
-
-      # Create or find feat in database
+      # Create or find feat in database first
       feat = Feat.find_or_create_by(api_index: @feat_id) do |f|
         f.name = feat_rule[:name]
         f.description = feat_rule[:description]
@@ -49,6 +41,28 @@ class FeatAssignmentService
         f.proficiency_bonuses = feat_rule[:proficiency_bonuses].to_json
         f.features = feat_rule[:features].to_json
       end
+
+      # Substituir talento no mesmo nível (ex.: edição de ASI no nível 4): remove DB + entrada em metadata.
+      lg = @level_gained.to_i
+      if lg.positive?
+        @sheet.sheet_feats.where(level_gained: lg).destroy_all
+        metadata = @sheet.reload.metadata || {}
+        feats_meta = Array(metadata['feats']).reject do |entry|
+          next false unless entry.is_a?(Hash)
+          egl = entry['level_gained'] || entry[:level_gained]
+          egl.to_i == lg
+        end
+        metadata['feats'] = feats_meta
+        @sheet.update!(metadata: metadata)
+      end
+
+      # Check if sheet already has this feat
+      if @sheet.sheet_feats.exists?(feat: feat)
+        Rails.logger.error "Sheet já possui este feat: #{@feat_id}"
+        errors.add(:feat, 'já possui este talento')
+        return nil
+      end
+      Rails.logger.info "Feat não duplicado"
 
       # Create sheet_feat association
       sheet_feat = @sheet.sheet_feats.create!(
@@ -62,6 +76,9 @@ class FeatAssignmentService
 
       # Apply cantrips and spells if any
       apply_feat_spells(sheet_feat) if feat_rule[:cantrips] || feat_rule[:spells]
+
+      # Apply special rules if any
+      apply_special_rules(sheet_feat) if feat_rule[:special_rules]
 
       sheet_feat
     end
@@ -78,11 +95,31 @@ class FeatAssignmentService
     Rails.logger.info "choices: #{@choices.inspect}"
     
     metadata = @sheet.metadata || {}
-    feats = metadata['feats'] || []
+    feats = Array(metadata['feats']).reject do |entry|
+      next false unless entry.is_a?(Hash)
+      egl = entry['level_gained'] || entry[:level_gained]
+      egl.to_i == @level_gained.to_i
+    end
     
+    # IMPORTANTE: nao envolver em rescue silencioso. Antes, este bloco usava
+    # um fallback que zerava `ability_bonuses`/`proficiency_bonuses` quando
+    # `FeatRules.apply` lancava — exatamente o caminho que mascarou o bug do
+    # Observador (Hash#inspect string em coluna text -> TypeError -> bonuses
+    # zerados em metadata['feats'], ficha mostrava +0 em SAB). Agora o
+    # `FeatRules.parse_jsonish` cura o caso de String corrompida, entao se
+    # algo aqui ainda lancar, e bug REAL e deve subir para o transaction
+    # rollback no `call` (rescue de toplevel ja captura e adiciona em errors).
     feat_summary = FeatRules.apply(@feat_id, @choices)
     Rails.logger.info "feat_summary: #{feat_summary.inspect}"
     
+    # Apply special rules
+    special_rules = {}
+    feat_rule = FeatRules.find(@feat_id)
+    if feat_rule&.dig(:special_rules)
+      special_rules_service = FeatSpecialRulesService.new(@sheet, @feat_id, @choices)
+      special_rules = special_rules_service.apply_special_rules
+    end
+
     feats << {
       id: sheet_feat.id,
       feat_id: @feat_id,
@@ -93,7 +130,8 @@ class FeatAssignmentService
       cantrips: feat_summary[:cantrips],
       spells: feat_summary[:spells],
       features: feat_summary[:features],
-      choices: @choices
+      choices: @choices,
+      special_rules: special_rules
     }
 
     metadata['feats'] = feats
@@ -103,6 +141,8 @@ class FeatAssignmentService
   end
 
   def apply_feat_spells(sheet_feat)
+    # Sem rescue silencioso (ver comentario em update_sheet_metadata): se
+    # FeatRules.apply lancar, deixa subir para o rescue de toplevel do call.
     feat_summary = FeatRules.apply(@feat_id, @choices)
     
     # Apply cantrips
@@ -143,6 +183,52 @@ class FeatAssignmentService
           end
         end
       end
+    end
+  end
+
+  def apply_special_rules(sheet_feat)
+    Rails.logger.info "=== apply_special_rules Debug ==="
+    Rails.logger.info "feat_id: #{@feat_id}"
+    Rails.logger.info "choices: #{@choices.inspect}"
+    
+    # Apply special rules using the service
+    special_rules_service = FeatSpecialRulesService.new(@sheet, @feat_id, @choices)
+    special_rules = special_rules_service.apply_special_rules
+    
+    Rails.logger.info "Applied special rules: #{special_rules.inspect}"
+    
+    # Handle specific special rules that need immediate application
+    handle_immediate_special_rules(special_rules)
+  end
+
+  def handle_immediate_special_rules(special_rules)
+    # Handle hit points bonus (retroactive). `special_rules` é o retorno fresh
+    # de `apply_special_rules` (chaves simbolo). hp vive em `hp_max`/`hp_current`
+    # — `hit_points` não existe na tabela `sheets` (ver schema.rb:427-429).
+    hp_per_level_cfg = special_rules.dig(:dice, :hit_points_per_level) ||
+                        special_rules.dig('dice', 'hit_points_per_level')
+    if hp_per_level_cfg
+      bonus_per_level = (hp_per_level_cfg[:bonus_per_level] || hp_per_level_cfg['bonus_per_level']).to_i
+      retroactive     = hp_per_level_cfg[:retroactive] != false && hp_per_level_cfg['retroactive'] != false
+      current_level   = @sheet.sheet_klasses.sum(:level).to_i
+      total_bonus     = retroactive ? current_level * bonus_per_level : bonus_per_level
+
+      if total_bonus.positive?
+        was_at_full = @sheet.hp_current.to_i >= @sheet.hp_max.to_i
+        new_max     = @sheet.hp_max.to_i + total_bonus
+        new_current = was_at_full ? new_max : (@sheet.hp_current.to_i + total_bonus)
+        @sheet.update!(hp_max: new_max, hp_current: new_current)
+        Rails.logger.info "Applied retroactive HP bonus: +#{total_bonus} HP (max #{@sheet.hp_max - total_bonus} -> #{new_max})"
+      end
+    end
+
+    # Handle luck points
+    luck_cfg = special_rules.dig(:dice, :luck_points) || special_rules.dig('dice', 'luck_points')
+    if luck_cfg
+      metadata = @sheet.metadata || {}
+      metadata['luck_points'] = luck_cfg[:points] || luck_cfg['points']
+      @sheet.update!(metadata: metadata)
+      Rails.logger.info "Initialized luck points: #{metadata['luck_points']}"
     end
   end
 end

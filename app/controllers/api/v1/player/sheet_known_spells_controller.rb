@@ -9,9 +9,10 @@ class Api::V1::Player::SheetKnownSpellsController < ApplicationController
 
   def create
     sk = current_user_sheet_klass
-    service = SpellLearningService.call(sheet_klass: sk, spell_id: params[:spell_id])
+    spell_id = params[:spell_id] || params.dig(:sheet_known_spell, :spell_id)
+    service = SpellLearningService.call(sheet_klass: sk, spell_id: spell_id)
     if service.success?
-      ks = SheetKnownSpell.find_by!(sheet_klass_id: sk.id, spell_id: params[:spell_id])
+      ks = SheetKnownSpell.find_by!(sheet_klass_id: sk.id, spell_id: spell_id)
       render json: { sheet_known_spell: ks }, status: :created
     else
       render json: { errors: service.errors.full_messages }, status: :unprocessable_entity
@@ -32,7 +33,9 @@ class Api::V1::Player::SheetKnownSpellsController < ApplicationController
   private
 
   def current_user_sheet_klass
-    sk = SheetKlass.find(params[:sheet_klass_id])
+    # Accept both query param (?sheet_klass_id=) and nested { sheet_known_spell: { sheet_klass_id: ... } }
+    sheet_klass_id = params[:sheet_klass_id] || params.dig(:sheet_known_spell, :sheet_klass_id)
+    sk = SheetKlass.find(sheet_klass_id)
     raise StandardError, 'Forbidden' unless sk.sheet.character.user_id == @current_user.id
     sk
   end

@@ -1,0 +1,128 @@
+# Aliases para nomes de spells que aparecem em fichas/imports com escrita
+# divergente do canonico. Cada chave eh comparada via `downcase` contra:
+#   - `metadata.class_choices.per_level[N].cantrips/spells` (string ou hash com
+#     `id`/`name` nao numerico)
+#   - `spells_listed[*].name` em fichas importadas
+# O valor eh o `Spell.api_index` canonico no DB.
+#
+# Quando adicionar uma entrada aqui, considere primeiro corrigir o nome na
+# fonte (excel/import). Esta lista existe so como rede de seguranca para
+# typos historicos que ja foram persistidos no metadata de chars existentes.
+#
+# Convencao: chaves em lowercase, sem acento. A cadeia de resolucao do
+# `SpellResolver` ja cobre acento divergente via `transliterated_index` (ver
+# spell_resolver.rb passo 7), entao SO acrescente aqui o que NAO bate por
+# transliteracao — typo real, plural/singular ambiguo, nome incompleto.
+
+# === Toque Arrepiante (chill-touch) ===
+"toque arrepiane": chill-touch       # typo: faltou "t" antes do "e" final
+"toque arrepiantes": chill-touch     # plural acidental
+
+# === Riso Historico de Tasha (hideous-laughter) ===
+# Excel original: "Risos Histericos de Tacha" — plural duplo + typo "Tacha"
+"risos histericos de tasha": hideous-laughter
+"risos histericos de tacha": hideous-laughter
+"riso historico de tacha": hideous-laughter
+
+# === Localizar Objeto (locate-object) ===
+# Excel original: "Localizar Objetos" (plural)
+"localizar objetos": locate-object
+
+# === Passo Nebuloso (misty-step) ===
+# Excel original: "Passos Nebulosos" (plural)
+"passos nebulosos": misty-step
+
+# === Reflexos (mirror-image) ===
+# Excel original: "Reflexo" (singular). Cuidado: "Reflexos de Ladrão" eh outra
+# magia (`thiefs-reflexes`); por isso o alias eh do "Reflexo" CRU, nao do plural.
+"reflexo": mirror-image
+
+# === Contramagia (counterspell) ===
+# Excel original: "contrmagica" (typo, faltou "a" depois de "contr")
+"contrmagica": counterspell
+"contra magica": counterspell
+
+# === Cao Fiel de Mordenkainen (faithful-hound) ===
+# Excel original: "cão fiel de mordenkai" (nome incompleto)
+"cao fiel de mordenkai": faithful-hound
+"cao fiel de mordenkainen": faithful-hound
+
+# === Alterar-Se (alter-self) ===
+"altera-se": alter-self
+
+# === Arma Magica (magic-weapon) — sufixo "(Classe)" eh marker do excel ===
+"arma magica (classe)": magic-weapon
+"arma magica": magic-weapon
+
+# === Arma Espiritual (spiritual-weapon) ===
+"arma espiritual (classe)": spiritual-weapon
+
+# === Armadura Arcana (mage-armor) ===
+"armadur arcana": mage-armor
+
+# === Auxilio Divino (divine-favor) — DB usa nome estranho mas slug eh divine-favor ===
+"auxilio divino (classe)": divine-favor
+
+# === Consertar (mending) ===
+"concertar": mending
+
+# === Convocar Familiar (find-familiar) ===
+# Excel original alterna "Conjurar/Covocar Familiar"
+"conjurar familiar": find-familiar
+"covocar familiar": find-familiar
+
+# === Curar Ferimentos (cure-wounds) — singular no excel ===
+"curar ferimento": cure-wounds
+
+# === Disco Flutuante de Tenser (tensers-floating-disk) ===
+"disco flutuante de tense": tensers-floating-disk
+"disco flutuante de tenser": tensers-floating-disk
+
+# === Escudo da Fe (shield-of-faith) ===
+"escudo da fe (classe)": shield-of-faith
+
+# === Lamina Flamejante / Espada Flamejante (flame-blade) ===
+"espada flamejante": flame-blade
+
+# === Espiritos Guardioes (spirit-guardians) — sufixo "(Classe)" ===
+"espiritos guardioes (classe)": spirit-guardians
+
+# === Globos de Luz (dancing-lights) — singular "Globo" no excel ===
+"globo de luz": dancing-lights
+
+# === Lamina da Chama Esverdeada (pt-lamina-da-chama-esverdeada) ===
+# DB tem com hifen e "da", excel escreve sem acento e "de"
+"lamina de chama esverdeada": pt-lamina-da-chama-esverdeada
+
+# === Manto do Cruzado (crusaders-mantle) ===
+"manto do cruzado (classe)": crusaders-mantle
+
+# === Maos Magicas (mage-hand) — singular no excel ===
+"mao magica": mage-hand
+
+# === Maos Flamejantes (burning-hands) — singular "Maos flamejante" ===
+"maos flamejante": burning-hands
+
+# === Palavra Curativa (healing-word) — plural no excel ===
+"palavras curativas": healing-word
+
+# === Porta Dimensional (dimension-door) — excel escreve "Portal Dimensional" ===
+"portal dimensional": dimension-door
+
+# === Saraivada de Espinhos (hail-of-thorns) — typo "Saravaida" ===
+"saravaida de espinhos": hail-of-thorns
+
+# === Cegueira/Surdez (blindness-deafness) — typo "Segueira" ===
+"segueira/surdez": blindness-deafness
+
+# === Sussurros Dissonantes (dissonant-whispers) — DB com 2 "s" em "Sussurros" ===
+"sussuros dissonantes": dissonant-whispers
+
+# === Crescer Espinhos (spike-growth) — singular no excel ===
+"crescer espinho": spike-growth
+
+# === Detectar Magia (detect-magic) — typo "dectar" ===
+"dectar magia": detect-magic
+
+# === Adicionar mais conforme aparecerem em logs do LevelUpService:
+# > grep "spell nao resolvida" log/development.log

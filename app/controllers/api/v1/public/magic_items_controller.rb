@@ -4,7 +4,7 @@ class Api::V1::Public::MagicItemsController < ApplicationController
     scope = scope.by_rarity(params[:rarity])
     scope = scope.by_category(params[:category])
     scope = scope.attuned(params[:attuned]) if params.key?(:attuned)
-    scope = scope.search(params[:q])
+    scope = scope.search(params[:q] || params[:search])
     scope = scope.order(:name)
     render json: { magic_items: scope.limit(500).as_json(except: [:created_at, :updated_at]) }
   end

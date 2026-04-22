@@ -12,7 +12,7 @@ class Api::V1::Player::SheetsController < ApplicationController
   end
 
   def summary
-    sheet = @current_user.sheets.find(params[:id])
+    sheet = sheets_scope_for_current_user.find(params[:id])
     service = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: (params[:sync] != 'false'))
     if service.success?
       render json: { summary: service.result }, status: :ok
@@ -57,19 +57,47 @@ class Api::V1::Player::SheetsController < ApplicationController
   end
 
   def available_feats
-    feats = FeatRules.all.map do |key, feat_data|
-      {
-        id: key,
-        name: feat_data[:name],
-        description: feat_data[:description],
-        prerequisites: feat_data[:prerequisites],
-        ability_bonuses: feat_data[:ability_bonuses],
-        proficiency_bonuses: feat_data[:proficiency_bonuses],
-        cantrips: feat_data[:cantrips],
-        spells: feat_data[:spells],
-        features: feat_data[:features]
-      }
+    # Use database feats first, fallback to FeatRules for backward compatibility
+    db_feats = Feat.all.index_by(&:api_index)
+    feat_rules = FeatRules.all
+    
+    # Combine database feats with FeatRules fallback
+    all_feat_ids = (db_feats.keys + feat_rules.keys).uniq
+    
+    feats = all_feat_ids.map do |feat_id|
+      # Prefer database feat if available
+      if db_feats[feat_id]
+        feat = db_feats[feat_id]
+        {
+          id: feat.api_index,
+          name: feat.name,
+          description: feat.description,
+          prerequisites: feat.prerequisites || {},
+          ability_bonuses: feat.ability_bonuses || {},
+          proficiency_bonuses: feat.proficiency_bonuses || {},
+          cantrips: feat.cantrips || {},
+          spells: feat.spells || {},
+          features: feat.features || {},
+          special_rules: feat.special_rules || {}
+        }
+      else
+        # Fallback to FeatRules
+        feat_data = feat_rules[feat_id]
+        {
+          id: feat_id,
+          name: feat_data[:name],
+          description: feat_data[:description],
+          prerequisites: feat_data[:prerequisites] || {},
+          ability_bonuses: feat_data[:ability_bonuses] || {},
+          proficiency_bonuses: feat_data[:proficiency_bonuses] || {},
+          cantrips: feat_data[:cantrips] || {},
+          spells: feat_data[:spells] || {},
+          features: feat_data[:features] || {},
+          special_rules: {}
+        }
+      end
     end
+    
     render json: { feats: feats }, status: :ok
   end
 
@@ -111,23 +139,47 @@ class Api::V1::Player::SheetsController < ApplicationController
   private
 
   def set_sheet
-    @sheet = @current_user.sheets.find(params[:id])
+    # DM/Admin (criterio canonico Group.user_is_dm?) pode acessar sheets de
+    # qualquer player — fluxo do Mestre editando ficha importada via wizard de
+    # edicao (PATCH /sheets/:id para HP, summary, etc.). Player comum continua
+    # restrito ao proprio escopo via `current_user.sheets`.
+    @sheet = sheets_scope_for_current_user.find(params[:id])
   rescue StandardError=> e
     render json: { error: e.message }, status: :not_found
   end
 
+  def sheets_scope_for_current_user
+    return Sheet.all if Group.user_is_dm?(@current_user)
+
+    @current_user.sheets
+  end
+
   def sheet_params
+    # Phase 10 — adicionado `coins` (jsonb cp/sp/ep/gp/pp). A coluna existe no
+    # schema desde 20260417120000, mas o controller nao permitia ainda — sem
+    # essa permissao, qualquer PATCH com `sheet: { coins: {...} }` era
+    # silenciosamente descartado. Foi um dos vetores do Bug 8 (nenhum
+    # personagem tinha dinheiro apos o provisioning).
     params.require(:sheet).permit(
       :character_id,
       :race_id,
       :sub_race_id,
       :str, :dex, :con, :int, :wis, :cha,
       :hp_max, :hp_current, :temp_hp,
+      coins: %i[cp sp ep gp pp],
       metadata: {}
     )
   end
 
   def process_sheet_params(params)
+    # Phase 10 — bug critico (causou perda total de metadata em PATCH parcial):
+    # antes este metodo sempre setava `processed[:metadata] = metadata`, e
+    # quando o cliente enviava um PATCH sem `metadata` (ex.: so para atualizar
+    # `coins` ou `hp_current`), `params[:metadata]` ficava nil → vinha `{}` →
+    # sobrescrevia o metadata real com hash vazio. Foi assim que o pos-step
+    # de hidratacao de coins do `provision-imported-as-bob.ts` apagou
+    # `class_choices`, `race_choices`, `class_summary`, etc das fichas P81.
+    metadata_provided = params.key?(:metadata)
     metadata = params[:metadata] || {}
     processed = params.except(:metadata)
     
@@ -181,9 +233,11 @@ class Api::V1::Player::SheetsController < ApplicationController
       processed[:race_bonuses_applied] = metadata['race_bonuses_applied']
     end
     
-    # Manter metadata original para compatibilidade (pode ser removido depois)
-    processed[:metadata] = metadata
-    
+    # Manter metadata original para compatibilidade (pode ser removido depois).
+    # Phase 10 — APENAS quando o cliente realmente enviou `metadata` no body;
+    # PATCH parcial (so `coins` / so `hp_current`) NAO deve zerar metadata.
+    processed[:metadata] = metadata if metadata_provided
+
     processed
   end
 end

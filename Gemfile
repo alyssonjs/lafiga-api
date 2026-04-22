@@ -12,8 +12,8 @@ gem 'active_model_serializers', '~> 0.10.0'
 gem 'puma', '~> 4.1'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.7'
-# Use Redis adapter to run Action Cable in production
-# gem 'redis', '~> 4.0'
+# Redis: required by Action Cable in production (cable.yml uses adapter: redis)
+gem 'redis', '~> 4.8'
 # Use Active Model has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 # Use Json Web Token (JWT) for token based authentication

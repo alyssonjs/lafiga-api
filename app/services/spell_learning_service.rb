@@ -16,9 +16,31 @@ class SpellLearningService
   private
 
   def validate_sources!
-    # Deve existir fonte para a classe do sheet_klass
+    # Deve existir fonte para a classe OU para a subclasse (expanded) OU regra de learn_any_class
     exists = SpellSource.exists?(source_type: 'Klass', source_id: @sheet_klass.klass_id, spell_id: @spell.id)
-    raise StandardError, 'Spell não pertence à lista da classe' unless exists
+    return true if exists
+
+    # expanded spells (warlock patrons, etc.)
+    if @sheet_klass.sub_klass_id.present?
+      expanded = SpellSource.exists?(source_type: 'SubKlass', source_id: @sheet_klass.sub_klass_id, spell_id: @spell.id)
+      return true if expanded
+    end
+
+    # learn_any_class from subclass grants at current or lower level (best-effort, relies on metadata)
+    begin
+      meta = @sheet_klass.sheet.metadata || {}
+      per = (meta.dig('class_choices','per_level') || {})
+      # Detect marker set by FE/BE when allowing any-class learning
+      any_flags = []
+      (1..@sheet_klass.level.to_i).each do |lvl|
+        row = per[lvl.to_s] || per[lvl] || {}
+        any_flags << true if row['learn_any_class'] || row[:learn_any_class]
+      end
+      return true if any_flags.any?
+    rescue
+    end
+
+    raise StandardError, 'Spell não pertence à lista da classe'
   end
 
   def validate_level_cap!

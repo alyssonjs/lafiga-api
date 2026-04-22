@@ -1,7 +1,16 @@
 class Api::V1::Public::AlignmentsController < ApplicationController
   # GET /api/v1/public/alignments
   def index
-    list = Alignment.order(:id).map { |a| { index: a.api_index || a.id.to_s, id: a.api_index || a.id.to_s, name: a.name } }
+    list = Alignment.order(:id).map do |a|
+      idx = a.api_index || a.id.to_s
+      {
+        index: idx,
+        id: idx,
+        name: a.name,
+        abbreviation: a.abbreviation,
+        desc: a.desc
+      }
+    end
     render json: { alignments: list }, status: :ok
   end
 

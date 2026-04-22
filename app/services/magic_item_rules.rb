@@ -1,14 +1,41 @@
 class MagicItemRules
-  # Aggregates effects of equipped magic items and returns a hash with modifiers
-  # Result structure (subset used by UI):
+  # Aggregates effects of equipped magic items and returns a hash with modifiers.
+  #
+  # Result structure (estendida em Fase 2):
   # {
   #   ac_bonus: Integer,
   #   notes: Array<String>,
   #   weapon_mods: {
   #     main_hand: { attack: Integer, damage: Integer, is_magical: Boolean },
   #     off_hand:  { attack: Integer, damage: Integer, is_magical: Boolean }
-  #   }
+  #   },
+  #   resistances:        Array<String>,        # ex: ["fogo", "frio"]
+  #   damage_immunities:  Array<String>,
+  #   damage_vulnerabilities: Array<String>,
+  #   condition_immunities: Array<String>,
+  #   save_advantages:    Array<String>,        # ability codes: ["wis","cha"]
+  #   skill_advantages:   Array<String>,
+  #   ability_bonuses:    { "str" => Integer }, # +N flat
+  #   ability_sets:       { "str" => Integer }, # set to N (caps); só aplica se maior
+  #   speed_bonus:        Integer,              # ft
+  #   passive_features:   [{ source:, name:, desc: }],
+  #   sources_by_effect:  Hash                  # debug/breakdown
   # }
+  EFFECT_DEFAULTS = {
+    ac_bonus: 0,
+    notes: [],
+    resistances: [],
+    damage_immunities: [],
+    damage_vulnerabilities: [],
+    condition_immunities: [],
+    save_advantages: [],
+    skill_advantages: [],
+    ability_bonuses: {},
+    ability_sets: {},
+    speed_bonus: 0,
+    passive_features: [],
+  }.freeze
+
   def initialize(sheet, equipment: nil)
     @sheet = sheet
     @equipment = equipment || EquipmentProfileService.new(sheet).call
@@ -22,9 +49,9 @@ class MagicItemRules
     armor = equipped[:armor]
     shield = equipped[:shield]
 
-    res = { ac_bonus: 0, notes: [], weapon_mods: base_mods }
+    res = EFFECT_DEFAULTS.deep_dup.merge(weapon_mods: base_mods, sources_by_effect: {})
 
-    # Apply weapon bonuses (effects aware)
+    # ── Weapon mods (mão principal/secundária)
     if mh
       mh_mods = weapon_bonus_for(mh)
       res[:notes].concat(Array(mh_mods.delete(:notes)))
@@ -36,13 +63,32 @@ class MagicItemRules
       res[:weapon_mods][:off_hand]  = merge_mods(res[:weapon_mods][:off_hand],  oh_mods)
     end
 
-    # Armor/shield AC bonuses (typed stacking: sum of max per type)
+    # ── AC (typed stacking: sum of max per type)
     ac_by_type = Hash.new { |h,k| h[k] = [] }
     [armor, shield].compact.each do |part|
-      ac_b = ac_bonuses_for(part) # => { type => value }
+      ac_b = ac_bonuses_for(part)
       ac_b.each { |t, v| ac_by_type[t] << v.to_i }
     end
     res[:ac_bonus] = ac_by_type.sum { |type, arr| arr.max.to_i }
+
+    # ── Accessories (Fase 2.1): ring/amulet/cloak/boots/helmet/gloves/belt
+    # Acessórios também podem conceder bônus de AC (manto +1, anel de
+    # proteção +1, etc.), por isso entram no cálculo de AC tipado também.
+    accessories = (equipped[:accessories] || {}).values
+    accessories.each do |part|
+      ac_b = ac_bonuses_for(part)
+      ac_b.each { |t, v| ac_by_type[t] << v.to_i }
+    end
+    # Recalcula AC tipado considerando accessories
+    res[:ac_bonus] = ac_by_type.sum { |_type, arr| arr.max.to_i }
+
+    # ── Generic effects (resistances, advantages, attribute bonuses, speed, passives)
+    # Aplicado sobre TODOS os itens equipados (qualquer slot, incluindo accessories).
+    ([mh, oh, armor, shield] + accessories).compact.each do |part|
+      mi = find_magic_item_for(part)
+      next unless mi
+      apply_generic_effects!(res, mi)
+    end
 
     res
   end
@@ -132,6 +178,72 @@ class MagicItemRules
     end
 
     { attack: attack, damage: damage, is_magical: is_magical, notes: notes }
+  end
+
+  ABILITY_KEYS = %w[str dex con int wis cha].freeze
+
+  def apply_generic_effects!(res, mi)
+    src = mi.respond_to?(:slug) ? mi.slug : mi.try(:name)
+    Array(mi.try(:effects)).each do |eff|
+      next unless eff.is_a?(Hash)
+      kind = (eff['kind'] || eff[:kind]).to_s
+      case kind
+      when 'resistance'
+        types = Array(eff['damage_types'] || eff[:damage_types] || eff['damage_type'] || eff[:damage_type])
+        types.flatten.compact.each { |t| res[:resistances] << t.to_s.downcase }
+      when 'damage_immunity'
+        Array(eff['damage_types'] || eff[:damage_types] || eff['damage_type'] || eff[:damage_type]).each do |t|
+          res[:damage_immunities] << t.to_s.downcase
+        end
+      when 'damage_vulnerability'
+        Array(eff['damage_types'] || eff[:damage_types] || eff['damage_type'] || eff[:damage_type]).each do |t|
+          res[:damage_vulnerabilities] << t.to_s.downcase
+        end
+      when 'condition_immunity'
+        Array(eff['conditions'] || eff[:conditions] || eff['condition'] || eff[:condition]).each do |c|
+          res[:condition_immunities] << c.to_s.downcase
+        end
+      when 'save_advantage'
+        Array(eff['abilities'] || eff[:abilities] || eff['ability'] || eff[:ability]).each do |a|
+          ab = a.to_s.downcase
+          res[:save_advantages] << ab if ABILITY_KEYS.include?(ab)
+        end
+      when 'skill_advantage'
+        Array(eff['skills'] || eff[:skills] || eff['skill'] || eff[:skill]).each do |s|
+          res[:skill_advantages] << s.to_s.downcase
+        end
+      when 'ability_bonus'
+        ab = (eff['ability'] || eff[:ability]).to_s.downcase
+        v  = (eff['value']   || eff[:value]).to_i
+        if ABILITY_KEYS.include?(ab) && v != 0
+          res[:ability_bonuses][ab] = (res[:ability_bonuses][ab] || 0) + v
+        end
+      when 'ability_set', 'set_ability'
+        ab = (eff['ability'] || eff[:ability]).to_s.downcase
+        v  = (eff['value']   || eff[:value]).to_i
+        if ABILITY_KEYS.include?(ab) && v > 0
+          # Mantém o maior set quando há múltiplos itens (ex.: 2 manoplas)
+          cur = res[:ability_sets][ab].to_i
+          res[:ability_sets][ab] = [cur, v].max
+        end
+      when 'speed_bonus'
+        v = (eff['value'] || eff[:value]).to_i
+        # Para speed, somamos untyped (regra simples; refinar para typed em fase futura)
+        res[:speed_bonus] = res[:speed_bonus].to_i + v if v != 0
+      when 'passive_feature'
+        res[:passive_features] << {
+          source: src,
+          name: (eff['name'] || eff[:name]).to_s,
+          desc: (eff['desc'] || eff[:desc]).to_s,
+        }
+      end
+    end
+    res[:resistances].uniq!
+    res[:damage_immunities].uniq!
+    res[:damage_vulnerabilities].uniq!
+    res[:condition_immunities].uniq!
+    res[:save_advantages].uniq!
+    res[:skill_advantages].uniq!
   end
 
   def find_magic_item_for(item)

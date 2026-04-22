@@ -12,5 +12,7 @@ class CreateDateDimension < ActiveRecord::Migration[6.0]
 
       t.timestamps
     end
+
+    add_index :date_dimensions, :date, unique: true, name: 'idx_date_dimensions_unique_date'
   end
 end

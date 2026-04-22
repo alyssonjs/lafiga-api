@@ -1,63 +1,165 @@
-- name: Espada Longa +1
-  rarity: uncommon
-  category: weapon
-  sub_category: longsword
-  requires_attunement: false
-  bonuses:
-    attack: 1
-    damage: 1
-  description: "Uma espada longa cujo aço brilha com magia sutil. Concede +1 em jogadas de ataque e dano."
-  source: Homebrew
-  weight: "3 lb"
-  value_gp: 500
-  tags: ["martial", "melee"]
+---
+magic_items:
+  espada-longa-mais-1:
+    name: Espada Longa +1
+    rarity: uncommon
+    category: weapon
+    sub_category: longsword
+    requires_attunement: false
+    description: "Uma espada longa cujo aço brilha com magia sutil. Concede +1 em jogadas de ataque e dano."
+    source: Homebrew
+    weight: "3 lb"
+    value_gp: 500
+    tags: ["martial", "melee"]
+    props:
+      bonuses:
+        attack: 1
+        damage: 1
 
-- name: Escudo +1
-  rarity: uncommon
-  category: shield
-  requires_attunement: false
-  bonuses:
-    ac: 1
-  description: "Um escudo reforçado com runas. Enquanto empunhado, concede +1 à CA."
-  source: Homebrew
-  weight: "6 lb"
-  value_gp: 500
-  tags: ["armor"]
+  escudo-mais-1:
+    name: Escudo +1
+    rarity: uncommon
+    category: shield
+    requires_attunement: false
+    description: "Um escudo reforçado com runas. Enquanto empunhado, concede +1 à CA."
+    source: Homebrew
+    weight: "6 lb"
+    value_gp: 500
+    tags: ["armor"]
+    props:
+      bonuses:
+        ac: 1
 
-- name: Saco de Contenção (Bag of Holding)
-  rarity: uncommon
-  category: wondrous item
-  requires_attunement: false
-  properties:
-    capacity_kg: 227
-    volume_l: 120
-  description: |
-    Este saco tem uma abertura de 2 pés de diâmetro e 4 pés de profundidade. O saco pode conter até 500 lb (≈227 kg), não excedendo um volume de 64 pés cúbicos (≈120 L). O peso do saco é sempre 15 lb (≈6,8 kg), independentemente do conteúdo. Recuperar um item do saco requer uma ação.
-  source: DMG
-  weight: "6.8 kg"
-  value_gp: 4000
-  tags: ["storage"]
+  saco-de-contencao:
+    name: Saco de Contenção (Bag of Holding)
+    rarity: uncommon
+    category: wondrous item
+    requires_attunement: false
+    description: |
+      Este saco tem uma abertura de 2 pés de diâmetro e 4 pés de profundidade. O saco pode conter até 500 lb (≈227 kg), não excedendo um volume de 64 pés cúbicos (≈120 L). O peso do saco é sempre 15 lb (≈6,8 kg), independentemente do conteúdo. Recuperar um item do saco requer uma ação.
+    source: DMG
+    weight: "6.8 kg"
+    value_gp: 4000
+    tags: ["storage"]
+    props:
+      properties:
+        capacity_kg: 227
+        volume_l: 120
 
-- name: Espada das Brasas
-  rarity: rare
-  category: weapon
-  sub_category: longsword
-  requires_attunement: true
-  effects:
-    - kind: attack_bonus
-      value: 1
-      type: magico
-    - kind: damage_bonus_dice
-      dice: 1d6
-      damage_type: fogo
-    - kind: weapon_is_magical
-      value: true
-  description: |
-    Esta espada irradia calor e chamas tênues. Enquanto sintonizado e empunhando a arma,
-    você recebe +1 em jogadas de ataque. Ao acertar, a espada causa +1d6 de dano de fogo
-    adicional. Ataques com esta arma contam como mágicos para efeitos de resistência e
-    imunidade a dano não-mágico.
-  source: Homebrew
-  weight: "3 lb"
-  value_gp: 3000
-  tags: ["martial", "melee", "fire"]
+  espada-das-brasas:
+    name: Espada das Brasas
+    rarity: rare
+    category: weapon
+    sub_category: longsword
+    requires_attunement: true
+    description: |
+      Esta espada irradia calor e chamas tênues. Enquanto sintonizado e empunhando a arma,
+      você recebe +1 em jogadas de ataque. Ao acertar, a espada causa +1d6 de dano de fogo
+      adicional. Ataques com esta arma contam como mágicos para efeitos de resistência e
+      imunidade a dano não-mágico.
+    source: Homebrew
+    weight: "3 lb"
+    value_gp: 3000
+    tags: ["martial", "melee", "fire"]
+    props:
+      effects:
+        - kind: attack_bonus
+          value: 1
+          type: magico
+        - kind: damage_bonus_dice
+          dice: 1d6
+          damage_type: fogo
+        - kind: weapon_is_magical
+          value: true
+
+  manto-da-resistencia-ao-fogo:
+    name: Manto da Resistência ao Fogo
+    rarity: uncommon
+    category: wondrous item
+    sub_category: cloak
+    requires_attunement: true
+    description: |
+      Enquanto sintonizado e vestindo este manto, você possui resistência a dano de fogo.
+    source: DMG
+    weight: "1 lb"
+    value_gp: 4000
+    tags: ["wondrous", "resistance", "fire"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["fogo"]
+
+  anel-da-vontade-inabalavel:
+    name: Anel da Vontade Inabalável
+    rarity: rare
+    category: ring
+    requires_attunement: true
+    description: |
+      Enquanto sintonizado, você tem vantagem em testes de salvamento de Sabedoria
+      e Carisma contra efeitos mentais e encantamentos.
+    source: Homebrew
+    weight: "0.05 lb"
+    value_gp: 5000
+    tags: ["ring", "save", "advantage", "mental"]
+    props:
+      effects:
+        - kind: save_advantage
+          abilities: ["wis", "cha"]
+
+  manopla-da-forca-do-gigante-da-colina:
+    name: Manopla da Força do Gigante da Colina
+    rarity: rare
+    category: wondrous item
+    sub_category: gauntlets
+    requires_attunement: true
+    description: |
+      Enquanto sintonizado e vestindo estas manoplas, sua Força é definida como 19,
+      a menos que sua Força sem o item já seja maior.
+    source: DMG
+    weight: "2 lb"
+    value_gp: 5000
+    tags: ["wondrous", "ability", "strength"]
+    props:
+      effects:
+        - kind: ability_set
+          ability: str
+          value: 19
+
+  botas-aladas:
+    name: Botas Aladas
+    rarity: uncommon
+    category: wondrous item
+    sub_category: boots
+    requires_attunement: true
+    description: |
+      Enquanto sintonizado, você ganha +10 ft de deslocamento e pode utilizar uma
+      ação para invocar asas mágicas que duram até 1 hora ou até dispensadas.
+    source: DMG
+    weight: "1 lb"
+    value_gp: 5000
+    tags: ["wondrous", "boots", "speed"]
+    props:
+      effects:
+        - kind: speed_bonus
+          value: 10
+        - kind: passive_feature
+          name: "Asas Mágicas"
+          desc: "Como ação, invoca asas mágicas (deslocamento de voo igual ao deslocamento terrestre) por até 1 hora."
+
+  amuleto-de-saude:
+    name: Amuleto de Saúde
+    rarity: rare
+    category: wondrous item
+    sub_category: amulet
+    requires_attunement: true
+    description: |
+      Enquanto sintonizado, sua Constituição é definida como 19, a menos que já seja maior.
+    source: DMG
+    weight: "1 lb"
+    value_gp: 8000
+    tags: ["wondrous", "ability", "constitution"]
+    props:
+      effects:
+        - kind: ability_set
+          ability: con
+          value: 19

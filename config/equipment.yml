@@ -1,690 +1,6366 @@
----
+meta:
+  currency_units:
+    pc: 1        # cobre
+    pp: 10       # prata
+    po: 100      # ouro
+    pl: 1000     # platina
+  weight_unit: kg
+  notes: "Custo normalizado em cp (cost_cp) + forma humana (cost). Use aliases para aceitar nomes PT/EN."
+
 weapons:
   adaga:
     name: Adaga
+    aliases: [dagger]
     type: melee
-    hands: 1
     category: simple
+    hands: 1
     damage_die: 1d4
-    properties:
-    - finesse
-    - light
-    - thrown
+    properties: [finesse, light, thrown]
     range: 20/60
-  alabarda:
-    name: Alabarda
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 1d10
-    properties:
-    - two-handed
-  arco-curto:
-    name: Arco Curto
-    type: ranged
-    hands: 2
-    category: simple
-    damage_die: 1d6
-    properties:
-    - ammunition
-    - two-handed
-  arco-longo:
-    name: Arco Longo
-    type: ranged
-    hands: 2
-    category: martial
-    damage_die: 1d8
-    properties:
-    - ammunition
-    - heavy
-    - two-handed
-    range: 150/600
-  azagaia:
-    name: Azagaia
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    properties:
-    - thrown
-    range: 30/120
-  battleaxe:
-    name: Battleaxe
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    properties:
-    - versatile
-  besta-de-mao:
-    name: Besta De Mao
-    type: ranged
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    properties:
-    - ammunition
-    - light
-    - loading
-    range: 30/120
-  besta-leve:
-    name: Besta Leve
-    type: ranged
-    hands: 2
-    category: simple
-    damage_die: 1d8
-    properties:
-    - ammunition
-    - two-handed
-  besta-pesada:
-    name: Besta Pesada
-    type: ranged
-    hands: 2
-    category: martial
-    damage_die: 1d10
-    properties:
-    - ammunition
-    - heavy
-    - loading
-    - two-handed
-    range: 100/400
-  blowgun:
-    name: Blowgun
-    type: ranged
-    hands: 1
-    category: martial
-    damage_die: '1'
-    properties:
-    - ammunition
-  cajado:
-    name: Cajado
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    versatile_die: 1d8
-    properties:
-    - versatile
-  chicote:
-    name: Chicote
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d4
-    properties:
-    - finesse
-    - reach
-  clava:
-    name: Clava
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - light
-  club:
-    name: Club
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - light
-  dagger:
-    name: Dagger
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - light
-    - finesse
-    - thrown
-    range: 20/60
-  dardo:
-    name: Dardo
-    type: ranged
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - ammunition
-    - finesse
-  dart:
-    name: Dart
-    type: ranged
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - ammunition
-    - finesse
-  escimitarra:
-    name: Escimitarra
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    properties:
-    - finesse
-    - light
-  espada-bastarda:
-    name: Espada Bastarda
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    versatile_die: 1d10
-    properties:
-    - versatile
-  espada-curta:
-    name: Espada Curta
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    properties:
-    - finesse
-    - light
-  espada-longa:
-    name: Espada Longa
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    versatile_die: 1d10
-    properties:
-    - versatile
-  flail:
-    name: Flail
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    properties: []
+    weight_kg: 0.5
+    cost_cp: 200
+    cost: { amount: 2, unit: po }
+
   foice:
     name: Foice
+    aliases: [sickle]
     type: melee
-    hands: 1
     category: simple
-    damage_die: 1d4
-    properties:
-    - light
-  funda:
-    name: Funda
-    type: ranged
     hands: 1
-    category: simple
     damage_die: 1d4
-    properties:
-    - ammunition
-  glaive:
-    name: Glaive
+    properties: [light]
+    weight_kg: 1.0
+    cost_cp: 100
+    cost: { amount: 1, unit: po }
+
+  clava:
+    name: Clava
+    aliases: [club]
     type: melee
-    hands: 2
-    category: martial
-    damage_die: 1d10
-    properties:
-    - two-handed
-  greataxe:
-    name: Greataxe
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 1d12
-    properties:
-    - two-handed
+    category: simple
+    hands: 1
+    damage_die: 1d4
+    properties: [light]
+    weight_kg: 1.0
+    cost_cp: 10
+    cost: { amount: 1, unit: pp }
+
   greatclub:
-    name: Greatclub
+    name: Clava Grande
+    aliases: [greatclub]
     type: melee
-    hands: 2
     category: simple
+    hands: 2
     damage_die: 1d8
-    properties:
-    - two-handed
-  greatsword:
-    name: Greatsword
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 2d6
-    properties:
-    - two-handed
-  halberd:
-    name: Halberd
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 1d10
-    properties:
-    - two-handed
-  hand-crossbow:
-    name: Hand Crossbow
-    type: ranged
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    properties:
-    - ammunition
-    - light
-    - loading
-    range: 30/120
-  handaxe:
-    name: Handaxe
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    properties:
-    - light
-    - thrown
-    range: 20/60
-  heavy-crossbow:
-    name: Heavy Crossbow
-    type: ranged
-    hands: 2
-    category: martial
-    damage_die: 1d10
-    properties:
-    - ammunition
-    - heavy
-    - loading
-    - two-handed
-    range: 100/400
-  javelin:
-    name: Javelin
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    properties:
-    - thrown
-    range: 30/120
-  lanca-de-cavalaria:
-    name: Lanca De Cavalaria
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d12
-    properties: []
-  lance:
-    name: Lance
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d12
-    properties: []
-  lança:
-    name: Lança
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    versatile_die: 1d8
-    properties:
-    - thrown
-    - versatile
-    range: 20/60
-  light-crossbow:
-    name: Light Crossbow
-    type: ranged
-    hands: 2
-    category: simple
-    damage_die: 1d8
-    properties:
-    - ammunition
-    - two-handed
-  light-hammer:
-    name: Light Hammer
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - light
-    - thrown
-    range: 20/60
-  longbow:
-    name: Longbow
-    type: ranged
-    hands: 2
-    category: martial
-    damage_die: 1d8
-    properties:
-    - ammunition
-    - heavy
-    - two-handed
-    range: 150/600
-  longsword:
-    name: Longsword
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    versatile_die: 1d10
-    properties:
-    - versatile
-  mace:
-    name: Mace
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    properties: []
-  machadinha:
-    name: Machadinha
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    properties:
-    - light
-    - thrown
-    range: 20/60
-  machado-de-batalha:
-    name: Machado De Batalha
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    properties:
-    - versatile
-  machado-grande:
-    name: Machado Grande
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 1d12
-    properties:
-    - two-handed
-  martelo-de-guerra:
-    name: Martelo De Guerra
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    versatile_die: 1d10
-    properties:
-    - versatile
-  martelo-leve:
-    name: Martelo Leve
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - light
-    - thrown
-    range: 20/60
-  maul:
-    name: Maul
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 2d6
-    properties:
-    - two-handed
+    properties: [two-handed]
+    weight_kg: 5.0
+    cost_cp: 20
+    cost: { amount: 2, unit: pp }
+
   maça:
     name: Maça
+    aliases: [mace]
     type: melee
-    hands: 1
     category: simple
+    hands: 1
     damage_die: 1d6
     properties: []
-  maça-estrela:
-    name: Maça Estrela
+    weight_kg: 2.0
+    cost_cp: 500
+    cost: { amount: 5, unit: po }
+
+  lança:
+    name: Lança
+    aliases: [spear]
     type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    properties: []
-  montante:
-    name: Montante
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 2d6
-    properties:
-    - two-handed
-  morningstar:
-    name: Morningstar
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    properties: []
-  net:
-    name: Net
-    type: ranged
-    hands: 1
-    category: martial
-    damage_die: ''
-    properties:
-    - ammunition
-    - special
-  picareta-de-guerra:
-    name: Picareta De Guerra
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    properties: []
-  pike:
-    name: Pike
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 1d10
-    properties:
-    - heavy
-    - reach
-    - two-handed
-  pique:
-    name: Pique
-    type: melee
-    hands: 2
-    category: martial
-    damage_die: 1d10
-    properties:
-    - two-handed
-  quarterstaff:
-    name: Quarterstaff
-    type: melee
-    hands: 1
     category: simple
+    hands: 1
     damage_die: 1d6
     versatile_die: 1d8
-    properties:
-    - versatile
-  rapier:
-    name: Rapier
+    properties: [thrown, versatile]
+    range: 20/60
+    weight_kg: 1.5
+    cost_cp: 100
+    cost: { amount: 1, unit: po }
+
+  cajado:
+    name: Cajado
+    aliases: [quarterstaff]
     type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d8
-    properties:
-    - finesse
-  rede:
-    name: Rede
-    type: ranged
-    hands: 1
-    category: martial
-    damage_die: ''
-    properties:
-    - ammunition
-    - special
-  scimitar:
-    name: Scimitar
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    properties:
-    - finesse
-    - light
-  shortbow:
-    name: Shortbow
-    type: ranged
-    hands: 2
     category: simple
+    hands: 1
     damage_die: 1d6
-    properties:
-    - ammunition
-    - two-handed
+    versatile_die: 1d8
+    properties: [versatile]
+    weight_kg: 2.0
+    cost_cp: 20
+    cost: { amount: 2, unit: pp }
+
+  machadinha:
+    name: Machadinha
+    aliases: [handaxe]
+    type: melee
+    category: simple
+    hands: 1
+    damage_die: 1d6
+    properties: [light, thrown]
+    range: 20/60
+    weight_kg: 1.0
+    cost_cp: 500
+    cost: { amount: 5, unit: po }
+
+  azagaia:
+    name: Azagaia
+    aliases: [javelin]
+    type: melee
+    category: simple
+    hands: 1
+    damage_die: 1d6
+    properties: [thrown]
+    range: 30/120
+    weight_kg: 1.0
+    cost_cp: 50
+    cost: { amount: 5, unit: pp }
+
+  martelo-leve:
+    name: Martelo Leve
+    aliases: [light-hammer]
+    type: melee
+    category: simple
+    hands: 1
+    damage_die: 1d4
+    properties: [light, thrown]
+    range: 20/60
+    weight_kg: 1.0
+    cost_cp: 200
+    cost: { amount: 2, unit: po }
+
+  dardo:
+    name: Dardo
+    aliases: [dart]
+    type: ranged
+    category: simple
+    hands: 1
+    damage_die: 1d4
+    properties: [ammunition, finesse]
+    range: 20/60
+    weight_kg: 0.1
+    cost_cp: 5
+    cost: { amount: 5, unit: pc }
+
+  funda:
+    name: Funda
+    aliases: [sling]
+    type: ranged
+    category: simple
+    hands: 1
+    damage_die: 1d4
+    properties: [ammunition]
+    range: 30/120
+    weight_kg: 0.0
+    cost_cp: 10
+    cost: { amount: 1, unit: pp }
+
+  arco-curto:
+    name: Arco Curto
+    aliases: [shortbow]
+    type: ranged
+    category: simple
+    hands: 2
+    damage_die: 1d6
+    properties: [ammunition, two-handed]
     range: 80/320
-  shortsword:
-    name: Shortsword
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    properties:
-    - finesse
-    - light
-  sickle:
-    name: Sickle
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d4
-    properties:
-    - light
-  sling:
-    name: Sling
+    weight_kg: 1.0
+    cost_cp: 2500
+    cost: { amount: 25, unit: po }
+
+  besta-leve:
+    name: Besta Leve
+    aliases: [light-crossbow]
     type: ranged
-    hands: 1
     category: simple
-    damage_die: 1d4
-    properties:
-    - ammunition
-  spear:
-    name: Spear
-    type: melee
-    hands: 1
-    category: simple
-    damage_die: 1d6
-    versatile_die: 1d8
-    properties:
-    - thrown
-    - versatile
-    range: 20/60
-  trident:
-    name: Trident
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    versatile_die: 1d8
-    properties:
-    - thrown
-    - versatile
-    range: 20/60
-  tridente:
-    name: Tridente
-    type: melee
-    hands: 1
-    category: martial
-    damage_die: 1d6
-    versatile_die: 1d8
-    properties:
-    - thrown
-    - versatile
-    range: 20/60
-  war-pick:
-    name: War Pick
-    type: melee
-    hands: 1
-    category: martial
+    hands: 2
     damage_die: 1d8
-    properties: []
-  warhammer:
-    name: Warhammer
+    properties: [ammunition, loading, two-handed]
+    range: 80/320
+    weight_kg: 2.5
+    cost_cp: 2500
+    cost: { amount: 25, unit: po }
+
+  battleaxe:
+    name: Machado de Batalha
+    aliases: [battleaxe, machado-de-batalha]
     type: melee
-    hands: 1
     category: martial
+    hands: 1
     damage_die: 1d8
     versatile_die: 1d10
-    properties:
-    - versatile
-  whip:
-    name: Whip
+    properties: [versatile]
+    weight_kg: 2.0
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  flail:
+    name: Mangual
+    aliases: [flail]
     type: melee
-    hands: 1
     category: martial
+    hands: 1
+    damage_die: 1d8
+    properties: []
+    weight_kg: 1.0
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  glaive:
+    name: Glaive
+    aliases: [glaive]
+    type: melee
+    category: martial
+    hands: 2
+    damage_die: 1d10
+    properties: [heavy, reach, two-handed]
+    weight_kg: 3.0
+    cost_cp: 2000
+    cost: { amount: 20, unit: po }
+
+  halberd:
+    name: Alabarda
+    aliases: [alabarda, halberd]
+    type: melee
+    category: martial
+    hands: 2
+    damage_die: 1d10
+    properties: [heavy, reach, two-handed]
+    weight_kg: 3.0
+    cost_cp: 2000
+    cost: { amount: 20, unit: po }
+
+  greataxe:
+    name: Machado Grande
+    aliases: [greataxe, machado-grande]
+    type: melee
+    category: martial
+    hands: 2
+    damage_die: 1d12
+    properties: [heavy, two-handed]
+    weight_kg: 3.5
+    cost_cp: 3000
+    cost: { amount: 30, unit: po }
+
+  greatsword:
+    name: Montante
+    aliases: [greatsword, montante]
+    type: melee
+    category: martial
+    hands: 2
+    damage_die: 2d6
+    properties: [heavy, two-handed]
+    weight_kg: 3.0
+    cost_cp: 5000
+    cost: { amount: 50, unit: po }
+
+  maul:
+    name: Marreta Pesada
+    aliases: [maul]
+    type: melee
+    category: martial
+    hands: 2
+    damage_die: 2d6
+    properties: [heavy, two-handed]
+    weight_kg: 5.0
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  lance:
+    name: Lança de Cavalaria
+    aliases: [lance, lanca-de-cavalaria]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d12
+    properties: [reach, special]
+    weight_kg: 2.5
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  longsword:
+    name: Espada Longa
+    aliases: [longsword, espada-longa, espada-bastarda]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d8
+    versatile_die: 1d10
+    properties: [versatile]
+    weight_kg: 1.5
+    cost_cp: 1500
+    cost: { amount: 15, unit: po }
+
+  morningstar:
+    name: Maça Estrela
+    aliases: [morningstar, maça-estrela]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d8
+    properties: []
+    weight_kg: 2.0
+    cost_cp: 1500
+    cost: { amount: 15, unit: po }
+
+  pike:
+    name: Pique
+    aliases: [pique, pike]
+    type: melee
+    category: martial
+    hands: 2
+    damage_die: 1d10
+    properties: [heavy, reach, two-handed]
+    weight_kg: 3.0
+    cost_cp: 500
+    cost: { amount: 5, unit: po }
+
+  rapier:
+    name: Rapieira
+    aliases: [rapier]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d8
+    properties: [finesse]
+    weight_kg: 1.0
+    cost_cp: 2500
+    cost: { amount: 25, unit: po }
+
+  scimitar:
+    name: Cimitarra
+    aliases: [cimitarra, escimitarra, scimitar]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d6
+    properties: [finesse, light]
+    weight_kg: 1.5
+    cost_cp: 2500
+    cost: { amount: 25, unit: po }
+
+  shortsword:
+    name: Espada Curta
+    aliases: [shortsword, espada-curta]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d6
+    properties: [finesse, light]
+    weight_kg: 1.0
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  tridente:
+    name: Tridente
+    aliases: [trident]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d6
+    versatile_die: 1d8
+    properties: [thrown, versatile]
+    range: 20/60
+    weight_kg: 2.0
+    cost_cp: 500
+    cost: { amount: 5, unit: po }
+
+  war-pick:
+    name: Picareta de Guerra
+    aliases: [war-pick, picareta-de-guerra]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d8
+    properties: []
+    weight_kg: 1.0
+    cost_cp: 500
+    cost: { amount: 5, unit: po }
+
+  warhammer:
+    name: Martelo de Guerra
+    aliases: [warhammer, martelo-de-guerra]
+    type: melee
+    category: martial
+    hands: 1
+    damage_die: 1d8
+    versatile_die: 1d10
+    properties: [versatile]
+    weight_kg: 1.0
+    cost_cp: 1500
+    cost: { amount: 15, unit: po }
+
+  chicote:
+    name: Chicote
+    aliases: [whip]
+    type: melee
+    category: martial
+    hands: 1
     damage_die: 1d4
-    properties:
-    - finesse
-    - reach
+    properties: [finesse, reach]
+    weight_kg: 1.0
+    cost_cp: 200
+    cost: { amount: 2, unit: po }
+
   zarabatana:
     name: Zarabatana
+    aliases: [blowgun]
     type: ranged
-    hands: 1
     category: martial
-    damage_die: '1'
-    properties:
-    - ammunition
+    hands: 1
+    damage_die: "1"
+    properties: [ammunition, loading]
+    range: 25/100
+    weight_kg: 0.5
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  hand-crossbow:
+    name: Besta de Mão
+    aliases: [hand-crossbow, besta-de-mao]
+    type: ranged
+    category: martial
+    hands: 1
+    damage_die: 1d6
+    properties: [ammunition, light, loading]
+    range: 30/120
+    weight_kg: 1.5
+    cost_cp: 7500
+    cost: { amount: 75, unit: po }
+
+  heavy-crossbow:
+    name: Besta Pesada
+    aliases: [heavy-crossbow, besta-pesada]
+    type: ranged
+    category: martial
+    hands: 2
+    damage_die: 1d10
+    properties: [ammunition, heavy, loading, two-handed]
+    range: 100/400
+    weight_kg: 4.5
+    cost_cp: 5000
+    cost: { amount: 50, unit: po }
+
+  longbow:
+    name: Arco Longo
+    aliases: [longbow, arco-longo]
+    type: ranged
+    category: martial
+    hands: 2
+    damage_die: 1d8
+    properties: [ammunition, heavy, two-handed]
+    range: 150/600
+    weight_kg: 1.5
+    cost_cp: 5000
+    cost: { amount: 50, unit: po }
+
+  net:
+    name: Rede
+    aliases: [rede, net]
+    type: ranged
+    category: martial
+    hands: 1
+    damage_die: ""
+    properties: [special, thrown]
+    range: 5/15
+    weight_kg: 1.5
+    cost_cp: 100
+    cost: { amount: 1, unit: po }
+
 armors:
+  padded:
+    name: Acolchoada
+    aliases: [padded]
+    cat: light
+    base: 11
+    dex_cap: null
+    stealth_dis: true
+    str_req: null
+    weight_kg: 4.0
+    cost_cp: 500
+    cost: { amount: 5, unit: po }
+
+  leather:
+    name: Couro
+    aliases: [leather, armadura-couro]
+    cat: light
+    base: 11
+    dex_cap: null
+    stealth_dis: false
+    str_req: null
+    weight_kg: 5.0
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  studded-leather:
+    name: Couro Reforçado
+    aliases: [studded-leather, armadura-couro-reforcado]
+    cat: light
+    base: 12
+    dex_cap: null
+    stealth_dis: false
+    str_req: null
+    weight_kg: 6.5
+    cost_cp: 4500
+    cost: { amount: 45, unit: po }
+
+  hide:
+    name: Couro Batido
+    aliases: [hide, gibao-de-peles]
+    cat: medium
+    base: 12
+    dex_cap: 2
+    stealth_dis: false
+    str_req: null
+    weight_kg: 6.0
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+  chain-shirt:
+    name: Camisa de Malha
+    aliases: [chain-shirt, camisa-de-malha, camisao-de-malha]
+    cat: medium
+    base: 13
+    dex_cap: 2
+    stealth_dis: false
+    str_req: null
+    weight_kg: 10.0
+    cost_cp: 5000
+    cost: { amount: 50, unit: po }
+
+  scale-mail:
+    name: Cota de Escamas
+    aliases: [scale-mail, brunea]
+    cat: medium
+    base: 14
+    dex_cap: 2
+    stealth_dis: true
+    str_req: null
+    weight_kg: 22.5
+    cost_cp: 5000
+    cost: { amount: 50, unit: po }
+
   breastplate:
+    name: Peitoral
+    aliases: [breastplate]
     cat: medium
     base: 14
     dex_cap: 2
     stealth_dis: false
+    str_req: null
+    weight_kg: 10.0
+    cost_cp: 40000
+    cost: { amount: 400, unit: po }
+
+  half-plate:
+    name: Meia Armadura de Placas
+    aliases: [half-plate]
+    cat: medium
+    base: 15
+    dex_cap: 2
+    stealth_dis: true
+    str_req: null
+    weight_kg: 20.0
+    cost_cp: 75000
+    cost: { amount: 750, unit: po }
+
+  ring-mail:
+    name: Malha Anelar
+    aliases: [ring-mail]
+    cat: heavy
+    base: 14
+    dex_cap: 0
+    stealth_dis: true
+    str_req: null
+    weight_kg: 20.0
+    cost_cp: 3000
+    cost: { amount: 30, unit: po }
+
   chain-mail:
+    name: Cota de Malha
+    aliases: [chain-mail, cota-de-malha]
     cat: heavy
     base: 16
     dex_cap: 0
     stealth_dis: true
     str_req: 13
-  chain-shirt:
-    cat: medium
-    base: 13
-    dex_cap: 2
-    stealth_dis: false
-  half-plate:
-    cat: medium
-    base: 15
-    dex_cap: 2
-    stealth_dis: true
-  hide:
-    cat: medium
-    base: 12
-    dex_cap: 2
-    stealth_dis: false
-  leather:
-    cat: light
-    base: 11
-    dex_cap:
-    stealth_dis: false
-  padded:
-    cat: light
-    base: 11
-    stealth_dis: true
-  plate:
-    cat: heavy
-    base: 18
-    dex_cap: 0
-    stealth_dis: true
-    str_req: 15
-  ring-mail:
-    cat: heavy
-    base: 14
-    dex_cap: 0
-    stealth_dis: true
-  scale-mail:
-    cat: medium
-    base: 14
-    dex_cap: 2
-    stealth_dis: true
+    weight_kg: 27.5
+    cost_cp: 7500
+    cost: { amount: 75, unit: po }
+
   splint:
+    name: Placas Segmentadas
+    aliases: [splint]
     cat: heavy
     base: 17
     dex_cap: 0
     stealth_dis: true
     str_req: 15
-  studded-leather:
-    cat: light
-    base: 12
-    stealth_dis: false
+    weight_kg: 30.0
+    cost_cp: 20000
+    cost: { amount: 200, unit: po }
+
+  plate:
+    name: Placas
+    aliases: [plate]
+    cat: heavy
+    base: 18
+    dex_cap: 0
+    stealth_dis: true
+    str_req: 15
+    weight_kg: 32.5
+    cost_cp: 150000
+    cost: { amount: 1500, unit: po }
+
 shields:
-- shield
-- escudo
+  shield:
+    name: Escudo
+    aliases: [escudo, shield]
+    ac_bonus: 2
+    weight_kg: 3.0
+    cost_cp: 1000
+    cost: { amount: 10, unit: po }
+
+
+gear:
+  bolsa-de-componentes:
+    name: Bolsa de Componentes
+    aliases: [component-pouch]
+    kind: gear
+    category: gear
+    weight_kg: 1.0
+    cost_cp: 2500
+    notes: "Armazena componentes materiais menores para conjuração."
+
+  flecha:
+    name: Flecha
+    aliases: [arrow]
+    kind: ammunition
+    category: ammunition
+    weight_kg: 0.02
+    cost_cp: 5
+
+  virote:
+    name: Virote de Besta
+    aliases: [crossbow-bolt, bolts]
+    kind: ammunition
+    category: ammunition
+    weight_kg: 0.04
+    cost_cp: 5
+
+  foco-arcano:
+    name: Foco Arcano
+    aliases: [arcane-focus]
+    kind: gear
+    category: focus
+    weight_kg: 0.5
+    cost_cp: 1000
+
+  foco-druidico:
+    name: Foco Druídico
+    aliases: [druidic-focus]
+    kind: gear
+    category: focus
+    weight_kg: 0.5
+    cost_cp: 500
+
+  simbolo-sagrado:
+    name: Símbolo Sagrado
+    aliases: [holy-symbol]
+    kind: gear
+    category: holy-symbol
+    weight_kg: 0.2
+    cost_cp: 500
+
+  grimorio:
+    name: Grimório
+    aliases: [spellbook]
+    kind: gear
+    category: book
+    weight_kg: 1.5
+    cost_cp: 5000
+
+  instrumento-musical:
+    name: Instrumento Musical
+    aliases: [musical-instrument]
+    kind: gear
+    category: instrument
+    weight_kg: 2.0
+    cost_cp: 2000
+    notes: "Representa um instrumento à escolha (alaúde, flauta, tambor, etc.)."
+
+  bolsa-de-cozinheiro:
+    name: Bolsa de Cozinheiro
+    aliases: [cooks-kit]
+    kind: gear
+    category: gear
+    weight_kg: 1.5
+    cost_cp: 200
+    notes: "Suprimentos básicos para preparar refeições simples em viagem."
+
+
+packs:
+  pacote-assaltante:
+    name: Pacote do Assaltante
+    aliases: [burglars-pack, burglar-pack]
+    kind: pack
+    category: pack
+    weight_kg: 18.0
+    cost_cp: 1600
+    contents:
+      - Bola de cera
+      - Corda de cânhamo (15 m)
+      - Sino
+      - Molho de chaves falsas
+      - Pergaminho
+      - Giz (2)
+      - Bolsa
+
+  pacote-artista:
+    name: Pacote do Artista
+    aliases: [entertainers-pack, entertainer-pack]
+    kind: pack
+    category: pack
+    weight_kg: 16.0
+    cost_cp: 4000
+    contents:
+      - Instrumento musical
+      - Figurino
+      - Bastão
+      - Pequenos adereços
+
+  pacote-aventureiro:
+    name: Pacote do Aventureiro
+    aliases: [dungeoneers-pack, dungeoneer-pack]
+    kind: pack
+    category: pack
+    weight_kg: 24.0
+    cost_cp: 1200
+    contents:
+      - Mochila
+      - Corda de cânhamo (15 m)
+      - Tochas (10)
+      - Acendedor
+      - Rações de viagem (10)
+      - Cantil
+      - Saco
+
+  pacote-diplomata:
+    name: Pacote do Diplomata
+    aliases: [diplomats-pack, diplomat-pack]
+    kind: pack
+    category: pack
+    weight_kg: 22.0
+    cost_cp: 3900
+    contents:
+      - Estojo de mapas
+      - Tinteiro
+      - Pena
+      - Pergaminho (5)
+      - Vela (5)
+      - Sabão
+      - Roupas finas
+      - Frasco de perfume
+
+  pacote-estudioso:
+    name: Pacote do Estudioso
+    aliases: [scholars-pack, scholar-pack]
+    kind: pack
+    category: pack
+    weight_kg: 7.0
+    cost_cp: 4000
+    contents:
+      - Mochila
+      - Grimório
+      - Tinta
+      - Pena
+      - Pergaminho (10)
+      - Saco de areia
+      - Faca pequena
+
+  pacote-explorador:
+    name: Pacote do Explorador
+    aliases: [explorers-pack, explorer-pack]
+    kind: pack
+    category: pack
+    weight_kg: 22.0
+    cost_cp: 1000
+    contents:
+      - Mochila
+      - Cama portátil
+      - Rações de viagem (10)
+      - Corda de cânhamo (15 m)
+      - Tochas (10)
+      - Acendedor
+      - Cantil
+
+  pacote-sacerdote:
+    name: Pacote do Sacerdote
+    aliases: [priests-pack, priest-pack]
+    kind: pack
+    category: pack
+    weight_kg: 12.0
+    cost_cp: 1900
+    contents:
+      - Mochila
+      - Cobertor
+      - Velas (10)
+      - Acendedor
+      - Caixa de incenso
+      - Tigela
+      - Rações de viagem (2)
+      - Jarro de água
+
+
+tools:
+  ferramentas-de-ladrao:
+    name: Ferramentas de Ladrão
+    aliases: [thieves-tools]
+    kind: tool
+    category: thieves-tools
+    weight_kg: 0.5
+    cost_cp: 2500
+
+  utensilios-de-cozinheiro:
+    name: Utensílios de Cozinheiro
+    aliases: [cooks-utensils]
+    kind: tool
+    category: cook-utensils
+    weight_kg: 2.0
+    cost_cp: 100
+
+
+itens:
+  - api_index: tatuagem-absorvente
+    name: Tatuagem Absorvente
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: very rare
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: Compendium
+    description: "Concede resistência a um tipo de dano escolhido; 1/dia você pode ter imunidade a esse tipo e recuperar metade dos PV perdidos."
+    tags: [tattoo, defesa, resistencia]
+    charges: 1
+    recharge: long_rest
+    props:
+      effects:
+        - { kind: select_damage_type, value: [acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant, thunder, bludgeoning, piercing, slashing] }
+        - { kind: grant_resistance, damage_type: selected }
+        - { kind: daily_toggle_immunity_and_heal, damage_type: selected, duration_minutes: 10, heal_fraction: 0.5 }
+
+  - api_index: armadura-de-adamantina
+    name: Armadura de Adamantina
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: uncommon
+    requires_attunement: false
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Acertos críticos contra você se tornam acertos normais."
+    tags: [armadura, defesa]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: negate_incoming_crits }
+
+  - api_index: enxoo-de-annam
+    name: Enxó de Annam
+    kind: magic_item
+    category: weapon
+    sub_category: machado-grande
+    rarity: artifact
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg: 3.0
+    source: Compendium
+    description: "Arma +3; dano base 3d12; pode conjurar mover terra ou fabricar 1/dia."
+    tags: [marcial, corpo-a-corpo, artefato]
+    charges: 2
+    recharge: dawn
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+        - { kind: damage_die_override, dice: 3d12, damage_type: slashing }
+        - { kind: grant_spell, spell: move earth, per_day: 1 }
+        - { kind: grant_spell, spell: fabricate, per_day: 1 }
+        - { kind: weapon_is_magical, value: true }
+
+  - api_index: compendio-alquimico
+    name: Compêndio Alquímico
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: true
+    attunement_note: "conjurador"
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg: 1.0
+    source: Compendium
+    description: "Contém 6 magias de transmutação; 3 cargas para transformar um objeto (efeito temático de transmutação)."
+    tags: [grimorio, transmutacao]
+    charges: 3
+    recharge: long_rest
+    props:
+      effects:
+        - { kind: grant_spells, school: transmutation, count: 6 }
+        - { kind: expend_charges_transmute_object, charges_cost: 3 }
+
+  - api_index: jarro-alquimico
+    name: Jarro Alquímico
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: uncommon
+    requires_attunement: false
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Produz líquidos específicos (ácido, veneno, cerveja, mel, maionese, óleo, vinagre, água doce/salgada, vinho). 1/dia por tipo; até ~2 galões/min."
+    tags: [utilidade, alquimia, recipiente]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: conjure_liquid_list, per_day: 1, rate: "2_galoes_min" }
+
+  - api_index: ferramenta-multifuncional
+    name: Ferramenta Multifuncional
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: scalable
+    requires_attunement: true
+    attunement_note: "artífice"
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: TCE
+    description: "Se transforma em qualquer ferramenta de artesão; concede bônus (+1/+2/+3) a jogadas de ataque e de resistência de magias de artífice; 1 novo truque 1/dia."
+    tags: [artifice, ferramenta, foco]
+    charges: 1
+    recharge: long_rest
+    props:
+      effects:
+        - { kind: tool_shapechange, any_artisans_tool: true }
+        - { kind: spell_attack_and_save_bonus, classes: [artificer], scalable_bonus: true }
+        - { kind: learn_cantrip_daily, per_day: 1 }
+
+  - api_index: pedra-ima-de-ametista
+    name: Pedra-ímã de Ametista
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: very rare
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: EGW
+    description: "6 cargas: voar por 10 min; empurrar criatura até 6 m com teste de Força; ou conjurar gravidade reversa."
+    tags: [gravidade, movimento, controle]
+    charges: 6
+    recharge: dawn
+    props:
+      effects:
+        - { kind: grant_fly_speed, duration_minutes: 10, charges_cost: 1 }
+        - { kind: shove_magical, distance_ft: 20, save: STR, charges_cost: 1 }
+        - { kind: grant_spell, spell: reverse gravity, charges_cost: 3 }
+
+  - api_index: municao-mais1-mais2-mais3
+    name: Munição +1, +2 ou +3
+    kind: magic_item
+    category: weapon
+    sub_category: municao
+    rarity: scalable
+    requires_attunement: false
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Bônus mágico na jogada de ataque e dano conforme a raridade da munição."
+    tags: [a-distancia, municao]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, scalable_bonus: true }
+        - { kind: damage_bonus, type: magico, scalable_bonus: true }
+
+  - api_index: amuleto-da-saude
+    name: Amuleto da Saúde
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Seu valor de Constituição é 19 enquanto usar o amuleto (sem efeito se já for 19+)."
+    tags: [atributo, constituicao]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: set_ability_score, ability: CON, value: 19, max_if_higher: true }
+
+  - api_index: amuleto-contra-deteccao-e-localizacao
+    name: Amuleto contra Detecção e Localização
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: uncommon
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Oculta o usuário de magias de adivinhação; não pode ser alvo/percebido por sensores de vidência."
+    tags: [furtividade-magica, antividencia]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: scrying_immunity, value: true }
+        - { kind: divination_masking, value: true }
+
+  - api_index: amuleto-do-devoto
+    name: Amuleto do Devoto
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: scalable
+    requires_attunement: true
+    attunement_note: "clérigo ou paladino"
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: TCE
+    description: "Bônus aos ataques e TJs das suas magias; 1/dia usa Canalizar Divindade sem gastar usos."
+    tags: [divino, foco, suporte]
+    charges: 1
+    recharge: long_rest
+    props:
+      effects:
+        - { kind: spell_attack_and_save_bonus, classes: [cleric, paladin], scalable_bonus: true }
+        - { kind: channel_divinity_free_use, per_day: 1 }
+
+  - api_index: amuleto-dos-planos
+    name: Amuleto dos Planos
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: very rare
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Nomeie um local planar conhecido e faça teste de INT CD 15: sucesso — plano deslocar; falha — destino aleatório (d100)."
+    tags: [viagem-planar, teleporte]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: planar_shift_check, ability: INT, dc: 15 }
+
+  - api_index: escudo-animado
+    name: Escudo Animado
+    kind: magic_item
+    category: armor
+    sub_category: shield
+    rarity: very rare
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Ação bônus para animar; flutua no seu espaço e concede CA como se empunhado por 1 min ou até você largá-lo."
+    tags: [escudo, ac, utilidade]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: animate_shield, duration_minutes: 1, bonus_to_ac: 2 }
+
+  - api_index: armadura-antimagia
+    name: Armadura Antimagia
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: very rare
+    requires_attunement: true
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: Homebrew
+    description: "Vantagem em testes de resistência contra uma magia (1/dia); pode conjurar campo antimagia 1/dia."
+    tags: [antimagia, defesa]
+    charges: 2
+    recharge: dawn
+    props:
+      effects:
+        - { kind: advantage_vs_spell_save, per_day: 1 }
+        - { kind: grant_spell, spell: antimagic field, per_day: 1 }
+
+  - api_index: aparato-de-kwalish
+    name: Aparato de Kwalish
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: legendary
+    requires_attunement: false
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Autômato em forma de lagosta de ferro. CA 20, PV 200, hermético; nada/anda; 10 alavancas controlam membros, luzes e escotilha."
+    tags: [veiculo, engenho, submarino]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: vehicle_stat_block, ac: 20, hp: 200, airtight: true }
+
+  - api_index: grimorio-arcano
+    name: Grimório Arcano
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: scalable
+    requires_attunement: true
+    attunement_note: "mago"
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: TCE
+    description: "Bônus a ataques e TJs de suas magias; níveis de Recuperação Arcana +1."
+    tags: [grimorio, mago]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: spell_attack_and_save_bonus, classes: [wizard], scalable_bonus: true }
+        - { kind: arcane_recovery_bonus_level, value: 1 }
+
+  - api_index: armadura-mais1-mais2-mais3
+    name: Armadura +1, +2 ou +3
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: scalable
+    requires_attunement: false
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: DMG
+    description: "Concede bônus mágico à CA conforme a raridade (+1/+2/+3)."
+    tags: [armadura, ac]
+    charges:
+    recharge:
+    props:
+      effects:
+        - { kind: ac_bonus, type: magico, scalable_bonus: true }
+
+  - api_index: armadura-de-esporos-fungicos
+    name: Armadura de Esporos Fúngicos
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: uncommon
+    requires_attunement: false
+    attunement_note:
+    cursed: false
+    curse_text:
+    value_gp:
+    weight_kg:
+    source: Homebrew
+    description: "1/dia emite esporos venenosos em esfera de 3 m; CD CON para não ficar envenenado até o próximo turno."
+    tags: [veneno, controle, area]
+    charges: 1
+    recharge: long_rest
+    props:
+      effects:
+        - { kind: poison_spore_burst, radius_ft: 10, save: CON }
+
+  - api_index: armadura-brilhante
+    name: Armadura Brilhante
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: common
+    requires_attunement: false
+    description: "Nunca fica suja."
+    tags: [cosmetico, utilidade]
+    props: { }
+
+  - api_index: armadura-da-invulnerabilidade
+    name: Armadura da Invulnerabilidade
+    kind: magic_item
+    category: armor
+    sub_category: pesada
+    rarity: legendary
+    requires_attunement: true
+    description: "Resistência a dano não mágico; 1/dia imunidade a dano não mágico por 10 min."
+    tags: [defesa, resistencia]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: nonmagical_all }
+        - { kind: daily_toggle_immunity, damage_type: nonmagical_all, duration_minutes: 10 }
+
+  - api_index: armadura-de-resistencia
+    name: Armadura de Resistência
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: rare
+    requires_attunement: true
+    description: "Resistência a um tipo de dano."
+    tags: [defesa, resistencia]
+    props:
+      effects:
+        - { kind: select_damage_type, value: [acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant, thunder] }
+        - { kind: grant_resistance, damage_type: selected }
+
+  - api_index: armadura-da-salvaguarda
+    name: Armadura da Salvaguarda
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: very rare
+    requires_attunement: true
+    description: "PV adicionais iguais a 10 + seu nível; 1/dia pode conjurar farol de esperança."
+    tags: [defesa, suporte]
+    props:
+      effects:
+        - { kind: bonus_hit_points_flat_plus_level, base: 10 }
+        - { kind: grant_spell, spell: beacon of hope, per_day: 1 }
+
+  - api_index: armadura-dos-caidos
+    name: Armadura dos Caídos
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: uncommon
+    requires_attunement: true
+    description: "1/dia conjura falar com os mortos ou animar mortos."
+    tags: [necromancia]
+    props:
+      effects:
+        - { kind: grant_choice_spell, spells: ["speak with dead","animate dead"], per_day: 1 }
+
+  - api_index: armadura-da-vulnerabilidade
+    name: Armadura da Vulnerabilidade
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: rare
+    requires_attunement: true
+    cursed: true
+    curse_text: "Concede resistência a um tipo entre concussão, perfurante ou cortante, mas o usuário fica vulnerável aos outros dois."
+    description: "Item amaldiçoado. Resistência a um dos três tipos de dano físico; vulnerabilidade aos outros dois."
+    tags: [maldito, risco]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: one_of_bps }
+        - { kind: grant_vulnerability, damage_type: other_two_of_bps }
+
+  - api_index: armadura-da-ausencia-de-peso
+    name: Armadura da Ausência de Peso
+    kind: magic_item
+    category: armor
+    sub_category: varia
+    rarity: uncommon
+    requires_attunement: true
+    description: "5 cargas para conjurar salto ou levitação."
+    tags: [movimento]
+    charges: 5
+    recharge: dawn
+    props:
+      effects:
+        - { kind: grant_spell, spell: jump, charges_cost: 1 }
+        - { kind: grant_spell, spell: levitate, charges_cost: 2 }
+
+  - api_index: flecha-matadora
+    name: Flecha Matadora
+    kind: magic_item
+    category: weapon
+    sub_category: flecha
+    rarity: very rare
+    requires_attunement: false
+    description: "Designada contra um tipo específico. Ao atingir, CD 17 CON ou sofre +6d10 de dano. Perde a magia ao disparar o bônus."
+    tags: [a-distancia, munição, slaying]
+    props:
+      effects:
+        - { kind: slaying_arrow, save: CON, dc: 17, bonus_damage: "6d10" }
+
+  - api_index: escudo-captura-flechas
+    name: Escudo Captura-Flechas
+    kind: magic_item
+    category: armor
+    sub_category: shield
+    rarity: rare
+    requires_attunement: true
+    description: "+2 na CA contra ataques à distância."
+    tags: [escudo, ac]
+    props:
+      effects:
+        - { kind: ac_bonus_vs_ranged, value: 2 }
+
+  - api_index: fragmento-astral
+    name: Fragmento Astral
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: true
+    description: "Após usar Metamagia, teleporta até 9 m."
+    tags: [metamagia, mobilidade]
+    props:
+      effects:
+        - { kind: metamagic_trigger_teleport, distance_ft: 30 }
+
+  - api_index: arquivo-de-astromancia
+    name: Arquivo de Astromancia
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: true
+    description: "Contém 6 magias de adivinhação; 3 cargas para dar +1d4 ou -1d4 em reação a um d20."
+    tags: [adivinhacao, grimorio, suporte]
+    charges: 3
+    recharge: dawn
+    props:
+      effects:
+        - { kind: grant_spells, school: divination, count: 6 }
+        - { kind: reaction_d20_mod, dice: "1d4" }
+
+  - api_index: atlas-de-horizontes-infinitos
+    name: Atlas de Horizontes Infinitos
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: true
+    description: "Contém 7 magias de conjuração; 3 cargas para teletransportar 3 m quando atingido."
+    tags: [conjuracao, mobilidade]
+    charges: 3
+    recharge: dawn
+    props:
+      effects:
+        - { kind: grant_spells, school: conjuration, count: 7 }
+        - { kind: hit_trigger_short_teleport, distance_ft: 10 }
+
+  - api_index: machado-dos-senhores-anoes
+    name: Machado dos Senhores Anões
+    kind: magic_item
+    category: weapon
+    sub_category: machado
+    rarity: artifact
+    requires_attunement: true
+    description: "+3; reúne efeitos de Cinto, Arremessador Anão e Afiadura; anões ganham imunidade a veneno, visão no escuro +18 m e proficiências; tem maldição e poderes de conjuração."
+    tags: [artefato, anoes, corpo-a-corpo]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+        - { kind: weapon_is_magical, value: true }
+        - { kind: complex_artifact_traits, value: true }
+
+  - api_index: almofariz-e-pilao-de-baba-yaga
+    name: Almofariz e Pilão de Baba Yaga
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato de viagem e conjuração associado a Baba Yaga."
+    tags: [artefato, viagem]
+    props: { }
+
+  - api_index: bolsa-de-feijoes
+    name: Bolsa de Feijões
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: false
+    description: "Despejar: explosão de 3 m, 5d4 fogo, CD 15 DES; plantar: após 1 min, efeito caótico (tabela d100)."
+    tags: [caos, area, fogo]
+    props:
+      effects:
+        - { kind: dump_explosion, radius_ft: 10, damage: "5d4", damage_type: fire, save: DEX, dc: 15 }
+        - { kind: plant_random_effect_table, table: d100 }
+
+  - api_index: bolsa-devoradora
+    name: Bolsa Devoradora
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: very rare
+    requires_attunement: false
+    description: "Devora matéria orgânica; 50% de puxar; CD 15 para escapar, CD 20 para resgatar; armazena 0,03 m³; 1/dia ejeta conteúdo a plano aleatório; rasgar abre para o Astral."
+    tags: [extradimensional, risco]
+    props:
+      effects:
+        - { kind: hazardous_container, escape_dc: 15, rescue_dc: 20 }
+
+  - api_index: bolsa-sem-fundo
+    name: Bolsa sem Fundo
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: uncommon
+    requires_attunement: false
+    description: "Comporta 500 lb/64 ft³; pesa 15 lb; ação para retirar; perfuração pode perder no Astral; avesso despeja; interação com extradimensionais causa portal/sucção."
+    tags: [extradimensional, carga]
+    props:
+      effects:
+        - { kind: extradimensional_storage, capacity_lb: 500, capacity_ft3: 64 }
+
+  - api_index: bolsa-dos-truques
+    name: Bolsa dos Truques
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: uncommon
+    requires_attunement: false
+    description: "3/dia: arremesse para invocar uma besta (d8 conforme a cor); age no seu turno; comanda com ação bônus; some ao amanhecer/0 PV."
+    tags: [invocacao, utilidade]
+    props:
+      effects:
+        - { kind: summon_beast_from_table, uses_per_day: 3 }
+
+  - api_index: garra-sombria
+    name: Garra Funesta
+    kind: magic_item
+    category: weapon
+    sub_category: varia
+    rarity: very rare
+    requires_attunement: false
+    description: "Arma +1; em 19–20, CD CON para sofrer 6d6 necrótico."
+    tags: [necrotico, corpo-a-corpo]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: expanded_crit_save_damage, range: [19,20], save: CON, damage: "6d6", damage_type: necrotic }
+
+  - api_index: tatuagem-de-barreira
+    name: Tatuagem de Barreira
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: scalable
+    requires_attunement: true
+    description: "Concede CA conforme raridade (incomum 12+Des, rara 15+Des, muito rara 18)."
+    tags: [tattoo, ac]
+    props:
+      effects:
+        - { kind: ac_override_by_rarity, uncommon: "12+DEX", rare: "15+DEX", very_rare: "18" }
+
+  - api_index: conta-de-forca
+    name: Conta de Força
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: false
+    description: "Arremesso até 18 m; explosão 3 m, 5d4 de força, CD 15 DES; falha — aprisiona 1 min em esfera de força movível (1 lb)."
+    tags: [forca, area, controle]
+    props:
+      effects:
+        - { kind: thrown_blast, range_ft: 60, radius_ft: 10, damage: "5d4", damage_type: force, save: DEX, dc: 15 }
+        - { kind: restraining_sphere, duration_minutes: 1 }
+
+  - api_index: conta-de-nutricao
+    name: Conta de Nutrição
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: common
+    requires_attunement: false
+    description: "Fornece o equivalente a 1 dia de rações."
+    tags: [sobrevivencia]
+    props: { }
+
+  - api_index: conta-de-refresco
+    name: Conta de Refresco
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: common
+    requires_attunement: false
+    description: "Transforma até uma caneca (~0,5 L) de líquido em água potável."
+    tags: [sobrevivencia, agua]
+    props: { }
+
+  - api_index: ramo-sino
+    name: Ramo-Sino
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas para detectar tipos de criaturas a 18 m, ou conjurar proteção contra o bem e o mal."
+    tags: [detecao, protecao]
+    charges: 3
+    recharge: dawn
+    props:
+      effects:
+        - { kind: creature_type_detection, radius_ft: 60, charges_cost: 1 }
+        - { kind: grant_spell, spell: protection from evil and good, charges_cost: 1 }
+
+  - api_index: cinto-da-estirpe-ana
+    name: Cinto da Estirpe Anã
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: rare
+    requires_attunement: true
+    description: "Bônus temáticos para anões (v. DMG)."
+    tags: [anoes, atributo]
+    props: { }
+
+  - api_index: cinto-de-forca-do-gigante
+    name: Cinto de Força do Gigante
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: scalable
+    requires_attunement: true
+    description: "Define seu valor de Força conforme o tipo de gigante (21–29)."
+    tags: [atributo, forca]
+    props:
+      effects:
+        - { kind: set_ability_score_by_tier, ability: STR, min: 21, max: 29 }
+
+  - api_index: machado-do-berserker
+    name: Machado do Berserker
+    kind: magic_item
+    category: weapon
+    sub_category: machado
+    rarity: rare
+    requires_attunement: true
+    cursed: true
+    curse_text: "Amaldiçoado com efeitos de fúria descontrolada."
+    description: "Arma amaldiçoada com benefícios e riscos (DMG)."
+    tags: [amaldiçoado]
+    props: { }
+
+  - api_index: bracelete-beneficente-de-bigby
+    name: Bracelete Beneficente de Bigby
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: artifact
+    requires_attunement: true
+    description: "Conjura mão mágica; copia espectral; mão de Bigby (9º) 1/dia."
+    tags: [conjuracao, utilidade]
+    props:
+      effects:
+        - { kind: grant_spell, spell: mage hand, at_will: true }
+        - { kind: grant_spell, spell: Bigby's hand, per_day: 1, cast_level: 9 }
+
+  - api_index: navalha-negra
+    name: Navalha Negra
+    kind: magic_item
+    category: weapon
+    sub_category: espada-longa
+    rarity: legendary
+    requires_attunement: true
+    description: "Arma +3; devora alma; aceleração; senciente; consome almas."
+    tags: [artefato, necromancia]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+        - { kind: sentient_weapon, value: true }
+        - { kind: soul_devourer, value: true }
+
+  - api_index: oculos-fulminados
+    name: Óculos Estourados
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: uncommon
+    requires_attunement: true
+    cursed: true
+    curse_text: "Podem ferir o usuário em uso malsucedido."
+    description: "3 cargas para forçar teste de DES; falha sofre 3d6 fogo. Item amaldiçoado."
+    tags: [fogo, risco]
+    charges: 3
+    recharge: dawn
+    props:
+      effects:
+        - { kind: dex_save_or_damage, damage: "3d6", damage_type: fire }
+
+  - api_index: tatuagem-furia-sanguinea
+    name: Tatuagem Fúria de Sangue
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: legendary
+    requires_attunement: true
+    description: "10 cargas para +4d6 necrótico e curar PV, ou vantagem numa rolagem de ataque em reação."
+    tags: [tattoo, necrótico, ofensivo]
+    charges: 10
+    recharge: dawn
+    props:
+      effects:
+        - { kind: add_damage_and_heal, dice: "4d6", damage_type: necrotic }
+        - { kind: reaction_grant_advantage, target: self }
+
+  - api_index: machado-grande-da-sede-de-sangue
+    name: Machado Grande da Sede de Sangue
+    kind: magic_item
+    category: weapon
+    sub_category: machado-grande
+    rarity: uncommon
+    requires_attunement: false
+    description: "+2 se estiver com metade dos PV ou menos."
+    tags: [situacional]
+    props:
+      effects:
+        - { kind: conditional_attack_bonus, value: 2, condition: "hp<=50%" }
+
+  - api_index: municao-seque-sangue
+    name: Munição Suga-Sangue
+    kind: magic_item
+    category: weapon
+    sub_category: municao
+    rarity: very rare
+    requires_attunement: false
+    description: "Vantagem contra criaturas que não estejam com todos os PV."
+    tags: [a-distancia, vantagem]
+    props:
+      effects:
+        - { kind: advantage_if_target_injured, value: true }
+
+  - api_index: lamina-carnificina
+    name: Lâmina da Carnificina
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: very rare
+    requires_attunement: true
+    description: "+Mod.CON no dano; 1/dia adiciona Dados de Vida ao ataque e dano."
+    tags: [marcial, burst]
+    props:
+      effects:
+        - { kind: damage_bonus_mod, ability: CON }
+        - { kind: daily_add_hit_dice_to_attack_and_damage, per_day: 1 }
+
+  - api_index: frasco-do-sangromago
+    name: Frasco do Sangromago
+    kind: magic_item
+    category: wondrous
+    sub_category:
+    rarity: scalable
+    requires_attunement: true
+    attunement_note: "feiticeiro"
+    description: "Bônus aos ataques/TJs de suas magias; 1/dia ao gastar Dados de Vida, recupera 5 pontos de feitiçaria."
+    tags: [feiticeiro, recursos]
+    props:
+      effects:
+        - { kind: spell_attack_and_save_bonus, classes: [sorcerer], scalable_bonus: true }
+        - { kind: regain_sorcery_points_on_hd, value: 5, per_day: 1 }
+itens:
+  - api_index: livro-das-obras-exaltadas
+    name: Livro das Obras Exaltadas
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    source: DMG
+    description: "Artefato sagrado com bênçãos poderosas para criaturas de alinhamento bom."
+    tags: [artefato, sagrado]
+    props: {}
+
+  - api_index: livro-das-trevas-vilas
+    name: Livro das Trevas Vils
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    source: DMG
+    description: "Artefato profano que concede segredos sombrios e efeitos corruptores."
+    tags: [artefato, profano]
+    props: {}
+
+  - api_index: escudo-bumerangue
+    name: Escudo Bumerangue
+    kind: magic_item
+    category: armor
+    sub_category: shield
+    rarity: uncommon
+    requires_attunement: true
+    description: "Funciona como escudo e arma de arremesso (6/18 m), 1d6 cortante; retorna à sua mão."
+    tags: [escudo, arremesso]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 2 }
+        - { kind: thrown_returning, range: "20/60", damage: "1d6", damage_type: slashing }
+
+  - api_index: botas-elficas
+    name: Botas Élficas
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Vantagem em testes de Destreza (Furtividade) relacionados a silêncio ao se mover."
+    tags: [furtividade]
+    props:
+      effects:
+        - { kind: skill_advantage, skill: stealth }
+
+  - api_index: botas-de-passos-falsos
+    name: Botas de Passos Falsos
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Deixa rastros de outro tipo de humanóide do mesmo tamanho."
+    tags: [exploracao]
+    props: {}
+
+  - api_index: botas-de-levitacao
+    name: Botas de Levitação
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Permitem conjurar levitar em si mesmo."
+    tags: [movimento]
+    props:
+      effects:
+        - { kind: grant_spell, spell: levitate, target: self, at_will: true }
+
+  - api_index: botas-de-velocidade
+    name: Botas de Velocidade
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Dobra o deslocamento ao ativar (10 min/dia)."
+    tags: [movimento]
+    props:
+      effects:
+        - { kind: speed_multiplier_daily_pool, multiplier: 2, minutes_per_day: 10 }
+
+  - api_index: botas-de-passadas-e-saltos
+    name: Botas de Passadas e Saltos
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Ignora redução de deslocamento por carga/armadura leve e melhora saltos."
+    tags: [movimento]
+    props:
+      effects:
+        - { kind: jump_enhancement, value: "triplo" }
+
+  - api_index: botas-das-terras-invernais
+    name: Botas das Terras Invernais
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Resistência a frio ambiental e ignora terreno difícil por neve/geada."
+    tags: [frio, exploracao]
+    props:
+      effects:
+        - { kind: environmental_resistance, type: cold }
+
+  - api_index: arco-da-conflagracao
+    name: Arco da Conflagração
+    kind: magic_item
+    category: weapon
+    sub_category: arco
+    rarity: rare
+    requires_attunement: true
+    description: "+1d6 fogo e alvo entra em chamas (1d6 fogo/rodada)."
+    tags: [a-distancia, fogo]
+    props:
+      effects:
+        - { kind: damage_bonus_dice, dice: "1d6", damage_type: fire }
+        - { kind: ignite_on_hit, ongoing: "1d6", damage_type: fire }
+
+  - api_index: arco-das-melodias
+    name: Arco das Melodias
+    kind: magic_item
+    category: weapon
+    sub_category: arco
+    rarity: very rare
+    requires_attunement: true
+    description: "+1 no ataque se proficiente em Atuação; ou +Mod.CAR de dano trovejante."
+    tags: [a-distancia, trovão]
+    props:
+      effects:
+        - { kind: conditional_attack_bonus, value: 1, condition: proficient_performance }
+        - { kind: damage_bonus_mod, ability: CHA, damage_type: thunder }
+
+  - api_index: tigela-comandar-elementais-da-agua
+    name: Tigela de Comandar Elementais da Água
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Permite conjurar conjurar elemental (água) conforme DMG."
+    tags: [invocacao, agua]
+    props:
+      effects:
+        - { kind: summon_elemental_device, element: water }
+
+  - api_index: bracadeiras-de-arqueiria
+    name: Braçadeiras de Arqueiria
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "+2 no dano com ataques à distância usando arco curto ou longo."
+    tags: [arqueiro]
+    props:
+      effects:
+        - { kind: ranged_damage_bonus_with_bows, value: 2 }
+
+  - api_index: bracadeiras-de-defesa
+    name: Braçadeiras de Defesa
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "+2 na CA enquanto sem armadura nem escudo."
+    tags: [ac]
+    props:
+      effects:
+        - { kind: ac_bonus_if_unarmored_unshielded, value: 2 }
+
+  - api_index: braseiro-comandar-elementais-do-fogo
+    name: Braseiro de Comandar Elementais do Fogo
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Permite conjurar elemental do fogo conforme DMG."
+    tags: [invocacao, fogo]
+    props:
+      effects:
+        - { kind: summon_elemental_device, element: fire }
+
+  - api_index: broche-de-protecao
+    name: Broche de Proteção
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Resistência a dano de força; imunidade a mísseis mágicos."
+    tags: [defesa, forca]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: force }
+        - { kind: magic_missile_immunity, value: true }
+
+  - api_index: vassoura-voadora
+    name: Vassoura Voadora
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Permite voar montando a vassoura; tem velocidade de voo própria."
+    tags: [voo]
+    props:
+      effects:
+        - { kind: grant_fly_speed_vehicle, speed_ft: 50 }
+
+  - api_index: vela-de-invocacao
+    name: Vela de Invocação
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Potencializa conjuração e permite invocar extraplanares (vide DMG)."
+    tags: [conjuracao]
+    props: {}
+
+  - api_index: vela-das-profundezas
+    name: Vela das Profundezas
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Não apaga quando imersa em água."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: touca-respirar-agua
+    name: Touca de Respirar Água
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Permite respirar normalmente debaixo d’água."
+    tags: [agua, sobrevivencia]
+    props:
+      effects:
+        - { kind: water_breathing, value: true }
+
+  - api_index: capa-do-trapaceiro
+    name: Capa do Trapaceiro
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Permite teleporte curto tipo porta dimensional (vide DMG)."
+    tags: [teleporte]
+    props:
+      effects:
+        - { kind: grant_spell, spell: dimension door, per_day: 1 }
+
+  - api_index: baralho-do-cartomago
+    name: Baralho do Cartomago
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Ataque à distância mágico (36 m), 1d8 de força; 1/dia lança spray of cards."
+    tags: [arma-magica, forca]
+    props:
+      effects:
+        - { kind: ranged_spell_attack, range_ft: 120, damage: "1d8", damage_type: force }
+        - { kind: grant_spell, spell: spray of cards, per_day: 1 }
+
+  - api_index: tapete-voador
+    name: Tapete Voador
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Tapete que voa e pode carregar carga/passageiros."
+    tags: [voo, veiculo]
+    props: {}
+
+  - api_index: armadura-de-despojo-rapido
+    name: Armadura de Despojo Rápido
+    kind: magic_item
+    category: armor
+    rarity: common
+    requires_attunement: false
+    description: "Pode ser removida com uma ação."
+    tags: [qualidade]
+    props: {}
+
+  - api_index: caldeirao-do-renascimento
+    name: Caldeirão do Renascimento
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Cria poção de cura maior 1/dia (dura 24 h); age como reviver os mortos 1/semana."
+    tags: [curar, suporte]
+    props:
+      effects:
+        - { kind: create_potion, potion: greater_healing, per_day: 1, duration_hours: 24 }
+        - { kind: grant_spell, spell: raise dead, per_week: 1 }
+
+  - api_index: turibulo-controlar-elementais-do-ar
+    name: Turíbulo de Controlar Elementais do Ar
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Permite conjurar elemental do ar conforme DMG."
+    tags: [invocacao, ar]
+    props:
+      effects:
+        - { kind: summon_elemental_device, element: air }
+
+  - api_index: dado-do-trapaceiro
+    name: Dado do Trapaceiro
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Dado de seis lados cujo resultado pode ser controlado."
+    tags: [enganacao, jogo]
+    props: {}
+
+  - api_index: sino-de-abertura
+    name: Sino de Abertura
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Abre fechaduras/selos com limites de uso (vide DMG)."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: diadema-de-rajada
+    name: Diadema de Rajada
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Lança raio ardente (scorching ray) 1/dia."
+    tags: [evocacao, fogo]
+    props:
+      effects:
+        - { kind: grant_spell, spell: scorching ray, per_day: 1 }
+
+  - api_index: manto-da-aracnida
+    name: Manto da Aracnídea
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Escalar paredes e resistências temáticas (vide DMG)."
+    tags: [movimento]
+    props: {}
+
+  - api_index: manto-esvoacante
+    name: Manto Esvoaçante
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Faz o manto esvoaçar dramaticamente a comando."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: manto-do-deslocamento
+    name: Manto do Deslocamento
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Cria imagem ilusória; ataques contra você têm desvantagem enquanto ativo."
+    tags: [defesa, ilusao]
+    props:
+      effects:
+        - { kind: impose_attack_disadvantage, condition: active }
+
+  - api_index: manto-elfico
+    name: Manto Élfico
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Desvantagem para ver você; vantagem em testes de Furtividade para se esconder."
+    tags: [furtividade]
+    props:
+      effects:
+        - { kind: impose_perception_disadvantage, sense: sight }
+        - { kind: skill_advantage, skill: stealth }
+
+  - api_index: manto-de-invisibilidade
+    name: Manto de Invisibilidade
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Concede invisibilidade por até 2 horas totais."
+    tags: [invisibilidade]
+    props:
+      effects:
+        - { kind: invisibility_pool_minutes, minutes: 120 }
+
+  - api_index: manto-de-muitas-modas
+    name: Manto de Muitas Modas
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Altera estilo, cor e aparência do manto."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: manto-de-protecao
+    name: Manto de Proteção
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "+1 na CA e nos testes de resistência."
+    tags: [ac, salvaguardas]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 1 }
+        - { kind: saving_throws_bonus, value: 1 }
+
+  - api_index: manto-do-morcego
+    name: Manto do Morcego
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Planar e transformar-se em morcego em certas condições (vide DMG)."
+    tags: [movimento, metamorfose]
+    props: {}
+
+  - api_index: manto-da-raia-manta
+    name: Manto da Raia-Manta
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Concede natação veloz e respirar debaixo d’água."
+    tags: [agua, movimento]
+    props:
+      effects:
+        - { kind: swim_speed, speed_ft: 60 }
+        - { kind: water_breathing, value: true }
+
+  - api_index: amuleto-mecanico
+    name: Amuleto Mecânico
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "1/dia: usar 10 em uma jogada de ataque em vez de rolar."
+    tags: [probabilidade]
+    props:
+      effects:
+        - { kind: daily_take_10_attack, per_day: 1 }
+
+  - api_index: armadura-mecanica
+    name: Armadura Mecânica
+    kind: magic_item
+    category: armor
+    rarity: very rare
+    requires_attunement: true
+    description: "4 cargas para tratar um d20 como 10."
+    tags: [probabilidade, defesa]
+    props:
+      effects:
+        - { kind: charges_take_10_any_d20, charges_cost: 1 }
+
+  - api_index: roupas-de-remendo
+    name: Roupas de Remendo
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Roupas de viajante que se remendam sozinhas."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: tatuagem-aperto-espiral
+    name: Tatuagem do Aperto Espiral
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "CD de Força ou 3d6 de força e o alvo fica agarrado (alcance 4,5 m)."
+    tags: [forca, controle]
+    props:
+      effects:
+        - { kind: reach_grapple_spell_like, reach_ft: 15, damage: "3d6", damage_type: force, save: STR }
+
+  - api_index: cajado-de-rao
+    name: Cajado de Rao
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato sagrado com poderes de banimento/paz (vide lore)."
+    tags: [artefato, sagrado]
+    props: {}
+
+  - api_index: coroa-do-portador-da-ira
+    name: Coroa do Portador da Ira
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "+[Dados de Vida] dano psíquico; 1/dia lança medo."
+    tags: [psiquico, medo]
+    props:
+      effects:
+        - { kind: damage_bonus_hit_dice, damage_type: psychic }
+        - { kind: grant_spell, spell: fear, per_day: 1 }
+
+  - api_index: coroa-dos-cometas-rodopiantes
+    name: Coroa dos Cometas Rodopiantes
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "6 cargas: voar 10 min; disparar dardos (2d4 frio, 36 m); ou tempestade de gelo."
+    tags: [frio, voo]
+    charges: 6
+    recharge: dawn
+    props:
+      effects:
+        - { kind: grant_fly_speed, duration_minutes: 10, charges_cost: 1 }
+        - { kind: ranged_bolt, range_ft: 120, damage: "2d4", damage_type: cold, charges_cost: 1 }
+        - { kind: grant_spell, spell: ice storm, charges_cost: 2 }
+
+  - api_index: bola-de-cristal
+    name: Bola de Cristal
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Dispositivo de vidência (algumas versões lendárias têm poderes extras)."
+    tags: [adivinhacao]
+    props: {}
+
+  - api_index: lamina-cristalina
+    name: Lâmina Cristalina
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: rare
+    requires_attunement: true
+    description: "+1d8 radiante; 3 cargas para curar PV; luz brilhante 9 m (penumbra 9 m)."
+    tags: [radiante, cura]
+    charges: 3
+    recharge: dawn
+    props:
+      effects:
+        - { kind: damage_bonus_dice, dice: "1d8", damage_type: radiant }
+        - { kind: heal_self_charges, dice: "3d8", charges_cost: 1 }
+        - { kind: shed_light, bright_ft: 30, dim_ft: 30 }
+
+  - api_index: cronica-cristalina
+    name: Crônica Cristalina
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Contém 7 magias; aprende 3 truques; 3 cargas para conjurar sem componentes V/S/M."
+    tags: [grimorio]
+    charges: 3
+    recharge: dawn
+    props:
+      effects:
+        - { kind: grant_spells, count: 7 }
+        - { kind: learn_cantrips, count: 3 }
+        - { kind: cast_without_components, charges_cost: 1 }
+
+  - api_index: cubo-de-forca
+    name: Cubo de Força
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Cria campos de força com modos selecionáveis (vide DMG)."
+    tags: [forca, defesa]
+    props: {}
+
+  - api_index: portal-cubico
+    name: Portal Cúbico
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Acessa seis planos/lugares conectados ao cubo."
+    tags: [viagem-planar]
+    props: {}
+
+  - api_index: fortaleza-instantanea-de-daern
+    name: Fortaleza Instantânea de Daern
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Cubo que se expande para fortaleza; alta CA e PV."
+    tags: [construcao]
+    props: {}
+
+  - api_index: adaga-do-veneno
+    name: Adaga do Veneno
+    kind: magic_item
+    category: weapon
+    sub_category: adaga
+    rarity: rare
+    requires_attunement: false
+    description: "Adaga +1; 1/dia CD CON ou 2d10 veneno e envenenado por 1 min."
+    tags: [veneno]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: daily_poison_strike, save: CON, damage: "2d10" }
+
+  - api_index: espada-dancarina
+    name: Espada Dançarina
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: very rare
+    requires_attunement: true
+    description: "Ação bônus para animar e atacar por conta própria por 1 min."
+    tags: [animada]
+    props:
+      effects:
+        - { kind: dancing_sword, duration_minutes: 1 }
+
+  - api_index: amuleto-fragmento-escuro
+    name: Amuleto Fragmento Sombrio
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Pactários podem tentar lançar um truque extra (teste de Arcana)."
+    tags: [bruxo]
+    props:
+      effects:
+        - { kind: warlock_cantrip_check, ability: INT }
+
+  - api_index: decantador-de-agua-interminavel
+    name: Decantador de Água Interminável
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Derrama água em quantidades/pressões diferentes a comando."
+    tags: [agua]
+    props: {}
+
+  - api_index: baralho-das-dimensoes
+    name: Baralho das Dimensões
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "6 cargas: teleporta ao local de uma carta (até 24 h), abre portal arcano, ou teleporta 18 m."
+    tags: [teleporte, portal]
+    props:
+      effects:
+        - { kind: charges_multi_teleport, charges_cost: 1 }
+
+  - api_index: baralho-das-ilusoes
+    name: Baralho das Ilusões
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Cria imagens de criaturas conforme carta sacada."
+    tags: [ilusao]
+    props: {}
+
+  - api_index: baralho-de-todas-as-coisas
+    name: Baralho de Todas as Coisas
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Artefato caótico com efeitos extremos ao sacar cartas."
+    tags: [caos, artefato]
+    props: {}
+
+  - api_index: baralho-dos-oraculos
+    name: Baralho dos Oráculos
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Impõe um resultado de d20 a uma criatura em até 8 h; 1/dia lança adivinhação."
+    tags: [adivinhacao]
+    props:
+      effects:
+        - { kind: impose_d20_result_delayed, window_hours: 8 }
+        - { kind: grant_spell, spell: divination, per_day: 1 }
+
+  - api_index: baralho-do-maravilhamento
+    name: Baralho do Maravilhamento
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Efeitos aleatórios mágicos ao usar as cartas."
+    tags: [caos]
+    props: {}
+
+  - api_index: defensor
+    name: Defensor
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: legendary
+    requires_attunement: true
+    description: "Espada +3; pode converter parte do bônus em bônus de CA."
+    tags: [defesa]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+        - { kind: transferable_bonus_to_ac, max: 3 }
+
+  - api_index: garras-do-escavador
+    name: Garras do Escavador
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Unhas escavadoras: 1d4 cortante; escavar; sentidos; PV temporários 1/dia."
+    tags: [escavar]
+    props:
+      effects:
+        - { kind: unarmed_damage_override, damage: "1d4", damage_type: slashing }
+        - { kind: burrow_speed, speed_ft: 10 }
+        - { kind: temp_hp_from_hit_dice, per_day: 1 }
+
+  - api_index: armadura-demoníaca
+    name: Armadura Demoníaca
+    kind: magic_item
+    category: armor
+    rarity: very rare
+    requires_attunement: true
+    cursed: true
+    curse_text: "Vínculos malignos e compulsões."
+    description: "+1 na CA; ataques desarmados +1 (1d8+1). Item amaldiçoado."
+    tags: [maldito]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 1 }
+        - { kind: unarmed_attack_bonus, value: 1, damage_die: "1d8+1" }
+
+  - api_index: demonomicon-de-iggwilv
+    name: Demonomicon de Iggwilv
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato com vastos poderes ligados a demônios."
+    tags: [artefato, demonio]
+    props: {}
+
+  - api_index: incensario-do-devoto
+    name: Incensário do Devoto
+    kind: magic_item
+    category: weapon
+    sub_category: mangual
+    rarity: rare
+    requires_attunement: true
+    description: "+1d8 radiante; 1/dia criaturas a 3 m recuperam 1d4 PV/rodada por 1 min."
+    tags: [radiante, suporte]
+    props:
+      effects:
+        - { kind: damage_bonus_dice, dice: "1d8", damage_type: radiant }
+        - { kind: restorative_aura_daily, radius_ft: 10, heal: "1d4", duration_minutes: 1 }
+
+  - api_index: algemas-dimensionais
+    name: Algemas Dimensionais
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Impedem teleporte e viagem planar do alvo acorrentado."
+    tags: [confinamento]
+    props:
+      effects:
+        - { kind: suppress_teleport_and_planar_travel, value: true }
+
+  - api_index: esfera-rasgadora-de-donjon
+    name: Esfera Rasgadora de Donjon
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Arma +1; vantagem vs certas magias; CD CAR desterrar 1/dia."
+    tags: [banimento]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: banish_on_save, ability: CHA, per_day: 1 }
+
+  - api_index: cota-de-escamas-de-dragao
+    name: Cota de Escamas de Dragão
+    kind: magic_item
+    category: armor
+    rarity: very rare
+    requires_attunement: true
+    description: "+1 CA; vantagem em testes de resistência contra sopros; resistência a um tipo de dano do dragão."
+    tags: [dragao, defesa]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 1 }
+        - { kind: breath_weapon_save_advantage, value: true }
+        - { kind: grant_resistance, damage_type: dragon_choice }
+
+  - api_index: matadora-de-dragoes
+    name: Matadora de Dragões
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: rare
+    requires_attunement: false
+    description: "Causa dano adicional a dragões e tem bônus em jogadas contra eles."
+    tags: [dragao]
+    props:
+      effects:
+        - { kind: slayer_bonus_vs_type, creature_type: dragon }
+
+  - api_index: arco-asa-de-dragao
+    name: Arco Asa de Dragão
+    kind: magic_item
+    category: weapon
+    sub_category: arco
+    rarity: rare
+    requires_attunement: true
+    description: "+1d6 de dano de tipo ligado à essência dracônica."
+    tags: [a-distancia]
+    props:
+      effects:
+        - { kind: damage_bonus_dice, dice: "1d6", damage_type: dragon_essence }
+
+  - api_index: cinto-pele-de-dragao
+    name: Cinto de Pele de Dragão
+    kind: magic_item
+    category: wondrous
+    rarity: scalable
+    requires_attunement: true
+    description: "Bônus em TJs de recursos de Ki; 1/dia recupera KI conforme dado de Artes Marciais."
+    tags: [monge]
+    props:
+      effects:
+        - { kind: ki_save_bonus, scalable_bonus: true }
+        - { kind: regain_ki_daily_by_die, per_day: 1 }
+
+  - api_index: lanca-draconica
+    name: Lança Dracônica
+    kind: magic_item
+    category: weapon
+    sub_category: lanca
+    rarity: legendary
+    requires_attunement: true
+    description: "Arma +3; +3d6 de força contra alvos."
+    tags: [forca]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+        - { kind: damage_bonus_dice, dice: "3d6", damage_type: force }
+
+  - api_index: elmo-do-temor
+    name: Elmo do Temor
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Capacete ameaçador que faz os olhos brilharem em vermelho."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: sanguessuga-seca
+    name: Sanguessuga Seca
+    kind: magic_item
+    category: weapon
+    sub_category: arremesso
+    rarity: uncommon
+    requires_attunement: false
+    description: "Causa 1d4 perfurante por rodada ao fixar."
+    tags: [veneno]
+    props:
+      effects:
+        - { kind: ongoing_damage_on_hit, damage: "1d4", damage_type: piercing }
+
+  - api_index: globo-errante
+    name: Globo Errante
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Orbe que ilumina e pode flutuar/seguir comandos simples."
+    tags: [luz]
+    props: {}
+
+  - api_index: manuscrito-doloso
+    name: Manuscrito Doloso
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Contém 7 magias de ilusão; 3 cargas para impor desvantagem contra ilusões."
+    tags: [ilusao, grimorio]
+    props:
+      effects:
+        - { kind: grant_spells, school: illusion, count: 7 }
+        - { kind: impose_disadvantage_vs_illusion, charges_cost: 1 }
+
+  - api_index: po-do-desaparecimento
+    name: Pó do Desaparecimento
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Aplica invisibilidade temporária."
+    tags: [invisibilidade]
+    props: {}
+
+  - api_index: po-de-secagem
+    name: Pó de Secagem
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Desidrata líquidos/pequenos volumes d’água."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: po-de-espirros-e-asfixia
+    name: Pó de Espirros e Asfixia
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Causa espirros sufocantes; efeitos de condição perigosos."
+    tags: [risco]
+    props: {}
+
+  - api_index: armadura-ana
+    name: Armadura Anã
+    kind: magic_item
+    category: armor
+    rarity: very rare
+    requires_attunement: false
+    description: "+2 CA; reduz empurrões/arrastos em 3 m."
+    tags: [defesa]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 2 }
+        - { kind: reduce_forced_movement_ft, value: 10 }
+
+  - api_index: arremessador-anao
+    name: Arremessador Anão
+    kind: magic_item
+    category: weapon
+    sub_category: martelo-de-guerra
+    rarity: very rare
+    requires_attunement: true
+    description: "Martelo +3; +1d8 ao arremessar (ou +2d8 contra gigantes); retorna à mão."
+    tags: [arremesso]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+        - { kind: damage_bonus_when_thrown, dice: "1d8", vs: { giant: "2d8" } }
+        - { kind: returning, value: true }
+
+  - api_index: corneta-auricular
+    name: Corneta Auricular
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Anula a condição surdo no portador."
+    tags: [cura]
+    props:
+      effects:
+        - { kind: suppress_condition, condition: deafened }
+
+  - api_index: garrafa-do-efreet
+    name: Garrafa do Efreet
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Conjura/contém um efreeti com efeitos conforme DMG."
+    tags: [invocacao]
+    props: {}
+
+  - api_index: cota-do-efreet
+    name: Cota do Efreet
+    kind: magic_item
+    category: armor
+    rarity: legendary
+    requires_attunement: true
+    description: "+3 CA; imunidade a fogo; fala primordial."
+    tags: [fogo, defesa]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 3 }
+        - { kind: grant_immunity, damage_type: fire }
+
+  - api_index: tatuagem-garra-profana
+    name: Tatuagem Garra Profana
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Seus desarmados se tornam mágicos; +1 em ataque/dano com desarmados; 1/dia +1d6 de força."
+    tags: [monge, desarmado]
+    props:
+      effects:
+        - { kind: weaponize_unarmed, value: true }
+        - { kind: attack_bonus_unarmed, value: 1 }
+        - { kind: damage_bonus_unarmed, value: 1 }
+        - { kind: daily_damage_bonus_dice, dice: "1d6", damage_type: force }
+
+  - api_index: estilhaco-essencia-elemental
+    name: Estilhaço de Essência Elemental
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Após usar Metamagia: voar, resistência a 1 tipo, 2d10 fogo ou 2d6 frio em raio de 3 m."
+    tags: [metamagia]
+    props:
+      effects:
+        - { kind: metamagic_trigger_choice, options: [fly, resist_one, fire_burst, cold_burst] }
+
+  - api_index: gema-elemental
+    name: Gema Elemental
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Quebrar para conjurar elemental do tipo da gema."
+    tags: [invocacao]
+    props: {}
+
+  - api_index: elixir-de-saude
+    name: Elixir de Saúde
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "Cura qualquer doença e remove cego, surdo, paralisado e envenenado."
+    tags: [poção, cura]
+    props:
+      effects:
+        - { kind: cure_conditions, list: [blinded, deafened, paralyzed, poisoned], cure_disease: true }
+
+  - api_index: corrente-elfica
+    name: Corrente Élfica
+    kind: magic_item
+    category: armor
+    rarity: rare
+    requires_attunement: false
+    description: "+1 CA; o usuário é considerado proficiente com ela."
+    tags: [armadura]
+    props:
+        effects:
+          - { kind: ac_bonus, value: 1 }
+          - { kind: grant_proficiency_with_item, value: true }
+
+  - api_index: pena-esmeralda
+    name: Pena Esmeralda
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Permite lançar escrita ilusória à vontade."
+    tags: [ilusao]
+    props:
+      effects:
+        - { kind: grant_spell, spell: illusory script, at_will: true }
+
+  - api_index: grimorio-duradouro
+    name: Grimório Duradouro
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Não pode ser danificado por fogo, água ou idade."
+    tags: [grimorio]
+    props: {}
+
+  - api_index: olho-postico
+    name: Olho Postiço
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Olho artificial que substitui um real perdido."
+    tags: [prótese]
+    props: {}
+
+  - api_index: aegide-de-euriale
+    name: Égide de Euríale
+    kind: magic_item
+    category: armor
+    rarity: legendary
+    requires_attunement: true
+    description: "Res. a veneno; imune a petrificação; 1/dia impõe contestações que podem restringir/petrificar; pode lançar magias ligadas."
+    tags: [veneno, petrificacao]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: poison }
+        - { kind: grant_immunity, condition: petrified }
+
+  - api_index: garrafa-fumacenta
+    name: Garrafa Fumacenta
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Cria nuvem de fumaça densa ao ser destampada."
+    tags: [controle-area]
+    props: {}
+
+  - api_index: olho-e-mao-de-vecna
+    name: Olho e Mão de Vecna
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefatos sinistros com amplos poderes e custos terríveis."
+    tags: [artefato, necromancia]
+    props: {}
+
+  - api_index: olhos-encantadores
+    name: Olhos Encantadores
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "3 cargas para lançar enfeitiçar pessoa."
+    tags: [encantamento]
+    props:
+      effects:
+        - { kind: grant_spell, spell: charm person, charges_cost: 1, charges: 3, recharge: dawn }
+
+  - api_index: olhos-da-escuta-minuciosa
+    name: Olhos da Observação Minuciosa
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Vantagem em testes de Investigação (INT) baseados em visão."
+    tags: [investigacao]
+    props:
+      effects:
+        - { kind: skill_advantage, skill: investigation, condition: sight_based }
+
+  - api_index: olhos-da-aguia
+    name: Olhos da Águia
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Vantagem em Percepção (WIS) baseada em visão."
+    tags: [percepcao]
+    props:
+      effects:
+        - { kind: skill_advantage, skill: perception, condition: sight_based }
+
+  - api_index: gema-fabulista
+    name: Gema Fabulista
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Cria 100 po por 1 h (1/dia); altera aparência de roupas/armadura."
+    tags: [ilusao, utilidade]
+    props:
+      effects:
+        - { kind: conjure_coins_temporary, amount_gp: 100, duration_hours: 1, per_day: 1 }
+
+  - api_index: estilhaco-reino-distante
+    name: Estilhaço do Reino Distante
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Após Metamagia: CD de salvaguarda ou 3d6 psíquico e amedrontado (9 m)."
+    tags: [psiquico, medo]
+    props:
+      effects:
+        - { kind: metamagic_trigger_psychic_fear, damage: "3d6", radius_ft: 30 }
+
+  - api_index: tesouras-ceifadoras-do-destino
+    name: Tesouras Ceifadoras do Destino
+    kind: magic_item
+    category: weapon
+    sub_category: adaga
+    rarity: very rare
+    requires_attunement: true
+    description: "+1d6 de força; pode tratar 19–20 como crítico contra 1 alvo por todos (1/dia)."
+    tags: [forca]
+    props:
+      effects:
+        - { kind: damage_bonus_dice, dice: "1d6", damage_type: force }
+        - { kind: designate_crit_target_daily, per_day: 1 }
+
+  - api_index: baralho-do-mestre-do-destino
+    name: Baralho do Mestre do Destino
+    kind: magic_item
+    category: wondrous
+    rarity: scalable
+    requires_attunement: true
+    description: "Bônus a ataques mágicos; causar [DV+ bônus] radiante ou curar o mesmo valor."
+    tags: [radiante]
+    props:
+      effects:
+        - { kind: spell_attack_bonus_by_rarity, scalable_bonus: true }
+        - { kind: heal_or_damage_by_hit_dice, damage_type: radiant }
+
+  - api_index: estilhaco-do-reino-das-fadas
+    name: Estilhaço do Reino das Fadas
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Após Metamagia, pode rolar na Tabela de Magia Selvagem."
+    tags: [magia-selvagem]
+    props:
+      effects:
+        - { kind: wild_magic_surge_opt_in, trigger: metamagic }
+
+  - api_index: armadura-forjada-pelas-fadas
+    name: Armadura Forjada pelas Fadas
+    kind: magic_item
+    category: armor
+    rarity: rare
+    requires_attunement: true
+    description: "Vantagem contra enfeitiçar; 3 cargas para compulsão."
+    tags: [fada]
+    props:
+      effects:
+        - { kind: save_advantage_vs_charm, value: true }
+        - { kind: grant_spell, spell: compulsion, charges_cost: 1 }
+
+  - api_index: estatueta-poder-maravilhoso
+    name: Estatueta de Poder Maravilhoso
+    kind: magic_item
+    category: wondrous
+    rarity: varies
+    requires_attunement: false
+    description: "Vira criatura conforme tipo de estatueta."
+    tags: [invocacao]
+    props: {}
+
+  - api_index: estatueta-canario-de-ouro
+    name: Estatueta de Poder Maravilhoso, Canário Dourado
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Versão lendária com poderes especiais (vide DMG)."
+    tags: [invocacao]
+    props: {}
+
+  - api_index: mangual-de-tiamat
+    name: Mangual de Tiamat
+    kind: magic_item
+    category: weapon
+    sub_category: mangual
+    rarity: legendary
+    requires_attunement: true
+    description: "Arma +3; +5d4 de um tipo; 1/dia cone de 27 m (CD DES) causando 14d6 de um tipo dracônico."
+    tags: [dragao, elemental]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+        - { kind: damage_bonus_dice, dice: "5d4", damage_type: chromatic_choice }
+        - { kind: daily_breath_cone, damage: "14d6", damage_type: chromatic_choice }
+
+  - api_index: lingua-de-chama
+    name: Língua de Chama
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: rare
+    requires_attunement: true
+    description: "Ao ativar, +2d6 fogo e emite luz."
+    tags: [fogo]
+    props:
+      effects:
+        - { kind: toggle_fire_blade, damage: "2d6", light_bright_ft: 40, light_dim_ft: 40 }
+
+  - api_index: barco-dobravel
+    name: Barco Dobrável
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Caixa que se transforma em barco/escuna."
+    tags: [transporte, agua]
+    props: {}
+
+  - api_index: lamina-do-tolo
+    name: Lâmina do Tolo
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: very rare
+    requires_attunement: true
+    description: "Arma +2; 1/dia vantagem vs 1 alvo; CD INT para redirecionar o efeito."
+    tags: [controle]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 2 }
+        - { kind: designate_advantage_target_daily, per_day: 1 }
+
+  - api_index: arma-quebra-forca
+    name: Arma Quebra-Força
+    kind: magic_item
+    category: weapon
+    sub_category: varia
+    rarity: very rare
+    requires_attunement: false
+    description: "Arma +2; pode destruir estruturas de força (como parede de força)."
+    tags: [forca]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 2 }
+        - { kind: destroy_force_constructs, value: true }
+
+  - api_index: marca-da-geada
+    name: Marca da Geada
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: very rare
+    requires_attunement: true
+    description: "+1d6 frio; resistência a fogo; luz em clima gélido; apaga chamas não mágicas (1/h)."
+    tags: [frio, defesa]
+    props:
+      effects:
+        - { kind: damage_bonus_dice, dice: "1d6", damage_type: cold }
+        - { kind: grant_resistance, damage_type: fire }
+
+  - api_index: tratado-fulminante
+    name: Tratado Fulminante
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Contém 7 magias de evoca.; 3 cargas para +2d6 de força e derrubar como reação."
+    tags: [evocacao]
+    props:
+      effects:
+        - { kind: grant_spells, school: evocation, count: 7 }
+        - { kind: reaction_force_knockdown, damage: "2d6" }
+
+  - api_index: manoplas-de-forca-do-ogro
+    name: Manoplas de Força do Ogro
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Define sua Força em 19."
+    tags: [atributo, forca]
+    props:
+      effects:
+        - { kind: set_ability_score, ability: STR, value: 19 }
+
+  - api_index: gema-do-brilho
+    name: Gema do Brilho
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Emite flashes cegantes; possui cargas."
+    tags: [luz, controle]
+    props: {}
+
+  - api_index: gema-da-verdadeira-visao
+    name: Gema da Verdadeira Visão
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas para visão verdadeira (36 m) por 10 min."
+    tags: [percepcao]
+    props:
+      effects:
+        - { kind: truesight, range_ft: 120, duration_minutes: 10, charges_cost: 1 }
+
+  - api_index: tatuagem-passo-fantasma
+    name: Tatuagem Passo-Fantasma
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "3 cargas para ficar incorpóreo durante 1 turno."
+    tags: [incorporeo]
+    props:
+      effects:
+        - { kind: become_incorporeal_round, charges_cost: 1 }
+
+  - api_index: matadora-de-gigantes
+    name: Matadora de Gigantes
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: rare
+    requires_attunement: false
+    description: "Bônus e dano extra contra gigantes."
+    tags: [gigante]
+    props:
+      effects:
+        - { kind: slayer_bonus_vs_type, creature_type: giant }
+
+  - api_index: couro-reforcado-ilusionado
+    name: Couro Reforçado Ilusionado
+    kind: magic_item
+    category: armor
+    rarity: rare
+    requires_attunement: false
+    description: "+1 CA; pode parecer roupa comum ou outro tipo de armadura."
+    tags: [disfarce]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 1 }
+        - { kind: glamoured_appearance, value: true }
+
+  - api_index: arco-luar-cintilante
+    name: Arco do Luar Cintilante
+    kind: magic_item
+    category: weapon
+    sub_category: arco
+    rarity: rare
+    requires_attunement: true
+    description: "Arma +1, +1d6 radiante; 1/dia resistência a concussão, perfurante e cortante."
+    tags: [radiante, defesa]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: damage_bonus_dice, dice: "1d6", damage_type: radiant }
+        - { kind: daily_triple_resistance_bps, per_day: 1 }
+
+  - api_index: armadura-de-gloomwrought
+    name: Armadura de Gloomwrought
+    kind: magic_item
+    category: armor
+    rarity: rare
+    requires_attunement: true
+    description: "Vantagem contra amedrontar; 3 cargas para acalmar emoções."
+    tags: [medo]
+    props:
+      effects:
+        - { kind: save_advantage_vs_fear, value: true }
+        - { kind: grant_spell, spell: calm emotions, charges_cost: 1 }
+
+  - api_index: luvas-de-apreensao-de-projeteis
+    name: Luvas de Apreensão de Projéteis
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Reação para reduzir dano de ataque à distância e potencialmente segurar."
+    tags: [defesa]
+    props: {}
+
+  - api_index: luvas-de-natacao-e-escalada
+    name: Luvas de Natação e Escalada
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Concede natação e escalada iguais ao deslocamento de caminhada."
+    tags: [movimento]
+    props:
+      effects:
+        - { kind: climb_speed_equals_walk, value: true }
+        - { kind: swim_speed_equals_walk, value: true }
+
+  - api_index: luvas-de-malandragem
+    name: Luvas de Malandragem
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "+5 em Prestidigitação e para arrombar fechaduras."
+    tags: [ladrao]
+    props:
+      effects:
+        - { kind: skill_bonus, skill: sleight_of_hand, value: 5 }
+        - { kind: tool_bonus, tool: thieves_tools, value: 5 }
+
+itens:
+  - api_index: pigmento-glifarrune
+    name: Pigmento Glifarrune
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Cria 1d4+2 pinturas rúnicas com efeitos por 8 h (terreno difícil, PV, visão no escuro, imunidades, vantagem situacional)."
+    tags: [utilidade, runa]
+    props: {}
+
+  - api_index: oculos-da-noite
+    name: Óculos da Noite
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Concede visão no escuro (18 m) ou estende a existente."
+    tags: [visao-no-escuro]
+    props:
+      effects:
+        - { kind: grant_darkvision, range_ft: 60 }
+
+  - api_index: chicote-aprisionador
+    name: Chicote Apreensor
+    kind: magic_item
+    category: weapon
+    sub_category: chicote
+    rarity: rare
+    requires_attunement: false
+    description: "Chicote +1; em vez de dano, puxa criatura/objeto 1,5 m."
+    tags: [controle, alcance]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: pull_target_on_hit_ft, value: 5 }
+
+  - api_index: emblema-guardiao
+    name: Emblema Guardião
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "3 cargas para transformar um acerto crítico em acerto normal contra criatura que você possa ver."
+    tags: [proteção]
+    props:
+      effects:
+        - { kind: negate_critical_on_use, charges_cost: 1, charges: 3, recharge: dawn }
+
+  - api_index: martelo-do-foco-runico
+    name: Martelo do Foco Rúnico
+    kind: magic_item
+    category: weapon
+    sub_category: martelo-de-guerra
+    rarity: very rare
+    requires_attunement: true
+    description: "3 cargas para criar círculo rúnico (raio 4,5 m) por 1 min; dentro dele, +3 em ataque e dano com o martelo."
+    tags: [runas]
+    props:
+      effects:
+        - { kind: create_runic_circle, radius_ft: 15, duration_minutes: 1, attack_bonus_inside: 3, damage_bonus_inside: 3, charges_cost: 1 }
+
+  - api_index: martelo-dos-trovoes
+    name: Martelo dos Trovões
+    kind: magic_item
+    category: weapon
+    sub_category: martelo-de-guerra
+    rarity: legendary
+    requires_attunement: true
+    description: "Obra-prima anã com efeitos de trovão, atordoamento e propriedades específicas (vide DMG)."
+    tags: [trovão]
+    props: {}
+
+  - api_index: harpa-da-opulencia-dourada
+    name: Harpa da Opulência Dourada
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Conjura banquete dos heróis e acalmar emoções; é senciente."
+    tags: [bardo, suporte]
+    props:
+      effects:
+        - { kind: grant_spell, spell: heroes' feast, per_day: 1 }
+        - { kind: grant_spell, spell: calm emotions, per_day: 1 }
+
+  - api_index: chapeu-disfarces
+    name: Chapéu de Disfarces
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Conjura disfarçar-se à vontade."
+    tags: [disfarce]
+    props:
+      effects:
+        - { kind: grant_spell, spell: disguise self, at_will: true }
+
+  - api_index: chapeu-de-vermes
+    name: Chapéu de Vermes
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "3 cargas para invocar um morcego, sapo ou rato comum por 1 h."
+    tags: [utilidade]
+    props:
+      effects:
+        - { kind: summon_critter_common, duration_hours: 1, charges_cost: 1, charges: 3, recharge: dawn }
+
+  - api_index: chapeu-de-feiticeria
+    name: Chapéu de Feiticeiro
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Tente lançar um truque de mago adicional (teste de Arcana)."
+    tags: [magia]
+    props:
+      effects:
+        - { kind: wizard_cantrip_check, ability: INT }
+
+  - api_index: tiara-do-intelecto
+    name: Tiara do Intelecto
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Define sua Inteligência em 19."
+    tags: [atributo, inteligencia]
+    props:
+      effects:
+        - { kind: set_ability_score, ability: INT, value: 19 }
+
+  - api_index: primer-da-tecelã-do-coracao
+    name: Primer da Tecelã do Coração
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Contém 7 magias de encantamento; 3 cargas para impor desvantagem num teste de resistência."
+    tags: [encantamento]
+    props:
+      effects:
+        - { kind: grant_spells, school: enchantment, count: 7 }
+        - { kind: impose_save_disadvantage, charges_cost: 1 }
+
+  - api_index: elmo-do-esplendor
+    name: Elmo do Esplendor
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Reservatório de gemas que disparam magias (vide DMG)."
+    tags: [luz, fogo]
+    props: {}
+
+  - api_index: elmo-compreender-idiomas
+    name: Elmo de Compreender Idiomas
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Conjura compreender idiomas à vontade."
+    tags: [linguagem]
+    props:
+      effects:
+        - { kind: grant_spell, spell: comprehend languages, at_will: true }
+
+  - api_index: elmo-do-potencial-perfeito
+    name: Elmo do Potencial Perfeito
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Vantagem em Enganação e Intuição; salva DES ou 4d6 dano; pode lançar 5 magias diversas."
+    tags: [artefato]
+    props: {}
+
+  - api_index: elmo-de-telepatia
+    name: Elmo de Telepatia
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Detectar pensamentos e 1/dia sugestão."
+    tags: [encantamento]
+    props:
+      effects:
+        - { kind: grant_spell, spell: detect thoughts, at_will: true }
+        - { kind: grant_spell, spell: suggestion, per_day: 1 }
+
+  - api_index: elmo-de-teleporte
+    name: Elmo de Teleporte
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas para lançar teleporte."
+    tags: [teleporte]
+    props:
+      effects:
+        - { kind: grant_spell, spell: teleport, charges_cost: 1, charges: 3, recharge: dawn }
+
+  - api_index: mochila-de-haversack
+    name: Mochila de Haversack de Heward
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Bolsos extradimensionais organizados; ação para recuperar item."
+    tags: [armazenamento]
+    props: {}
+
+  - api_index: pochete-de-temperos
+    name: Pochete de Temperos de Heward
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "10 cargas para produzir condimentos variados."
+    tags: [culinaria]
+    props: {}
+
+  - api_index: vingadora-sagrada
+    name: Vingadora Sagrada
+    kind: magic_item
+    category: weapon
+    sub_category: espada-longa
+    rarity: legendary
+    requires_attunement: true
+    description: "Espada sagrada de paladinos; dano radiante extra vs infernais/mortos-vivos e aura protetiva."
+    tags: [paladino, radiante]
+    props: {}
+
+  - api_index: buzina-de-destruicao
+    name: Buzina de Destruição
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Conjura explosão sônica com risco de romper o próprio item."
+    tags: [trovão]
+    props: {}
+
+  - api_index: buzina-do-alarme-silencioso
+    name: Buzina do Alarme Silencioso
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "4 cargas para que apenas uma criatura escolhida ouça o toque."
+    tags: [sinal]
+    props: {}
+
+  - api_index: buzina-de-valhalla
+    name: Buzina de Valhala
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Invoca guerreiros espirituais conforme material (prata/bronze/latão/ferro)."
+    tags: [invocacao]
+    props: {}
+
+  - api_index: ferraduras-do-zephir
+    name: Ferraduras do Zéfiro
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Montaria ignora terreno difícil e não deixa pegadas."
+    tags: [montaria]
+    props: {}
+
+  - api_index: ferraduras-de-velocidade
+    name: Ferraduras de Velocidade
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Aumenta a velocidade da montaria."
+    tags: [montaria]
+    props: {}
+
+  - api_index: casa-de-cartas
+    name: Casa de Cartas
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Cria abrigo (cubo 12 m, 50 PV) que somente você abre por 24 h (1/dia)."
+    tags: [abrigo]
+    props: {}
+
+  - api_index: caldeirao-de-iggwilv
+    name: Caldeirão de Iggwilv
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato lendário com receitas e magias (vide livro)."
+    tags: [artefato]
+    props: {}
+
+  - api_index: tatuagem-iluminadora
+    name: Tatuagem Iluminadora
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Torna uma página invisível por 24 h para todos exceto você e 1 criatura designada (1/dia)."
+    tags: [ilusao, segredo]
+    props: {}
+
+  - api_index: haste-imovel
+    name: Haste Imóvel
+    kind: magic_item
+    category: rod
+    rarity: uncommon
+    requires_attunement: false
+    description: "Fixa-se no espaço, suportando até 3.600 kg; botão para travar/destravar."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: instrumento-das-ilusoes
+    name: Instrumento das Ilusões
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Cria efeitos visuais ilusórios inofensivos sem som ao tocar."
+    tags: [bardo, ilusao]
+    props: {}
+
+  - api_index: instrumento-de-escrita
+    name: Instrumento de Escritura
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "3 cargas para escrever mensagem mágica por 24 h."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: instrumento-dos-bardos
+    name: Instrumento dos Bardos
+    kind: magic_item
+    category: wondrous
+    rarity: varies
+    requires_attunement: true
+    description: "Variações concedem magias e benefícios específicos aos bardos."
+    tags: [bardo]
+    props: {}
+
+  - api_index: pedra-ioun
+    name: Pedra Ioun
+    kind: magic_item
+    category: wondrous
+    rarity: varies
+    requires_attunement: true
+    description: "Pedras orbitais que concedem bônus diversos conforme tipo."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: aneis-de-bilarro
+    name: Anéis de Bilarro
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Lança anel que imobiliza alvo em teste falho; comandos para abrir/fechar."
+    tags: [confinamento]
+    props: {}
+
+  - api_index: frasco-de-ferro
+    name: Frasco de Ferro
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Prende criatura extraplanar; rituais para liberar/represar."
+    tags: [confinamento, extraplanar]
+    props: {}
+
+  - api_index: azagaia-do-relampago
+    name: Azagaia do Relâmpago
+    kind: magic_item
+    category: weapon
+    sub_category: azagaia
+    rarity: uncommon
+    requires_attunement: false
+    description: "Quando ativada ao arremessar, vira raio de relâmpago (vide DMG)."
+    tags: [eletrico]
+    props: {}
+
+  - api_index: mascara-do-bobo
+    name: Máscara do Bobo
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Bônus em certas magias; teleporte de 9 m p/ evitar dano (1/dia); tratar 1 como 20 (1/dia)."
+    tags: [trapaça]
+    props: {}
+
+  - api_index: unguento-de-keoghtom
+    name: Unguento de Keoghtom
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "1d4+1 doses; recuperar 2d8+2 PV, terminar envenenado e curar doenças."
+    tags: [cura]
+    props:
+      effects:
+        - { kind: healing_fixed, dice: "2d8+2" }
+        - { kind: cure_disease_and_poison, value: true }
+
+  - api_index: lanterna-reveladora
+    name: Lanterna Reveladora
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Revela criaturas invisíveis em seu raio de luz."
+    tags: [revelacao]
+    props: {}
+
+  - api_index: laco-de-imolacao
+    name: Látigo da Imolação
+    kind: magic_item
+    category: weapon
+    sub_category: chicote
+    rarity: rare
+    requires_attunement: false
+    description: "Chicote +1, +1d6 fogo; 1/dia +2d6 fogo adicionais."
+    tags: [fogo]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: damage_bonus_dice, dice: "1d6", damage_type: fire }
+        - { kind: daily_bonus_damage, dice: "2d6", damage_type: fire }
+
+  - api_index: libram-de-almas-e-carne
+    name: Libram de Almas e Carne
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "7 magias de necromancia; 3 cargas para aparência mortiça por 10 min."
+    tags: [necromancia]
+    props:
+      effects:
+        - { kind: grant_spells, school: necromancy, count: 7 }
+
+  - api_index: tatuagem-do-bem-estar
+    name: Tatuagem do Poço de Vida
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Resistência a necrótico; 1/dia ao cair a 0 PV, fica com 1 PV."
+    tags: [sustentacao]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: necrotic }
+        - { kind: once_per_day_drop_to_1hp, value: true }
+
+  - api_index: fechadura-trapaca
+    name: Fechadura da Trapaça
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Impõe desvantagem a testes para arrombar a própria fechadura."
+    tags: [segurança]
+    props: {}
+
+  - api_index: arco-longo-do-lar-curativo
+    name: Arco Longo do Lar Curativo
+    kind: magic_item
+    category: weapon
+    sub_category: arco-longo
+    rarity: legendary
+    requires_attunement: true
+    description: "Arma +3; 8 cargas para curar +[DV] PV ou lançar 3 magias de suporte."
+    tags: [cura]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+
+  - api_index: tarokka-de-almas-de-luba
+    name: Tarokka de Almas de Luba
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato adivinhatório com poderes únicos."
+    tags: [artefato, adivinhacao]
+    props: {}
+
+  - api_index: destruidor-lucente
+    name: Destruidor Lucente
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: very rare
+    requires_attunement: true
+    description: "Espada +1, dano radiante; lança luzes dançantes; 1/dia raio solar."
+    tags: [radiante, luz]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: grant_spell, spell: dancing lights, at_will: true }
+        - { kind: grant_spell, spell: sunbeam, per_day: 1 }
+
+  - api_index: lamina-da-sorte
+    name: Lâmina da Sorte
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: legendary
+    requires_attunement: true
+    description: "Espada lendária ligada a desejos/fortuna (vide DMG)."
+    tags: [sorte]
+    props: {}
+
+  - api_index: lira-da-construcao
+    name: Lira da Construção
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Conserta (remendar) e protege estruturas; 1/dia lança 4 magias de obra."
+    tags: [construcao]
+    props: {}
+
+  - api_index: maca-da-disrupcao
+    name: Maça da Disrupção
+    kind: magic_item
+    category: weapon
+    sub_category: maca
+    rarity: rare
+    requires_attunement: true
+    description: "+2d6 radiante em ínferos/mortos-vivos; CD SAB destrói se <25 PV; emite luz."
+    tags: [radiante, undead]
+    props:
+      effects:
+        - { kind: damage_bonus_dice_vs_types, dice: "2d6", types: [fiend, undead], damage_type: radiant }
+
+  - api_index: maca-do-esfacelamento
+    name: Maça do Esfacelamento
+    kind: magic_item
+    category: weapon
+    sub_category: maca
+    rarity: rare
+    requires_attunement: false
+    description: "Maça +1; +3 contra construtos; crítico +7 (ou +14 contra construto)."
+    tags: [construto]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+
+  - api_index: maca-do-terror
+    name: Maça do Terror
+    kind: magic_item
+    category: weapon
+    sub_category: maca
+    rarity: rare
+    requires_attunement: true
+    description: "Emanar terror em cone; CD SAB evita condição amedrontado."
+    tags: [medo]
+    props: {}
+
+  - api_index: manto-resistencia-magica
+    name: Manto de Resistência Mágica
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Vantagem em testes de resistência contra magias."
+    tags: [defesa]
+    props:
+      effects:
+        - { kind: save_advantage_vs_spells, value: true }
+
+  - api_index: manual-da-saude-corporal
+    name: Manual da Saúde Corporal
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Estudar aumenta CON em +2 (e máximo) permanentemente."
+    tags: [atributo]
+    props: {}
+
+  - api_index: manual-do-exercicio-proficuo
+    name: Manual do Exercício Proficuo
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Estudar aumenta FOR em +2 (e máximo) permanentemente."
+    tags: [atributo]
+    props: {}
+
+  - api_index: manual-de-golems
+    name: Manual de Golems
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Instruções/rituais para criar um tipo específico de golem."
+    tags: [construto]
+    props: {}
+
+  - api_index: manual-da-presteza
+    name: Manual da Presteza
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Estudar aumenta DES em +2 (e máximo) permanentemente."
+    tags: [atributo]
+    props: {}
+
+  - api_index: armadura-do-marinhiero
+    name: Armadura do Marinheiro
+    kind: magic_item
+    category: armor
+    rarity: uncommon
+    requires_attunement: false
+    description: "Concede natação igual ao deslocamento; não afunda."
+    tags: [agua]
+    props:
+      effects:
+        - { kind: swim_speed_equals_walk, value: true }
+
+  - api_index: tatuagem-mascarada
+    name: Tatuagem Mascarada
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Conjura disfarçar-se 1/dia."
+    tags: [disfarce]
+    props:
+      effects:
+        - { kind: grant_spell, spell: disguise self, per_day: 1 }
+
+  - api_index: medalhao-de-pensamentos
+    name: Medalhão de Pensamentos
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Lança detectar pensamentos."
+    tags: [telepatia]
+    props:
+      effects:
+        - { kind: grant_spell, spell: detect thoughts, at_will: true }
+
+  - api_index: servo-poderoso-de-leuk-o
+    name: Servo Poderoso de Leuk-o
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Engenho colosso com regras próprias (vide DMG)."
+    tags: [artefato, veiculo]
+    props: {}
+
+  - api_index: espelho-prisao-de-vidas
+    name: Espelho Prisão de Vidas
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Aprisiona criaturas em células espelhadas."
+    tags: [confinamento]
+    props: {}
+
+  - api_index: manto-mistral
+    name: Manto Mistral
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Resistência a frio; salva DES ou 1d6 frio em volta; 1/dia nevasca (sleet storm)."
+    tags: [frio]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: cold }
+        - { kind: grant_spell, spell: sleet storm, per_day: 1 }
+
+  - api_index: armadura-de-mitril
+    name: Armadura de Mitril
+    kind: magic_item
+    category: armor
+    rarity: uncommon
+    requires_attunement: false
+    description: "Não impõe desvantagem em Furtividade."
+    tags: [furtividade]
+    props: {}
+
+  - api_index: foice-lunar
+    name: Foice Lunar
+    kind: magic_item
+    category: weapon
+    sub_category: foice
+    rarity: scalable
+    requires_attunement: true
+    description: "Bônus a ataques/dano e a jogadas/TS de magias de druida/guardião; cura +1d4."
+    tags: [druida, guarda]
+    props: {}
+
+  - api_index: espada-a-luz-da-lua
+    name: Espada ao Luar
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: common
+    requires_attunement: false
+    description: "Emite luz brilhante (4,5 m) e penumbra adicional (4,5 m)."
+    tags: [luz]
+    props:
+      effects:
+        - { kind: shed_light, bright_ft: 15, dim_ft: 15 }
+
+  - api_index: lamina-lunar
+    name: Lâmina Lunar
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: legendary
+    requires_attunement: true
+    description: "Espada élfica senciente com propriedades crescentes; protetora de elfos."
+    tags: [elfo, senciente]
+    props: {}
+
+  - api_index: chave-misteriosa
+    name: Chave Misteriosa
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "5% de chance de abrir uma fechadura uma única vez."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: manto-da-natureza
+    name: Manto da Natureza
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Pode se esconder em leve obscurecimento natural."
+    tags: [furtividade, floresta]
+    props: {}
+
+  - api_index: colar-de-adaptacao
+    name: Colar de Adaptação
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Respira em qualquer ambiente; vantagem vs gases."
+    tags: [sobrevivencia]
+    props: {}
+
+  - api_index: colar-de-bolas-de-fogo
+    name: Colar de Bolas de Fogo
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "1d6+3 contas que lançam bola de fogo."
+    tags: [fogo]
+    props:
+      effects:
+        - { kind: charges_beads_fireball, dice: "8d6" }
+
+  - api_index: colar-de-contas-de-oracao
+    name: Colar de Contas de Oração
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Contas com magias divinas (vide DMG)."
+    tags: [divino]
+    props: {}
+
+  - api_index: coroa-nimbo
+    name: Coroa Nimbo
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Sem dano de queda; teleporte 4,5 m; forma de nuvem por 1 min (1/dia)."
+    tags: [ar, mobilidade]
+    props:
+      effects:
+        - { kind: negate_fall_damage, value: true }
+        - { kind: short_teleport_ft, value: 15, per_day: 1 }
+
+  - api_index: roubavidas
+    name: Roubavidas
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: very rare
+    requires_attunement: true
+    description: "Espada +2; 1d8+1 cargas que podem matar instantaneamente em crítico (CD CON)."
+    tags: [necromancia]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 2 }
+
+  - api_index: pigmentos-maravilhosos-de-nolzur
+    name: Pigmentos Maravilhosos de Nolzur
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Pinta objetos reais ao terminar o quadro."
+    tags: [criacao]
+    props: {}
+
+  - api_index: arco-do-juramento
+    name: Arco do Juramento
+    kind: magic_item
+    category: weapon
+    sub_category: arco-longo
+    rarity: very rare
+    requires_attunement: true
+    description: "Declara Inimigo Jurado por 7 dias: vantagem e +3d6; desvantagem com outras armas."
+    tags: [juramento]
+    props:
+      effects:
+        - { kind: sworn_enemy_mode, bonus_dice: "3d6" }
+
+  - api_index: oleo-etereal
+    name: Óleo da Eterealidade
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "Concede efeito de eterealidade por 1 h."
+    tags: [etereo]
+    props: {}
+
+  - api_index: oleo-de-afiacao-suprema
+    name: Óleo de Afiação Suprema
+    kind: magic_item
+    category: potion
+    rarity: very rare
+    requires_attunement: false
+    description: "Arma/munição fica +3 por 1 h."
+    tags: [arma]
+    props: {}
+
+  - api_index: oleo-de-deslizamento
+    name: Óleo de Deslizamento
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Efeito de liberdade de movimento ou graxa por 8 h."
+    tags: [movimento]
+    props: {}
+
+  - api_index: orbe-de-direcao
+    name: Orbe de Direção
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Indica o norte."
+    tags: [navegacao]
+    props: {}
+
+  - api_index: orbe-da-draconidade
+    name: Orbe da Draconidade
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato ancestral ligado a dragões; comandos e aura dracônica."
+    tags: [dragao, artefato]
+    props: {}
+
+  - api_index: orbe-de-skoraeus
+    name: Orbe de Skoraeus
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "3 cargas para ignorar componentes materiais; +2 em TS de CON; enxergar na escuridão (36 m)."
+    tags: [gigante]
+    props:
+      effects:
+        - { kind: ignore_material_components, charges_cost: 1 }
+        - { kind: saving_throws_bonus, ability: CON, value: 2 }
+
+  - api_index: orbe-do-tempo
+    name: Orbe do Tempo
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Indica período do dia (manhã/tarde/noite)."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: estilhaco-essencia-exterior
+    name: Estilhaço de Essência Exterior
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Após Metamagia: remover condição, impor desvantagem, curar 3d6, ou +3d6 necrótico."
+    tags: [metamagia]
+    props:
+      effects:
+        - { kind: metamagic_trigger_multi_effect }
+
+  - api_index: perola-de-poder
+    name: Pérola de Poder
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Recupera 1 espaço de magia (até 3º)."
+    tags: [recurso]
+    props:
+      effects:
+        - { kind: recover_spell_slot, max_level: 3, per_day: 1 }
+
+  - api_index: perfume-do-encanto
+    name: Perfume do Encanto
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Vantagem em testes de Carisma vs humanóides de ND 1 por 1 h."
+    tags: [social]
+    props: {}
+
+  - api_index: periapt-saude
+    name: Periápto de Saúde
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Imunidade a doenças."
+    tags: [saude]
+    props:
+      effects:
+        - { kind: grant_immunity, condition: disease }
+
+  - api_index: periapt-prova-contra-veneno
+    name: Periápto de Prova contra Veneno
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Vantagem em TS contra veneno e resistência a dano de veneno."
+    tags: [veneno]
+    props:
+      effects:
+        - { kind: save_advantage_vs_poison, value: true }
+        - { kind: grant_resistance, damage_type: poison }
+
+  - api_index: periapt-fechadura-de-feridas
+    name: Periápto Fechadura de Feridas
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Estabiliza automaticamente a 0 PV; dobra cura por Dados de Vida."
+    tags: [cura]
+    props: {}
+
+  - api_index: filtro-de-amor
+    name: Filtro de Amor
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Enamora-se por 1 h pela primeira criatura vista em 10 min (encantado)."
+    tags: [encantamento]
+    props: {}
+
+  - api_index: cachimbo-monstros-de-fumaca
+    name: Cachimbo de Monstros de Fumaça
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Solta fumaça em forma de criatura por alguns segundos."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: gaitas-do-assombro
+    name: Gaitas do Assombro
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Efeito de medo em área, TS SAB."
+    tags: [medo, bardo]
+    props: {}
+
+  - api_index: flautas-dos-esgotos
+    name: Flautas dos Esgotos
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Controla ratos e enxames de ratos (vide DMG)."
+    tags: [controle]
+    props: {}
+
+  - api_index: codex-invocador-de-planos
+    name: Códice Chamaplano
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "6 magias de conjuração; 3 cargas para dar vantagem nos ataques de um invocado por 1 min."
+    tags: [invocacao]
+    props:
+      effects:
+        - { kind: grant_spells, school: conjuration, count: 6 }
+
+  - api_index: armadura-etereal-de-placas
+    name: Armadura de Placas da Eterealidade
+    kind: magic_item
+    category: armor
+    rarity: legendary
+    requires_attunement: true
+    description: "1/dia etereal por 10 min (como a magia)."
+    tags: [etereo]
+    props:
+      effects:
+        - { kind: grant_spell, spell: etherealness, per_day: 1, duration_minutes: 10 }
+
+  - api_index: placas-da-fraternidade-do-cavaleiro
+    name: Placas da Fraternidade do Cavaleiro
+    kind: magic_item
+    category: armor
+    rarity: uncommon
+    requires_attunement: true
+    description: "1/dia invoca espírito guerreiro (cavaleiro) sob seu comando."
+    tags: [aliado]
+    props: {}
+
+  - api_index: cachecol-de-platina
+    name: Cachecol de Platina
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "3 cargas: curar 10d4; escudo +1 e imunidade a radiante; ou 2d4 radiante (1/dia cada)."
+    tags: [radiante, cura]
+    props: {}
+
+  - api_index: vara-de-pesca-magica
+    name: Vara de Pesca Mágica
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Transforma-se num kit completo de pesca."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: haste-colapsavel
+    name: Haste Colapsável
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Vara de 3 m colapsa para 30 cm."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: buraco-portatil
+    name: Buraco Portátil
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Cria buraco extradimensional com boca de lona."
+    tags: [armazenamento]
+    props: {}
+
+  - api_index: vaso-do-despertar
+    name: Vaso do Despertar
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Após 30 dias, o arbusto vira arbusto desperto."
+    tags: [invocacao]
+    props: {}
+
+itens:
+  - api_index: pocao-amizade-animal
+    name: Poção de Amizade Animal
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Concede o efeito de *amizade com animais* por 1 hora."
+    tags: [encantamento, animais]
+    props:
+      effects:
+        - { kind: grant_spell_effect, spell: animal friendship, duration_hours: 1 }
+
+  - api_index: pocao-clarividencia
+    name: Poção de Clarividência
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "Concede o efeito de *clarividência*."
+    tags: [adivinhacao]
+    props:
+      effects:
+        - { kind: grant_spell_effect, spell: clairvoyance, duration_minutes: 10 }
+
+  - api_index: pocao-escalada
+    name: Poção de Escalada
+    kind: magic_item
+    category: potion
+    rarity: common
+    requires_attunement: false
+    description: "Deslocamento de escalada igual ao de caminhada por 1 hora."
+    tags: [movimento]
+    props:
+      effects:
+        - { kind: climb_speed_equals_walk, duration_hours: 1 }
+
+  - api_index: pocao-reducao
+    name: Poção de Diminuição
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "Efeito de *aumentar/reduzir* (opção reduzir) por 1d4 horas."
+    tags: [transmutacao]
+    props: {}
+
+  - api_index: pocao-majestade-draconica
+    name: Poção de Majestade Dracônica
+    kind: magic_item
+    category: potion
+    rarity: legendary
+    requires_attunement: false
+    description: "Transforma você em um dragão adulto por 1 hora (regras específicas)."
+    tags: [dragao, transformacao]
+    props: {}
+
+  - api_index: pocao-sopro-de-fogo
+    name: Poção de Sopro de Fogo
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Até 3 exalações; DES CD para 4d6 fogo."
+    tags: [fogo, area]
+    props:
+      effects:
+        - { kind: breath_weapon, uses: 3, damage: "4d6", damage_type: fire }
+
+  - api_index: pocao-voo
+    name: Poção de Voo
+    kind: magic_item
+    category: potion
+    rarity: very rare
+    requires_attunement: false
+    description: "Voo igual ao deslocamento por 1 hora."
+    tags: [movimento, ar]
+    props:
+      effects:
+        - { kind: grant_fly_speed_equals_walk, duration_hours: 1 }
+
+  - api_index: pocao-forma-gasosa
+    name: Poção de Forma Gasosa
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "Concede o efeito de *forma gasosa* por 1 hora."
+    tags: [transmutacao]
+    props: {}
+
+  - api_index: pocao-forca-de-gigante
+    name: Poção de Força de Gigante
+    kind: magic_item
+    category: potion
+    rarity: varies
+    requires_attunement: false
+    description: "Fixa sua FOR (21–29) por 1 hora conforme o tipo de gigante."
+    tags: [atributo, forca]
+    props: {}
+
+  - api_index: pocao-crescimento
+    name: Poção de Crescimento
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Concede o efeito *aumentar* por 1d4 horas."
+    tags: [transmutacao]
+    props: {}
+
+  - api_index: pocao-cura
+    name: Poção de Cura
+    kind: magic_item
+    category: potion
+    rarity: varies
+    requires_attunement: false
+    description: "Restaura PV: 2d4+2 (comum) até 10d4+20 (lendária)."
+    tags: [cura]
+    props:
+      effects:
+        - { kind: healing_by_rarity, common: "2d4+2", uncommon: "4d4+4", rare: "8d4+8", very_rare: "10d4+20" }
+
+  - api_index: pocao-heroismo
+    name: Poção de Heroísmo
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "10 PV temporários e efeito de *bênção* por 1 hora."
+    tags: [suporte]
+    props: {}
+
+  - api_index: pocao-invisibilidade
+    name: Poção de Invisibilidade
+    kind: magic_item
+    category: potion
+    rarity: very rare
+    requires_attunement: false
+    description: "Fica invisível por 1 hora ou até atacar/conjurar."
+    tags: [furtividade]
+    props: {}
+
+  - api_index: pocao-invulnerabilidade
+    name: Poção de Invulnerabilidade
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "Resistência a todo dano por 1 minuto."
+    tags: [defesa]
+    props:
+      effects:
+        - { kind: grant_resistance_all, duration_minutes: 1 }
+
+  - api_index: pocao-longevidade
+    name: Poção de Longevidade
+    kind: magic_item
+    category: potion
+    rarity: very rare
+    requires_attunement: false
+    description: "Reduz sua idade física em 1d6+6 anos."
+    tags: [tempo]
+    props: {}
+
+  - api_index: pocao-ler-pensamentos
+    name: Poção de Leitura de Mentes
+    kind: magic_item
+    category: potion
+    rarity: rare
+    requires_attunement: false
+    description: "Concede o efeito de *detectar pensamentos*."
+    tags: [telepatia]
+    props: {}
+
+  - api_index: pocao-veneno
+    name: Poção de Veneno
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Causa 3d6 veneno; CON CD ou fica envenenado."
+    tags: [veneno]
+    props: {}
+
+  - api_index: pocao-resistencia
+    name: Poção de Resistência
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Resistência a um tipo de dano por 1 hora."
+    tags: [defesa]
+    props: {}
+
+  - api_index: pocao-velocidade
+    name: Poção de Velocidade
+    kind: magic_item
+    category: potion
+    rarity: very rare
+    requires_attunement: false
+    description: "Concede o efeito de *aceleração* por 1 minuto."
+    tags: [buff]
+    props: {}
+
+  - api_index: pocao-vitalidade
+    name: Poção de Vitalidade
+    kind: magic_item
+    category: potion
+    rarity: very rare
+    requires_attunement: false
+    description: "Remove exaustão, cura doenças/venenos; cura máxima por DV por 24 h."
+    tags: [cura, suporte]
+    props: {}
+
+  - api_index: pocao-respirar-agua
+    name: Poção de Respiração Aquática
+    kind: magic_item
+    category: potion
+    rarity: uncommon
+    requires_attunement: false
+    description: "Permite respirar debaixo d’água por 1 hora."
+    tags: [agua]
+    props: {}
+
+  - api_index: estatuetas-pre-historicas
+    name: Estatuetas Pré-históricas do Poder Maravilhoso
+    kind: magic_item
+    category: wondrous
+    rarity: varies
+    requires_attunement: false
+    description: "Estatuetas se transformam em criaturas específicas por tempo limitado."
+    tags: [invocacao]
+    props: {}
+
+  - api_index: membro-protetico
+    name: Membro Protético
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Substitui um membro perdido (funcional)."
+    tags: [prótese]
+    props: {}
+
+  - api_index: versos-protetores
+    name: Versos Protetores
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Contém 7 magias de abjuração; 3 cargas para conceder 2d10 PV a uma criatura."
+    tags: [abjuracao]
+    props:
+      effects:
+        - { kind: grant_spells, school: abjuration, count: 7 }
+        - { kind: temp_heal, dice: "2d10", charges_cost: 1 }
+
+  - api_index: cristal-psi
+    name: Cristal Psi
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Telepatia e luz; alcance varia com INT."
+    tags: [telepatia, psionico]
+    props: {}
+
+  - api_index: penacho-da-codorniz
+    name: Penacho de Quaal
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Vários efeitos únicos por tipo de penacho."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: aljava-de-ehlonna
+    name: Aljava de Ehlonna
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Armazena grande quantidade de flechas/lanças/arcos sem peso adicional."
+    tags: [armazenamento]
+    props: {}
+
+  - api_index: grito-do-ceifador
+    name: Grito do Ceifador
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: legendary
+    requires_attunement: true
+    description: "Espada +2; dano necrótico; +10 PV no crítico; 1/dia SAB CD ou atordoa."
+    tags: [necromancia]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 2 }
+
+  - api_index: concertina-do-revel
+    name: Concertina do Folião
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "+2 em TS de magias de bardo; 1/dia *dança irresistível de Otto*."
+    tags: [bardo]
+    props: {}
+
+  - api_index: tambor-do-ritmista
+    name: Tambor do Ritmista
+    kind: magic_item
+    category: wondrous
+    rarity: varies
+    requires_attunement: true
+    description: "Bônus a ataque de magia e TS de magias de bardo; 1/dia recuperar 1 uso de Inspiração de Bardo."
+    tags: [bardo]
+    props: {}
+
+  - api_index: anel-amizade
+    name: Anel de Amizade
+    kind: magic_item
+    category: ring
+    rarity: very rare
+    requires_attunement: true
+    description: "Vínculo: compartilham cura; 1/dia acertos do vinculado viram crítico."
+    tags: [vinculo]
+    props: {}
+
+  - api_index: anel-influencia-animal
+    name: Anel de Influência Animal
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: false
+    description: "3 cargas: *amizade com animais*, *medo* (bichos), ou *falar com animais*."
+    tags: [animais]
+    props: {}
+
+  - api_index: anel-conjuracao-ginni
+    name: Anel de Conjuração de Djinni
+    kind: magic_item
+    category: ring
+    rarity: legendary
+    requires_attunement: true
+    description: "1/dia invoca djinni amigável por 1 hora."
+    tags: [invocacao, ar]
+    props: {}
+
+  - api_index: anel-dominio-elemental
+    name: Anel de Comando Elemental
+    kind: magic_item
+    category: ring
+    rarity: legendary
+    requires_attunement: true
+    description: "Versões para ar/terra/fogo/água com magias e controle associados."
+    tags: [elemental]
+    props: {}
+
+  - api_index: anel-evasao
+    name: Anel de Evasão
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas para transformar uma falha de DES em sucesso."
+    tags: [defesa]
+    props: {}
+
+  - api_index: anel-queda-suave
+    name: Anel de Queda Suave
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "Imuniza dano de queda."
+    tags: [mobilidade]
+    props:
+      effects:
+        - { kind: negate_fall_damage, value: true }
+
+  - api_index: anel-livre-movimento
+    name: Anel de Livre Movimento
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "Terreno difícil não custa movimento; magia não reduz sua velocidade nem paralisa/contém."
+    tags: [movimento]
+    props: {}
+
+  - api_index: anel-invisibilidade
+    name: Anel de Invisibilidade
+    kind: magic_item
+    category: ring
+    rarity: legendary
+    requires_attunement: true
+    description: "Fica invisível até remover o anel, atacar ou conjurar."
+    tags: [furtividade]
+    props: {}
+
+  - api_index: anel-pulo
+    name: Anel de Pulo
+    kind: magic_item
+    category: ring
+    rarity: uncommon
+    requires_attunement: true
+    description: "Lança *pulo* em si mesmo."
+    tags: [movimento]
+    props: {}
+
+  - api_index: anel-mente-velada
+    name: Anel de Mente Velada
+    kind: magic_item
+    category: ring
+    rarity: uncommon
+    requires_attunement: true
+    description: "Imune a leitura de pensamentos e detecção de alinhamento/mentiras mágicas."
+    tags: [proteção, mente]
+    props: {}
+
+  - api_index: anel-resistencia-veneno
+    name: Anel de Resistência a Veneno
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "Resistência a veneno."
+    tags: [veneno]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: poison }
+
+  - api_index: anel-protecao
+    name: Anel de Proteção
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "+1 na CA e nos testes de resistência."
+    tags: [defesa]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 1 }
+        - { kind: saving_throws_bonus, value: 1 }
+
+  - api_index: anel-esperteza-enigmas
+    name: Anel de Astúcia do Enigma
+    kind: magic_item
+    category: ring
+    rarity: uncommon
+    requires_attunement: false
+    description: "3 cargas para vantagem em testes de INT."
+    tags: [exploracao]
+    props: {}
+
+  - api_index: anel-regeneracao
+    name: Anel de Regeneração
+    kind: magic_item
+    category: ring
+    rarity: very rare
+    requires_attunement: true
+    description: "Recupera 1d6 PV a cada 10 min; regenera membros em 1d6+1 dias."
+    tags: [cura]
+    props: {}
+
+  - api_index: anel-resistencia
+    name: Anel de Resistência
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "Resistência a um tipo de dano."
+    tags: [defesa]
+    props: {}
+
+  - api_index: anel-estrelas-cadentes
+    name: Anel de Estrelas Cadentes
+    kind: magic_item
+    category: ring
+    rarity: very rare
+    requires_attunement: true
+    description: "Raios e efeitos lumínicos conforme cargas."
+    tags: [luz, trovão]
+    props: {}
+
+  - api_index: anel-armazenar-magias
+    name: Anel de Armazenar Magias
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "Armazena até 5 níveis de magia lançáveis depois."
+    tags: [recurso]
+    props: {}
+
+  - api_index: anel-devolucao-de-magias
+    name: Anel de Retorno de Magias
+    kind: magic_item
+    category: ring
+    rarity: legendary
+    requires_attunement: true
+    description: "Vantagem em TS contra magias que visem apenas você; pode refletir."
+    tags: [defesa]
+    props: {}
+
+  - api_index: anel-natacao
+    name: Anel de Natação
+    kind: magic_item
+    category: ring
+    rarity: uncommon
+    requires_attunement: false
+    description: "Concede deslocamento de natação 12 m."
+    tags: [agua]
+    props:
+      effects:
+        - { kind: swim_speed_fixed_ft, value: 40 }
+
+  - api_index: anel-telecinese
+    name: Anel de Telecinese
+    kind: magic_item
+    category: ring
+    rarity: very rare
+    requires_attunement: true
+    description: "Permite *telecinese*."
+    tags: [transmutacao]
+    props: {}
+
+  - api_index: anel-ariete
+    name: Anel do Carneiro
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas: ataque à distância +7, 2d10 de dano de força e empurrão."
+    tags: [forca]
+    props: {}
+
+  - api_index: anel-inverno
+    name: Anel do Inverno
+    kind: magic_item
+    category: ring
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato gélido com vários poderes."
+    tags: [gelo, artefato]
+    props: {}
+
+  - api_index: anel-tres-desejos
+    name: Anel dos Três Desejos
+    kind: magic_item
+    category: ring
+    rarity: legendary
+    requires_attunement: false
+    description: "3 cargas para lançar *desejo*."
+    tags: [desejo]
+    props: {}
+
+  - api_index: anel-calor
+    name: Anel de Calor
+    kind: magic_item
+    category: ring
+    rarity: uncommon
+    requires_attunement: true
+    description: "Resistência a frio; proteção até -45°C."
+    tags: [frio]
+    props:
+      effects:
+        - { kind: grant_resistance, damage_type: cold }
+
+  - api_index: anel-andar-sobre-agua
+    name: Anel de Andar sobre a Água
+    kind: magic_item
+    category: ring
+    rarity: uncommon
+    requires_attunement: false
+    description: "Anda sobre qualquer líquido."
+    tags: [agua]
+    props: {}
+
+  - api_index: anel-visao-raios-x
+    name: Anel de Visão de Raios X
+    kind: magic_item
+    category: ring
+    rarity: rare
+    requires_attunement: true
+    description: "Vê através de matéria sólida por 1 min (limitações)."
+    tags: [percepcao]
+    props: {}
+
+  - api_index: manto-dos-olhos
+    name: Manto dos Olhos
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Olhos por toda a roupa; vigilância ampliada (vulnerabilidades específicas)."
+    tags: [percepcao]
+    props: {}
+
+  - api_index: manto-cores-cintilantes
+    name: Manto das Cores Cintilantes
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Efeitos estonteantes/cegantes com luzes."
+    tags: [luz]
+    props: {}
+
+  - api_index: manto-das-estrelas
+    name: Manto das Estrelas
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "+1 em TS; 6 cargas para *mísseis mágicos*; viajar ao Plano Astral."
+    tags: [astral]
+    props: {}
+
+  - api_index: manto-do-arcanista
+    name: Manto do Arcanista
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Vestes do arquimago; CA e bônus a TS contra magia; foco arcano."
+    tags: [magia]
+    props: {}
+
+  - api_index: manto-itens-uteis
+    name: Manto de Itens Úteis
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Remova remendos para produzir objetos diversos."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: cetro-absorver
+    name: Cetro de Absorção
+    kind: magic_item
+    category: rod
+    rarity: very rare
+    requires_attunement: true
+    description: "Absorve magias e converte em espaços."
+    tags: [defesa, recurso]
+    props: {}
+
+  - api_index: cetro-alerta
+    name: Cetro de Alerta
+    kind: magic_item
+    category: rod
+    rarity: very rare
+    requires_attunement: true
+    description: "Vantagem em Percepção e Iniciativa; 4 magias de detecção; +1 CA/TS 1/dia."
+    tags: [vigilancia]
+    props: {}
+
+  - api_index: cetro-chamas-infernales
+    name: Cetro das Chamas Infernais
+    kind: magic_item
+    category: rod
+    rarity: very rare
+    requires_attunement: true
+    description: "Resistência a fogo/necrótico; 1/dia *repreensão infernal*; 1/dia dano máximo."
+    tags: [fogo, infernal]
+    props: {}
+
+  - api_index: cetro-suserania
+    name: Cetro da Suserania
+    kind: magic_item
+    category: rod
+    rarity: legendary
+    requires_attunement: true
+    description: "Arma versátil com múltiplas formas e magias."
+    tags: [versatil]
+    props: {}
+
+  - api_index: cetro-ressurreicao
+    name: Cetro da Ressurreição
+    kind: magic_item
+    category: rod
+    rarity: legendary
+    requires_attunement: true
+    description: "5 cargas: *curar ferimentos* (alto) ou *ressurreição*."
+    tags: [cura]
+    props: {}
+
+  - api_index: cetro-dominacao
+    name: Cetro do Domínio
+    kind: magic_item
+    category: rod
+    rarity: rare
+    requires_attunement: true
+    description: "CD SAB ou enfeitiça por 8 h em 36 m."
+    tags: [encantamento]
+    props: {}
+
+  - api_index: cetro-seguranca
+    name: Cetro de Segurança
+    kind: magic_item
+    category: rod
+    rarity: very rare
+    requires_attunement: false
+    description: "Transporta até 200 criaturas dispostas a um paraíso extraplanar por período variável."
+    tags: [viagem]
+    props: {}
+
+  - api_index: cetro-pacto-guarda
+    name: Cetro do Guardião do Pacto
+    kind: magic_item
+    category: rod
+    rarity: varies
+    requires_attunement: true
+    description: "Bônus em ataque/TS de magias; 1/dia recuperar 1 espaço de magia."
+    tags: [bruxo]
+    props: {}
+
+  - api_index: manto-do-ladino
+    name: Manto do Ladino
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Visão no escuro 18 m; teleporta 9 m em luz baixa e concede vantagem; 1/dia *antagonizar*."
+    tags: [furtividade]
+    props: {}
+
+  - api_index: corda-de-escalada
+    name: Corda de Escalada
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Obedece comandos; auxilia em escalada."
+    tags: [exploracao]
+    props: {}
+
+  - api_index: corda-de-enredamento
+    name: Corda de Enredamento
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Tenta imobilizar criatura ao comando."
+    tags: [controle]
+    props: {}
+
+  - api_index: corda-de-remendo
+    name: Corda de Remendo
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Pode ser cortada e remontada pela própria magia."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: rubi-do-mago-de-guerra
+    name: Rubi do Mago de Guerra
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Permite usar arma simples/marcial como foco arcano."
+    tags: [foco]
+    props: {}
+
+  - api_index: rubi-teia-rubra
+    name: Rubi da Trama Rubra
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "3 cargas para ignorar componentes materiais; 1/dia conjurar uma magia escolhida."
+    tags: [magia]
+    props: {}
+
+  - api_index: mangual-ruinoso
+    name: Mangual Ruinoso
+    kind: magic_item
+    category: weapon
+    sub_category: mangual
+    rarity: rare
+    requires_attunement: true
+    description: "Arma +1; CON CD ou envenenado por 1 min (2d4 necrótico/rodada)."
+    tags: [veneno, necrotico]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+
+  - api_index: sela-do-cavaleiro
+    name: Sela do Cavaleiro
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Evita cair da montaria contra a vontade."
+    tags: [montaria]
+    props: {}
+
+  - api_index: sinete-do-sabio
+    name: Sinete do Sábio
+    kind: magic_item
+    category: ring
+    rarity: varies
+    requires_attunement: true
+    description: "1/dia *águrio* e duas magias adicionais por raridade."
+    tags: [adivinhacao]
+    props: {}
+
+  - api_index: amuleto-do-sanctum
+    name: Amuleto do Sanctum
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Resistência a necrótico; *poupar moribundo*; 1/dia levar alvo de 0 para 1 PV."
+    tags: [cura]
+    props: {}
+
+  - api_index: broquel-de-safira
+    name: Broquel de Safira
+    kind: magic_item
+    category: armor
+    rarity: very rare
+    requires_attunement: true
+    description: "Resistência a psíquico/trovão; reação: 2d6 trovão; 1/dia localizar aberrações."
+    tags: [defesa]
+    props: {}
+
+  - api_index: escaravelho-protecao
+    name: Escaravelho de Proteção
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Reserva de salvação contra maldições/efeitos mortais; imunidade a necromancia (usos limitados)."
+    tags: [defesa]
+    props: {}
+
+  - api_index: cimitarras-da-velocidade
+    name: Cimitarra da Velocidade
+    kind: magic_item
+    category: weapon
+    sub_category: cimitarra
+    rarity: very rare
+    requires_attunement: true
+    description: "Arma +2; 1 ataque extra por rodada como ação bônus."
+    tags: [velocidade]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 2 }
+        - { kind: bonus_action_extra_attack, value: 1 }
+
+  - api_index: pergaminho-de-protecao
+    name: Pergaminho de Proteção
+    kind: magic_item
+    category: scroll
+    rarity: rare
+    requires_attunement: false
+    description: "Cria área de proteção contra um tipo de criatura/efeito."
+    tags: [abjuracao]
+    props: {}
+
+  - api_index: pedras-do-envio
+    name: Pedras do Envio
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Permite *enviar mensagem* entre portadores."
+    tags: [comunicacao]
+    props: {}
+
+  - api_index: escudo-do-sentinela
+    name: Escudo do Sentinela
+    kind: magic_item
+    category: armor
+    rarity: uncommon
+    requires_attunement: false
+    description: "Vantagem em Iniciativa e Percepção."
+    tags: [vigilancia]
+    props: {}
+
+  - api_index: tatuagem-marca-sombrio
+    name: Tatuagem Marca Sombria
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Visão no escuro 18 m; vantagem em Furtividade; 1/dia reduzir pela metade o dano recebido."
+    tags: [furtividade, sombra]
+    props: {}
+
+  - api_index: estilhaco-do-sombrefell
+    name: Estilhaço do Sombrefell
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Após Metamagia: impõe desvantagem em testes/TS de 1 habilidade por 1 turno em 9 m."
+    tags: [metamagia]
+    props: {}
+
+  - api_index: escudo-expressivo
+    name: Escudo Expressivo
+    kind: magic_item
+    category: armor
+    rarity: common
+    requires_attunement: false
+    description: "Escudo com rosto que muda de expressão."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: escudo-atracao-projeteis
+    name: Escudo da Atração de Projetis
+    kind: magic_item
+    category: armor
+    rarity: rare
+    requires_attunement: true
+    description: "Resistência contra ataques à distância; amaldiçoado."
+    tags: [amaldiçoado]
+    props:
+      cursed: true
+
+  - api_index: escudo-pavor-ardente
+    name: Escudo do Pavor Flamejante
+    kind: magic_item
+    category: armor
+    rarity: legendary
+    requires_attunement: true
+    description: "Imunidade a fogo; cura condição/doença; FOR CD ou 3d6 contusão+3d6 fogo+queda (1/dia)."
+    tags: [fogo, defesa]
+    props: {}
+
+  - api_index: escudo-da-tartaruga
+    name: Escudo da Tartaruga
+    kind: magic_item
+    category: armor
+    rarity: uncommon
+    requires_attunement: true
+    description: "Escudo +1; amaldiçoado."
+    tags: [amaldiçoado]
+    props:
+      effects:
+        - { kind: ac_bonus, value: 1 }
+      cursed: true
+
+  - api_index: escudo-plus
+    name: Escudo +1/+2/+3
+    kind: magic_item
+    category: armor
+    rarity: varies
+    requires_attunement: false
+    description: "Bônus na CA determinado pela raridade."
+    tags: [defesa]
+    props:
+      effects:
+        - { kind: ac_bonus_by_rarity, uncommon: 1, rare: 2, very_rare: 3 }
+
+  - api_index: grevas-estridentes
+    name: Grevas Uivantes
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas: +9 m de deslocamento e vantagem em TS de DES por 1 min. Amaldiçoadas."
+    tags: [velocidade]
+    props:
+      cursed: true
+
+  - api_index: elmo-cranio
+    name: Elmo Crânio
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "Resistência a frio/veneno/necrótico; 1/dia *espírito da morte*."
+    tags: [necromancia]
+    props: {}
+
+  - api_index: funda-derruba-gigante
+    name: Funda Abatedora de Gigantes
+    kind: magic_item
+    category: weapon
+    sub_category: funda
+    rarity: uncommon
+    requires_attunement: false
+    description: "TS CON ou Gigante fica caído."
+    tags: [gigante, controle]
+    props: {}
+
+  - api_index: sapatilhas-escalar-parede
+    name: Sapatilhas de Escalar Paredes
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Anda/escalada em superfícies/tectos (limites)."
+    tags: [movimento]
+    props: {}
+
+  - api_index: armadura-fumacenta
+    name: Armadura Fumacenta
+    kind: magic_item
+    category: armor
+    rarity: common
+    requires_attunement: false
+    description: "Emite filetes de fumaça inofensivos."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: cola-soberana
+    name: Cola Soberana
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Adesivo perfeito quase impossível de romper."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: pergaminho-de-magia
+    name: Pergaminho de Magia
+    kind: magic_item
+    category: scroll
+    rarity: varies
+    requires_attunement: false
+    description: "Armazena uma magia por raridade/nível."
+    tags: [magia]
+    props: {}
+
+  - api_index: escudo-guardiao-de-magia
+    name: Escudo Guardião de Magia
+    kind: magic_item
+    category: armor
+    rarity: very rare
+    requires_attunement: true
+    description: "Vantagem em TS contra magias/efeitos mágicos; ataques de magia contra você têm desvantagem."
+    tags: [defesa]
+    props: {}
+
+  - api_index: tatuagem-feiticaria-tecida
+    name: Tatuagem de Magia Tecida
+    kind: magic_item
+    category: wondrous
+    rarity: varies
+    requires_attunement: false
+    description: "Armazena e permite lançar 1 magia (nível varia com a raridade)."
+    tags: [magia]
+    props: {}
+
+  - api_index: esfera-aniquilacao
+    name: Esfera da Aniquilação
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Buraco negro portátil que desintegra matéria (regras extensas)."
+    tags: [destruicao]
+    props: {}
+
+  - api_index: fuso-do-destino
+    name: Fuso do Destino
+    kind: magic_item
+    category: wand
+    rarity: legendary
+    requires_attunement: true
+    description: "6 cargas: somar PB na iniciativa, inverter sucesso/falha, ou localizar criatura por 1 h."
+    tags: [destino]
+    props: {}
+
+  - api_index: cajado-adornos
+    name: Cajado de Adornos
+    kind: magic_item
+    category: staff
+    rarity: common
+    requires_attunement: false
+    description: "Faz um objeto pequeno flutuar acima do cajado."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: cajado-cantos-de-ave
+    name: Cajado dos Canto-de-Ave
+    kind: magic_item
+    category: staff
+    rarity: common
+    requires_attunement: false
+    description: "10 cargas para emitir som de pássaro."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: cajado-encantamento
+    name: Cajado de Encantamento
+    kind: magic_item
+    category: staff
+    rarity: rare
+    requires_attunement: true
+    description: "10 cargas: *amigos*, *comando*, *compreender idiomas*, *enfeitiçar pessoa*."
+    tags: [encantamento]
+    props: {}
+
+  - api_index: cajado-do-fogo
+    name: Cajado do Fogo
+    kind: magic_item
+    category: staff
+    rarity: very rare
+    requires_attunement: true
+    description: "10 cargas: *mãos flamejantes*, *bola de fogo*, *muralha de fogo*."
+    tags: [fogo]
+    props: {}
+
+  - api_index: cajado-das-flores
+    name: Cajado das Flores
+    kind: magic_item
+    category: staff
+    rarity: common
+    requires_attunement: false
+    description: "Faz brotar flores."
+    tags: [natureza]
+    props: {}
+
+  - api_index: cajado-da-geada
+    name: Cajado da Geada
+    kind: magic_item
+    category: staff
+    rarity: very rare
+    requires_attunement: true
+    description: "10 cargas: *cone de frio*, *nuvem de neblina*, *tempestade de gelo*, *muralha de gelo*."
+    tags: [frio]
+    props: {}
+
+  - api_index: cajado-da-cura
+    name: Cajado da Cura
+    kind: magic_item
+    category: staff
+    rarity: rare
+    requires_attunement: true
+    description: "10 cargas: *curar ferimentos*, *restauração menor*, *cura em massa*."
+    tags: [cura]
+    props: {}
+
+  - api_index: cajado-de-poder
+    name: Cajado de Poder
+    kind: magic_item
+    category: staff
+    rarity: very rare
+    requires_attunement: true
+    description: "Bônus amplos em combate e magias; pode descarregar para explosão."
+    tags: [poder]
+    props: {}
+
+  - api_index: cajado-do-impacto
+    name: Cajado do Impacto
+    kind: magic_item
+    category: staff
+    rarity: very rare
+    requires_attunement: true
+    description: "Arma +3; gasta cargas para +1d6 força adicional."
+    tags: [forca]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+
+  - api_index: cajado-enxame-insetos
+    name: Cajado do Enxame de Insetos
+    kind: magic_item
+    category: staff
+    rarity: rare
+    requires_attunement: true
+    description: "10 cargas: *inseto gigante*, *praga de insetos*; pode criar enxame inofensivo."
+    tags: [natureza]
+    props: {}
+
+  - api_index: cajado-da-vibora
+    name: Cajado da Víbora
+    kind: magic_item
+    category: staff
+    rarity: uncommon
+    requires_attunement: true
+    description: "Transforma-se em cobra venenosa por 1 min (1d6 perfurante + 3d6 veneno)."
+    tags: [veneno]
+    props: {}
+
+  - api_index: cajado-do-esquecido
+    name: Cajado do Esquecido
+    kind: magic_item
+    category: staff
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato com efeitos sombrios únicos."
+    tags: [artefato]
+    props: {}
+
+  - api_index: cajado-do-mago
+    name: Cajado do Mago
+    kind: magic_item
+    category: staff
+    rarity: legendary
+    requires_attunement: true
+    description: "Foco arcano supremo com vasto leque de magias e absorção."
+    tags: [magia]
+    props: {}
+
+  - api_index: cajado-da-python
+    name: Cajado da Píton
+    kind: magic_item
+    category: staff
+    rarity: uncommon
+    requires_attunement: true
+    description: "Transforma-se em jibóia gigante sob seu controle."
+    tags: [natureza]
+    props: {}
+
+  - api_index: cajado-colinas-enraizadas
+    name: Cajado das Colinas Enraizadas
+    kind: magic_item
+    category: staff
+    rarity: rare
+    requires_attunement: true
+    description: "Arma +1; FOR CD ou contido por raízes; 1/dia *imobilizar pessoa* ou *falar com plantas*."
+    tags: [natureza]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+
+  - api_index: cajado-das-florestas
+    name: Cajado das Florestas
+    kind: magic_item
+    category: staff
+    rarity: rare
+    requires_attunement: true
+    description: "Foco druídico superior com magias naturais."
+    tags: [druida]
+    props: {}
+
+  - api_index: cajado-trovao-e-relampago
+    name: Cajado do Trovão e Relâmpago
+    kind: magic_item
+    category: staff
+    rarity: very rare
+    requires_attunement: true
+    description: "Modos de ataque de trovão/relâmpago com cargas."
+    tags: [eletrico, trovão]
+    props: {}
+
+  - api_index: cajado-da-desolacao
+    name: Cajado da Desolação
+    kind: magic_item
+    category: staff
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas: +2d10 necrótico; CON CD impõe desvantagens em FOR/CON por 1 h."
+    tags: [necromancia]
+    props: {}
+
+  - api_index: besta-tiro-estelar
+    name: Besta Tiro Estelar
+    kind: magic_item
+    category: weapon
+    sub_category: besta
+    rarity: rare
+    requires_attunement: true
+    description: "3 cargas: curar 1d8+PB; +2d8 fogo; ou invisibilidade por 1 rodada."
+    tags: [fogo, cura]
+    props: {}
+
+  - api_index: pedra-controlar-elementais-terra
+    name: Pedra de Controlar Elementais da Terra
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Permite conjurar *conjurar elemental* (terra) e controlar."
+    tags: [terra]
+    props: {}
+
+  - api_index: pedra-de-golorr
+    name: Pedra de Golorr
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato de segredos perdidos."
+    tags: [segredo, artefato]
+    props: {}
+
+  - api_index: pedra-da-sorte
+    name: Pedra da Sorte
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "+1 em testes de habilidade e TS."
+    tags: [sorte]
+    props:
+        effects:
+          - { kind: ability_checks_bonus, value: 1 }
+          - { kind: saving_throws_bonus, value: 1 }
+
+  - api_index: peitoral-quebra-pedra
+    name: Peitoral Quebrapedra
+    kind: magic_item
+    category: armor
+    rarity: legendary
+    requires_attunement: true
+    description: "Resistência a corte/perfuração/contusão; imune a derrubar; 1/dia *muralha de pedra*."
+    tags: [defesa]
+    props: {}
+
+  - api_index: picareta-das-pedras-vivas
+    name: Picareta das Pedras Vivas
+    kind: magic_item
+    category: weapon
+    sub_category: picareta-de-guerra
+    rarity: very rare
+    requires_attunement: true
+    description: "Arma +1; 1/dia *fundir-se à pedra*; 1d6+1 cargas para CON CD ou petrificar."
+    tags: [terra, petrificar]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+
+  - api_index: lamina-do-sol
+    name: Lâmina do Sol
+    kind: magic_item
+    category: weapon
+    sub_category: espada-longa
+    rarity: rare
+    requires_attunement: true
+    description: "Espada radiante com luz intensa; eficaz contra mortos-vivos."
+    tags: [radiante, luz]
+    props: {}
+
+  - api_index: cajado-solar
+    name: Cajado Solar
+    kind: magic_item
+    category: staff
+    rarity: rare
+    requires_attunement: true
+    description: "Arma +1, +1d8 fogo; 1/dia rolar novamente dados de dano de fogo/radiante; emite luz 4,5 m/4,5 m."
+    tags: [fogo, radiante]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+        - { kind: damage_bonus_dice, dice: "1d8", damage_type: fire }
+        - { kind: shed_light, bright_ft: 15, dim_ft: 15 }
+
+  - api_index: espada-da-resposta
+    name: Espada da Resposta
+    kind: magic_item
+    category: weapon
+    sub_category: espada-longa
+    rarity: legendary
+    requires_attunement: true
+    description: "Espada +3; vantagem em ataques; ignora resistência/imunidade a dano de arma."
+    tags: [lendaria]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+
+  - api_index: espada-de-kas
+    name: Espada de Kas
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato senciente vampírico (estatuto singular)."
+    tags: [artefato]
+    props: {}
+
+  - api_index: espada-rouba-vida
+    name: Espada Rouba-vida
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: rare
+    requires_attunement: true
+    description: "Rouba PV no crítico; causa dano necrótico adicional."
+    tags: [necromancia]
+    props: {}
+
+  - api_index: espada-de-afiacao
+    name: Espada de Afiação
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: very rare
+    requires_attunement: true
+    description: "Corta membros em críticos e causa dano massivo."
+    tags: [corte]
+    props: {}
+
+  - api_index: espada-dos-planos
+    name: Espada dos Planos
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: legendary
+    requires_attunement: true
+    description: "Espada +3; alterna plano por 1 min (1/dia)."
+    tags: [plano]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+
+  - api_index: espada-da-vinganca
+    name: Espada da Vingança
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: uncommon
+    requires_attunement: true
+    description: "Espada +1 amaldiçoada."
+    tags: [amaldiçoado]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+      cursed: true
+
+  - api_index: espada-sangrenta
+    name: Espada Sanguinária
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: rare
+    requires_attunement: true
+    description: "Causa feridas persistentes que impedem cura."
+    tags: [sangramento]
+    props: {}
+
+  - api_index: espada-de-zariel
+    name: Espada de Zariel
+    kind: magic_item
+    category: weapon
+    sub_category: espada
+    rarity: artifact
+    requires_attunement: true
+    description: "Lamina sagrada infernal com traços únicos."
+    tags: [artefato]
+    props: {}
+
+  - api_index: talismao-do-bem-puro
+    name: Talismã do Bem Puro
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Poder divino contra malignos."
+    tags: [divino]
+    props: {}
+
+  - api_index: talismao-da-esfera
+    name: Talismã da Esfera
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Controle superior sobre Esfera da Aniquilação."
+    tags: [controle]
+    props: {}
+
+  - api_index: talismao-do-mal-ultimo
+    name: Talismã do Mal Último
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "Poder divino contra bons."
+    tags: [divino]
+    props: {}
+
+  - api_index: boneca-falante
+    name: Boneca Falante
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: true
+    description: "Pode falar até seis frases quando nas condições definidas."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: caneca-sobriedade
+    name: Caneca da Sobriedade
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Permite beber álcool sem ficar bêbado."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: dentes-de-dahlver-nar
+    name: Dentes de Dahlver-Nar
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato com efeitos imprevisíveis ao implantar."
+    tags: [artefato]
+    props: {}
+
+  - api_index: transportador-telescopico
+    name: Transportador Telescópico
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Após 1 h de teste de Arcana, teleporta até 9 criaturas a um planeta distante."
+    tags: [viagem]
+    props: {}
+
+  - api_index: vara-tentacular
+    name: Vara Tentacular
+    kind: magic_item
+    category: rod
+    rarity: rare
+    requires_attunement: true
+    description: "3 tentáculos +9, alcance 4,5 m, 1d6 contusão; CON CD reduz deslocamento."
+    tags: [controle]
+    props: {}
+
+  - api_index: bacamarte-trovao
+    name: Bacamarte Trovejante
+    kind: magic_item
+    category: weapon
+    sub_category: arma-de-fogo
+    rarity: very rare
+    requires_attunement: false
+    description: "Arma +1; CON CD ou 3d6 trovejante em esfera de 3 m (1/dia)."
+    tags: [trovão]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+
+  - api_index: tridente-chamamarés
+    name: Tridente Chamamarés
+    kind: magic_item
+    category: weapon
+    sub_category: tridente
+    rarity: very rare
+    requires_attunement: true
+    description: "Arma +2; vantagem submersa; 3 cargas: *controlar água* ou *tsunami*."
+    tags: [agua]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 2 }
+
+  - api_index: tomo-mente-limpa
+    name: Tomo do Pensamento Claro
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Estudo aumenta INT em +2 (e máximo)."
+    tags: [atributo]
+    props: {}
+
+  - api_index: tomo-lideranca-influencia
+    name: Tomo de Liderança e Influência
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Estudo aumenta CAR em +2 (e máximo)."
+    tags: [atributo]
+    props: {}
+
+  - api_index: tomo-lingua-silenciada
+    name: Tomo da Língua Silenciada
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: true
+    description: "1/dia lançar magia do grimório sem espaço/verbal/somático; efeitos sombrios."
+    tags: [magia]
+    props: {}
+
+  - api_index: tomo-compreensao
+    name: Tomo da Compreensão
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: false
+    description: "Estudo aumenta SAB em +2 (e máximo)."
+    tags: [atributo]
+    props: {}
+
+  - api_index: aniquilador-topazio
+    name: Aniquilador de Topázio
+    kind: magic_item
+    category: weapon
+    sub_category: arma-de-fogo
+    rarity: legendary
+    requires_attunement: true
+    description: "2d6 necrótico à distância; 1/dia *desintegrar*."
+    tags: [necromancia]
+    props: {}
+
+  - api_index: tridente-comandar-peixes
+    name: Tridente de Comandar Peixes
+    kind: magic_item
+    category: weapon
+    sub_category: tridente
+    rarity: uncommon
+    requires_attunement: true
+    description: "Controla/entende criaturas aquáticas simples."
+    tags: [agua]
+    props: {}
+
+  - api_index: flecha-inebrantavel
+    name: Flecha Inquebrável
+    kind: magic_item
+    category: weapon
+    sub_category: flecha
+    rarity: common
+    requires_attunement: false
+    description: "Não pode ser quebrada, exceto em campo antimagia."
+    tags: [municao]
+    props: {}
+
+  - api_index: solvente-universal
+    name: Solvente Universal
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Dissolve *cola soberana* instantaneamente."
+    tags: [utilidade]
+    props: {}
+
+  - api_index: bengala-de-veterano
+    name: Bengala do Veterano
+    kind: magic_item
+    category: wondrous
+    rarity: common
+    requires_attunement: false
+    description: "Transforma-se uma vez em uma espada longa comum."
+    tags: [arma-secreta]
+    props: {}
+
+  - api_index: arma-viciosa
+    name: Arma Viciosa
+    kind: magic_item
+    category: weapon
+    sub_category: arma
+    rarity: rare
+    requires_attunement: false
+    description: "Causa +7 de dano extra no acerto crítico."
+    tags: [critico]
+    props: {}
+
+  - api_index: armadura-andarilho-do-vazio
+    name: Armadura Andarilho do Vazio
+    kind: magic_item
+    category: armor
+    rarity: rare
+    requires_attunement: true
+    description: "1/dia projeta cópia de si a 9 m por 1 rodada. Amaldiçoada."
+    tags: [sombra]
+    props:
+      cursed: true
+
+  - api_index: espada-vorpal
+    name: Espada Vorpal
+    kind: magic_item
+    category: weapon
+    sub_category: espada-longa
+    rarity: legendary
+    requires_attunement: true
+    description: "Corta cabeças em crítico elevado; dano massivo."
+    tags: [corte, lendaria]
+    props: {}
+
+  - api_index: municao-derrubante
+    name: Munição Derrubante
+    kind: magic_item
+    category: weapon
+    sub_category: municao
+    rarity: common
+    requires_attunement: false
+    description: "Alvo faz TS de FOR ou fica caído."
+    tags: [controle]
+    props: {}
+
+  - api_index: varinha-constricao
+    name: Varinha de Constrição
+    kind: magic_item
+    category: wand
+    rarity: rare
+    requires_attunement: true
+    description: "7 cargas: *imobilizar monstro/pessoa*; vantagem contra ser paralisado/contido."
+    tags: [controle]
+    props: {}
+
+  - api_index: varinha-regencia
+    name: Varinha de Regência
+    kind: magic_item
+    category: wand
+    rarity: common
+    requires_attunement: false
+    description: "3 cargas para música orquestral."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: varinha-deteccao-inimigos
+    name: Varinha de Detecção de Inimigos
+    kind: magic_item
+    category: wand
+    rarity: rare
+    requires_attunement: true
+    description: "7 cargas para apontar direção do hostil mais próximo em 18 m por 1 min."
+    tags: [detecção]
+    props: {}
+
+  - api_index: varinha-medo
+    name: Varinha do Medo
+    kind: magic_item
+    category: wand
+    rarity: rare
+    requires_attunement: true
+    description: "7 cargas para ordenar fuga; cone com TS SAB contra medo."
+    tags: [medo]
+    props: {}
+
+  - api_index: varinha-bolas-de-fogo
+    name: Varinha de Bolas de Fogo
+    kind: magic_item
+    category: wand
+    rarity: rare
+    requires_attunement: true
+    description: "7 cargas para *bola de fogo*."
+    tags: [fogo]
+    props: {}
+
+  - api_index: varinha-relampagos
+    name: Varinha de Relâmpagos
+    kind: magic_item
+    category: wand
+    rarity: rare
+    requires_attunement: true
+    description: "7 cargas para *raio relampejante*."
+    tags: [eletrico]
+    props: {}
+
+  - api_index: varinha-deteccao-magica
+    name: Varinha de Detecção de Magia
+    kind: magic_item
+    category: wand
+    rarity: uncommon
+    requires_attunement: false
+    description: "3 cargas para *detectar magia*."
+    tags: [divinacao]
+    props: {}
+
+  - api_index: varinha-misseis-magicos
+    name: Varinha de Mísseis Mágicos
+    kind: magic_item
+    category: wand
+    rarity: uncommon
+    requires_attunement: false
+    description: "7 cargas para *mísseis mágicos*."
+    tags: [forca]
+    props: {}
+
+  - api_index: varinha-de-orcus
+    name: Varinha de Orcus
+    kind: magic_item
+    category: wand
+    rarity: artifact
+    requires_attunement: true
+    description: "Artefato do Príncipe Demônio; necromancia suprema."
+    tags: [artefato, necromancia]
+    props: {}
+
+  - api_index: varinha-paralisia
+    name: Varinha de Paralisia
+    kind: magic_item
+    category: wand
+    rarity: rare
+    requires_attunement: true
+    description: "7 cargas; CON CD ou paralisado por 1 min."
+    tags: [controle]
+    props: {}
+
+  - api_index: varinha-polimorfia
+    name: Varinha de Polimorfia
+    kind: magic_item
+    category: wand
+    rarity: very rare
+    requires_attunement: true
+    description: "7 cargas para *polimorfia*."
+    tags: [transmutacao]
+    props: {}
+
+  - api_index: varinha-pirotecnia
+    name: Varinha de Pirotecnia
+    kind: magic_item
+    category: wand
+    rarity: common
+    requires_attunement: false
+    description: "7 cargas para explosão multicolor inofensiva."
+    tags: [luz]
+    props: {}
+
+  - api_index: varinha-careta
+    name: Varinha das Caretas
+    kind: magic_item
+    category: wand
+    rarity: common
+    requires_attunement: false
+    description: "3 cargas para forçar um humanoide a carranquear por 1 min."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: varinha-segredos
+    name: Varinha de Segredos
+    kind: magic_item
+    category: wand
+    rarity: uncommon
+    requires_attunement: false
+    description: "3 cargas para detectar portas/trampas secretas a 9 m."
+    tags: [exploracao]
+    props: {}
+
+  - api_index: varinha-sorrisos
+    name: Varinha dos Sorrisos
+    kind: magic_item
+    category: wand
+    rarity: common
+    requires_attunement: false
+    description: "3 cargas para forçar um humanoide a sorrir por 1 min."
+    tags: [cosmetico]
+    props: {}
+
+  - api_index: varinha-mago-de-guerra
+    name: Varinha do Mago de Guerra +1/+2/+3
+    kind: magic_item
+    category: wand
+    rarity: varies
+    requires_attunement: true
+    description: "Bônus em jogadas de ataque de magia conforme raridade."
+    tags: [foco]
+    props:
+      effects:
+        - { kind: spell_attack_bonus_by_rarity, uncommon: 1, rare: 2, very_rare: 3 }
+
+  - api_index: varinha-teia
+    name: Varinha de Teia
+    kind: magic_item
+    category: wand
+    rarity: uncommon
+    requires_attunement: true
+    description: "7 cargas para *teia*."
+    tags: [controle]
+    props: {}
+
+  - api_index: varinha-maravilhas
+    name: Varinha das Maravilhas
+    kind: magic_item
+    category: wand
+    rarity: rare
+    requires_attunement: true
+    description: "7 cargas para um efeito aleatório (d100)."
+    tags: [caos]
+    props: {}
+
+  - api_index: corno-de-valor
+    name: Corno da Bravura
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: false
+    description: "Vantagem contra medo; +1 CA em raio de 9 m (1/dia)."
+    tags: [inspiracao]
+    props: {}
+
+  - api_index: chave-do-guerreiro
+    name: Senha do Guerreiro
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Conjura *arrombar*; vira espada longa +1, 1d10 de força."
+    tags: [forca]
+    props: {}
+
+  - api_index: onda
+    name: Onda
+    kind: magic_item
+    category: weapon
+    sub_category: tridente
+    rarity: legendary
+    requires_attunement: true
+    description: "Arma +3; *tridente de comandar peixes*, *arma de alerta*; senciente; culto oceânico."
+    tags: [agua, sentiente]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+
+  - api_index: botas-do-viajante
+    name: Botas do Viajante
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "+3 m de deslocamento; vantagem em Sobrevivência; 1/dia *recado expresso*."
+    tags: [exploracao]
+    props: {}
+
+  - api_index: arma-plus
+    name: Arma +1/+2/+3
+    kind: magic_item
+    category: weapon
+    rarity: varies
+    requires_attunement: false
+    description: "Bônus em ataque e dano conforme raridade."
+    tags: [magica]
+    props:
+      effects:
+        - { kind: attack_and_damage_bonus_by_rarity, uncommon: 1, rare: 2, very_rare: 3 }
+
+  - api_index: arma-do-trono
+    name: Arma do Comando do Trono
+    kind: magic_item
+    category: weapon
+    rarity: very rare
+    requires_attunement: true
+    description: "Arma +1; proficiência em Intimidação/Persuasão; 5 cargas para conjurar 5 magias."
+    tags: [lideranca]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 1 }
+
+  - api_index: arma-de-advertencia
+    name: Arma de Advertência
+    kind: magic_item
+    category: weapon
+    rarity: uncommon
+    requires_attunement: true
+    description: "Vantagem em Iniciativa; você e aliados a 9 m não podem ser surpreendidos."
+    tags: [vigilancia]
+    props: {}
+
+  - api_index: poco-dos-mundos
+    name: Poço dos Muitos Mundos
+    kind: magic_item
+    category: wondrous
+    rarity: legendary
+    requires_attunement: false
+    description: "Abertura planar portátil para locais aleatórios."
+    tags: [plano]
+    props: {}
+
+  - api_index: whelm
+    name: Whelm
+    kind: magic_item
+    category: weapon
+    sub_category: martelo-de-guerra
+    rarity: legendary
+    requires_attunement: true
+    description: "Martelo +3; retorna; onda de choque; *detectar bem e mal*, *localizar objeto*; senciente; protege anões."
+    tags: [anao, sentiente]
+    props:
+      effects:
+        - { kind: attack_bonus, type: magico, value: 3 }
+
+  - api_index: leque-dos-ventos
+    name: Leque dos Ventos
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: false
+    description: "Cria rajadas/vento forte; pode rasgar com uso excessivo."
+    tags: [ar]
+    props: {}
+
+  - api_index: municao-alada
+    name: Munição Alada
+    kind: magic_item
+    category: weapon
+    sub_category: municao
+    rarity: uncommon
+    requires_attunement: false
+    description: "Ignora cobertura média/alta; sem desvantagem a longo alcance."
+    tags: [precisao]
+    props: {}
+
+  - api_index: botas-aladas
+    name: Botas Aladas
+    kind: magic_item
+    category: wondrous
+    rarity: uncommon
+    requires_attunement: true
+    description: "Concede voo (limitado por tempo de uso)."
+    tags: [movimento, ar]
+    props: {}
+
+  - api_index: asas-de-voo
+    name: Asas de Voo
+    kind: magic_item
+    category: wondrous
+    rarity: rare
+    requires_attunement: true
+    description: "Velocidade de voo 18 m por 1 hora."
+    tags: [ar]
+    props: {}
+
+  - api_index: bandagens-do-punho
+    name: Faixas de Maestria Desarmada
+    kind: magic_item
+    category: wondrous
+    rarity: varies
+    requires_attunement: false
+    description: "Seus golpes desarmados são mágicos; bônus de ataque/dano por raridade."
+    tags: [monge]
+    props: {}
+
+  - api_index: manoplas-esfolamacas
+    name: Manoplas Rompe-Dragões
+    kind: magic_item
+    category: wondrous
+    rarity: very rare
+    requires_attunement: true
+    description: "1d6 força nos socos; resistência a um tipo de dano de dragão; estica 9 m e FOR CD derruba (1/dia)."
+    tags: [dragao]
+    props: {}
+
+  - api_index: trono-cranio-de-dragao
+    name: Trono Crânio de Dragão
+    kind: magic_item
+    category: wondrous
+    rarity: artifact
+    requires_attunement: false
+    description: "Artefato de liderança dracônica."
+    tags: [artefato]
+    props: {}
+
+  - api_index: armadura-zefiro
+    name: Armadura Zéfiro
+    kind: magic_item
+    category: armor
+    rarity: rare
+    requires_attunement: true
+    description: "Vantagem em Acrobacia e TS de DES; 1/dia *muralha de vento*."
+    tags: [vento, defesa]
+    props: {}

@@ -1,0 +1,46 @@
+Extracao: 39 fichas
+
+==========================================================================================
+
+Nayara       | ABIGAIL LE FAY            | human/standard | wizard     | evocacao           | nv 9  | HP 74/74 | CA 14 | sp 28 | inv  5
+Fininho      | ADIMAEL                   | elf/wood       | ranger     | rastreador_urbano  | nv 9  | HP 65/78 | CA 17 | sp  0 | inv 16
+Caio         | STIVI MAGAL               | gnome/rock     | rogue      | cacador-de-tesouro | nv 9  | HP 1/65 | CA 18 | sp  8 | inv 32
+Allan        | Sirius Bastião de Ferro   | human/standard | fighter    | cavaleiro-arcano   | nv 7  | HP 0/53 | CA 16 | sp  7 | inv 19
+João         | Lenny                     | half_elf       | rogue      | assassino          | nv 7  | HP 8/45 | CA 16 | sp  0 | inv 16
+Amani        | Amani Okoye               | human/standard | paladin    | juramento-miserico | nv 4  | HP 8/40 | CA 21 | sp  0 | inv  7
+Levi         | Igris Elthred             | half_orc       | fighter    | champion           | nv 4  | HP -4/40 | CA 15 | sp  0 | inv  6
+Ellel        | Ellel Pés Macios          | halfling       | cozinheiro | -                  | nv 1  | HP 11/11 | CA 14 | sp  0 | inv  3
+Kalt         | Kalt                      | human/variant  | druid      | circulo-da-terra   | nv 3  | HP 27/27 | CA 16 | sp 12 | inv  3
+Miguel       | Rolander                  | human/standard | paladin    | devotion           | nv 7  | HP 61/67 | CA 18 | sp  0 | inv  7
+Milo         | Milo                      | halfling       | druid      | circulo-da-lua     | nv 6  | HP 10/45 | CA 13 | sp 14 | inv  6
+Bult         | Bult Seewell              | minotaur       | barbarian  | barbaro-cicatrizes | nv 5  | HP 49/60 | CA 16 | sp  5 | inv  3
+Namari       | Namari                    | dwarf/hill     | fighter    | mestre-de-batalha  | nv 5  | HP 37/53 | CA 17 | sp  0 | inv  0
+Bellamy      | Bellamy                   | aarakocra/cyps | warlock    | archfey            | nv 5  | HP 30/35 | CA 12 | sp 13 | inv 11
+Thaindriel   | Thaindriel                | elf/wood       | monk       | sombra             | nv 6  | HP 43/45 | CA 2 | sp  5 | inv 11
+Trall        | Thralliant                | half_elf       | barbarian  | guerreiro-urso     | nv 5  | HP 60/60 | CA 20 | sp  0 | inv  3
+Alieksey     | Darkmenos                 | tiefling/infer | warlock    | fiend              | nv 5  | HP 34/35 | CA 14 | sp  0 | inv  8
+Lyra         | Lyra El'Asah              | elf/wood       | ranger     | flagelo-dos-inimig | nv 6  | HP 8/52 | CA 15 | sp  5 | inv 15
+Shanti       | Shanti                    | half_elf       | cleric     | dominio-da-vida    | nv 5  | HP 38/38 | CA 15 | sp  0 | inv 11
+Joe          | Joe                       | half_elf       | bard       | colegio-comedia    | nv 6  | HP 51/51 | CA 13 | sp 13 | inv  8
+Kanlu        | Kanlu Wanderblade         | elf/wood       | sorcerer   | feiticaria-da-espa | nv 8  | HP 58/58 | CA 16 | sp 14 | inv 16
+Orsik        | Orsik Stoneforge          | dwarf          | cleric     | dominio-da-guerra  | nv 7  | HP 59/59 | CA 11 | sp 22 | inv  4
+Torres       | Vallen Evenwood           | human/standard | fighter    | -                  | nv 1  | HP 12/13 | CA 17 | sp  0 | inv  5
+Lucinano     | Avalon Mellion            | elf/high       | wizard     | navegacao-planar   | nv 4  | HP 13/26 | CA 15 | sp 19 | inv  6
+Ruric        | Ruric                     | half_orc       | barbarian  | furioso-imortal    | nv 6  | HP 39/70 | CA 13 | sp  0 | inv  2
+Ainor        | Ainor                     | human/variant  | bard       | colegio-fortuna    | nv 5  | HP 16/47 | CA 14 | sp 13 | inv 14
+Aberrama     | Aberama Gold              | tiefling/infer | fighter    | atirador_inigualav | nv 8  | HP 4/30 | CA 17 | sp  3 | inv  1
+Ysari        | Ysari Nyrae’vell          | aarakocra      | cleric     | dominio-da-tempest | nv 4  | HP -5/39 | CA 17 | sp  5 | inv  7
+Jamerson     | Erlingorn                 | halfling/stout | ranger     | -                  | nv 3  | HP 3/25 | CA 15 | sp  4 | inv  1
+Rorinar      | Rorinar                   | dwarf/hill     | barbarian  | guerreiro-urso     | nv 4  | HP 20/56 | CA 17 | sp  0 | inv  0
+Valac        | Valac Gigamaquia          | gnome/rock     | wizard     | maestria-dos-autom | nv 4  | HP 5/34 | CA 13 | sp 18 | inv 14
+Sabrino      | Sabrino                   | half_elf       | warlock    | great_old_one      | nv 4  | HP -1/27 | CA 14 | sp 14 | inv 11
+Nikos        | Nikos                     | human/standard | monk       | -                  | nv 3  | HP 7/24 | CA 16 | sp  0 | inv  0
+Sanda        | Sanda                     | human/variant  | monk       | caminho_mestre_beb | nv 3  | HP 24/24 | CA 18 | sp  0 | inv  5
+Modelo       | ?                         | ?              | ~?         | -                  | nv 1  | HP 0/None | CA 5 | sp  1 | inv  0
+Angelina     | Angelina                  | tiefling/infer | warlock    | patrono-morte      | nv 10 | HP 85/105 | CA 12 | sp 15 | inv  0
+Drugoy       | Drugoy                    | ?              | barbarian  | berserker          | nv 10 | HP 71/133 | CA 17 | sp  0 | inv  2
+Tony Ramos   | Tony Ramos                | ?              | druid      | verdejante         | nv 10 | HP 64/83 | CA 12 | sp 17 | inv  9
+Pandora      | Pandora                   | ?              | bard       | colegio-pavor      | nv 10 | HP 45/83 | CA 14 | sp 27 | inv  3
+
+Legenda: ! = homebrew (sem mapeamento canonico no projeto)
+         ~xxx = label cru (nao mapeado)

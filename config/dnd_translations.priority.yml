@@ -1,0 +1,229 @@
+# Traduções PT-BR para chaves usadas por dnd_import:import (tr_pt) — alinhamentos, antecedentes,
+# traços raciais, descrições curtas de features (lote inicial).
+# Títulos e textos longos de classe: dnd_translations.pt_*_by_md5.json + scripts/build_dnd_features_pt.rb → merge_features_pt.
+# Revisão alinhada ao livro: dnd_translations.features.book.yml + rake dnd_translations:apply_livro_book_patches + merge_features_book (por último).
+# Mesclar prioridade: bundle exec rake dnd_translations:merge_priority
+
+feature_descs:
+  bardic-inspiration-d6: |-
+    Você pode inspirar outros com palavras ou música envolventes. Com uma ação bônus no seu turno, escolha uma criatura além de você em até 18 metros que possa ouvi-lo. Essa criatura ganha um dado de Inspiração Bárdica (um d6). Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de habilidade, jogada de ataque ou teste de resistência. Ela pode esperar até rolar o d20 antes de usar o dado, mas deve decidir antes do Mestre dizer se o resultado foi sucesso ou falha. Depois de rolar, o dado se perde. Uma criatura só pode ter um dado de Inspiração Bárdica por vez.
+
+    Você pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo uma). Recupera os usos ao terminar um descanso longo.
+
+    O dado de Inspiração Bárdica muda conforme seu nível nesta classe: torna-se um d8 no 5º nível, d10 no 10º e d12 no 15º.
+  bardic-inspiration-d8: |-
+    Você pode inspirar outros com palavras ou música envolventes. Com uma ação bônus no seu turno, escolha uma criatura além de você em até 18 metros que possa ouvi-lo. Essa criatura ganha um dado de Inspiração Bárdica. Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de habilidade, jogada de ataque ou teste de resistência. Ela pode esperar até rolar o d20 antes de usar o dado, mas deve decidir antes do Mestre dizer se o resultado foi sucesso ou falha. Depois de rolar, o dado se perde. Uma criatura só pode ter um dado de Inspiração Bárdica por vez.
+
+    Você pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo uma). Recupera os usos ao terminar um descanso longo.
+
+    O dado de Inspiração Bárdica é um d8 no 5º nível, d10 no 10º e d12 no 15º.
+  bardic-inspiration-d10: |-
+    Você pode inspirar outros com palavras ou música envolventes. Com uma ação bônus no seu turno, escolha uma criatura além de você em até 18 metros que possa ouvi-lo. Essa criatura ganha um dado de Inspiração Bárdica. Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de habilidade, jogada de ataque ou teste de resistência. Ela pode esperar até rolar o d20 antes de usar o dado, mas deve decidir antes do Mestre dizer se o resultado foi sucesso ou falha. Depois de rolar, o dado se perde. Uma criatura só pode ter um dado de Inspiração Bárdica por vez.
+
+    Você pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo uma). Recupera os usos ao terminar um descanso longo.
+
+    O dado de Inspiração Bárdica é um d10 no 10º nível e d12 no 15º.
+  bardic-inspiration-d12: |-
+    Você pode inspirar outros com palavras ou música envolventes. Com uma ação bônus no seu turno, escolha uma criatura além de você em até 18 metros que possa ouvi-lo. Essa criatura ganha um dado de Inspiração Bárdica (d12). Uma vez nos próximos 10 minutos, a criatura pode rolar o dado e somar o resultado a um teste de habilidade, jogada de ataque ou teste de resistência. Ela pode esperar até rolar o d20 antes de usar o dado, mas deve decidir antes do Mestre dizer se o resultado foi sucesso ou falha. Depois de rolar, o dado se perde. Uma criatura só pode ter um dado de Inspiração Bárdica por vez.
+
+    Você pode usar esse recurso um número de vezes igual ao seu modificador de Carisma (mínimo uma). Recupera os usos ao terminar um descanso longo.
+
+    No 15º nível, o dado de Inspiração Bárdica é um d12.
+  jack-of-all-trades: |-
+    A partir do 2º nível, você pode somar metade do seu bônus de proficiência (arredondado para baixo) a qualquer teste de habilidade que faça e que ainda não inclua seu bônus de proficiência.
+  song-of-rest-d6: |-
+    A partir do 2º nível, você pode usar música ou palavras reconfortantes para ajudar aliados feridos durante um descanso curto. Se você ou criaturas amigas que ouçam sua performance recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma recupera 1d6 pontos de vida a mais.
+
+    Os PV extras aumentam em certos níveis nesta classe: 1d8 no 9º nível, 1d10 no 13º e 1d12 no 17º.
+  song-of-rest-d8: |-
+    A partir do 2º nível, você pode usar música ou palavras reconfortantes para ajudar aliados feridos durante um descanso curto. Se você ou criaturas amigas que ouçam sua performance recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma recupera PV a mais conforme seu nível de bardo (1d8 a partir do 9º nível; 1d10 no 13º; 1d12 no 17º).
+  song-of-rest-d10: |-
+    A partir do 2º nível, você pode usar música ou palavras reconfortantes para ajudar aliados feridos durante um descanso curto. Se você ou criaturas amigas que ouçam sua performance recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma recupera PV a mais conforme seu nível de bardo (1d10 a partir do 13º nível; 1d12 no 17º).
+  song-of-rest-d12: |-
+    A partir do 2º nível, você pode usar música ou palavras reconfortantes para ajudar aliados feridos durante um descanso curto. Se você ou criaturas amigas que ouçam sua performance recuperarem pontos de vida ao fim do descanso curto gastando um ou mais Dados de Vida, cada uma recupera 1d12 pontos de vida a mais (no 17º nível).
+  countercharm: |-
+    No 6º nível, você ganha a habilidade de usar notas ou palavras de poder para atrapalhar efeitos que influenciam a mente. Com uma ação, você pode iniciar uma performance que dura até o fim do seu próximo turno. Durante esse tempo, você e criaturas amigas em até 9 metros têm vantagem em testes de resistência contra ficar amedrontadas ou enfeitiçadas. A criatura precisa poder ouvi-lo para ganhar o benefício. A performance termina antes se você ficar incapacitado, silenciado ou a encerrar voluntariamente (sem ação).
+  font-of-inspiration: |-
+    A partir do 5º nível, recupera todos os usos gastos de Inspiração Bárdica ao terminar um descanso curto ou longo.
+  expertise: |-
+    No 3º nível, escolha duas perícias nas quais você é proficiente. Seu bônus de proficiência é dobrado em qualquer teste de habilidade que use uma dessas perícias. No 10º nível, escolha mais duas perícias proficientes para ganhar esse benefício.
+  fighting-style-defense: |-
+    Enquanto usar armadura, você recebe +1 na sua Classe de Armadura.
+  fighting-style-archery: |-
+    Você recebe +2 em jogadas de ataque que fizer com armas à distância.
+  fighting-style-dueling: |-
+    Quando estiver empunhando uma arma corpo a corpo em uma mão e nenhuma outra arma, você recebe +2 de dano com essa arma.
+  fighting-style-two-weapon-fighting: |-
+    Quando estiver lutando com duas armas, você pode somar seu modificador de atributo de ataque ao dano do segundo ataque.
+  second-wind: |-
+    Você dispõe de um estoque limitado de vigor. No seu turno, pode usar uma ação bônus para recuperar pontos de vida iguais a 1d10 + seu nível de guerreiro. Depois de usar esse recurso, precisa terminar um descanso curto ou longo antes de usá-lo de novo.
+  action-surge-1-use: |-
+    A partir do 2º nível, você pode se esforçar além do normal por um instante. No seu turno, pode realizar uma ação adicional além da sua ação normal e possível ação bônus.
+
+    Depois de usar esse recurso, precisa terminar um descanso curto ou longo antes de usá-lo de novo. A partir do 17º nível, pode usá-lo duas vezes antes de descansar, mas só uma vez no mesmo turno.
+  extra-attack: |-
+    A partir do 5º nível, você pode atacar duas vezes, em vez de uma, sempre que realizar a ação Ataque no seu turno.
+
+backgrounds:
+  acolyte: Acólito
+
+background_descs:
+  acolyte: |-
+    Como acólito, você inspira respeito entre os que compartilham sua fé e pode realizar as cerimônias religiosas de sua divindade. Você e seus companheiros podem receber cura e cuidados gratuitos em um templo ou santuário da sua fé, embora vocês precisem fornecer componentes materiais necessários para magias. Fiéis da mesma religião o apoiam (somente você) com um estilo de vida modesto.
+
+    Você pode ter laços com um templo específico dedicado à sua divindade ou panteão, e uma morada lá — seja onde serviu antes, se ainda for bem-visto, ou um novo lar. Perto do templo, pode pedir ajuda aos sacerdotes, desde que o pedido não seja perigoso e você permaneça em boa conduta com o templo.
+
+alignments:
+  chaotic-evil: Caótico e Maligno
+  chaotic-good: Caótico e Bom
+  chaotic-neutral: Caótico e Neutro
+  lawful-evil: Leal e Maligno
+  lawful-good: Leal e Bom
+  lawful-neutral: Leal e Neutro
+  neutral: Neutro
+  neutral-evil: Neutro e Maligno
+  neutral-good: Neutro e Bom
+
+alignment_descs:
+  chaotic-evil: |-
+    Criaturas caóticas e malignas (CM) agem com violência arbitrária, movidas por ganância, ódio ou sede de sangue. Demônios, dragões vermelhos e orcos costumam ser caóticos e malignos.
+  chaotic-good: |-
+    Criaturas caóticas e boas (CB) seguem a consciência, pouco importando o que outros esperam. Dragões de cobre, muitos elfos e unicórnios costumam ser caóticos e bons.
+  chaotic-neutral: |-
+    Criaturas caóticas e neutras (CN) seguem seus caprichos e valorizam a liberdade pessoal acima de tudo. Muitos bárbaros e ladinos, e alguns bardos, são caóticos e neutros.
+  lawful-evil: |-
+    Criaturas leais e malignas (LM) tomam o que desejam de forma metódica, dentro dos limites de um código de tradição, lealdade ou ordem. Diabos, dragões azuis e hobgoblins costumam ser leais e malignos.
+  lawful-good: |-
+    Criaturas leais e boas (LB) podem ser contadas para fazer o certo conforme a sociedade espera. Dragões dourados, paladinos e a maioria dos anões costumam ser leais e bons.
+  lawful-neutral: |-
+    Indivíduos leais e neutros (LN) agem de acordo com a lei, tradição ou códigos pessoais. Muitos monges e alguns magos são leais e neutros.
+  neutral: |-
+    Neutro (N) é o alinhamento de quem prefere evitar questões morais e não tomar partido, fazendo o que parece melhor na hora. Homens-lagarto, a maioria dos druidas e muitos humanos são neutros.
+  neutral-evil: |-
+    Neutro e maligno (NM) é o alinhamento de quem faz o que pode sem compaixão ou escrúpulos. Muitos drow, alguns gigantes das nuvens e goblins costumam ser neutros e malignos.
+  neutral-good: |-
+    Pessoas neutras e boas (NB) fazem o melhor que podem para ajudar os outros conforme suas necessidades. Muitos celestiais, alguns gigantes das nuvens e a maioria dos gnomos são neutros e bons.
+
+traits:
+  artificers-lore: Conhecimento de Artífice
+  brave: Corajoso
+  breath-weapon: Arma de Sopro
+  damage-resistance: Resistência a Dano
+  darkvision: Visão no Escuro
+  draconic-ancestry: Ancestralidade Dracônica
+  draconic-ancestry-black: Ancestralidade Dracônica (Negro)
+  draconic-ancestry-blue: Ancestralidade Dracônica (Azul)
+  draconic-ancestry-brass: Ancestralidade Dracônica (Latão)
+  draconic-ancestry-bronze: Ancestralidade Dracônica (Bronze)
+  draconic-ancestry-copper: Ancestralidade Dracônica (Cobre)
+  draconic-ancestry-gold: Ancestralidade Dracônica (Ouro)
+  draconic-ancestry-green: Ancestralidade Dracônica (Verde)
+  draconic-ancestry-red: Ancestralidade Dracônica (Vermelho)
+  draconic-ancestry-silver: Ancestralidade Dracônica (Prata)
+  draconic-ancestry-white: Ancestralidade Dracônica (Branco)
+  dwarven-combat-training: Treinamento de Combate Anão
+  dwarven-resilience: Resiliência Anã
+  dwarven-toughness: Robustez Anã
+  elf-weapon-training: Treinamento Élfico com Armas
+  extra-language: Idioma Extra
+  fey-ancestry: Ancestralidade Feérica
+  gnome-cunning: Astúcia Gnomica
+  halfling-nimbleness: Agilidade Halfling
+  hellish-resistance: Resistência Infernal
+  high-elf-cantrip: Truque Élfico Superior
+  infernal-legacy: Legado Infernal
+  keen-senses: Sentidos Aguçados
+  lucky: Sortudo
+  menacing: Ameaçador
+  naturally-stealthy: Furtividade Natural
+  relentless-endurance: Resistência Implacável
+  savage-attacks: Ataques Selvagens
+  skill-versatility: Versatilidade em Perícias
+  stonecunning: Conhecimento de Pedra
+  tinker: Inventar
+  tool-proficiency: Proficiência em Ferramentas
+  trance: Transe
+
+trait_descs:
+  artificers-lore: |-
+    Sempre que fizer um teste de Inteligência (História) relacionado a itens mágicos, objetos alquímicos ou dispositivos tecnológicos, você pode somar o dobro do seu bônus de proficiência, em vez do bônus que aplicaria normalmente.
+  brave: |-
+    Você tem vantagem em testes de resistência contra ficar amedrontado.
+  breath-weapon: |-
+    Você pode usar sua ação para expelir energia destrutiva. Sua ancestralidade dracônica determina o tamanho, a forma e o tipo de dano do sopro.
+
+    Ao usar a arma de sopro, cada criatura na área deve fazer um teste de resistência cujo tipo é definido pela ancestralidade. A CD é 8 + modificador de Constituição + bônus de proficiência. Falha 2d6 de dano; sucesso metade. O dano sobe para 3d6 no 6º nível, 4d6 no 11º e 5d6 no 16º.
+
+    Depois de usar a arma de sopro, não pode usá-la de novo até terminar um descanso curto ou longo.
+  damage-resistance: |-
+    Você tem resistência ao tipo de dano associado à sua ancestralidade dracônica.
+  darkvision: |-
+    Você enxerga na penumbra em até 18 metros como luz plena, e na escuridão como penumbra. Na escuridão não distingue cores, apenas tons de cinza.
+  draconic-ancestry: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela de ancestralidade dracônica. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-black: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-blue: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-brass: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-bronze: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-copper: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-gold: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-green: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-red: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-silver: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  draconic-ancestry-white: |-
+    Você tem ancestralidade dracônica. Escolha um tipo de dragão na tabela. Sua arma de sopro e resistência a dano seguem o tipo escolhido.
+  dwarven-combat-training: |-
+    Você tem proficiência com machado de batalha, machado de mão, martelo leve e martelo de guerra.
+  dwarven-resilience: |-
+    Você tem vantagem em testes de resistência contra veneno e resistência a dano de veneno.
+  dwarven-toughness: |-
+    Seu máximo de pontos de vida aumenta em 1 e aumenta em 1 sempre que ganhar um nível.
+  elf-weapon-training: |-
+    Você tem proficiência com espada longa, espada curta, arco curto e arco longo.
+  extra-language: |-
+    Você pode falar, ler e escrever um idioma extra à sua escolha.
+  fey-ancestry: |-
+    Você tem vantagem em testes de resistência contra ser enfeitiçado, e magia não pode colocá-lo para dormir.
+  gnome-cunning: |-
+    Você tem vantagem em todos os testes de resistência de Inteligência, Sabedoria e Carisma contra magia.
+  halfling-nimbleness: |-
+    Você pode se mover pelo espaço de qualquer criatura de um tamanho maior que o seu.
+  hellish-resistance: |-
+    Você tem resistência a dano de fogo.
+  high-elf-cantrip: |-
+    Você conhece um truque à sua escolha da lista de mago. Inteligência é sua habilidade de conjuração para ele.
+  infernal-legacy: |-
+    Você conhece o truque taumaturgia. No 3º nível, pode conjurar repreensão infernal como magia de 2º nível uma vez com esse traço e recupera o uso ao terminar um descanso longo. No 5º nível, pode conjurar escuridão uma vez da mesma forma. Carisma é sua habilidade de conjuração para essas magias.
+  keen-senses: |-
+    Você tem proficiência na perícia Percepção.
+  lucky: |-
+    Quando rolar 1 no d20 em uma jogada de ataque, teste de habilidade ou teste de resistência, pode rerrolar o dado e deve usar o novo resultado.
+  menacing: |-
+    Você ganha proficiência na perícia Intimidação.
+  naturally-stealthy: |-
+    Você pode tentar se esconder mesmo quando estiver obscurecido apenas por uma criatura pelo menos um tamanho maior que você.
+  relentless-endurance: |-
+    Quando for reduzido a 0 pontos de vida mas não morrer instantaneamente, pode cair para 1 ponto de vida em vez disso. Não pode usar de novo até terminar um descanso longo.
+  savage-attacks: |-
+    Quando acertar um acerto crítico com ataque corpo a corpo com arma, pode rolar um dos dados de dano da arma uma vez a mais e somar ao dano extra do crítico.
+  skill-versatility: |-
+    Você ganha proficiência em duas perícias à sua escolha.
+  stonecunning: |-
+    Sempre que fizer um teste de Inteligência (História) relacionado à origem de trabalhos em pedra, é considerado proficiente em História e soma o dobro do bônus de proficiência ao teste, em vez do bônus normal.
+  tinker: |-
+    Você tem proficiência com ferramentas de artesão (ferramentas de funileiro). Com elas, pode gastar 1 hora e 10 po em materiais para construir um dispositivo minúsculo de corda e engrenagens (CA 5, 1 PV). O dispositivo para de funcionar após 24 horas (a menos que gaste 1 hora consertando) ou quando você usar sua ação para desmontá-lo; aí recupera os materiais. Pode ter até três dispositivos ativos.
+
+    Ao criar, escolha: Brinquedo de Corda (animal/objeto que se move 1,5 m por turno em direção aleatória), Acendedor (chama minúscula para vela/tocha), ou Caixa de Música (toca uma música até o fim ou fechar).
+  tool-proficiency: |-
+    Você ganha proficiência com ferramentas de artesão à escolha: ferramentas de ferreiro, suprimentos de cervejeiro ou ferramentas de pedreiro.
+  trance: |-
+    Elfos não precisam dormir. Em vez disso, meditam profundamente 4 horas por dia (transe). Depois desse descanso, ganham o mesmo benefício que um humano teria com 8 horas de sono.

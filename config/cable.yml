@@ -2,9 +2,11 @@ development:
   adapter: async
 
 test:
-  adapter: async
+  adapter: test
 
+# Production REQUIRES REDIS_URL. We do not fall back to localhost because that
+# would silently break Action Cable across multiple Puma workers / dynos.
 production:
   adapter: redis
-  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: lafiga-api_production
+  url: <%= ENV.fetch('REDIS_URL') { raise 'REDIS_URL is required in production for Action Cable (cable.yml)' } %>
+  channel_prefix: <%= ENV.fetch('ACTION_CABLE_CHANNEL_PREFIX', 'lafiga-api_production') %>

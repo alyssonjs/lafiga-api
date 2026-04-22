@@ -1,0 +1,2715 @@
+{
+  "source": "srd",
+  "generated_at": "2026-04-19T15:04:37.130Z",
+  "count": 39,
+  "monsters": [
+    {
+      "id": "mon-lemure",
+      "name": "Lemure",
+      "nameEN": "Lemure",
+      "size": "Medio",
+      "type": "Infernal",
+      "alignment": "Leal e Mau",
+      "ac": 7,
+      "hp": 13,
+      "hitDice": "3d8",
+      "speed": {
+        "walk": 15
+      },
+      "stats": {
+        "str": 10,
+        "dex": 5,
+        "con": 11,
+        "int": 1,
+        "wis": 11,
+        "cha": 3
+      },
+      "damageResistances": [
+        "frio"
+      ],
+      "damageImmunities": [
+        "fogo",
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "amedrontado",
+        "envenenado",
+        "encantado"
+      ],
+      "senses": {
+        "darkvision": 120,
+        "passivePerception": 10
+      },
+      "languages": [
+        "entende Infernal mas nao fala"
+      ],
+      "cr": "0",
+      "xp": 10,
+      "traits": [
+        {
+          "name": "Visao do Diabo",
+          "description": "Escuridao magica nao impede a visao no escuro do lemure."
+        },
+        {
+          "name": "Rejuvenescimento Infernal",
+          "description": "Um lemure destruido em outro plano que nao os Nove Infernos volta a vida com todos os seus PV em 1d10 dias, a menos que seja morto por criatura de alinhamento bom ou agua benta aspersa sobre seus restos."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Punho",
+          "description": "Ataque Corpo a Corpo com Arma: +3 para acertar, alcance 1,5 m, um alvo. Acerto: 2 (1d4) de dano contundente."
+        }
+      ],
+      "environment": [
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-kobold",
+      "name": "Kobold",
+      "nameEN": "Kobold",
+      "size": "Pequeno",
+      "type": "Humanoide",
+      "subtype": "kobold",
+      "alignment": "Leal e Mau",
+      "ac": 12,
+      "hp": 5,
+      "hitDice": "2d6-2",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 7,
+        "dex": 15,
+        "con": 9,
+        "int": 8,
+        "wis": 7,
+        "cha": 8
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 8
+      },
+      "languages": [
+        "Comum",
+        "Draconico"
+      ],
+      "cr": "1/8",
+      "xp": 25,
+      "traits": [
+        {
+          "name": "Sensibilidade a Luz Solar",
+          "description": "Enquanto estiver sob luz solar, o kobold tem desvantagem em jogadas de ataque e testes de Sabedoria (Percepcao) que dependam de visao."
+        },
+        {
+          "name": "Tatica de Bando",
+          "description": "O kobold tem vantagem em uma jogada de ataque contra uma criatura se pelo menos um dos aliados do kobold estiver a 1,5 m da criatura e o aliado nao estiver incapacitado."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Adaga",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 4 (1d4+2) de dano perfurante."
+        },
+        {
+          "name": "Funda",
+          "description": "Ataque a Distancia com Arma: +4 para acertar, alcance 9/36 m, um alvo. Acerto: 4 (1d4+2) de dano contundente."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Colinas",
+        "Montanhas",
+        "Subterraneo",
+        "Urbano"
+      ]
+    },
+    {
+      "id": "mon-goblin",
+      "name": "Goblin",
+      "nameEN": "Goblin",
+      "size": "Pequeno",
+      "type": "Humanoide",
+      "subtype": "goblinoide",
+      "alignment": "Neutro e Mau",
+      "ac": 15,
+      "acType": "armadura de couro, escudo",
+      "hp": 7,
+      "hitDice": "2d6",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 8,
+        "dex": 14,
+        "con": 10,
+        "int": 10,
+        "wis": 8,
+        "cha": 8
+      },
+      "skills": {
+        "Furtividade": 6
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 9
+      },
+      "languages": [
+        "Comum",
+        "Goblin"
+      ],
+      "cr": "1/4",
+      "xp": 50,
+      "traits": [
+        {
+          "name": "Fuga Agil",
+          "description": "O goblin pode usar a acao bonus Desengajar ou Esconder em cada um de seus turnos."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Cimitarra",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 5 (1d6+2) de dano cortante."
+        },
+        {
+          "name": "Arco Curto",
+          "description": "Ataque a Distancia com Arma: +4 para acertar, alcance 24/96 m, um alvo. Acerto: 5 (1d6+2) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Colinas",
+        "Subterraneo",
+        "Pantano"
+      ]
+    },
+    {
+      "id": "mon-esqueleto",
+      "name": "Esqueleto",
+      "nameEN": "Skeleton",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Leal e Mau",
+      "ac": 13,
+      "acType": "fragmentos de armadura",
+      "hp": 13,
+      "hitDice": "2d8+4",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 10,
+        "dex": 14,
+        "con": 15,
+        "int": 6,
+        "wis": 8,
+        "cha": 5
+      },
+      "damageVulnerabilities": [
+        "contundente"
+      ],
+      "damageImmunities": [
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "envenenado",
+        "exaustao"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 9
+      },
+      "languages": [
+        "entende todas as linguas que sabia em vida mas nao fala"
+      ],
+      "cr": "1/4",
+      "xp": 50,
+      "actions": [
+        {
+          "name": "Espada Curta",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 5 (1d6+2) de dano perfurante."
+        },
+        {
+          "name": "Arco Curto",
+          "description": "Ataque a Distancia com Arma: +4 para acertar, alcance 24/96 m, um alvo. Acerto: 5 (1d6+2) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Subterraneo",
+        "Urbano"
+      ]
+    },
+    {
+      "id": "mon-zumbi",
+      "name": "Zumbi",
+      "nameEN": "Zombie",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Neutro e Mau",
+      "ac": 8,
+      "hp": 22,
+      "hitDice": "3d8+9",
+      "speed": {
+        "walk": 20
+      },
+      "stats": {
+        "str": 13,
+        "dex": 6,
+        "con": 16,
+        "int": 3,
+        "wis": 6,
+        "cha": 5
+      },
+      "savingThrows": {
+        "wis": 0
+      },
+      "damageImmunities": [
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "envenenado"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 8
+      },
+      "languages": [
+        "entende todas as linguas que sabia em vida mas nao fala"
+      ],
+      "cr": "1/4",
+      "xp": 50,
+      "traits": [
+        {
+          "name": "Perseveranca Macabra",
+          "description": "Se o dano reduzir o zumbi a 0 PV, ele faz um teste de resistencia de Constituicao com CD 5 + o dano recebido, a menos que o dano seja radiante ou de um acerto critico. Em caso de sucesso, o zumbi fica com 1 PV."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Pancada",
+          "description": "Ataque Corpo a Corpo com Arma: +3 para acertar, alcance 1,5 m, um alvo. Acerto: 4 (1d6+1) de dano contundente."
+        }
+      ],
+      "environment": [
+        "Subterraneo",
+        "Urbano",
+        "Pantano"
+      ]
+    },
+    {
+      "id": "mon-orc",
+      "name": "Orc",
+      "nameEN": "Orc",
+      "size": "Medio",
+      "type": "Humanoide",
+      "subtype": "orc",
+      "alignment": "Caotico e Mau",
+      "ac": 13,
+      "acType": "armadura de couro",
+      "hp": 15,
+      "hitDice": "2d8+6",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 16,
+        "dex": 12,
+        "con": 16,
+        "int": 7,
+        "wis": 11,
+        "cha": 10
+      },
+      "skills": {
+        "Intimidacao": 2
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "Comum",
+        "Orc"
+      ],
+      "cr": "1/2",
+      "xp": 100,
+      "traits": [
+        {
+          "name": "Agressivo",
+          "description": "Como acao bonus, o orc pode se mover ate sua velocidade em direcao a uma criatura hostil que ele possa ver."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Machado Grande",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, um alvo. Acerto: 9 (1d12+3) de dano cortante."
+        },
+        {
+          "name": "Azagaia",
+          "description": "Ataque Corpo a Corpo ou a Distancia com Arma: +5 para acertar, alcance 1,5 m ou 9/36 m, um alvo. Acerto: 6 (1d6+3) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Colinas",
+        "Montanhas",
+        "Planicies",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-gnoll",
+      "name": "Gnoll",
+      "nameEN": "Gnoll",
+      "size": "Medio",
+      "type": "Humanoide",
+      "subtype": "gnoll",
+      "alignment": "Caotico e Mau",
+      "ac": 15,
+      "acType": "gibao de peles, escudo",
+      "hp": 22,
+      "hitDice": "5d8",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 14,
+        "dex": 12,
+        "con": 11,
+        "int": 6,
+        "wis": 10,
+        "cha": 7
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "Gnoll"
+      ],
+      "cr": "1/2",
+      "xp": 100,
+      "traits": [
+        {
+          "name": "Frenesi",
+          "description": "Quando o gnoll reduz uma criatura a 0 PV com um ataque corpo a corpo em seu turno, o gnoll pode usar uma acao bonus para se mover ate metade de sua velocidade e fazer um ataque de mordida."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 4 (1d4+2) de dano perfurante."
+        },
+        {
+          "name": "Lanca",
+          "description": "Ataque Corpo a Corpo ou a Distancia com Arma: +4 para acertar, alcance 1,5 m ou 6/18 m, um alvo. Acerto: 5 (1d6+2) de dano perfurante."
+        },
+        {
+          "name": "Arco Longo",
+          "description": "Ataque a Distancia com Arma: +3 para acertar, alcance 45/180 m, um alvo. Acerto: 5 (1d8+1) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Planicies",
+        "Deserto"
+      ]
+    },
+    {
+      "id": "mon-ghoul",
+      "name": "Ghoul",
+      "nameEN": "Ghoul",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Caotico e Mau",
+      "ac": 12,
+      "hp": 22,
+      "hitDice": "5d8",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 13,
+        "dex": 15,
+        "con": 10,
+        "int": 7,
+        "wis": 10,
+        "cha": 6
+      },
+      "damageImmunities": [
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "envenenado",
+        "encantado",
+        "exaustao"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "Comum"
+      ],
+      "cr": "1",
+      "xp": 200,
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +2 para acertar, alcance 1,5 m, uma criatura. Acerto: 9 (2d6+2) de dano perfurante."
+        },
+        {
+          "name": "Garras",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 7 (2d4+2) de dano cortante. Se o alvo for uma criatura que nao seja um elfo ou morto-vivo, deve ser bem-sucedido em um teste de resistencia de Constituicao CD 10 ou ficara paralisada por 1 minuto. O alvo pode repetir o teste no final de cada um de seus turnos, encerrando o efeito em si mesmo em caso de sucesso."
+        }
+      ],
+      "environment": [
+        "Subterraneo",
+        "Urbano",
+        "Pantano"
+      ]
+    },
+    {
+      "id": "mon-bugbear",
+      "name": "Bugbear",
+      "nameEN": "Bugbear",
+      "size": "Medio",
+      "type": "Humanoide",
+      "subtype": "goblinoide",
+      "alignment": "Caotico e Mau",
+      "ac": 16,
+      "acType": "gibao de peles, escudo",
+      "hp": 27,
+      "hitDice": "5d8+5",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 15,
+        "dex": 14,
+        "con": 13,
+        "int": 8,
+        "wis": 11,
+        "cha": 9
+      },
+      "skills": {
+        "Furtividade": 6,
+        "Sobrevivencia": 2
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "Comum",
+        "Goblin"
+      ],
+      "cr": "1",
+      "xp": 200,
+      "traits": [
+        {
+          "name": "Ataque Surpresa",
+          "description": "Se o bugbear surpreender uma criatura e acerta-la com um ataque durante o primeiro round de combate, o alvo sofre 7 (2d6) de dano extra do ataque."
+        },
+        {
+          "name": "Forca Bruta",
+          "description": "Uma arma corpo a corpo causa um dado extra de dano quando o bugbear acerta com ela (incluso no ataque)."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Maca",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 11 (2d8+2) de dano perfurante."
+        },
+        {
+          "name": "Azagaia",
+          "description": "Ataque Corpo a Corpo ou a Distancia com Arma: +4 para acertar, alcance 1,5 m ou 9/36 m, um alvo. Acerto: 9 (2d6+2) de dano perfurante corpo a corpo ou 5 (1d6+2) a distancia."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-lobo-terrivel",
+      "name": "Lobo Terrivel",
+      "nameEN": "Dire Wolf",
+      "size": "Grande",
+      "type": "Besta",
+      "alignment": "Sem Alinhamento",
+      "ac": 14,
+      "acType": "armadura natural",
+      "hp": 37,
+      "hitDice": "5d10+10",
+      "speed": {
+        "walk": 50
+      },
+      "stats": {
+        "str": 17,
+        "dex": 15,
+        "con": 15,
+        "int": 3,
+        "wis": 12,
+        "cha": 7
+      },
+      "skills": {
+        "Percepcao": 3,
+        "Furtividade": 4
+      },
+      "senses": {
+        "passivePerception": 13
+      },
+      "languages": [],
+      "cr": "1",
+      "xp": 200,
+      "traits": [
+        {
+          "name": "Faro Aguado",
+          "description": "O lobo tem vantagem em testes de Sabedoria (Percepcao) que dependam de olfato."
+        },
+        {
+          "name": "Tatica de Bando",
+          "description": "O lobo tem vantagem em uma jogada de ataque contra uma criatura se pelo menos um dos aliados do lobo estiver a 1,5 m da criatura e o aliado nao estiver incapacitado."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, um alvo. Acerto: 10 (2d6+3) de dano perfurante. Se o alvo for uma criatura, deve ser bem-sucedido em um teste de resistencia de Forca CD 13 ou sera derrubado."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Colinas",
+        "Artico"
+      ]
+    },
+    {
+      "id": "mon-ogro",
+      "name": "Ogro",
+      "nameEN": "Ogre",
+      "size": "Grande",
+      "type": "Gigante",
+      "alignment": "Caotico e Mau",
+      "ac": 11,
+      "acType": "gibao de peles",
+      "hp": 59,
+      "hitDice": "7d10+21",
+      "speed": {
+        "walk": 40
+      },
+      "stats": {
+        "str": 19,
+        "dex": 8,
+        "con": 16,
+        "int": 5,
+        "wis": 7,
+        "cha": 7
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 8
+      },
+      "languages": [
+        "Comum",
+        "Gigante"
+      ],
+      "cr": "2",
+      "xp": 450,
+      "actions": [
+        {
+          "name": "Clava Grande",
+          "description": "Ataque Corpo a Corpo com Arma: +6 para acertar, alcance 1,5 m, um alvo. Acerto: 13 (2d8+4) de dano contundente."
+        },
+        {
+          "name": "Azagaia",
+          "description": "Ataque Corpo a Corpo ou a Distancia com Arma: +6 para acertar, alcance 1,5 m ou 9/36 m, um alvo. Acerto: 11 (2d6+4) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Colinas",
+        "Montanhas",
+        "Floresta",
+        "Pantano"
+      ]
+    },
+    {
+      "id": "mon-gelatina-cubica",
+      "name": "Gelatina Cubica",
+      "nameEN": "Gelatinous Cube",
+      "size": "Grande",
+      "type": "Limo",
+      "alignment": "Sem Alinhamento",
+      "ac": 6,
+      "hp": 84,
+      "hitDice": "8d10+40",
+      "speed": {
+        "walk": 15
+      },
+      "stats": {
+        "str": 14,
+        "dex": 3,
+        "con": 20,
+        "int": 1,
+        "wis": 6,
+        "cha": 1
+      },
+      "conditionImmunities": [
+        "cego",
+        "encantado",
+        "surdo",
+        "exaustao",
+        "amedrontado",
+        "caido"
+      ],
+      "senses": {
+        "blindsight": 60,
+        "passivePerception": 8
+      },
+      "languages": [],
+      "cr": "2",
+      "xp": 450,
+      "traits": [
+        {
+          "name": "Cubo de Limo",
+          "description": "O cubo ocupa todo o seu espaco. Outras criaturas podem entrar no espaco, mas uma criatura que fizer isso esta sujeita ao Engolir do cubo e tem desvantagem no teste de resistencia. Criaturas dentro do cubo podem ser vistas, mas tem cobertura total."
+        },
+        {
+          "name": "Transparente",
+          "description": "Mesmo quando o cubo esta a vista, e necessario um teste de Sabedoria (Percepcao) CD 15 para identifica-lo se ele nao se moveu ou atacou. Uma criatura que tente entrar no espaco do cubo sem percebe-lo e surpreendida por ele."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Pseudopode",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, uma criatura. Acerto: 10 (3d6) de dano acido."
+        },
+        {
+          "name": "Engolir",
+          "description": "O cubo se move ate sua velocidade. Ao faze-lo, pode entrar nos espacos de criaturas Grandes ou menores. Sempre que o cubo entra no espaco de uma criatura, a criatura deve fazer um teste de resistencia de Destreza CD 12. Em caso de sucesso, a criatura pode escolher ser empurrada 1,5 m. Uma criatura que nao consegue ser empurrada sofre as consequencias de uma falha. Em caso de falha, o cubo entra no espaco da criatura, que sofre 10 (3d6) de dano acido e e engolida."
+        }
+      ],
+      "environment": [
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-minotauro",
+      "name": "Minotauro",
+      "nameEN": "Minotaur",
+      "size": "Grande",
+      "type": "Monstruosidade",
+      "alignment": "Caotico e Mau",
+      "ac": 14,
+      "acType": "armadura natural",
+      "hp": 76,
+      "hitDice": "9d10+27",
+      "speed": {
+        "walk": 40
+      },
+      "stats": {
+        "str": 18,
+        "dex": 11,
+        "con": 16,
+        "int": 6,
+        "wis": 16,
+        "cha": 9
+      },
+      "skills": {
+        "Percepcao": 7
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 17
+      },
+      "languages": [
+        "Abissal"
+      ],
+      "cr": "3",
+      "xp": 700,
+      "traits": [
+        {
+          "name": "Investida",
+          "description": "Se o minotauro se mover pelo menos 3 m em linha reta em direcao a um alvo e, em seguida, acerta-lo com um ataque de chifrada no mesmo turno, o alvo sofre 9 (2d8) de dano perfurante extra. Se o alvo for uma criatura, deve ser bem-sucedido em um teste de resistencia de Forca CD 14 ou sera empurrado ate 3 m e derrubado."
+        },
+        {
+          "name": "Memoria Labirintica",
+          "description": "O minotauro pode se lembrar perfeitamente de qualquer caminho que ja tenha percorrido."
+        },
+        {
+          "name": "Investida Imprudente",
+          "description": "No inicio de seu turno, o minotauro pode obter vantagem em todas as jogadas de ataque corpo a corpo que fizer naquele turno, mas jogadas de ataque contra ele tem vantagem ate o inicio de seu proximo turno."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Machado Grande",
+          "description": "Ataque Corpo a Corpo com Arma: +6 para acertar, alcance 1,5 m, um alvo. Acerto: 17 (2d12+4) de dano cortante."
+        },
+        {
+          "name": "Chifrada",
+          "description": "Ataque Corpo a Corpo com Arma: +6 para acertar, alcance 1,5 m, um alvo. Acerto: 13 (2d8+4) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-basilisco",
+      "name": "Basilisco",
+      "nameEN": "Basilisk",
+      "size": "Medio",
+      "type": "Monstruosidade",
+      "alignment": "Sem Alinhamento",
+      "ac": 15,
+      "acType": "armadura natural",
+      "hp": 52,
+      "hitDice": "8d8+16",
+      "speed": {
+        "walk": 20
+      },
+      "stats": {
+        "str": 16,
+        "dex": 8,
+        "con": 15,
+        "int": 2,
+        "wis": 8,
+        "cha": 7
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 9
+      },
+      "languages": [],
+      "cr": "3",
+      "xp": 700,
+      "traits": [
+        {
+          "name": "Olhar Petrificante",
+          "description": "Se uma criatura comecar seu turno a 9 m do basilisco e ambos puderem se ver, o basilisco pode forcar a criatura a fazer um teste de resistencia de Constituicao CD 12 se o basilisco nao estiver incapacitado. Em caso de falha, a criatura magicamente comeca a se transformar em pedra e fica contida. Deve repetir o teste no final de seu proximo turno. Em caso de sucesso, o efeito termina. Em caso de falha, a criatura e petrificada ate ser libertada por restauracao maior ou magia similar."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, um alvo. Acerto: 10 (2d6+3) de dano perfurante mais 7 (2d6) de dano por veneno."
+        }
+      ],
+      "environment": [
+        "Subterraneo",
+        "Montanhas"
+      ]
+    },
+    {
+      "id": "mon-espectro",
+      "name": "Espectro",
+      "nameEN": "Specter",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Caotico e Mau",
+      "ac": 12,
+      "hp": 22,
+      "hitDice": "5d8",
+      "speed": {
+        "walk": 0,
+        "fly": 50
+      },
+      "stats": {
+        "str": 1,
+        "dex": 14,
+        "con": 11,
+        "int": 10,
+        "wis": 10,
+        "cha": 11
+      },
+      "damageResistances": [
+        "acido",
+        "frio",
+        "fogo",
+        "eletricidade",
+        "trovao",
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "damageImmunities": [
+        "necrotico",
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "encantado",
+        "exaustao",
+        "agarrado",
+        "paralisado",
+        "petrificado",
+        "envenenado",
+        "caido",
+        "contido",
+        "inconsciente"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "entende todas as linguas que sabia em vida mas nao fala"
+      ],
+      "cr": "1",
+      "xp": 200,
+      "traits": [
+        {
+          "name": "Movimento Incorporeo",
+          "description": "O espectro pode se mover atraves de outras criaturas e objetos como se fossem terreno dificil. Ele sofre 5 (1d10) de dano de forca se terminar seu turno dentro de um objeto."
+        },
+        {
+          "name": "Sensibilidade a Luz Solar",
+          "description": "Enquanto estiver sob luz solar, o espectro tem desvantagem em jogadas de ataque e testes de Sabedoria (Percepcao) que dependam de visao."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Toque Drenar Vida",
+          "description": "Ataque Corpo a Corpo com Magia: +4 para acertar, alcance 1,5 m, uma criatura. Acerto: 10 (3d6) de dano necrotico. O alvo deve ser bem-sucedido em um teste de resistencia de Constituicao CD 10 ou seu maximo de pontos de vida sera reduzido por uma quantidade igual ao dano sofrido. Essa reducao dura ate a criatura completar um descanso longo. O alvo morre se esse efeito reduzir seu maximo de pontos de vida a 0."
+        }
+      ],
+      "environment": [
+        "Subterraneo",
+        "Urbano"
+      ]
+    },
+    {
+      "id": "mon-ettin",
+      "name": "Ettin",
+      "nameEN": "Ettin",
+      "size": "Grande",
+      "type": "Gigante",
+      "alignment": "Caotico e Mau",
+      "ac": 12,
+      "acType": "armadura natural",
+      "hp": 85,
+      "hitDice": "10d10+30",
+      "speed": {
+        "walk": 40
+      },
+      "stats": {
+        "str": 21,
+        "dex": 8,
+        "con": 17,
+        "int": 6,
+        "wis": 10,
+        "cha": 8
+      },
+      "skills": {
+        "Percepcao": 4
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 14
+      },
+      "languages": [
+        "Gigante",
+        "Orc"
+      ],
+      "cr": "4",
+      "xp": 1100,
+      "traits": [
+        {
+          "name": "Duas Cabecas",
+          "description": "O ettin tem vantagem em testes de Sabedoria (Percepcao) e em testes de resistencia contra ficar cego, surdo, amedrontado, atordoado ou ficar inconsciente."
+        },
+        {
+          "name": "Despertar Constante",
+          "description": "Quando uma das cabecas do ettin esta dormindo, a outra esta acordada."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O ettin faz dois ataques: um com seu machado de guerra e um com sua maca."
+        },
+        {
+          "name": "Machado de Guerra",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 14 (2d8+5) de dano cortante."
+        },
+        {
+          "name": "Maca",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 12 (2d6+5) de dano contundente."
+        }
+      ],
+      "environment": [
+        "Colinas",
+        "Montanhas",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-troll",
+      "name": "Troll",
+      "nameEN": "Troll",
+      "size": "Grande",
+      "type": "Gigante",
+      "alignment": "Caotico e Mau",
+      "ac": 15,
+      "acType": "armadura natural",
+      "hp": 84,
+      "hitDice": "8d10+40",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 18,
+        "dex": 13,
+        "con": 20,
+        "int": 7,
+        "wis": 9,
+        "cha": 7
+      },
+      "skills": {
+        "Percepcao": 2
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 12
+      },
+      "languages": [
+        "Gigante"
+      ],
+      "cr": "5",
+      "xp": 1800,
+      "traits": [
+        {
+          "name": "Faro Aguado",
+          "description": "O troll tem vantagem em testes de Sabedoria (Percepcao) que dependam de olfato."
+        },
+        {
+          "name": "Regeneracao",
+          "description": "O troll recupera 10 pontos de vida no inicio de seu turno. Se o troll receber dano de acido ou fogo, esse traco nao funciona no inicio do proximo turno do troll. O troll morre apenas se comecar seu turno com 0 pontos de vida e nao se regenerar."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O troll faz tres ataques: um com sua mordida e dois com suas garras."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 7 (1d6+4) de dano perfurante."
+        },
+        {
+          "name": "Garra",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 11 (2d6+4) de dano cortante."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Montanhas",
+        "Pantano",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-elemental-fogo",
+      "name": "Elemental de Fogo",
+      "nameEN": "Fire Elemental",
+      "size": "Grande",
+      "type": "Elemental",
+      "alignment": "Neutro",
+      "ac": 13,
+      "hp": 102,
+      "hitDice": "12d10+36",
+      "speed": {
+        "walk": 50
+      },
+      "stats": {
+        "str": 10,
+        "dex": 17,
+        "con": 16,
+        "int": 6,
+        "wis": 10,
+        "cha": 7
+      },
+      "damageResistances": [
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "damageImmunities": [
+        "fogo",
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "exaustao",
+        "agarrado",
+        "paralisado",
+        "petrificado",
+        "envenenado",
+        "caido",
+        "contido",
+        "inconsciente"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "Ignan"
+      ],
+      "cr": "5",
+      "xp": 1800,
+      "traits": [
+        {
+          "name": "Forma de Fogo",
+          "description": "O elemental pode se mover atraves de um espaco de apenas 2,5 cm de largura sem se espremer. Uma criatura que toca o elemental ou o acerta com um ataque corpo a corpo estando a 1,5 m dele sofre 5 (1d10) de dano de fogo. Alem disso, o elemental pode entrar no espaco de uma criatura hostil e parar la. A primeira vez em cada turno que entra no espaco de uma criatura, essa criatura sofre 5 (1d10) de dano de fogo e pega fogo; ate que alguem gaste uma acao para apagar o fogo, a criatura sofre 5 (1d10) de dano de fogo no inicio de cada um de seus turnos."
+        },
+        {
+          "name": "Iluminacao",
+          "description": "O elemental emite luz brilhante num raio de 9 m e luz fraca por mais 9 m."
+        },
+        {
+          "name": "Susceptibilidade a Agua",
+          "description": "Para cada 1,5 m que o elemental se move na agua, ou para cada 3,8 litros de agua jogada sobre ele, ele sofre 1 de dano de frio."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O elemental faz dois ataques de toque."
+        },
+        {
+          "name": "Toque",
+          "description": "Ataque Corpo a Corpo com Arma: +6 para acertar, alcance 1,5 m, um alvo. Acerto: 10 (2d6+3) de dano de fogo. Se o alvo for uma criatura ou um objeto inflamavel, ele pega fogo. Ate que uma criatura gaste uma acao para apagar o fogo, o alvo sofre 5 (1d10) de dano de fogo no inicio de cada um de seus turnos."
+        }
+      ],
+      "environment": [
+        "Deserto",
+        "Montanhas"
+      ]
+    },
+    {
+      "id": "mon-urso-coruja",
+      "name": "Urso-Coruja",
+      "nameEN": "Owlbear",
+      "size": "Grande",
+      "type": "Monstruosidade",
+      "alignment": "Sem Alinhamento",
+      "ac": 13,
+      "acType": "armadura natural",
+      "hp": 59,
+      "hitDice": "7d10+21",
+      "speed": {
+        "walk": 40
+      },
+      "stats": {
+        "str": 20,
+        "dex": 12,
+        "con": 17,
+        "int": 3,
+        "wis": 12,
+        "cha": 7
+      },
+      "skills": {
+        "Percepcao": 3
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 13
+      },
+      "languages": [],
+      "cr": "3",
+      "xp": 700,
+      "traits": [
+        {
+          "name": "Faro Aguado",
+          "description": "O urso-coruja tem vantagem em testes de Sabedoria (Percepcao) que dependam de olfato."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O urso-coruja faz dois ataques: um com seu bico e um com suas garras."
+        },
+        {
+          "name": "Bico",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 10 (1d10+5) de dano perfurante."
+        },
+        {
+          "name": "Garras",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 14 (2d8+5) de dano cortante."
+        }
+      ],
+      "environment": [
+        "Floresta"
+      ]
+    },
+    {
+      "id": "mon-mumia",
+      "name": "Mumia",
+      "nameEN": "Mummy",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Leal e Mau",
+      "ac": 11,
+      "acType": "armadura natural",
+      "hp": 58,
+      "hitDice": "9d8+18",
+      "speed": {
+        "walk": 20
+      },
+      "stats": {
+        "str": 16,
+        "dex": 8,
+        "con": 15,
+        "int": 6,
+        "wis": 10,
+        "cha": 12
+      },
+      "savingThrows": {
+        "wis": 2
+      },
+      "damageVulnerabilities": [
+        "fogo"
+      ],
+      "damageResistances": [
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "damageImmunities": [
+        "necrotico",
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "encantado",
+        "exaustao",
+        "amedrontado",
+        "paralisado",
+        "envenenado"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "as linguas que sabia em vida"
+      ],
+      "cr": "3",
+      "xp": 700,
+      "traits": [],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "A mumia pode usar seu Olhar Aterrorizante e fazer um ataque com punho apodrecido."
+        },
+        {
+          "name": "Punho Apodrecido",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, um alvo. Acerto: 10 (2d6+3) de dano contundente mais 10 (3d6) de dano necrotico. Se o alvo for uma criatura, deve ser bem-sucedido em um teste de resistencia de Constituicao CD 12 ou sera amaldicoado com apodrecimento de mumia."
+        },
+        {
+          "name": "Olhar Aterrorizante",
+          "description": "Cada criatura a escolha da mumia que esteja a ate 18 m dela e que possa ve-la deve ser bem-sucedida em um teste de resistencia de Sabedoria CD 11 ou ficara amedrontada ate o final do proximo turno da mumia. Se o teste falhar por 5 ou mais, o alvo tambem fica paralisado pela mesma duracao."
+        }
+      ],
+      "environment": [
+        "Deserto",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-medusa",
+      "name": "Medusa",
+      "nameEN": "Medusa",
+      "size": "Medio",
+      "type": "Monstruosidade",
+      "alignment": "Leal e Mau",
+      "ac": 15,
+      "acType": "armadura natural",
+      "hp": 127,
+      "hitDice": "17d8+51",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 10,
+        "dex": 15,
+        "con": 16,
+        "int": 12,
+        "wis": 13,
+        "cha": 15
+      },
+      "skills": {
+        "Enganacao": 5,
+        "Percepcao": 4,
+        "Furtividade": 5
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 14
+      },
+      "languages": [
+        "Comum"
+      ],
+      "cr": "6",
+      "xp": 2300,
+      "traits": [
+        {
+          "name": "Olhar Petrificante",
+          "description": "Quando uma criatura que pode ver os olhos da medusa comeca seu turno a 9 m da medusa, a medusa pode forca-la a fazer um teste de resistencia de Constituicao CD 14 se a medusa nao estiver incapacitada e puder ver a criatura. Se o teste falhar por 5 ou mais, a criatura e instantaneamente petrificada. Caso contrario, uma criatura que falhe comeca a se transformar em pedra e fica contida. A criatura contida deve repetir o teste no final de seu proximo turno, tornando-se petrificada em caso de falha ou encerrando o efeito em si mesma em caso de sucesso."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "A medusa faz tres ataques corpo a corpo — um com suas cobras-cabelo e dois com sua espada curta."
+        },
+        {
+          "name": "Cobras-Cabelo",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, uma criatura. Acerto: 4 (1d4+2) de dano perfurante mais 14 (4d6) de dano por veneno."
+        },
+        {
+          "name": "Espada Curta",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, um alvo. Acerto: 5 (1d6+2) de dano perfurante."
+        },
+        {
+          "name": "Arco Longo",
+          "description": "Ataque a Distancia com Arma: +5 para acertar, alcance 45/180 m, um alvo. Acerto: 6 (1d8+2) de dano perfurante mais 7 (2d6) de dano por veneno."
+        }
+      ],
+      "environment": [
+        "Deserto",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-hidra",
+      "name": "Hidra",
+      "nameEN": "Hydra",
+      "size": "Enorme",
+      "type": "Monstruosidade",
+      "alignment": "Sem Alinhamento",
+      "ac": 15,
+      "acType": "armadura natural",
+      "hp": 172,
+      "hitDice": "15d12+75",
+      "speed": {
+        "walk": 30,
+        "swim": 30
+      },
+      "stats": {
+        "str": 20,
+        "dex": 12,
+        "con": 20,
+        "int": 2,
+        "wis": 10,
+        "cha": 7
+      },
+      "skills": {
+        "Percepcao": 6
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 16
+      },
+      "languages": [],
+      "cr": "8",
+      "xp": 3900,
+      "traits": [
+        {
+          "name": "Prender a Respiracao",
+          "description": "A hidra pode prender a respiracao por 1 hora."
+        },
+        {
+          "name": "Multiplas Cabecas",
+          "description": "A hidra tem cinco cabecas. Enquanto tiver mais de uma cabeca, a hidra tem vantagem em testes de resistencia contra ficar cega, surda, encantada, amedrontada, atordoada e inconsciente. Sempre que a hidra sofrer 25 ou mais de dano em um unico turno, uma de suas cabecas morre. Se todas as suas cabecas morrerem, a hidra morre. No final de seu turno, ela faz crescer duas cabecas para cada uma que morreu desde seu ultimo turno, a menos que tenha recebido dano de fogo desde seu ultimo turno. A hidra recupera 10 pontos de vida para cada cabeca que cresce dessa forma."
+        },
+        {
+          "name": "Cabecas Reativas",
+          "description": "Para cada cabeca que a hidra tem alem de uma, ela recebe uma reacao extra que pode ser usada apenas para ataques de oportunidade."
+        },
+        {
+          "name": "Despertar Constante",
+          "description": "Enquanto a hidra dorme, pelo menos uma de suas cabecas esta acordada."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "A hidra faz tantos ataques de mordida quanto cabecas tiver."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +8 para acertar, alcance 3 m, um alvo. Acerto: 10 (1d10+5) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Pantano",
+        "Costeiro"
+      ]
+    },
+    {
+      "id": "mon-aboleth",
+      "name": "Aboleth",
+      "nameEN": "Aboleth",
+      "size": "Grande",
+      "type": "Aberracao",
+      "alignment": "Leal e Mau",
+      "ac": 17,
+      "acType": "armadura natural",
+      "hp": 135,
+      "hitDice": "18d10+36",
+      "speed": {
+        "walk": 10,
+        "swim": 40
+      },
+      "stats": {
+        "str": 21,
+        "dex": 9,
+        "con": 15,
+        "int": 18,
+        "wis": 15,
+        "cha": 18
+      },
+      "savingThrows": {
+        "con": 6,
+        "int": 8,
+        "wis": 6
+      },
+      "skills": {
+        "Historia": 12,
+        "Percepcao": 10
+      },
+      "senses": {
+        "darkvision": 120,
+        "passivePerception": 20
+      },
+      "languages": [
+        "Profundo",
+        "telepatia 120 ft"
+      ],
+      "cr": "10",
+      "xp": 5900,
+      "traits": [
+        {
+          "name": "Anfibio",
+          "description": "O aboleth pode respirar ar e agua."
+        },
+        {
+          "name": "Nuvem Mucosa",
+          "description": "Enquanto submerso, o aboleth e cercado por muco transformador. Uma criatura que toque o aboleth ou o acerte com um ataque corpo a corpo estando a 1,5 m dele deve fazer um teste de resistencia de Constituicao CD 14. Em caso de falha, a criatura fica doente por 1d4 horas. A criatura doente so pode respirar debaixo d'agua."
+        },
+        {
+          "name": "Telepatia Sondante",
+          "description": "Se uma criatura se comunicar telepaticamente com o aboleth, o aboleth aprende os maiores desejos da criatura se o aboleth puder ve-la."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O aboleth faz tres ataques de tentaculo."
+        },
+        {
+          "name": "Tentaculo",
+          "description": "Ataque Corpo a Corpo com Arma: +9 para acertar, alcance 3 m, um alvo. Acerto: 12 (2d6+5) de dano contundente. Se o alvo for uma criatura, deve ser bem-sucedido em um teste de resistencia de Constituicao CD 14 ou ficara doente. A doenca nao tem efeito por 1 minuto e pode ser removida por qualquer magia que cure doencas. Apos 1 minuto, a pele da criatura doente se torna translucida e viscosa e so pode ser curada com cura completa ou magia similar."
+        },
+        {
+          "name": "Cauda",
+          "description": "Ataque Corpo a Corpo com Arma: +9 para acertar, alcance 3 m, um alvo. Acerto: 15 (3d6+5) de dano contundente."
+        },
+        {
+          "name": "Escravizar (3/dia)",
+          "description": "O aboleth mira uma criatura que ele pode ver a ate 9 m. O alvo deve ser bem-sucedido em um teste de resistencia de Sabedoria CD 14 ou sera magicamente encantado pelo aboleth ate que o aboleth morra ou ate que esteja em um plano de existencia diferente do alvo. O alvo encantado esta sob o controle do aboleth e nao pode realizar reacoes, e o aboleth e o alvo podem se comunicar telepaticamente entre si a qualquer distancia."
+        }
+      ],
+      "legendaryActions": {
+        "description": "O aboleth pode realizar 3 acoes lendarias, escolhendo entre as opcoes abaixo. Apenas uma opcao lendaria pode ser usada por vez, e somente no final do turno de outra criatura. O aboleth recupera acoes lendarias gastas no inicio de seu turno.",
+        "actions": [
+          {
+            "name": "Detectar",
+            "description": "O aboleth faz um teste de Sabedoria (Percepcao)."
+          },
+          {
+            "name": "Golpe de Cauda",
+            "description": "O aboleth faz um ataque de cauda."
+          },
+          {
+            "name": "Drenar Psiquico (Custa 2 Acoes)",
+            "description": "Uma criatura encantada pelo aboleth sofre 10 (3d6) de dano psiquico, e o aboleth recupera pontos de vida iguais ao dano causado."
+          }
+        ]
+      },
+      "environment": [
+        "Subterraneo",
+        "Aquatico"
+      ]
+    },
+    {
+      "id": "mon-remorhaz",
+      "name": "Remorhaz",
+      "nameEN": "Remorhaz",
+      "size": "Enorme",
+      "type": "Monstruosidade",
+      "alignment": "Sem Alinhamento",
+      "ac": 17,
+      "acType": "armadura natural",
+      "hp": 195,
+      "hitDice": "17d12+85",
+      "speed": {
+        "walk": 30,
+        "burrow": 20
+      },
+      "stats": {
+        "str": 24,
+        "dex": 13,
+        "con": 21,
+        "int": 4,
+        "wis": 10,
+        "cha": 5
+      },
+      "damageImmunities": [
+        "fogo",
+        "frio"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "tremorsense": 60,
+        "passivePerception": 10
+      },
+      "languages": [],
+      "cr": "11",
+      "xp": 7200,
+      "traits": [
+        {
+          "name": "Corpo Aquecido",
+          "description": "Uma criatura que toque o remorhaz ou o acerte com um ataque corpo a corpo estando a 1,5 m dele sofre 10 (3d6) de dano de fogo."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +11 para acertar, alcance 3 m, um alvo. Acerto: 40 (6d10+7) de dano perfurante mais 10 (3d6) de dano de fogo. Se o alvo for uma criatura, ele e agarrado (CD de fuga 17). Ate que o agarrao termine, o alvo esta contido e o remorhaz nao pode morder outro alvo."
+        },
+        {
+          "name": "Engolir",
+          "description": "O remorhaz faz um ataque de mordida contra uma criatura Media ou menor que esteja agarrando. Se o ataque acertar, o alvo sofre o dano da mordida, e engolido e o agarrao termina. Uma criatura engolida e cega e contida, sofre 21 (6d6) de dano acido no inicio de cada turno do remorhaz. Se o remorhaz sofrer 30 ou mais de dano em um unico turno de uma criatura dentro dele, deve ser bem-sucedido em um teste de resistencia de Constituicao CD 15 no final daquele turno ou regurgitara todas as criaturas engolidas."
+        }
+      ],
+      "environment": [
+        "Artico",
+        "Montanhas"
+      ]
+    },
+    {
+      "id": "mon-beholder",
+      "name": "Beholder",
+      "nameEN": "Beholder",
+      "size": "Grande",
+      "type": "Aberracao",
+      "alignment": "Leal e Mau",
+      "ac": 18,
+      "acType": "armadura natural",
+      "hp": 180,
+      "hitDice": "19d10+76",
+      "speed": {
+        "walk": 0,
+        "fly": 20,
+        "hover": true
+      },
+      "stats": {
+        "str": 10,
+        "dex": 14,
+        "con": 18,
+        "int": 17,
+        "wis": 15,
+        "cha": 17
+      },
+      "savingThrows": {
+        "int": 8,
+        "wis": 7,
+        "cha": 8
+      },
+      "skills": {
+        "Percepcao": 12
+      },
+      "conditionImmunities": [
+        "caido"
+      ],
+      "senses": {
+        "darkvision": 120,
+        "passivePerception": 22
+      },
+      "languages": [
+        "Profundo",
+        "Subcomum"
+      ],
+      "cr": "13",
+      "xp": 10000,
+      "traits": [
+        {
+          "name": "Cone Antimagia",
+          "description": "O olho central do beholder cria uma area de antimagia, como na magia campo antimagico, em um cone de 45 m. No inicio de cada um de seus turnos, o beholder decide para qual direcao o cone aponta e se o cone esta ativo. A area funciona contra a propria magia do olho do beholder."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, um alvo. Acerto: 14 (4d6) de dano perfurante."
+        },
+        {
+          "name": "Raios Oculares",
+          "description": "O beholder dispara tres dos seguintes raios oculares magicos aleatorios (rerrole duplicatas), cada um mirando em uma criatura que ele pode ver a ate 36 m: 1. Raio Encantador; 2. Raio Paralisante; 3. Raio do Medo; 4. Raio Lento; 5. Raio Enervante; 6. Raio Telecinético; 7. Raio do Sono; 8. Raio Petrificante; 9. Raio Desintegrador; 10. Raio da Morte."
+        }
+      ],
+      "legendaryActions": {
+        "description": "O beholder pode realizar 3 acoes lendarias, escolhendo entre as opcoes abaixo. Apenas uma opcao pode ser usada por vez, e somente no final do turno de outra criatura. O beholder recupera acoes lendarias gastas no inicio de seu turno.",
+        "actions": [
+          {
+            "name": "Raio Ocular",
+            "description": "O beholder usa um raio ocular aleatorio."
+          }
+        ]
+      },
+      "environment": [
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-vampiro",
+      "name": "Vampiro",
+      "nameEN": "Vampire",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "subtype": "metamorfo",
+      "alignment": "Leal e Mau",
+      "ac": 16,
+      "acType": "armadura natural",
+      "hp": 144,
+      "hitDice": "17d8+68",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 18,
+        "dex": 18,
+        "con": 18,
+        "int": 17,
+        "wis": 15,
+        "cha": 18
+      },
+      "savingThrows": {
+        "dex": 9,
+        "wis": 7,
+        "cha": 9
+      },
+      "skills": {
+        "Percepcao": 7,
+        "Furtividade": 9
+      },
+      "damageResistances": [
+        "necrotico",
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "senses": {
+        "darkvision": 120,
+        "passivePerception": 17
+      },
+      "languages": [
+        "as linguas que sabia em vida"
+      ],
+      "cr": "13",
+      "xp": 10000,
+      "traits": [
+        {
+          "name": "Metamorfo",
+          "description": "Se o vampiro nao estiver sob luz solar ou em agua corrente, ele pode usar sua acao para se transformar em um morcego Minusculo, uma nevoa Media ou de volta a sua forma verdadeira."
+        },
+        {
+          "name": "Fuga Nebulosa",
+          "description": "Quando cai a 0 PV fora de seu caixao, o vampiro se transforma em uma nuvem de nevoa ao inves de cair inconsciente, desde que nao esteja sob luz solar ou em agua corrente."
+        },
+        {
+          "name": "Hipersensibilidades do Vampiro",
+          "description": "O vampiro recebe os seguintes defeitos: nao pode entrar em uma residencia sem ser convidado, sofre 20 de dano radiante quando comeca seu turno em agua corrente, sofre 20 de dano radiante quando comeca seu turno sob luz solar e tem desvantagem em jogadas de ataque e testes de habilidade enquanto estiver sob luz solar."
+        },
+        {
+          "name": "Regeneracao",
+          "description": "O vampiro recupera 20 PV no inicio de seu turno se tiver pelo menos 1 PV e nao estiver sob luz solar ou em agua corrente. Se o vampiro receber dano radiante ou dano de agua benta, esse traco nao funciona no inicio do proximo turno."
+        },
+        {
+          "name": "Resistencia Lendaria (3/dia)",
+          "description": "Se o vampiro falhar em um teste de resistencia, ele pode escolher ser bem-sucedido em vez disso."
+        },
+        {
+          "name": "Escalada de Aranhas",
+          "description": "O vampiro pode escalar superficies dificeis, incluindo tetos de cabeca para baixo, sem precisar fazer um teste de habilidade."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos (Forma de Vampiro)",
+          "description": "O vampiro faz dois ataques, apenas um dos quais pode ser um ataque de mordida."
+        },
+        {
+          "name": "Agarrao (Forma de Vampiro)",
+          "description": "Ataque Corpo a Corpo com Arma: +9 para acertar, alcance 1,5 m, uma criatura. Acerto: 8 (1d8+4) de dano contundente. Em vez de causar dano, o vampiro pode agarrar o alvo (CD de fuga 18)."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +9 para acertar, alcance 1,5 m, uma criatura voluntaria, incapacitada, contida ou agarrada pelo vampiro. Acerto: 7 (1d6+4) de dano perfurante mais 10 (3d6) de dano necrotico. O maximo de PV do alvo e reduzido por uma quantidade igual ao dano necrotico sofrido, e o vampiro recupera PV iguais a essa quantidade."
+        },
+        {
+          "name": "Encanto",
+          "description": "O vampiro mira um humanoide que ele possa ver a ate 9 m. O alvo deve ser bem-sucedido em um teste de resistencia de Sabedoria CD 17 ou sera magicamente encantado pelo vampiro."
+        }
+      ],
+      "legendaryActions": {
+        "description": "O vampiro pode realizar 3 acoes lendarias. Apenas uma opcao pode ser usada por vez, e somente no final do turno de outra criatura.",
+        "actions": [
+          {
+            "name": "Mover",
+            "description": "O vampiro se move ate sua velocidade sem provocar ataques de oportunidade."
+          },
+          {
+            "name": "Agarrao",
+            "description": "O vampiro faz um ataque de agarrao."
+          },
+          {
+            "name": "Mordida (Custa 2 Acoes)",
+            "description": "O vampiro faz um ataque de mordida."
+          }
+        ]
+      },
+      "environment": [
+        "Urbano",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-mumia-lorde",
+      "name": "Mumia Lorde",
+      "nameEN": "Mummy Lord",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Leal e Mau",
+      "ac": 17,
+      "acType": "armadura natural",
+      "hp": 97,
+      "hitDice": "13d8+39",
+      "speed": {
+        "walk": 20
+      },
+      "stats": {
+        "str": 18,
+        "dex": 10,
+        "con": 17,
+        "int": 11,
+        "wis": 18,
+        "cha": 16
+      },
+      "savingThrows": {
+        "con": 8,
+        "int": 5,
+        "wis": 9,
+        "cha": 8
+      },
+      "skills": {
+        "Historia": 5,
+        "Religiao": 5
+      },
+      "damageVulnerabilities": [
+        "fogo"
+      ],
+      "damageImmunities": [
+        "necrotico",
+        "veneno",
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "conditionImmunities": [
+        "encantado",
+        "exaustao",
+        "amedrontado",
+        "paralisado",
+        "envenenado"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 14
+      },
+      "languages": [
+        "as linguas que sabia em vida"
+      ],
+      "cr": "15",
+      "xp": 13000,
+      "traits": [
+        {
+          "name": "Resistencia a Magia",
+          "description": "A mumia lorde tem vantagem em testes de resistencia contra magias e outros efeitos magicos."
+        },
+        {
+          "name": "Rejuvenescimento",
+          "description": "Uma mumia lorde destruida ganha um novo corpo em 24 horas se seu coracao estiver intacto, recuperando todos os PV e tornando-se ativa novamente. O novo corpo aparece a ate 1,5 m do coracao da mumia lorde."
+        },
+        {
+          "name": "Conjuracao",
+          "description": "A mumia lorde e uma conjuradora de 10o nivel. Sua habilidade de conjuracao e Sabedoria (CD de resistencia a magia 17, +9 para acertar com ataques magicos). A mumia lorde tem as seguintes magias de clerigo preparadas: Truques: chama sagrada, taumaturgia. 1o nivel: comando, escudo da fe, raio guiador. 2o nivel: arma espiritual, silencio. 3o nivel: animar mortos, dissipar magia. 4o nivel: adivinhacao, guardiao da fe. 5o nivel: contato com outros planos, inseto praga."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "A mumia lorde pode usar seu Olhar Aterrorizante e faz um ataque com seu punho apodrecido."
+        },
+        {
+          "name": "Punho Apodrecido",
+          "description": "Ataque Corpo a Corpo com Arma: +9 para acertar, alcance 1,5 m, um alvo. Acerto: 14 (3d6+4) de dano contundente mais 21 (6d6) de dano necrotico. Se o alvo for uma criatura, deve ser bem-sucedido em um teste de resistencia de Constituicao CD 16 ou sera amaldicoado com apodrecimento de mumia."
+        },
+        {
+          "name": "Olhar Aterrorizante",
+          "description": "Cada criatura a escolha da mumia lorde a ate 18 m que possa ve-la deve fazer um teste de resistencia de Sabedoria CD 16 ou ficara amedrontada ate o final do proximo turno da mumia. Se o teste falhar por 5 ou mais, o alvo tambem fica paralisado."
+        }
+      ],
+      "legendaryActions": {
+        "description": "A mumia lorde pode realizar 3 acoes lendarias.",
+        "actions": [
+          {
+            "name": "Ataque",
+            "description": "A mumia lorde faz um ataque com seu punho apodrecido ou usa seu Olhar Aterrorizante."
+          },
+          {
+            "name": "Palavra Cegante (Custa 2 Acoes)",
+            "description": "A mumia lorde emite uma palavra magica. Cada criatura a ate 3 m que nao seja um morto-vivo deve ser bem-sucedida em um teste de resistencia de Constituicao CD 16 ou ficara cega ate o final do proximo turno da mumia."
+          },
+          {
+            "name": "Canal de Energia Negativa (Custa 2 Acoes)",
+            "description": "A mumia lorde canaliza energia negativa. Cada criatura morta-viva nao hostil a ate 18 m pode fazer um ataque corpo a corpo como reacao."
+          },
+          {
+            "name": "Tormenta de Areia (Custa 2 Acoes)",
+            "description": "A mumia lorde cria uma tempestade de areia magica num cubo de 6 m centrado nela. Cada criatura nessa area deve fazer um teste de resistencia de Constituicao CD 16 ou sofrera 14 (4d6) de dano cortante."
+          }
+        ]
+      },
+      "environment": [
+        "Deserto",
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-dragao-adulto-vermelho",
+      "name": "Dragao Adulto Vermelho",
+      "nameEN": "Adult Red Dragon",
+      "size": "Enorme",
+      "type": "Dragao",
+      "alignment": "Caotico e Mau",
+      "ac": 19,
+      "acType": "armadura natural",
+      "hp": 256,
+      "hitDice": "19d12+133",
+      "speed": {
+        "walk": 40,
+        "climb": 40,
+        "fly": 80
+      },
+      "stats": {
+        "str": 27,
+        "dex": 10,
+        "con": 25,
+        "int": 16,
+        "wis": 13,
+        "cha": 21
+      },
+      "savingThrows": {
+        "dex": 6,
+        "con": 13,
+        "wis": 7,
+        "cha": 11
+      },
+      "skills": {
+        "Percepcao": 13,
+        "Furtividade": 6
+      },
+      "damageImmunities": [
+        "fogo"
+      ],
+      "senses": {
+        "blindsight": 60,
+        "darkvision": 120,
+        "passivePerception": 23
+      },
+      "languages": [
+        "Comum",
+        "Draconico"
+      ],
+      "cr": "17",
+      "xp": 18000,
+      "traits": [
+        {
+          "name": "Resistencia Lendaria (3/dia)",
+          "description": "Se o dragao falhar em um teste de resistencia, ele pode escolher ser bem-sucedido em vez disso."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O dragao pode usar sua Presenca Aterrorizante. Ele entao faz tres ataques: um com sua mordida e dois com suas garras."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +14 para acertar, alcance 3 m, um alvo. Acerto: 19 (2d10+8) de dano perfurante mais 7 (2d6) de dano de fogo."
+        },
+        {
+          "name": "Garra",
+          "description": "Ataque Corpo a Corpo com Arma: +14 para acertar, alcance 1,5 m, um alvo. Acerto: 15 (2d6+8) de dano cortante."
+        },
+        {
+          "name": "Cauda",
+          "description": "Ataque Corpo a Corpo com Arma: +14 para acertar, alcance 4,5 m, um alvo. Acerto: 17 (2d8+8) de dano contundente."
+        },
+        {
+          "name": "Presenca Aterrorizante",
+          "description": "Cada criatura a escolha do dragao a ate 36 m e ciente dele deve fazer um teste de resistencia de Sabedoria CD 19 ou ficara amedrontada por 1 minuto. A criatura pode repetir o teste no final de seus turnos."
+        },
+        {
+          "name": "Sopro de Fogo (Recarga 5-6)",
+          "description": "O dragao exala fogo em um cone de 18 m. Cada criatura nessa area deve fazer um teste de resistencia de Destreza CD 21, sofrendo 63 (18d6) de dano de fogo em caso de falha, ou metade disso em caso de sucesso."
+        }
+      ],
+      "legendaryActions": {
+        "description": "O dragao pode realizar 3 acoes lendarias.",
+        "actions": [
+          {
+            "name": "Detectar",
+            "description": "O dragao faz um teste de Sabedoria (Percepcao)."
+          },
+          {
+            "name": "Ataque de Cauda",
+            "description": "O dragao faz um ataque de cauda."
+          },
+          {
+            "name": "Ataque de Asa (Custa 2 Acoes)",
+            "description": "O dragao bate suas asas. Cada criatura a ate 3 m deve ser bem-sucedida em um teste de resistencia de Destreza CD 22 ou sofrera 15 (2d6+8) de dano contundente e sera derrubada. O dragao pode entao voar ate metade de sua velocidade de voo."
+          }
+        ]
+      },
+      "environment": [
+        "Montanhas",
+        "Colinas"
+      ]
+    },
+    {
+      "id": "mon-lich",
+      "name": "Lich",
+      "nameEN": "Lich",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Qualquer Alinhamento",
+      "ac": 17,
+      "acType": "armadura natural",
+      "hp": 135,
+      "hitDice": "18d8+54",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 11,
+        "dex": 16,
+        "con": 16,
+        "int": 20,
+        "wis": 14,
+        "cha": 16
+      },
+      "savingThrows": {
+        "con": 10,
+        "int": 12,
+        "wis": 9
+      },
+      "skills": {
+        "Arcanismo": 18,
+        "Historia": 12,
+        "Intuicao": 9,
+        "Percepcao": 9
+      },
+      "damageResistances": [
+        "frio",
+        "eletricidade",
+        "necrotico"
+      ],
+      "damageImmunities": [
+        "veneno",
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "conditionImmunities": [
+        "encantado",
+        "exaustao",
+        "amedrontado",
+        "paralisado",
+        "envenenado"
+      ],
+      "senses": {
+        "truesight": 120,
+        "passivePerception": 19
+      },
+      "languages": [
+        "Comum",
+        "mais ate 5 linguas"
+      ],
+      "cr": "21",
+      "xp": 33000,
+      "traits": [
+        {
+          "name": "Resistencia Lendaria (3/dia)",
+          "description": "Se o lich falhar em um teste de resistencia, ele pode escolher ser bem-sucedido em vez disso."
+        },
+        {
+          "name": "Rejuvenescimento",
+          "description": "Se o lich tiver um filacterio, um lich destruido ganha um novo corpo em 1d10 dias, recuperando todos os PV. O novo corpo aparece a ate 1,5 m do filacterio."
+        },
+        {
+          "name": "Conjuracao",
+          "description": "O lich e um conjurador de 18o nivel. Sua habilidade de conjuracao e Inteligencia (CD de resistencia a magia 20, +12 para acertar). O lich tem as seguintes magias de mago preparadas: Truques: mao de mago, prestidigitacao, raio de gelo. 1o: detectar magia, misseis magicos, escudo, onda trovejante. 2o: detectar pensamentos, invisibilidade, acido de Melf, imagem espelhada. 3o: animar mortos, contra-magia, dissipar magia, bola de fogo. 4o: peste, escudo de fogo, muralha de pedra. 5o: nuvem mortifa, videncia. 6o: desintegrar, globo de invulnerabilidade. 7o: dedo da morte, teletransporte. 8o: dominar monstro, muro de forca. 9o: esfera aprisionadora."
+        },
+        {
+          "name": "Resistencia a Neutralizacao de Magia",
+          "description": "O lich tem vantagem em testes de resistencia contra qualquer efeito que neutralize magias ou efeitos magicos."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Toque Paralisante",
+          "description": "Ataque Corpo a Corpo com Magia: +12 para acertar, alcance 1,5 m, uma criatura. Acerto: 10 (3d6) de dano de frio. O alvo deve ser bem-sucedido em um teste de resistencia de Constituicao CD 18 ou ficara paralisado por 1 minuto. O alvo pode repetir o teste no final de cada um de seus turnos, encerrando o efeito em si mesmo em caso de sucesso."
+        }
+      ],
+      "legendaryActions": {
+        "description": "O lich pode realizar 3 acoes lendarias.",
+        "actions": [
+          {
+            "name": "Truque",
+            "description": "O lich conjura um truque."
+          },
+          {
+            "name": "Toque Paralisante (Custa 2 Acoes)",
+            "description": "O lich usa seu Toque Paralisante."
+          },
+          {
+            "name": "Olhar Perturbador (Custa 2 Acoes)",
+            "description": "O lich fixa seu olhar em uma criatura a ate 3 m. O alvo deve fazer um teste de resistencia de Sabedoria CD 18 contra essa magia. Em caso de falha, o alvo fica amedrontado por 1 minuto. Enquanto amedrontado, a criatura tambem fica paralisada. O alvo pode repetir o teste no final de seus turnos."
+          }
+        ]
+      },
+      "environment": [
+        "Subterraneo"
+      ]
+    },
+    {
+      "id": "mon-kraken",
+      "name": "Kraken",
+      "nameEN": "Kraken",
+      "size": "Colossal",
+      "type": "Monstruosidade",
+      "subtype": "titan",
+      "alignment": "Caotico e Mau",
+      "ac": 18,
+      "acType": "armadura natural",
+      "hp": 472,
+      "hitDice": "27d20+189",
+      "speed": {
+        "walk": 20,
+        "swim": 60
+      },
+      "stats": {
+        "str": 30,
+        "dex": 11,
+        "con": 25,
+        "int": 22,
+        "wis": 18,
+        "cha": 20
+      },
+      "savingThrows": {
+        "str": 17,
+        "dex": 7,
+        "con": 14,
+        "int": 13,
+        "wis": 11
+      },
+      "damageImmunities": [
+        "eletricidade",
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "conditionImmunities": [
+        "amedrontado",
+        "paralisado"
+      ],
+      "senses": {
+        "truesight": 120,
+        "passivePerception": 14
+      },
+      "languages": [
+        "Abissal",
+        "Celestial",
+        "Infernal",
+        "Primordial",
+        "telepatia 120 ft"
+      ],
+      "cr": "23",
+      "xp": 50000,
+      "traits": [
+        {
+          "name": "Anfibio",
+          "description": "O kraken pode respirar ar e agua."
+        },
+        {
+          "name": "Liberdade de Movimento",
+          "description": "O kraken ignora terreno dificil, e efeitos magicos nao podem reduzir sua velocidade ou faze-lo ficar contido."
+        },
+        {
+          "name": "Cerco",
+          "description": "O kraken causa dano dobrado em objetos e estruturas."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O kraken faz tres ataques de tentaculo, cada um dos quais pode ser substituido por um uso de Arremessar."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +17 para acertar, alcance 1,5 m, um alvo. Acerto: 23 (3d8+10) de dano perfurante. Se o alvo for uma criatura Grande ou menor agarrada pelo kraken, e engolido."
+        },
+        {
+          "name": "Tentaculo",
+          "description": "Ataque Corpo a Corpo com Arma: +17 para acertar, alcance 9 m, um alvo. Acerto: 20 (3d6+10) de dano contundente. O alvo e agarrado (CD de fuga 18). Ate que o agarrao termine, o alvo esta contido. O kraken tem dez tentaculos, cada um dos quais pode agarrar um alvo."
+        },
+        {
+          "name": "Arremessar",
+          "description": "Um objeto Grande ou menor ou uma criatura Grande ou menor agarrada pelo kraken e arremessado ate 18 m em direcao aleatoria e derrubado. Se um alvo arremessado atingir uma superficie solida, sofre 3 (1d6) de dano contundente para cada 3 m arremessado. Se o alvo for arremessado contra outra criatura, essa criatura deve fazer um teste de resistencia de Destreza CD 18 ou sofrer o mesmo dano e ser derrubada."
+        },
+        {
+          "name": "Tempestade Relampejante",
+          "description": "O kraken cria magicamente tres relampagos, cada um dos quais pode atingir um alvo que ele possa ver a ate 36 m. Um alvo deve fazer um teste de resistencia de Destreza CD 23, sofrendo 22 (4d10) de dano de eletricidade em caso de falha, ou metade em caso de sucesso."
+        }
+      ],
+      "legendaryActions": {
+        "description": "O kraken pode realizar 3 acoes lendarias.",
+        "actions": [
+          {
+            "name": "Ataque de Tentaculo ou Arremessar",
+            "description": "O kraken faz um ataque de tentaculo ou usa Arremessar."
+          },
+          {
+            "name": "Tempestade Relampejante (Custa 2 Acoes)",
+            "description": "O kraken usa Tempestade Relampejante."
+          },
+          {
+            "name": "Jato de Tinta (Custa 3 Acoes, somente enquanto submerso)",
+            "description": "O kraken expele uma nuvem de tinta num raio de 18 m. A nuvem se espalha ao redor de cantos, e a area e fortemente obscurecida para criaturas que nao sejam o kraken. Cada criatura que nao seja o kraken que terminar seu turno la deve ser bem-sucedida em um teste de resistencia de Constituicao CD 23 ou sofrera 16 (3d10) de dano por veneno."
+          }
+        ]
+      },
+      "environment": [
+        "Aquatico",
+        "Costeiro"
+      ]
+    },
+    {
+      "id": "mon-tarrasque",
+      "name": "Tarrasque",
+      "nameEN": "Tarrasque",
+      "size": "Colossal",
+      "type": "Monstruosidade",
+      "subtype": "titan",
+      "alignment": "Sem Alinhamento",
+      "ac": 25,
+      "acType": "armadura natural",
+      "hp": 676,
+      "hitDice": "33d20+330",
+      "speed": {
+        "walk": 40
+      },
+      "stats": {
+        "str": 30,
+        "dex": 11,
+        "con": 30,
+        "int": 3,
+        "wis": 11,
+        "cha": 11
+      },
+      "savingThrows": {
+        "int": 5,
+        "wis": 9,
+        "cha": 9
+      },
+      "damageImmunities": [
+        "fogo",
+        "veneno",
+        "contundente, cortante e perfurante de ataques nao magicos"
+      ],
+      "conditionImmunities": [
+        "encantado",
+        "amedrontado",
+        "paralisado",
+        "envenenado"
+      ],
+      "senses": {
+        "blindsight": 120,
+        "passivePerception": 10
+      },
+      "languages": [],
+      "cr": "30",
+      "xp": 155000,
+      "traits": [
+        {
+          "name": "Carapaca Reflexiva",
+          "description": "Qualquer vez que o tarrasque for alvo de misseis magicos, uma linha de magia ou uma magia que exija uma jogada de ataque a distancia, role um d6. Em um resultado de 1 a 5, o tarrasque nao e afetado. Em um 6, o tarrasque nao e afetado e o efeito e refletido de volta ao conjurador como se tivesse se originado do tarrasque, mirando o conjurador com seu proprio ataque."
+        },
+        {
+          "name": "Resistencia Lendaria (3/dia)",
+          "description": "Se o tarrasque falhar em um teste de resistencia, ele pode escolher ser bem-sucedido em vez disso."
+        },
+        {
+          "name": "Resistencia a Magia",
+          "description": "O tarrasque tem vantagem em testes de resistencia contra magias e outros efeitos magicos."
+        },
+        {
+          "name": "Cerco",
+          "description": "O tarrasque causa dano dobrado em objetos e estruturas."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O tarrasque pode usar sua Presenca Aterrorizante. Ele entao faz cinco ataques: um com sua mordida, dois com suas garras, um com seus chifres e um com sua cauda. Ele pode usar Engolir no lugar de sua mordida."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +19 para acertar, alcance 3 m, um alvo. Acerto: 36 (4d12+10) de dano perfurante. Se o alvo for uma criatura, ele e agarrado (CD de fuga 20). Ate que o agarrao termine, o alvo esta contido e o tarrasque nao pode morder outro alvo."
+        },
+        {
+          "name": "Garra",
+          "description": "Ataque Corpo a Corpo com Arma: +19 para acertar, alcance 4,5 m, um alvo. Acerto: 28 (4d8+10) de dano cortante."
+        },
+        {
+          "name": "Chifres",
+          "description": "Ataque Corpo a Corpo com Arma: +19 para acertar, alcance 3 m, um alvo. Acerto: 32 (4d10+10) de dano perfurante."
+        },
+        {
+          "name": "Cauda",
+          "description": "Ataque Corpo a Corpo com Arma: +19 para acertar, alcance 6 m, um alvo. Acerto: 24 (4d6+10) de dano contundente. Se o alvo for uma criatura, deve ser bem-sucedido em um teste de resistencia de Forca CD 20 ou sera derrubado."
+        },
+        {
+          "name": "Presenca Aterrorizante",
+          "description": "Cada criatura a escolha do tarrasque a ate 36 m dele e ciente dele deve fazer um teste de resistencia de Sabedoria CD 17 ou ficara amedrontada por 1 minuto."
+        },
+        {
+          "name": "Engolir",
+          "description": "O tarrasque faz um ataque de mordida contra uma criatura Grande ou menor que esteja agarrando. Se o ataque acertar, o alvo sofre o dano da mordida, e engolido e o agarrao termina. Uma criatura engolida e cega e contida, sofre 56 (16d6) de dano acido no inicio de cada turno do tarrasque. Se o tarrasque sofrer 60 ou mais de dano em um unico turno de uma criatura dentro dele, deve fazer um teste de resistencia de Constituicao CD 20 ou regurgitara todas as criaturas engolidas."
+        }
+      ],
+      "legendaryActions": {
+        "description": "O tarrasque pode realizar 3 acoes lendarias.",
+        "actions": [
+          {
+            "name": "Ataque",
+            "description": "O tarrasque faz um ataque de garra ou cauda."
+          },
+          {
+            "name": "Mover",
+            "description": "O tarrasque se move ate metade de sua velocidade."
+          },
+          {
+            "name": "Mastigar (Custa 2 Acoes)",
+            "description": "O tarrasque faz um ataque de mordida ou usa Engolir."
+          }
+        ]
+      },
+      "environment": [
+        "Planicies",
+        "Colinas",
+        "Montanhas"
+      ]
+    },
+    {
+      "id": "mon-lobo",
+      "name": "Lobo",
+      "nameEN": "Wolf",
+      "size": "Medio",
+      "type": "Besta",
+      "alignment": "Sem Alinhamento",
+      "ac": 13,
+      "acType": "armadura natural",
+      "hp": 11,
+      "hitDice": "2d8+2",
+      "speed": {
+        "walk": 40
+      },
+      "stats": {
+        "str": 12,
+        "dex": 15,
+        "con": 12,
+        "int": 3,
+        "wis": 12,
+        "cha": 6
+      },
+      "skills": {
+        "Percepcao": 3,
+        "Furtividade": 4
+      },
+      "senses": {
+        "passivePerception": 13
+      },
+      "languages": [],
+      "cr": "1/4",
+      "xp": 50,
+      "traits": [
+        {
+          "name": "Faro Aguado",
+          "description": "O lobo tem vantagem em testes de Sabedoria (Percepcao) que dependam de olfato."
+        },
+        {
+          "name": "Tatica de Bando",
+          "description": "O lobo tem vantagem em uma jogada de ataque contra uma criatura se pelo menos um dos aliados do lobo estiver a 1,5 m da criatura e o aliado nao estiver incapacitado."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 7 (2d4+2) de dano perfurante. Se o alvo for uma criatura, deve ser bem-sucedido em um teste de resistencia de Forca CD 11 ou sera derrubado."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Colinas",
+        "Planicies"
+      ]
+    },
+    {
+      "id": "mon-rato-gigante",
+      "name": "Rato Gigante",
+      "nameEN": "Giant Rat",
+      "size": "Pequeno",
+      "type": "Besta",
+      "alignment": "Sem Alinhamento",
+      "ac": 12,
+      "hp": 7,
+      "hitDice": "2d6",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 7,
+        "dex": 15,
+        "con": 11,
+        "int": 2,
+        "wis": 10,
+        "cha": 4
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [],
+      "cr": "1/8",
+      "xp": 25,
+      "traits": [
+        {
+          "name": "Faro Aguado",
+          "description": "O rato tem vantagem em testes de Sabedoria (Percepcao) que dependam de olfato."
+        },
+        {
+          "name": "Tatica de Bando",
+          "description": "O rato tem vantagem em uma jogada de ataque contra uma criatura se pelo menos um dos aliados do rato estiver a 1,5 m da criatura e o aliado nao estiver incapacitado."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 4 (1d4+2) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Subterraneo",
+        "Urbano"
+      ]
+    },
+    {
+      "id": "mon-aranha-gigante",
+      "name": "Aranha Gigante",
+      "nameEN": "Giant Spider",
+      "size": "Grande",
+      "type": "Besta",
+      "alignment": "Sem Alinhamento",
+      "ac": 14,
+      "acType": "armadura natural",
+      "hp": 26,
+      "hitDice": "4d10+4",
+      "speed": {
+        "walk": 30,
+        "climb": 30
+      },
+      "stats": {
+        "str": 14,
+        "dex": 16,
+        "con": 12,
+        "int": 2,
+        "wis": 11,
+        "cha": 4
+      },
+      "skills": {
+        "Furtividade": 7
+      },
+      "senses": {
+        "blindsight": 10,
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [],
+      "cr": "1",
+      "xp": 200,
+      "traits": [
+        {
+          "name": "Andar nas Teias",
+          "description": "A aranha ignora restricoes de movimento causadas por teias."
+        },
+        {
+          "name": "Escalar Teias",
+          "description": "A aranha pode escalar superficies dificeis, incluindo tetos de cabeca para baixo, sem precisar fazer um teste de habilidade."
+        },
+        {
+          "name": "Sentido de Teia",
+          "description": "Enquanto estiver em contato com uma teia, a aranha sabe a localizacao exata de qualquer outra criatura em contato com a mesma teia."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, uma criatura. Acerto: 7 (1d8+3) de dano perfurante, e o alvo deve fazer um teste de resistencia de Constituicao CD 11, sofrendo 9 (2d8) de dano por veneno em caso de falha, ou metade em caso de sucesso. Se o dano por veneno reduzir o alvo a 0 PV, o alvo fica estavel mas envenenado por 1 hora, mesmo apos recuperar PV, e fica paralisado enquanto envenenado dessa forma."
+        },
+        {
+          "name": "Teia (Recarga 5-6)",
+          "description": "Ataque a Distancia com Arma: +5 para acertar, alcance 9/18 m, uma criatura. Acerto: o alvo fica contido pela teia. Como acao, a criatura contida pode fazer um teste de Forca CD 12, rompendo a teia em caso de sucesso. A teia tambem pode ser atacada e destruida (CA 10; PV 5; vulnerabilidade a dano de fogo; imunidade a dano contundente, psiquico e por veneno)."
+        }
+      ],
+      "environment": [
+        "Floresta",
+        "Subterraneo",
+        "Pantano"
+      ]
+    },
+    {
+      "id": "mon-bandido",
+      "name": "Bandido",
+      "nameEN": "Bandit",
+      "size": "Medio",
+      "type": "Humanoide",
+      "subtype": "qualquer raca",
+      "alignment": "Qualquer Alinhamento",
+      "ac": 12,
+      "acType": "armadura de couro",
+      "hp": 11,
+      "hitDice": "2d8+2",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 11,
+        "dex": 12,
+        "con": 12,
+        "int": 10,
+        "wis": 10,
+        "cha": 10
+      },
+      "senses": {
+        "passivePerception": 10
+      },
+      "languages": [
+        "Qualquer uma (normalmente Comum)"
+      ],
+      "cr": "1/8",
+      "xp": 25,
+      "actions": [
+        {
+          "name": "Cimitarra",
+          "description": "Ataque Corpo a Corpo com Arma: +3 para acertar, alcance 1,5 m, um alvo. Acerto: 4 (1d6+1) de dano cortante."
+        },
+        {
+          "name": "Besta Leve",
+          "description": "Ataque a Distancia com Arma: +3 para acertar, alcance 24/96 m, um alvo. Acerto: 5 (1d8+1) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Urbano",
+        "Floresta",
+        "Planicies",
+        "Colinas",
+        "Costeiro",
+        "Deserto"
+      ]
+    },
+    {
+      "id": "mon-capitao-bandido",
+      "name": "Capitao Bandido",
+      "nameEN": "Bandit Captain",
+      "size": "Medio",
+      "type": "Humanoide",
+      "subtype": "qualquer raca",
+      "alignment": "Qualquer Alinhamento",
+      "ac": 15,
+      "acType": "brunea",
+      "hp": 65,
+      "hitDice": "10d8+20",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 15,
+        "dex": 16,
+        "con": 14,
+        "int": 14,
+        "wis": 11,
+        "cha": 14
+      },
+      "savingThrows": {
+        "str": 4,
+        "dex": 5,
+        "wis": 2
+      },
+      "skills": {
+        "Atletismo": 4,
+        "Enganacao": 4
+      },
+      "senses": {
+        "passivePerception": 10
+      },
+      "languages": [
+        "Qualquer duas"
+      ],
+      "cr": "2",
+      "xp": 450,
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O capitao faz tres ataques corpo a corpo: dois com sua cimitarra e um com sua adaga. Ou faz dois ataques a distancia com adagas."
+        },
+        {
+          "name": "Cimitarra",
+          "description": "Ataque Corpo a Corpo com Arma: +5 para acertar, alcance 1,5 m, um alvo. Acerto: 6 (1d6+3) de dano cortante."
+        },
+        {
+          "name": "Adaga",
+          "description": "Ataque Corpo a Corpo ou a Distancia com Arma: +5 para acertar, alcance 1,5 m ou 6/18 m, um alvo. Acerto: 5 (1d4+3) de dano perfurante."
+        }
+      ],
+      "reactions": [
+        {
+          "name": "Aparar",
+          "description": "O capitao adiciona 2 a sua CA contra um ataque corpo a corpo que o atingiria. Para tanto, o capitao deve ver o atacante e estar empunhando uma arma corpo a corpo."
+        }
+      ],
+      "environment": [
+        "Urbano",
+        "Floresta",
+        "Planicies",
+        "Costeiro"
+      ]
+    },
+    {
+      "id": "mon-quimera",
+      "name": "Quimera",
+      "nameEN": "Chimera",
+      "size": "Grande",
+      "type": "Monstruosidade",
+      "alignment": "Caotico e Mau",
+      "ac": 14,
+      "acType": "armadura natural",
+      "hp": 114,
+      "hitDice": "12d10+48",
+      "speed": {
+        "walk": 30,
+        "fly": 60
+      },
+      "stats": {
+        "str": 19,
+        "dex": 11,
+        "con": 19,
+        "int": 3,
+        "wis": 14,
+        "cha": 10
+      },
+      "skills": {
+        "Percepcao": 8
+      },
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 18
+      },
+      "languages": [
+        "entende Draconico mas nao fala"
+      ],
+      "cr": "6",
+      "xp": 2300,
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "A quimera faz tres ataques: um com sua mordida, um com seus chifres e um com suas garras. Quando seu sopro de fogo esta disponivel, ela pode usa-lo no lugar de sua mordida ou chifres."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 11 (2d6+4) de dano perfurante."
+        },
+        {
+          "name": "Chifres",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 10 (1d12+4) de dano contundente."
+        },
+        {
+          "name": "Garras",
+          "description": "Ataque Corpo a Corpo com Arma: +7 para acertar, alcance 1,5 m, um alvo. Acerto: 11 (2d6+4) de dano cortante."
+        },
+        {
+          "name": "Sopro de Fogo (Recarga 5-6)",
+          "description": "A cabeca de dragao exala fogo em um cone de 4,5 m. Cada criatura nessa area deve fazer um teste de resistencia de Destreza CD 15, sofrendo 31 (7d8) de dano de fogo em caso de falha, ou metade em caso de sucesso."
+        }
+      ],
+      "environment": [
+        "Colinas",
+        "Montanhas"
+      ]
+    },
+    {
+      "id": "mon-wight",
+      "name": "Wight",
+      "nameEN": "Wight",
+      "size": "Medio",
+      "type": "Morto-vivo",
+      "alignment": "Neutro e Mau",
+      "ac": 14,
+      "acType": "brunea",
+      "hp": 45,
+      "hitDice": "6d8+18",
+      "speed": {
+        "walk": 30
+      },
+      "stats": {
+        "str": 15,
+        "dex": 14,
+        "con": 16,
+        "int": 10,
+        "wis": 13,
+        "cha": 15
+      },
+      "skills": {
+        "Percepcao": 3,
+        "Furtividade": 4
+      },
+      "damageResistances": [
+        "necrotico",
+        "contundente, cortante e perfurante de armas nao prateadas e nao magicas"
+      ],
+      "damageImmunities": [
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "envenenado",
+        "exaustao"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 13
+      },
+      "languages": [
+        "as linguas que sabia em vida"
+      ],
+      "cr": "3",
+      "xp": 700,
+      "traits": [
+        {
+          "name": "Sensibilidade a Luz Solar",
+          "description": "Enquanto estiver sob luz solar, o wight tem desvantagem em jogadas de ataque e testes de Sabedoria (Percepcao) que dependam de visao."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "O wight faz dois ataques de espada longa ou dois ataques de arco longo. Ele pode usar Drenar Vida no lugar de um ataque de espada longa."
+        },
+        {
+          "name": "Drenar Vida",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, uma criatura. Acerto: 5 (1d6+2) de dano necrotico. O alvo deve fazer um teste de resistencia de Constituicao CD 13 ou seu maximo de PV sera reduzido por uma quantidade igual ao dano sofrido. Essa reducao dura ate o alvo completar um descanso longo. O alvo morre se esse efeito reduzir seu maximo de PV a 0."
+        },
+        {
+          "name": "Espada Longa",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 6 (1d8+2) de dano cortante, ou 7 (1d10+2) de dano cortante se usada com duas maos."
+        },
+        {
+          "name": "Arco Longo",
+          "description": "Ataque a Distancia com Arma: +4 para acertar, alcance 45/180 m, um alvo. Acerto: 6 (1d8+2) de dano perfurante."
+        }
+      ],
+      "environment": [
+        "Subterraneo",
+        "Pantano",
+        "Urbano"
+      ]
+    },
+    {
+      "id": "mon-gargula",
+      "name": "Gargula",
+      "nameEN": "Gargoyle",
+      "size": "Medio",
+      "type": "Elemental",
+      "alignment": "Caotico e Mau",
+      "ac": 15,
+      "acType": "armadura natural",
+      "hp": 52,
+      "hitDice": "7d8+21",
+      "speed": {
+        "walk": 30,
+        "fly": 60
+      },
+      "stats": {
+        "str": 15,
+        "dex": 11,
+        "con": 16,
+        "int": 6,
+        "wis": 11,
+        "cha": 7
+      },
+      "damageResistances": [
+        "contundente, cortante e perfurante de ataques nao magicos que nao sejam adamantinos"
+      ],
+      "damageImmunities": [
+        "veneno"
+      ],
+      "conditionImmunities": [
+        "envenenado",
+        "petrificado",
+        "exaustao"
+      ],
+      "senses": {
+        "darkvision": 60,
+        "passivePerception": 10
+      },
+      "languages": [
+        "Terran"
+      ],
+      "cr": "2",
+      "xp": 450,
+      "traits": [
+        {
+          "name": "Aparencia Falsa",
+          "description": "Enquanto a gargula permanece imovel, ela e indistinguivel de uma estatua inanimada."
+        }
+      ],
+      "actions": [
+        {
+          "name": "Ataques Multiplos",
+          "description": "A gargula faz dois ataques: um com sua mordida e um com suas garras."
+        },
+        {
+          "name": "Mordida",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 5 (1d6+2) de dano perfurante."
+        },
+        {
+          "name": "Garras",
+          "description": "Ataque Corpo a Corpo com Arma: +4 para acertar, alcance 1,5 m, um alvo. Acerto: 5 (1d6+2) de dano cortante."
+        }
+      ],
+      "environment": [
+        "Urbano",
+        "Subterraneo"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,844 @@
+# ——————————————————————————————————————————————————————————
+# REGRAS DE RAÇAS — D&D 5e (Base PHB, PT-BR)
+# Estrutura:
+# - Cada raça possui blocos de atributos, idiomas, proficiências e traits.
+# - Traits apontam para chaves padronizadas em trait_definitions (abaixo).
+# - Campos `description` das raças/sub-raças são resumos de fantasia.
+# ——————————————————————————————————————————————————————————
+
+aarakocra:
+  id: aarakocra
+  name: "Aarakocra"
+  description: "Povo-pássaro; domínio dos céus, garras afiadas e dialetos auranos."
+  size: "Médio"
+  speed: 25            # 7,5 m ≈ 25 ft (caminhada)
+  ability:
+    type: fixed
+    increases: [{ ability: DEX, amount: 2 }]
+  languages:
+    always: [Comum, Aarakocra, Auran]
+    choiceCount: 0
+  traits:
+    - { key: flight_15m_no_med_heavy } # Voo 15 m; não funciona com armadura média/pesada
+    - { key: claws_1d4_slashing }      # Garras 1d4 (cortante), proficiente
+  subraces:
+    falconicos:
+      id: falconicos
+      name: "Falcônicos"
+      description: "Mais altos e fortes; falcões, águias, gaviões e afins."
+      ability:
+        type: fixed
+        increases: [{ ability: STR, amount: 1 }]
+      traits:
+        - { key: flight_medium_ok }    # Únicos que podem voar com armadura média
+    nocturnos:
+      id: nocturnos
+      name: "Nocturnos"
+      description: "Semelhantes a corujas; hábitos noturnos e visão aguçada."
+      ability:
+        type: fixed
+        increases: [{ ability: WIS, amount: 1 }]
+      traits:
+        - { key: darkvision, range: 60 }
+    cypselanos:
+      id: cypselanos
+      name: "Cypselanos"
+      description: "Menores e coloridos; cantores natos de belos timbres."
+      ability:
+        type: fixed
+        increases: [{ ability: CHA, amount: 1 }]
+      proficiencies:
+        skills:
+          fixed: [Atuação]             # Performance
+        tools:
+          fixed: ["Voz (instrumento)"] # Trate "Voz" como instrumento
+      traits:
+        - { key: natural_singers }
+
+
+centaur:
+  id: centaur
+  name: "Centauro"
+  description: "Metade humanoide, metade equino; velozes, fortes e adaptados a terreno aberto."
+  size: "Médio"        # Nota: altura ~2,50 m; continua mecânica de tamanho Médio
+  speed: 40            # 12 m ≈ 40 ft
+  ability:
+    type: fixed
+    increases: [{ ability: STR, amount: 2 }, { ability: WIS, amount: 1 }]
+  languages:
+    always: [Comum, Silvestre]
+    choiceCount: 0
+  proficiencies:
+    skills:
+      fixed: [Sobrevivência]
+  traits:
+    - { key: centaur_charge }          # “Carga” 1/SR ou LR
+    - { key: hooves_1d6_strike }       # Cascos 1d6 + STR (contundente), proficiente
+    - { key: equine_build }            # Corpo Equino: carga/empurrar/puxar melhores; escalada difícil; vantagem STR(Atletismo) p/ empurrar/puxar; montaria opcional
+    - { key: hybrid_nature_hum_monstr }
+
+dwarf:
+  id: dwarf
+  name: "Anão"
+  description: "Robustos e obstinados; mestres da pedra e do metal, com tradições antigas."
+  size: "Médio"
+  speed: 25
+  ability:
+    type: fixed
+    increases: [{ ability: CON, amount: 2 }]
+  darkvision: { range: 60 }
+  languages:
+    always: [Comum, Anão]
+    choiceCount: 0
+  proficiencies:
+    weapons: [machado de batalha, machadinha, martelo leve, martelo de guerra]
+    tools:
+      choiceCount: 1
+      choices: [Ferramentas de ferreiro, Suprimentos de cervejeiro, Ferramentas de pedreiro]
+  traits:
+    - { key: dwarven_resilience }
+    - { key: stonecunning }
+    - { key: speed_not_reduced_by_heavy_armor }
+    - { key: darkvision, range: 60 }
+  subraces:
+    hill:
+      id: hill
+      name: "Anão da Colina"
+      description: "Sábios e resistentes; vigor inabalável."
+      ability:
+        type: fixed
+        increases: [{ ability: WIS, amount: 1 }]
+      traits:
+        - { key: dwarven_toughness }
+    mountain:
+      id: mountain
+      name: "Anão da Montanha"
+      description: "Forjados em fortalezas alpinas; treinados para a guerra."
+      ability:
+        type: fixed
+        increases: [{ ability: STR, amount: 2 }]
+      proficiencies:
+        armor: [leve, média]
+  requires: [dwarfTool]
+
+elf:
+  id: elf
+  name: "Elfo"
+  description: "Graciosos, longevos e atentos; filhos das florestas e da magia."
+  size: "Médio"
+  speed: 30
+  ability:
+    type: fixed
+    increases: [{ ability: DEX, amount: 2 }]
+  darkvision: { range: 60 }
+  languages:
+    always: [Comum, Élfico]
+    choiceCount: 0
+  proficiencies:
+    skills:
+      fixed: [Percepção]
+  traits:
+    - { key: fey_ancestry }
+    - { key: trance }
+    - { key: keen_senses }
+    - { key: darkvision, range: 60 }
+  subraces:
+    high:
+      id: high
+      name: "Alto Elfo"
+      description: "Arcana refinada; mente analítica e disciplina arcana."
+      ability:
+        type: fixed
+        increases: [{ ability: INT, amount: 1 }]
+      proficiencies:
+        weapons: [espada longa, espada curta, arco curto, arco longo]
+      languages:
+        choiceCount: 1
+        choiceList: [Anão, Halfling, Dracônico, Gnômico, Orc, Infernal]
+      traits:
+        - key: high_elf_cantrip
+          options:
+            choose: 1
+            ability: INT
+            spell_list: wizard
+            filters:
+              level: 0
+    wood:
+      id: wood
+      name: "Elfo da Floresta"
+      description: "Pisada leve, olhos atentos; caçadores e batedores natos."
+      ability:
+        type: fixed
+        increases: [{ ability: WIS, amount: 1 }]
+      speed: 35
+      proficiencies:
+        weapons: [espada longa, espada curta, arco curto, arco longo]
+      traits:
+        - { key: fleet_of_foot }
+        - { key: mask_of_the_wild }
+    drow:
+      id: drow
+      name: "Elfo Negro (Drow)"
+      description: "Criados no Subterrâneo; dominam sombras e magia drow."
+      ability:
+        type: fixed
+        increases: [{ ability: CHA, amount: 1 }]
+      proficiencies:
+        weapons: [rapieira, espada curta, besta de mão]
+      traits:
+        - { key: superior_darkvision, range: 120 }
+        - { key: sunlight_sensitivity }
+        - { key: drow_magic }
+
+human:
+  id: human
+  name: "Humano"
+  description: "Versáteis e ambiciosos; adaptam-se a qualquer papel."
+  size: "Médio"
+  speed: 30
+  ability:
+    type: fixed
+    increases:
+      - { ability: STR, amount: 1 }
+      - { ability: DEX, amount: 1 }
+      - { ability: CON, amount: 1 }
+      - { ability: INT, amount: 1 }
+      - { ability: WIS, amount: 1 }
+      - { ability: CHA, amount: 1 }
+  languages:
+    always: [Comum]
+    choiceCount: 1
+    choiceList: [Anão, Élfico, Halfling, Dracônico, Gnômico, Orc, Infernal]
+  traits: []
+  subraces:
+    standard:
+      id: standard
+      name: "Humano Padrão"
+      description: "Recebe +1 em todos os seis atributos."
+      traits: []
+    variant:
+      id: variant
+      name: "Humano Variante"
+      description: "Talentos diversos; aprendem rapidamente."
+      ability:
+        type: variantHuman
+        chooseAbilities: { count: 2, amount: 1 }
+        skillChoices: 1
+        feat: true
+
+dragonborn:
+  id: dragonborn
+  name: "Draconato"
+  description: "Sangue dracônico; sopro elemental e presença imponente."
+  size: "Médio"
+  speed: 30
+  ability:
+    type: fixed
+    increases: [{ ability: STR, amount: 2 }, { ability: CHA, amount: 1 }]
+  languages:
+    always: [Comum, Dracônico]
+    choiceCount: 0
+  traits: []
+  subraces:
+    black:
+      id: black
+      name: "Preto (Ácido)"
+      description: "Ancestralidade de dragão negro; sopro de ácido em linha."
+      traits:
+        - { key: breath_weapon, damage: "Ácido", breath: "Linha 1,5 m x 9 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Ácido" }
+    blue:
+      id: blue
+      name: "Azul (Relâmpago)"
+      description: "Ancestralidade de dragão azul; sopro de relâmpago em linha."
+      traits:
+        - { key: breath_weapon, damage: "Relâmpago", breath: "Linha 1,5 m x 9 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Relâmpago" }
+    brass:
+      id: brass
+      name: "Latão (Fogo)"
+      description: "Ancestralidade de dragão de latão; sopro de fogo em linha."
+      traits:
+        - { key: breath_weapon, damage: "Fogo", breath: "Linha 1,5 m x 9 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Fogo" }
+    bronze:
+      id: bronze
+      name: "Bronze (Relâmpago)"
+      description: "Ancestralidade de dragão de bronze; sopro de relâmpago em linha."
+      traits:
+        - { key: breath_weapon, damage: "Relâmpago", breath: "Linha 1,5 m x 9 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Relâmpago" }
+    copper:
+      id: copper
+      name: "Cobre (Ácido)"
+      description: "Ancestralidade de dragão de cobre; sopro de ácido em linha."
+      traits:
+        - { key: breath_weapon, damage: "Ácido", breath: "Linha 1,5 m x 9 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Ácido" }
+    gold:
+      id: gold
+      name: "Ouro (Fogo)"
+      description: "Ancestralidade de dragão de ouro; sopro de fogo em cone."
+      traits:
+        - { key: breath_weapon, damage: "Fogo", breath: "Cone 4,5 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Fogo" }
+    green:
+      id: green
+      name: "Verde (Veneno)"
+      description: "Ancestralidade de dragão verde; sopro de veneno em cone."
+      traits:
+        - { key: breath_weapon, damage: "Veneno", breath: "Cone 4,5 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Veneno" }
+    red:
+      id: red
+      name: "Vermelho (Fogo)"
+      description: "Ancestralidade de dragão vermelho; sopro de fogo em cone."
+      traits:
+        - { key: breath_weapon, damage: "Fogo", breath: "Cone 4,5 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Fogo" }
+    silver:
+      id: silver
+      name: "Prata (Frio)"
+      description: "Ancestralidade de dragão de prata; sopro de frio em cone."
+      traits:
+        - { key: breath_weapon, damage: "Frio", breath: "Cone 4,5 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Frio" }
+    white:
+      id: white
+      name: "Branco (Frio)"
+      description: "Ancestralidade de dragão branco; sopro de frio em cone."
+      traits:
+        - { key: breath_weapon, damage: "Frio", breath: "Cone 4,5 m" }
+        - { key: damage_resistance_from_ancestry, damage: "Frio" }
+
+gnome:
+  id: gnome
+  name: "Gnomo"
+  description: "Curiosos e engenhosos; mente rápida e humor leve."
+  size: "Médio"
+  speed: 25
+  ability:
+    type: fixed
+    increases: [{ ability: INT, amount: 2 }]
+  darkvision: { range: 60 }
+  languages:
+    always: [Comum, Gnômico]
+    choiceCount: 0
+  traits:
+    - { key: gnome_cunning }
+    - { key: darkvision, range: 60 }
+  subraces:
+    forest:
+      id: forest
+      name: "Gnomo da Floresta"
+      description: "Ilusionistas natos; falam com pequenas criaturas."
+      ability:
+        type: fixed
+        increases: [{ ability: DEX, amount: 1 }]
+      traits:
+        - key: minor_illusion_cantrip
+          grants:
+            spells:
+              - spell: minor-illusion
+                level: 0
+                ability: INT
+                usage: at_will
+        - { key: speak_with_small_beasts }
+    rock:
+      id: rock
+      name: "Gnomo das Rochas"
+      description: "Historiadores de engenhocas; pequenos inventores."
+      ability:
+        type: fixed
+        increases: [{ ability: CON, amount: 1 }]
+      traits:
+        - { key: artificers_lore }
+        - { key: tinker }
+
+half_elf:
+  id: half_elf
+  name: "Meio-Elfo"
+  description: "Diplomatas e andantes entre dois mundos; carisma natural."
+  size: "Médio"
+  speed: 30
+  ability:
+    type: halfElf
+    fixed: [{ ability: CHA, amount: 2 }]
+    choose: { count: 2, amount: 1 }
+  darkvision: { range: 60 }
+  languages:
+    always: [Comum, Élfico]
+    choiceCount: 1
+    choiceList: [Anão, Halfling, Dracônico, Gnômico, Orc, Infernal]
+  proficiencies:
+    skills:
+      choiceCount: 2
+      choices:
+        [Acrobacia, Arcanismo, Atletismo, Atuação, Enganação, Furtividade, História,
+         Intimidação, Intuição, Investigação, Lidar com Animais, Medicina, Natureza,
+         Percepção, Persuasão, Religião, Sobrevivência]
+  traits:
+    - { key: fey_ancestry }
+    - { key: darkvision, range: 60 }
+    - { key: skill_versatility }
+
+half_orc:
+  id: half_orc
+  name: "Meio-Orc"
+  description: "Brutais e resilientes; forjados na adversidade."
+  size: "Médio"
+  speed: 30
+  ability:
+    type: fixed
+    increases: [{ ability: STR, amount: 2 }, { ability: CON, amount: 1 }]
+  darkvision: { range: 60 }
+  languages:
+    always: [Comum, Orc]
+    choiceCount: 0
+  proficiencies:
+    skills:
+      fixed: [Intimidação]
+  traits:
+    - { key: relentless_endurance }
+    - { key: savage_attacks }
+    - { key: darkvision, range: 60 }
+
+halfling:
+  id: halfling
+  name: "Halfling"
+  description: "Pequenos, sorrateiros e valentes; sorte peculiar."
+  size: "Pequeno"
+  speed: 25
+  ability:
+    type: fixed
+    increases: [{ ability: DEX, amount: 2 }]
+  languages:
+    always: [Comum, Halfling]
+    choiceCount: 0
+  traits:
+    - { key: lucky }
+    - { key: brave }
+    - { key: halfling_nimbleness }
+  subraces:
+    lightfoot:
+      id: lightfoot
+      name: "Pés Leves"
+      description: "Afáveis e discretos; somem atrás de gente maior."
+      ability:
+        type: fixed
+        increases: [{ ability: CHA, amount: 1 }]
+      traits:
+        - { key: naturally_stealthy }
+    stout:
+      id: stout
+      name: "Robusto"
+      description: "Mais duros que a média; fama de ‘sangue de anão’."
+      ability:
+        type: fixed
+        increases: [{ ability: CON, amount: 1 }]
+      traits:
+        - { key: stout_resilience }
+
+tiefling:
+  id: tiefling
+  name: "Tiefling"
+  description: "Marcados por poderes infernais; linhagens de demônios, diabos ou yugoloths."
+  size: "Médio"
+  speed: 30            # 9 m ≈ 30 ft
+  ability:
+    type: fixed
+    increases: [{ ability: CHA, amount: 2 }, { ability: INT, amount: 1 }]
+  darkvision: { range: 60 }
+  languages:
+    always: [Comum, Infernal]
+    choiceCount: 0
+  traits:
+    - { key: darkvision, range: 60 }
+    - key: thaumaturgy_cantrip
+      grants:
+        spells:
+          - spell: thaumaturgy
+            level: 0
+            ability: CHA
+            usage: at_will
+  subraces:
+    abissal:
+      id: abissal
+      name: "Abissal"
+      description: "Sangue dos demônios do Abismo; corpos marcados e odores estranhos."
+      traits:
+        - { key: legacy_resistance_poison }   # Resistência a veneno
+        - { key: abyssal_legacy }             # 3º: Raio Adoecente; 5º: Cativar (CAR), 1/LDesc cada
+    ctonico:
+      id: ctonico
+      name: "Ctônico"
+      description: "Sangue entre demônios e yugoloths; toque do submundo."
+      traits:
+        - { key: legacy_resistance_necrotic } # Resistência a necrótico
+        - { key: chthonic_legacy }            # 3º: Vitalidade Falsa; 5º: Raio do Enfraquecimento (CAR), 1/LDesc
+    infernal:
+      id: infernal
+      name: "Infernal"
+      description: "Linhagem diabólica clássica; enxofre e ouro nos olhos."
+      traits:
+        - { key: legacy_resistance_fire }     # Resistência a fogo
+        - { key: infernal_legacy_variant }    # 3º: Repreensão Infernal; 5º: Escuridão (CAR), 1/LDesc
+
+minotaur:
+  id: minotaur
+  name: "Minotauro"
+  description: "Bestiais e imponentes; chifres afiados, natureza predatória e uma sede por batalha."
+  size: "Médio"
+  speed: 30            # 9 m ≈ 30 ft
+  ability:
+    type: fixed
+    increases: [{ ability: STR, amount: 2 }, { ability: CON, amount: 1 }]
+  languages:
+    always: [Comum, Minotauro]
+    choiceCount: 0
+  proficiencies:
+    skills:
+      choiceCount: 1
+      choices: [Intimidação, Persuasão]
+  traits:
+    - { key: minotaur_horns_1d6 }
+    - { key: goring_rush }
+    - { key: hammering_horns }
+    - { key: hybrid_nature_hum_monstr }
+
+# ——————————————————————————————————————————————————————————
+# CATÁLOGO DE TRAITS (descrição + impacto na ficha)
+# ——————————————————————————————————————————————————————————
+trait_definitions:
+  centaur_charge:
+    name: "Carga"
+    description: "Se mover ≥ 6 m em linha reta até um alvo e acertar ataque corpo-a-corpo no mesmo turno: role o dano da arma duas vezes e some. Recarga após um Descanso Curto ou Longo."
+    sheet_impact: "Criar ação especial (1x/SR ou LR): ‘Carga’ — dobra dados de dano da arma no acerto após corrida de 6 m."
+  hooves_1d6_strike:
+    name: "Cascos"
+    description: "Ataques naturais (contundente) 1d6 + STR; você é proficiente com seus cascos."
+    sheet_impact: "Adicionar ataque natural: ‘Cascos’ (1d6 contundente, atq: STR, prof.)."
+  equine_build:
+    name: "Corpo Equino"
+    description: "Conta como uma categoria maior para carga/empurrar/puxar; vantagem em STR (Atletismo) para puxar/empurrar. Escalar com mãos é difícil: cada 1,5 m de escalada custa +6 m (em vez de +1,5 m). Uma criatura Média ou menor pode montá-lo se você permitir (você age independentemente)."
+    sheet_impact: "Ajustar capacidade de carga/empurrar/puxar; aplicar custo extra de movimento ao escalar; nota de montaria opcional."
+  hybrid_nature_hum_monstr:
+    name: "Natureza Híbrida"
+    description: "Você é considerado Humanoide e Monstruosidade para efeitos de jogo."
+    sheet_impact: "Registrar tipos: ‘Humanoide, Monstruosidade’ (para interações de magias/efeitos)."
+  survivor_proficiency:
+    name: "Sobrevivente"
+    description: "Proficiência em Sobrevivência."
+    sheet_impact: "Adicionar Perícia: Sobrevivência (prof.)."
+
+  minotaur_horns_1d6:
+    name: "Chifres"
+    description: "Ataques naturais (perfurante) 1d6 + STR; você é proficiente com seus chifres."
+    sheet_impact: "Adicionar ataque natural: ‘Chifres’ (1d6 perfurante, atq: STR, prof.)."
+
+  goring_rush:
+    name: "Arremetida Escornada"
+    description: "Após usar Disparada e mover seu deslocamento total, pode fazer 1 ataque com chifres como Ação Bônus."
+    sheet_impact: "Adicionar BA condicional: ‘Arremetida Escornada’ (requer Disparada)."
+
+  hammering_horns:
+    name: "Batedura de Chifres"
+    description: "Após acertar um ataque corpo-a-corpo na sua ação Atacar, como reação tenta empurrar 1,5 m: STR ST CD = 8 + Prof + STR; falha: empurrado; sucesso: permanece."
+    sheet_impact: "Adicionar Reação: ‘Batedura de Chifres’ com CD auto (8+Prof+STR)."
+
+  menacing:
+    name: "Ameaçador"
+    description: "Proficiência em Intimidação."
+    sheet_impact: "Adicionar Perícia: Intimidação (prof.)."
+
+  # — Aarakocra
+  flight_15m_no_med_heavy:
+    name: "Voo (15 m)"
+    description: "Deslocamento de voo 15 m; não funciona usando armadura média ou pesada."
+    sheet_impact: "Adicionar deslocamento ‘voo 15 m’; regra de restrição por armadura."
+
+  flight_medium_ok:
+    name: "Voo com Armadura Média"
+    description: "Você pode usar seu deslocamento de voo mesmo vestindo armadura média."
+    sheet_impact: "Remover restrição de armadura média do voo."
+
+  claws_1d4_slashing:
+    name: "Garras"
+    description: "Ataques desarmados com garras: 1d4 cortante; proficiente."
+    sheet_impact: "Adicionar ataque ‘Garras’ (1d4 cortante, atq: DEX ou STR, prof.)."
+
+  natural_singers:
+    name: "Cantores Natos"
+    description: "Proficiência em Atuação e com a ‘Voz’ como instrumento."
+    sheet_impact: "Adicionar Perícia: Atuação (prof.) e Ferramenta: Voz (prof.)."
+
+  darkvision:
+    name: "Visão no Escuro"
+    description: "Enxerga na penumbra como luz plena e no escuro como penumbra, até o alcance indicado; não discerne cores no escuro."
+    sheet_impact: "Adicionar sentido `darkvision: <alcance>` na ficha."
+
+  superior_darkvision:
+    name: "Visão no Escuro Superior"
+    description: "Versão ampliada (ex.: drow) — alcance 36 m/120 ft."
+    sheet_impact: "Registrar `darkvision: 120`."
+
+  dwarven_resilience:
+    name: "Resiliência Anã"
+    description: "Vantagem em testes de resistência contra veneno e resistência a dano de veneno."
+    sheet_impact: "Marcar vantagem (CON/veneno) e `resistência: veneno`."
+
+  stonecunning:
+    name: "Conhecimento da Pedra"
+    description: "Em testes de INT (História) para origem de trabalhos em pedra, conta como proficiente e dobra o bônus de proficiência."
+    sheet_impact: "Criar nota: ‘História (pedra): proficiência + proficiência dobrada (expertise)’."
+
+  speed_not_reduced_by_heavy_armor:
+    name: "Passo Firme"
+    description: "Velocidade não é reduzida ao usar armadura pesada."
+    sheet_impact: "Não aplicar penalidade de deslocamento por armadura pesada ao anão."
+
+  dwarven_toughness:
+    name: "Robustez Anã"
+    description: "+1 PV por nível."
+    sheet_impact: "Aumentar PV máximo em +1 por nível (aplicar em cada up)."
+
+  keen_senses:
+    name: "Sentidos Aguçados"
+    description: "Proficiência em Percepção."
+    sheet_impact: "Adicionar Perícia: Percepção (prof.)."
+
+  fey_ancestry:
+    name: "Ancestralidade Feérica"
+    description: "Vantagem em testes de resistência contra Enfeitiçado; magia não pode induzir sono."
+    sheet_impact: "Marcar vantagem (WIS/CHA/CON conforme origem do efeito) vs ‘charm’; imunidade a sono mágico."
+
+  trance:
+    name: "Transe"
+    description: "Medita 4h/dia e obtém os benefícios de 8h de sono."
+    sheet_impact: "Anotar descanso: 4h (Longo) para elfos."
+
+  fleet_of_foot:
+    name: "Pés Ligeiros"
+    description: "Deslocamento base 35 ft/10,5 m."
+    sheet_impact: "Setar velocidade base para 35 (se maior, manter maior)."
+
+  mask_of_the_wild:
+    name: "Máscara da Natureza"
+    description: "Pode tentar se esconder mesmo levemente obscurecido por folhagem, neblina, chuva etc."
+    sheet_impact: "Adicionar nota de ação: ‘Esconder (leve obscurecimento natural permitido)’."
+
+  sunlight_sensitivity:
+    name: "Sensibilidade à Luz Solar"
+    description: "Desvantagem em jogadas de ataque e testes de Percepção (visão) sob luz solar direta."
+    sheet_impact: "Lembrar desvantagem situacional em combate/exploração ao sol."
+
+  drow_magic:
+    name: "Magia Drow"
+    description: "Truque: Luzes Dançantes; 3º: Fogo das Fadas 1/LDesc; 5º: Escuridão 1/LDesc (CD/ataque usam CAR)."
+    sheet_impact: "Adicionar magias inatas (uso por descanso longo) com habilidade de conjuração: CAR."
+    grants:
+      spells:
+        - spell: dancing-lights
+          level: 0
+          ability: CHA
+          usage: at_will
+        - spell: faerie-fire
+          level: 1
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 3
+        - spell: darkness
+          level: 2
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 5
+
+  high_elf_cantrip:
+    name: "Truque de Alto Elfo"
+    description: "Aprende 1 truque da lista do Mago (habilidade de conjuração: INT)."
+    sheet_impact: "Adicionar 1 truque (Mago) e usar INT para CD/ataque mágico de truque."
+    options:
+      choose: 1
+      ability: INT
+      spell_list: wizard
+      filters:
+        level: 0
+
+  lucky:
+    name: "Sorte (Halfling)"
+    description: "Ao tirar 1 natural em ataque, teste ou resistência, rerrola e usa o novo resultado."
+    sheet_impact: "Ativar regra especial de rerrolagem on-1 (uma vez por ocorrência)."
+
+  brave:
+    name: "Bravura"
+    description: "Vantagem em testes de resistência contra Amedrontado."
+    sheet_impact: "Marcar vantagem vs ‘frightened’."
+
+  halfling_nimbleness:
+    name: "Agilidade Halfling"
+    description: "Pode mover-se através do espaço de criaturas de tamanho maior."
+    sheet_impact: "Lembrar movimento permitido por espaços hostis maiores."
+
+  naturally_stealthy:
+    name: "Furtividade Natural"
+    description: "Pode tentar se esconder tendo como cobertura apenas uma criatura maior."
+    sheet_impact: "Adicionar nota de Esconder: cobertura por aliados maiores."
+
+  stout_resilience:
+    name: "Resiliência dos Robustos"
+    description: "Vantagem em testes vs veneno e resistência a dano de veneno."
+    sheet_impact: "Igual a Resiliência Anã (aplicar à linhagem Halfling Robusto)."
+
+  gnome_cunning:
+    name: "Astúcia Gnômica"
+    description: "Vantagem em todos os testes de resistência de INT, SAB e CAR contra magia."
+    sheet_impact: "Marcar vantagem global (INT/SAB/CAR saves vs magia)."
+
+  speak_with_small_beasts:
+    name: "Falar com Pequenas Criaturas"
+    description: "Comunica ideias simples com bestas Pequenas ou menores."
+    sheet_impact: "Adicionar nota de exploração/comunicação."
+
+  artificers_lore:
+    name: "Erudição do Artífice"
+    description: "Dobra o bônus de proficiência em INT (História) para itens mágicos, alquímicos ou dispositivos tecnológicos."
+    sheet_impact: "História (itens/artefatos): proficiência dobrada."
+
+  tinker:
+    name: "Engenho (Tinker)"
+    description: "Constrói pequenos dispositivos mecânicos (regras de custo/tempo/efeitos conforme PHB)."
+    sheet_impact: "Adicionar bloco de inventos (opcional, com cargas/uso)."
+
+  minor_illusion_cantrip:
+    name: "Truque: Ilusão Menor"
+    description: "Aprende Ilusão Menor; habilidade de conjuração conforme indicado (gnomo da floresta usa INT)."
+    sheet_impact: "Adicionar truque à lista do personagem."
+    grants:
+      spells:
+        - spell: minor-illusion
+          level: 0
+          ability: INT
+          usage: at_will
+
+  skill_versatility:
+    name: "Versatilidade de Perícias"
+    description: "Proficiência em duas perícias à escolha."
+    sheet_impact: "Selecionar +2 perícias e marcar proficiência."
+
+  relentless_endurance:
+    name: "Perseverança Implacável"
+    description: "Quando cair a 0 PV e não morrer, fica em 1 PV 1x por Descanso Longo."
+    sheet_impact: "Adicionar reação/uso 1x/LDesc que define PV para 1 (logar uso)."
+
+  savage_attacks:
+    name: "Golpes Selvagens"
+    description: "Ao obter crítico com ataque corpo a corpo, rola 1 dado de dano adicional da arma e soma ao dano total."
+    sheet_impact: "Adicionar dado extra em críticos corpo a corpo."
+
+  hellish_resistance:
+    name: "Resistência Infernal"
+    description: "Resistência a dano de fogo."
+    sheet_impact: "Marcar `resistência: fogo`."
+
+  infernal_legacy:
+    name: "Legado Infernal"
+    description: "Truque: Taumaturgia; 3º: Repreensão Infernal (2º) 1/LDesc; 5º: Escuridão 1/LDesc (conjur. por CAR)."
+    sheet_impact: "Adicionar magias inatas e recargas por descanso longo."
+    grants:
+      spells:
+        - spell: thaumaturgy
+          level: 0
+          ability: CHA
+          usage: at_will
+          minimum_level: 1
+        - spell: hellish-rebuke
+          level: 2
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 3
+        - spell: darkness
+          level: 2
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 5
+
+  draconic_ancestry:
+    name: "Ancestralidade Dracônica"
+    description: "Escolhe cor/tipo do dragão; define tipo de dano do sopro e da resistência."
+    sheet_impact: "Gravar `ancestralidade`: tipo de dano (ex.: fogo/ácido/gel/raio/trovão)."
+    options:
+      choose: 1
+      list:
+        - { id: black, name: "Preto (Ácido)", damage: "Ácido", breath: "Linha 1,5 m x 9 m" }
+        - { id: blue, name: "Azul (Relâmpago)", damage: "Relâmpago", breath: "Linha 1,5 m x 9 m" }
+        - { id: brass, name: "Latão (Fogo)", damage: "Fogo", breath: "Linha 1,5 m x 9 m" }
+        - { id: bronze, name: "Bronze (Relâmpago)", damage: "Relâmpago", breath: "Linha 1,5 m x 9 m" }
+        - { id: copper, name: "Cobre (Ácido)", damage: "Ácido", breath: "Linha 1,5 m x 9 m" }
+        - { id: gold, name: "Ouro (Fogo)", damage: "Fogo", breath: "Cone 4,5 m" }
+        - { id: green, name: "Verde (Veneno)", damage: "Veneno", breath: "Cone 4,5 m" }
+        - { id: red, name: "Vermelho (Fogo)", damage: "Fogo", breath: "Cone 4,5 m" }
+        - { id: silver, name: "Prata (Frio)", damage: "Frio", breath: "Cone 4,5 m" }
+        - { id: white, name: "Branco (Frio)", damage: "Frio", breath: "Cone 4,5 m" }
+
+  breath_weapon:
+    name: "Arma de Sopro"
+    description: "Ação: efeito em cone/linha baseado na ancestralidade; CD = 8 + Prof + CON; dano escala com nível; usos por Descanso Curto/Longo (PHB)."
+    sheet_impact: "Adicionar ação ‘Sopro’: `CD = 8 + Prof + CON`, área conforme tipo, dano conforme nível."
+
+  damage_resistance_from_ancestry:
+    name: "Resistência Elemental (Ancestralidade)"
+    description: "Resistência ao mesmo tipo de dano da ancestralidade."
+    sheet_impact: "Marcar `resistência: <tipo>`."
+
+  thaumaturgy_cantrip:
+    name: "Presença Sobrenatural"
+    description: "Você conhece o truque Taumaturgia; CAR é seu atributo de conjuração para esse truque."
+    sheet_impact: "Adicionar ‘Taumaturgia’ como truque (habilidade de magia: CAR)."
+    grants:
+      spells:
+        - spell: thaumaturgy
+          level: 0
+          ability: CHA
+          usage: at_will
+
+  legacy_resistance_poison:
+    name: "Resistência de Legado (Veneno)"
+    description: "Resistência a dano de veneno."
+    sheet_impact: "Marcar Resistência: veneno."
+
+  legacy_resistance_necrotic:
+    name: "Resistência de Legado (Necrótico)"
+    description: "Resistência a dano necrótico."
+    sheet_impact: "Marcar Resistência: necrótico."
+
+  legacy_resistance_fire:
+    name: "Resistência de Legado (Fogo)"
+    description: "Resistência a dano de fogo."
+    sheet_impact: "Marcar Resistência: fogo."
+
+  abyssal_legacy:
+    name: "Legado Abissal"
+    description: "3º: Raio Adoecente 1/LDesc; 5º: Cativar 1/LDesc (CAR para CD/ataque de magia)."
+    sheet_impact: "Adicionar magias inatas: ‘Raio Adoecente’ (3º), ‘Cativar’ (5º), 1/LDesc, conjuração por CAR."
+
+  chthonic_legacy:
+    name: "Legado Ctônico"
+    description: "3º: Vitalidade Falsa 1/LDesc; 5º: Raio do Enfraquecimento 1/LDesc (CAR)."
+    sheet_impact: "Adicionar magias inatas: ‘Vitalidade Falsa’ (3º), ‘Raio do Enfraquecimento’ (5º), 1/LDesc, CAR."
+    
+  infernal_legacy_variant:
+    name: "Legado Infernal"
+    description: "3º: Repreensão Infernal 1/LDesc; 5º: Escuridão 1/LDesc (CAR)."
+    sheet_impact: "Adicionar magias inatas: 'Repreensão Infernal' (3º), 'Escuridão' (5º), 1/LDesc, CAR."
+    grants:
+      spells:
+        - spell: hellish-rebuke
+          level: 2
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 3
+        - spell: darkness
+          level: 2
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 5

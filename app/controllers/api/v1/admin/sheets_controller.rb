@@ -1,5 +1,8 @@
 class Api::V1::Admin::SheetsController < ApplicationController
-  before_action :authorize_admin_request
+  # `summary` is read-only and must work for mestres (papel "DM"), nao so
+  # "Admin" literal — mesmo criterio de Group.user_is_dm? / grupos.
+  before_action :authorize_admin_request, except: [:summary]
+  before_action :authorize_site_wide_dm, only: [:summary]
   before_action :set_sheet, only: [:show, :update, :destroy]
 
   def index
@@ -9,6 +12,22 @@ class Api::V1::Admin::SheetsController < ApplicationController
   
   def show
     render json: {sheet: @sheet}, status: 200
+  end
+
+  # GET /api/v1/admin/sheets/:id/summary — CharacterSheetSummaryService para
+  # qualquer ficha (mestre visualiza PC de outro jogador; player/sheets nao).
+  def summary
+    sheet = Sheet.find(params[:id])
+    service = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: (params[:sync] != 'false'))
+    if service.success?
+      render json: {summary: service.result}, status: :ok
+    else
+      render json: {errors: service.errors.full_messages}, status: :unprocessable_entity
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: {error: 'not_found'}, status: :not_found
+  rescue StandardError => e
+    render json: {error: e.message}, status: :unprocessable_entity
   end
 
   def create

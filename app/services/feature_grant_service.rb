@@ -19,11 +19,11 @@ class FeatureGrantService
     character = @sheet.character
     sub_klass_id = @sheet.sheet_klasses.find_by(klass_id: @klass.id)&.sub_klass_id
     sub_klass = sub_klass_id ? SubKlass.find_by(id: sub_klass_id) : nil
-    
+
     Rails.logger.info "FeatureGrantService: from_level=#{@from}, to_level=#{@to}, sub_klass_id=#{sub_klass_id}"
+    Rails.logger.info "Subclass: #{sub_klass&.name} (custom: #{sub_klass&.custom_subclass?})"
 
     ((@from + 1)..@to).each do |lvl|
-      # Grant class-level features
       Rails.logger.info "Processing level #{lvl} features"
       if (cl = @klass.class_levels.includes(:features).find_by(level: lvl))
         Rails.logger.info "Found #{cl.features.count} class features for level #{lvl}"
@@ -33,7 +33,6 @@ class FeatureGrantService
       else
         Rails.logger.info "No class features found for level #{lvl}"
       end
-      # Grant subclass-level features if applicable
       if sub_klass
         skl = SubKlassLevel.includes(:features).find_by(sub_klass_id: sub_klass.id, level: lvl)
         if skl
@@ -61,7 +60,7 @@ class FeatureGrantService
     Rails.logger.info "Granting feature #{feature.name} (#{feature.id}) to character #{character.id} at level #{gained_at_level}"
     CharactersFeature.find_or_create_by!(character_id: character.id, feature_id: feature.id) do |cf|
       cf.source = source_type.downcase
-      cf.level = gained_at_level # legacy column kept for compatibility
+      cf.level = gained_at_level
       cf.source_type = source_type
       cf.source_id = source_id
       cf.gained_at_level = gained_at_level

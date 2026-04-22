@@ -3,11 +3,15 @@ class CreateFeats < ActiveRecord::Migration[6.0]
     create_table :feats do |t|
       t.string :name, null: false
       t.text :description
-      t.text :prerequisites # JSON string
-      t.text :ability_bonuses # JSON string
-      t.text :proficiency_bonuses # JSON string
-      t.text :features # JSON string
-      t.string :api_index # For D&D 5e API reference
+      t.text :prerequisites
+      t.text :ability_bonuses
+      t.text :proficiency_bonuses
+      t.text :features
+      t.string :api_index
+      t.json :special_rules
+      t.json :cantrips
+      t.json :spells
+
       t.timestamps
     end
 

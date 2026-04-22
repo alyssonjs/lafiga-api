@@ -1,0 +1,197 @@
+# Exemplo de feats.yml com regras especiais implementadas
+feats:
+  mobilidade:
+    name: "Mobilidade"
+    description: "Sua velocidade e agilidade superam os oponentes."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      movement_modifiers:
+        speed_bonus:
+          implementation: "add_to_speed"
+          parameters: { bonus: 3, unit: "metros" }
+        difficult_terrain_immunity:
+          implementation: "ignore_difficult_terrain"
+          parameters: { condition: "disparada" }
+      combat_modifiers:
+        opportunity_attack_immunity:
+          implementation: "no_oa_after_attack"
+          parameters: { condition: "após_atacar_criatura" }
+    features:
+      name: "Agilidade de Combate"
+      description: "Seu deslocamento aumenta em 3 m; quando usa Disparada, terreno difícil não custa movimento extra; quando ataca uma criatura, não provoca ataque de oportunidade dela pelo resto do turno, mesmo que erre."
+
+  atirador_eximio:
+    name: "Atirador Exímio"
+    description: "Treino rigoroso com armas de ataque à distância."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        cover_immunity:
+          implementation: "ignore_cover_types"
+          parameters: ["leve", "média"]
+        range_advantage:
+          implementation: "no_long_range_disadvantage"
+          parameters: { weapon_type: "ranged" }
+        power_attack:
+          implementation: "power_attack_option"
+          parameters: { attack_penalty: -5, damage_bonus: 10, weapon_type: "ranged" }
+    features:
+      name: "Precisão Letal"
+      description: "Ignora cobertura leve e média; ataques à longa distância não sofrem desvantagem; antes de atacar, pode aplicar -5 na jogada de ataque para adicionar +10 no dano."
+
+  sniper_magico:
+    name: "Sniper Mágico"
+    description: "Você é um conjurador que foca em ataques de precisão à distância."
+    prerequisites:
+      spellcasting: true
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        cover_immunity:
+          implementation: "ignore_cover_types"
+          parameters: ["leve", "média"]
+        spell_range_double:
+          implementation: "double_spell_range"
+          parameters: { spell_type: "ataque_à_distância" }
+      magic_modifiers:
+        learn_cantrip:
+          implementation: "learn_cantrip"
+          parameters: { type: "ataque_à_distância", class_choice: true }
+    features:
+      name: "Magias de Precisão"
+      description: "Dobra o alcance das magias de ataque à distância; ignora cobertura leve e média; aprende um truque de ataque à distância da lista de magias de uma classe à sua escolha, usando o atributo de conjuração daquela classe."
+
+  mestre_de_armas_grandes:
+    name: "Mestre de Armas Grandes"
+    description: "Você aprendeu a usar o peso de armas pesadas a seu favor."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      combat_modifiers:
+        bonus_action_attack:
+          implementation: "bonus_action_attack_on_crit_or_kill"
+          parameters: { trigger: ["crítico", "reduzir_a_0_pv"], attack_type: "corpo_a_corpo" }
+        power_attack:
+          implementation: "power_attack_option"
+          parameters: { attack_penalty: -5, damage_bonus: 10, weapon_type: "pesada" }
+    features:
+      name: "Ataques Poderosos"
+      description: "Quando acertar um crítico ou reduzir inimigo a 0 PV, pode fazer um ataque corpo a corpo adicional com ação bônus. Antes de atacar com arma pesada proficiente, pode aplicar –5 no ataque para +10 de dano."
+
+  mestre_de_armas_duplas:
+    name: "Mestre de Armas Duplas"
+    description: "Você é treinado para lutar com duas armas ao mesmo tempo."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      equipment_modifiers:
+        armor_class_bonus:
+          implementation: "equipment_ac_bonus"
+          parameters: { condition: "duas_armas", bonus: 1 }
+        weapon_restriction_removal:
+          implementation: "remove_weapon_restriction"
+          parameters: "armas_duplas_não_leves"
+        dual_wield_draw:
+          implementation: "dual_wield_draw"
+          parameters: { action: "sacar_ou_guardar", weapons: 2 }
+    features:
+      name: "Combate Duplo"
+      description: "Ganha +1 CA quando empunhar armas em ambas as mãos; pode usar armas de uma mão que não sejam leves ao lutar com duas armas; pode sacar ou guardar duas armas de uma vez."
+
+  sortudo:
+    name: "Sortudo"
+    description: "Você tem uma sorte incomum que pode inclinar as probabilidades a seu favor."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      dice_modifiers:
+        luck_points:
+          implementation: "luck_points"
+          parameters: { points: 3, recovery: "descanso_longo", uses: ["ataque", "teste", "salvaguarda", "forçar_rerrolar_inimigo"] }
+    features:
+      name: "Pontos de Sorte"
+      description: "Você tem 3 pontos de sorte. Pode gastar 1 para rolar novamente um d20 (ataque, teste ou salvaguarda) e escolher qual dado usar. Também pode gastar para forçar o inimigo a rolar de novo um ataque contra você. Recupera todos os pontos após um descanso longo."
+
+  robusto:
+    name: "Robusto"
+    description: "Sua vitalidade é excepcional."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      dice_modifiers:
+        hit_points_bonus:
+          implementation: "hit_points_per_level"
+          parameters: { bonus_per_level: 2, retroactive: true }
+    features:
+      name: "PV Aumentados"
+      description: "Seu PV máximo aumenta em 2 × seu nível ao adquirir o talento; depois, +2 PV a cada nível ganho."
+
+  conjurador_de_batalha:
+    name: "Conjurador de Batalha"
+    description: "Treino para conjurar em combate, mesmo com as mãos ocupadas."
+    prerequisites:
+      spellcasting: true
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      magic_modifiers:
+        somatic_components_with_hands_full:
+          implementation: "somatic_with_hands_full"
+          parameters: { equipment: ["armas", "escudo"] }
+        spell_as_opportunity_attack:
+          implementation: "spell_as_oa"
+          parameters: { spell_action: "1 ação", target_restriction: "único alvo" }
+    features:
+      name: "Concentração e Gestos"
+      description: "Pode fazer componentes somáticos mesmo segurando armas/escudo; quando um inimigo provocar seu ataque de oportunidade, você pode usar a reação para conjurar uma magia de 1 ação que tenha apenas um alvo na criatura."
+
+  especialista_em_besta:
+    name: "Especialista em Besta"
+    description: "Treino extensivo com bestas."
+    prerequisites: {}
+    ability_bonuses: {}
+    proficiency_bonuses: {}
+    special_rules:
+      equipment_modifiers:
+        weapon_property_ignore:
+          implementation: "ignore_weapon_property"
+          parameters: { property: "recarga", weapon_type: "bestas" }
+      combat_modifiers:
+        range_advantage:
+          implementation: "no_close_range_disadvantage"
+          parameters: { weapon_type: "ranged", condition: "1,5m_de_criatura_hostil" }
+        bonus_action_attack:
+          implementation: "bonus_action_attack"
+          parameters: { weapon: "besta_de_mão", condition: "após_ataque_com_arma_de_uma_mão" }
+    features:
+      name: "Domínio de Bestas"
+      description: "Ignora a propriedade recarga de bestas com as quais é proficiente; estar a 1,5 m de criatura hostil não impõe desvantagem nos ataques à distância; ao usar a ação Atacar com uma arma de uma mão, pode usar a ação bônus para atacar com uma besta de mão carregada empunhada."
+
+  observador:
+    name: "Observador"
+    description: "Você desenvolveu uma atenção especial aos detalhes e uma memória aguçada."
+    prerequisites:
+      ability_score: { wis: 13 }
+    ability_bonuses: { wis: 1, int: 1 }
+    proficiency_bonuses:
+      skills: ["Percepção"]
+    special_rules:
+      skill_modifiers:
+        skill_advantage:
+          implementation: "skill_advantage"
+          parameters: ["Investigação", "Percepção"]
+        lip_reading:
+          implementation: "lip_reading"
+          parameters: { condition: "compreender_idioma", range: "visão" }
+    features:
+      name: "Leitura Labial e Percepção Afiada"
+      description: "Você pode ler lábios de uma criatura cujo idioma você compreende e recebe vantagem em testes de Investigação e Percepção."

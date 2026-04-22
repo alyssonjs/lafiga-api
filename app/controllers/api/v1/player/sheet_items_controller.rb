@@ -7,7 +7,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
     items = SheetItem.where(sheet_id: params[:sheet_id])
-    render json: { sheet_items: items }, status: :ok
+    render json: { sheet_items: items.map(&:as_inventory_json) }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -17,7 +17,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   def create
     item = SheetItem.new(item_params)
     if item.save
-      render json: { sheet_item: item }, status: :created
+      render json: { sheet_item: item.as_inventory_json }, status: :created
     else
       render json: { errors: item.errors.full_messages }, status: :unprocessable_entity
     end
@@ -26,7 +26,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # PUT /api/v1/player/sheet_items/:id
   def update
     if @item.update(item_params)
-      render json: { sheet_item: @item }, status: :ok
+      render json: { sheet_item: @item.as_inventory_json }, status: :ok
     else
       render json: { errors: @item.errors.full_messages }, status: :unprocessable_entity
     end
@@ -39,11 +39,11 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   end
 
   # POST /api/v1/player/sheet_items/:id/equip
-  # body: { slot: 'main_hand'|'off_hand'|'armor'|'shield', props_json?: { using_two_hands?: boolean } }
+  # body: { slot: <SheetItem::ALL_SLOTS>, props_json?: { using_two_hands?: boolean } }
   def equip
     slot = params[:slot].to_s
-    unless %w[main_hand off_hand armor shield].include?(slot)
-      return render json: { error: 'Invalid slot' }, status: :unprocessable_entity
+    unless SheetItem::ALL_SLOTS.include?(slot)
+      return render json: { error: "Invalid slot. Allowed: #{SheetItem::ALL_SLOTS.join(', ')}" }, status: :unprocessable_entity
     end
 
     SheetItem.transaction do
@@ -51,7 +51,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
       merged = (@item.props_json || {}).merge(pj || {})
       @item.update!(equipped: true, slot: slot, props_json: merged)
     end
-    render json: { sheet_item: @item }, status: :ok
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -59,7 +59,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # POST /api/v1/player/sheet_items/:id/unequip
   def unequip
     @item.update(equipped: false, slot: nil)
-    render json: { sheet_item: @item }, status: :ok
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -67,7 +67,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   private
 
   def item_params
-    params.require(:sheet_item).permit(:sheet_id, :item_index, :item_name, :category, :quantity, :equipped, :slot, :source, props_json: {})
+    params.require(:sheet_item).permit(:sheet_id, :item_index, :item_name, :category, :quantity, :equipped, :slot, :source, :notes, props_json: {})
   end
 
   def ensure_ownership_by_sheet

@@ -19,5 +19,11 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = true
   config.infer_spec_type_from_file_location!
   config.filter_rails_from_backtrace!
+  config.include FactoryBot::Syntax::Methods
+
+  # ActionCable matchers (`have_broadcasted_to`) precisam do helper carregado
+  # em qualquer tipo de spec — não só :channel. Incluímos para request/service
+  # specs também (combat/broadcaster_spec, combat_states request spec).
+  config.include ActionCable::TestHelper
 end
 

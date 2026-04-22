@@ -1,0 +1,212 @@
+classes_starting_equipment:
+  barbaro:
+    fixed:
+      - { item: pacote-aventureiro, qty: 1 }
+      - { item: azagaia, qty: 4 }
+    choices:
+      - or:
+          - { item: machado-grande, qty: 1 }
+          - { tag: any_martial_melee, qty: 1 }
+      - or:
+          - { item: machadinha, qty: 2 }
+          - { tag: any_simple_weapon, qty: 1 }
+    notes: "Soma com equipamento do antecedente."
+
+  bardo:
+    fixed:
+      - { item: armadura-couro, qty: 1 }
+      - { item: adaga, qty: 1 }
+    choices:
+      - or:
+          - { item: rapieira, qty: 1 }
+          - { item: espada-longa, qty: 1 }
+          - { tag: any_simple_weapon, qty: 1 }
+      - or:
+          - { item: pacote-diplomata, qty: 1 }
+          - { item: pacote-artista, qty: 1 }
+      - or:
+          - { item: instrumento-musical, qty: 1, subtype_hint: "alaúde" }
+          - { item: instrumento-musical, qty: 1, subtype_hint: "qualquer" }
+    notes: "Instrumento pode ser qualquer listado no seu banco."
+
+  bruxo:
+    fixed:
+      - { item: armadura-couro, qty: 1 }
+      - { tag: any_simple_weapon, qty: 1 }
+      - { item: adaga, qty: 2 }
+    choices:
+      - or:
+          - { item: besta-leve, qty: 1 }
+          - { tag: any_simple_weapon, qty: 1 }
+      - or:
+          - { item: bolsa-de-componentes, qty: 1 }
+          - { item: foco-arcano, qty: 1 }
+      - or:
+          - { item: pacote-estudioso, qty: 1 }
+          - { item: pacote-explorador, qty: 1 }
+
+  clerigo:
+    fixed:
+      - { item: escudo, qty: 1 }
+      - { item: simbolo-sagrado, qty: 1 }
+    choices:
+      - or:
+          - { item: maca, qty: 1 }
+          - { item: martelo-de-guerra, qty: 1, requires_proficiency: true }
+      - or:
+          - { item: brunea, qty: 1 }
+          - { item: armadura-couro, qty: 1 }
+          - { item: cota-de-malha, qty: 1, requires_proficiency: true }
+      - or:
+          - { item: besta-leve, qty: 1 }
+          - { tag: any_simple_weapon, qty: 1 }
+      - or:
+          - { item: pacote-sacerdote, qty: 1 }
+          - { item: pacote-aventureiro, qty: 1 }
+
+  druida:
+    fixed:
+      - { item: armadura-couro, qty: 1 }
+      - { item: pacote-aventureiro, qty: 1 }
+      - { item: foco-druidico, qty: 1 }
+    choices:
+      - or:
+          - { item: escudo, qty: 1, material_hint: "madeira" }
+          - { tag: any_simple_weapon, qty: 1 }
+      - or:
+          - { item: cimitarra, qty: 1 }
+          - { tag: any_simple_melee, qty: 1 }
+      - or:
+          - { item: pacote-estudioso, qty: 1 }
+          - { item: pacote-explorador, qty: 1 }
+
+  feiticeiro:
+    fixed: []
+    choices:
+      - or:
+          - { item: besta-leve, qty: 1 }
+          - { tag: any_simple_weapon, qty: 1 }
+      - or:
+          - { item: bolsa-de-componentes, qty: 1 }
+          - { item: foco-arcano, qty: 1 }
+      - or:
+          - { item: pacote-explorador, qty: 1 }
+          - { item: pacote-aventureiro, qty: 1 }
+
+  guerreiro:
+    fixed: []
+    choices:
+      - or:
+          - { item: cota-de-malha, qty: 1 }
+          - { item: gibao-de-peles, qty: 1 }
+        bonus:
+          on_select: "gibao-de-peles"
+          grant:
+            - { item: arco-longo, qty: 1 }
+            - { item: flecha, qty: 20 }
+      - or:
+          - { tag: any_martial_weapon, qty: 1, with_shield: true }
+          - { tag: any_martial_weapon, qty: 2 }
+      - or:
+          - { item: besta-leve, qty: 1 }
+          - { item: machadinha, qty: 2, as_throwing: true }
+      - or:
+          - { item: pacote-aventureiro, qty: 1 }
+          - { item: pacote-explorador, qty: 1 }
+
+  ladino:
+    fixed:
+      - { item: armadura-couro, qty: 1 }
+      - { item: adaga, qty: 2 }
+      - { item: ferramentas-de-ladrao, qty: 1 }
+    choices:
+      - or:
+          - { item: rapieira, qty: 1 }
+          - { item: espada-longa, qty: 1 }
+      - or:
+          - { item: arco-curto, qty: 1 }
+          - { item: espada-curta, qty: 1 }
+        bonus:
+          on_select: "arco-curto"
+          grant: [{ item: flecha, qty: 20 }]
+      - or:
+          - { item: pacote-assaltante, qty: 1 }
+          - { item: pacote-aventureiro, qty: 1 }
+          - { item: pacote-explorador, qty: 1 }
+
+  mago:
+    fixed:
+      - { item: grimorio, qty: 1 }
+    choices:
+      - or:
+          - { item: cajado, qty: 1 }
+          - { item: adaga, qty: 1 }
+      - or:
+          - { item: bolsa-de-componentes, qty: 1 }
+          - { item: foco-arcano, qty: 1 }
+      - or:
+          - { item: pacote-estudioso, qty: 1 }
+          - { item: pacote-explorador, qty: 1 }
+
+  monge:
+    fixed:
+      - { item: dardo, qty: 10 }
+    choices:
+      - or:
+          - { item: espada-curta, qty: 1 }
+          - { tag: any_simple_weapon, qty: 1 }
+      - or:
+          - { item: pacote-explorador, qty: 1 }
+          - { item: pacote-aventureiro, qty: 1 }
+
+  paladino:
+    fixed:
+      - { item: cota-de-malha, qty: 1 }
+      - { item: simbolo-sagrado, qty: 1 }
+    choices:
+      - or:
+          - { tag: any_martial_weapon, qty: 1, with_shield: true }
+          - { tag: any_martial_weapon, qty: 2 }
+      - or:
+          - { item: azagaia, qty: 5 }
+          - { tag: any_simple_melee, qty: 1 }
+      - or:
+          - { item: pacote-sacerdote, qty: 1 }
+          - { item: pacote-explorador, qty: 1 }
+
+  patrulheiro:
+    fixed:
+      - { item: arco-longo, qty: 1 }
+      - { item: flecha, qty: 20 }
+    choices:
+      - or:
+          - { item: cami-sao-de-malha, qty: 1 }
+          - { item: armadura-couro, qty: 1 }
+      - or:
+          - { item: espada-curta, qty: 2 }
+          - { tag: any_simple_melee, qty: 2 }
+      - or:
+          - { item: pacote-explorador, qty: 1 }
+          - { item: pacote-aventureiro, qty: 1 }
+
+  cozinheiro:
+    fixed:
+      - { item: utensilios-de-cozinheiro, qty: 1 }
+      - { item: bolsa-de-cozinheiro, qty: 1 }
+    choices:
+      - or:
+          - { item: espada-longa, qty: 1 }
+          - { item: besta-leve, qty: 1 }
+        bonus:
+          on_select: "besta-leve"
+          grant: [{ item: virote, qty: 20 }]
+      - or:
+          - { item: armadura-couro, qty: 1 }
+          - { item: brunea, qty: 1 }
+      - or:
+          - { item: adaga, qty: 2 }
+          - { item: martelo-leve, qty: 2 }
+      - or:
+          - { item: pacote-explorador, qty: 1 }
+          - { item: pacote-estudioso, qty: 1 }
+    wealth_alt: "4d4 × 10 po"

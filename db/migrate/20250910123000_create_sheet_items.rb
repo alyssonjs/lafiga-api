@@ -1,7 +1,7 @@
 class CreateSheetItems < ActiveRecord::Migration[6.0]
   def change
     create_table :sheet_items do |t|
-      t.bigint :sheet_id, null: false
+      t.references :sheet, null: false, foreign_key: true
       t.string :item_index
       t.string :item_name, null: false
       t.string :category
@@ -11,12 +11,11 @@ class CreateSheetItems < ActiveRecord::Migration[6.0]
       t.string :source
       t.jsonb :props_json
       t.text :notes
+      t.references :item, foreign_key: true
+
       t.timestamps
     end
 
-    add_index :sheet_items, :sheet_id
     add_index :sheet_items, [:sheet_id, :item_index]
-    add_foreign_key :sheet_items, :sheets
   end
 end
-

@@ -31,6 +31,16 @@ class EquipmentProfileService
       off_hand = light || candidates.first
     end
 
+    # ── Accessories (Fase 2.1) ───────────────────────────────────────
+    # Mapa slot → SheetItem para todos os accessory slots equipados.
+    # Inclui ring_left/ring_right (até 2 anéis), amulet, cloak, boots,
+    # helmet, gloves, belt. Usado por MagicItemRules para varrer efeitos.
+    accessory_slots = SheetItem::ACCESSORY_SLOTS
+    accessories = accessory_slots.each_with_object({}) do |slot_name, acc|
+      it = equipped.find { |e| e.slot.to_s == slot_name }
+      acc[slot_name.to_sym] = it if it
+    end
+
     ac = EquipmentRules.ac_for(sheet: @sheet, armor_item: armor, shield_item: shield)
 
     # Carry weight using PHB rules (now in kilograms) with optional variant encumbrance
@@ -114,6 +124,7 @@ class EquipmentProfileService
         shield: shield ? as_json(shield) : nil,
         main_hand: main_hand ? as_json(main_hand) : nil,
         off_hand: off_hand ? as_json(off_hand) : nil,
+        accessories: accessories.transform_values { |it| as_json(it) },
       },
       ac: ac,
       carry: {

@@ -1,0 +1,20 @@
+[
+  {
+    "tab": "Nayara",
+    "name": "ABIGAIL LE FAY",
+    "classIdx": "wizard",
+    "subIdx": "evocacao",
+    "level": 9,
+    "status": "SKIPPED",
+    "detail": "dry-run"
+  },
+  {
+    "tab": "Fininho",
+    "name": "ADIMAEL",
+    "classIdx": "ranger",
+    "subIdx": "rastreador_urbano",
+    "level": 9,
+    "status": "SKIPPED",
+    "detail": "dry-run"
+  }
+]

@@ -7,6 +7,7 @@ class Api::V1::Player::ScheduleCharactersController < ApplicationController
     rel = ScheduleCharacter.joins(:character)
                            .where(characters: { user_id: @current_user.id })
     rel = rel.where(schedule_id: params[:schedule_id]) if params[:schedule_id]
+    rel = rel.where(character_id: params[:character_id]) if params[:character_id]
     render json: { schedule_characters: rel.as_json(include: [:schedule, :character]) }, status: :ok
   end
 

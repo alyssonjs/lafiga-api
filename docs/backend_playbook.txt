@@ -1,0 +1,506 @@
+
+# Backend Playbook — LaFiga API (Rails 6 + RSpec)
+
+## Índice
+
+- [Visão Geral](#visão-geral)
+- [Ciclo de Desenvolvimento TDD](#ciclo-de-desenvolvimento-tdd)
+- [Fluxo por Loop](#fluxo-por-loop)
+- [Padrões de Código](#padrões-de-código)
+  - [Divisão de services em funções legíveis](#divisão-de-services-em-funções-legíveis)
+- [Performance e N+1](#performance-e-n1)
+- [Segurança OWASP](#segurança-owasp)
+- [Contrato Front ↔ Back](#contrato-front--back)
+- [Checklist Final e Integração](#checklist-final-e-integração)
+- [Apêndice: Estrutura e Convenções](#apêndice-estrutura-e-convenções)
+
+---
+
+## Visão Geral
+
+Este playbook orienta o desenvolvimento e manutenção da API Rails LaFiga em **small loops**, usando **TDD** (red → green → refactor), com atenção a **performance** (N+1), **princípios de design** (SOLID, DRY, ACID, LoD, SoC, KISS, CQRS) e **segurança OWASP**.
+
+### Stack do projeto
+
+| Camada | Tecnologia |
+|--------|-----------|
+| Framework | Rails 6.0.x (API mode) |
+| Ruby | 3.2.2 |
+| DB | PostgreSQL (pg gem) |
+| Auth | JWT (jwt gem) + bcrypt |
+| Testes | RSpec + FactoryBot + DatabaseCleaner + ShouldaMatchers |
+| Serialização | active_model_serializers (legacy), hashes manuais para endpoints player/public |
+| Realtime | ActionCable (/cable) |
+| Container | Docker Compose (lafiga_api, lafiga_db, lafiga_redis) |
+
+### Conceitos-chave
+
+- **Small loops**: cada loop implementa uma feature mínima end-to-end (request → controller → service → response) antes de avançar.
+- **TDD**: red → green → refactor. Escrever teste falhando, fazer passar, refatorar.
+- **Contrato front ↔ back**: o front (Cypress BDD) é a fonte de verdade de *o que* o usuário vê; quando o BDD detecta dado ausente ou incorreto, o backend cria um teste TDD para o gap, corrige e confirma com o BDD.
+
+---
+
+## Ciclo de Desenvolvimento TDD
+
+```mermaid
+flowchart TD
+    subgraph loop [Ciclo por Loop]
+        A[Especificação do contrato] --> B[Teste RSpec falha RED]
+        B --> C[Implementação mínima]
+        C --> D[Teste passa GREEN]
+        D --> E[Refatoração REFACTOR]
+        E --> F{Próximo loop?}
+        F -->|Sim| A
+        F -->|Não| G[Validar com BDD front]
+    end
+```
+
+---
+
+## Fluxo por Loop
+
+### Loop 0 — Especificação e contrato
+
+**Objetivo**: definir contrato do endpoint/service antes de codar.
+
+**Checklist**:
+- [ ] Estrutura da resposta JSON documentada (chaves, tipos, nulabilidade)
+- [ ] Códigos HTTP esperados (201, 200, 400, 401, 404, 422)
+- [ ] Parâmetros obrigatórios vs opcionais listados
+- [ ] Se é correção de dado existente: reproduzir o cenário no `rails console` com dados reais
+
+---
+
+### Loop 1 — Teste falha (RED)
+
+**Objetivo**: request spec descrevendo o comportamento esperado antes da implementação.
+
+**Padrão de spec**:
+
+```ruby
+# spec/requests/api/v1/player/characters_provision_spec.rb
+RSpec.describe 'Api::V1::Player::CharactersController#provision', type: :request do
+  let(:user)    { create(:user) }
+  let(:headers) { auth_headers_for(user) }
+
+  describe 'POST /api/v1/player/characters/provision' do
+    context 'when payload is valid (warrior L7)' do
+      let(:payload) { build_provision_payload(:warrior_l7) }
+
+      it 'returns 201 with character.main_class.name populated' do
+        post '/api/v1/player/characters/provision', params: payload, headers: headers, as: :json
+
+        expect(response).to have_http_status(:created)
+        json = response.parsed_body
+        expect(json.dig('character', 'main_class', 'name')).to eq('Guerreiro')
+        expect(json.dig('character', 'main_class', 'subclass', 'name')).to be_present
+      end
+    end
+
+    context 'when klass_id does not exist' do
+      it 'returns 422 with descriptive error' do
+        post '/api/v1/player/characters/provision',
+             params: { character: { name: 'X' }, wizard: { klass: { id: 999999 } } },
+             headers: headers, as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
+end
+```
+
+**Helpers de autenticação**: criar `spec/support/auth_helpers.rb`:
+
+```ruby
+module AuthHelpers
+  def auth_headers_for(user)
+    token = JsonWebToken.encode(user_id: user.id)
+    { 'Authorization' => "Bearer #{token}" }
+  end
+end
+
+RSpec.configure do |config|
+  config.include AuthHelpers, type: :request
+end
+```
+
+---
+
+### Loop 2 — Implementação mínima (GREEN)
+
+**Objetivo**: controller e service respondem corretamente; teste passa.
+
+**Princípios**:
+- Controller magro: valida params, delega ao service, serializa resposta.
+- Service: lógica de negócio; retorna hash pronto para JSON.
+- Extrair serialização para método privado do controller (`player_character_payload`) ou builder dedicado.
+
+---
+
+### Loop 3 — Refatoração (REFACTOR)
+
+**Objetivo**: código limpo sem mudar comportamento; testes continuam verdes.
+
+**Checklist**:
+- [ ] Métodos com nomes descritivos (verbo + substantivo)
+- [ ] Cada método faz uma coisa (SRP)
+- [ ] Sem lógica duplicada entre `index`, `show`, `provision`
+- [ ] `includes`/`preload` para associações usadas
+
+---
+
+### Loop 4 — Service specs (quando complexidade justifica)
+
+Para services complexos (`CharacterProvisioningService`, `CharacterSheetSummaryService`):
+
+```ruby
+# spec/services/character_sheet_summary_service_spec.rb
+RSpec.describe CharacterSheetSummaryService do
+  describe '#call' do
+    let(:sheet) { create(:sheet, :with_warlock_klass) }
+
+    it 'returns klasses[0].name matching the Klass record' do
+      result = described_class.new(sheet.id).call
+      expect(result.dig(:klasses, 0, :name)).to eq(sheet.sheet_klasses.first.klass.name)
+    end
+
+    it 'returns proficiencies.languages as array' do
+      result = described_class.new(sheet.id).call
+      expect(result.dig(:proficiencies, :languages)).to be_an(Array)
+    end
+  end
+end
+```
+
+---
+
+### Loop 5 — Confirmar com BDD do front
+
+Após o backend passar todos os specs:
+
+```bash
+# No front-lafiga
+npm run cy:run:sheet-validation
+```
+
+Se o Cypress falha por dado ausente/errado → volta ao Loop 1 (novo teste RED no backend).
+
+---
+
+## Padrões de Código
+
+### Controllers
+
+- Herdar de `ApplicationController`
+- `before_action :authorize_request` para endpoints autenticados
+- Manter controllers magros: validação de params, chamada ao service, `render json:`
+- Usar builder privado para serialização complexa (ex: `player_character_payload`, `main_class_json_for_sheet`)
+- NUNCA usar `params.permit!` em endpoints player; usar strong params
+
+```ruby
+class Api::V1::Player::CharactersController < ApplicationController
+  before_action :authorize_request
+
+  def provision
+    svc = CharacterProvisioningService.call(user: @current_user, payload: safe_payload)
+    if svc.success?
+      char = @current_user.characters.preload(sheet: %i[race sub_race background]).find(svc.result[:character].id)
+      render json: { character: player_character_payload(char) }, status: :created
+    else
+      render json: { errors: svc.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  private
+
+  def player_character_payload(character)
+    # Envelope unificado: index, show, provision retornam o mesmo formato
+    char_data = character.as_json
+    char_data[:status] = character.status
+    char_data[:main_class] = main_class_json_for_sheet(character.sheet)
+    # ...
+    char_data
+  end
+end
+```
+
+### Services
+
+- Orquestração em `#call`; lógica complexa em métodos privados
+- Injeção de dependências via `initialize` (ids, hashes)
+- Retornar hashes prontos para JSON (não objetos AR na resposta)
+- Usar `prepend SimpleCommand` para pattern result/errors
+- Dividir em funções legíveis com nomes descritivos
+
+### Specs
+
+- `RSpec.describe 'Api::V1::Player::ControllerName#action', type: :request`
+- `context 'when ...'` para cenários
+- `it 'returns 201 with ...'` descrevendo comportamento
+- `let`/`let!` com FactoryBot; helper `auth_headers_for(user)` para auth
+- Testar contrato JSON (chaves presentes, tipos corretos, nulabilidade)
+
+---
+
+## Princípios de Design
+
+### SOLID
+
+- **SRP**: Controller valida params e renderiza; service executa lógica; builder serializa.
+- **OCP**: Filtros extensíveis via hash de estratégias.
+- **DIP**: Service recebe ids e hashes, não `params` ou objetos de request.
+
+### DRY
+
+- Extrair builders reutilizáveis (`player_character_payload`, `main_class_json_for_sheet`).
+- Compartilhar lógica entre `index`, `show`, `provision` via métodos privados.
+
+### ACID
+
+- `ActiveRecord::Base.transaction` em operações que criam/atualizam múltiplos registros (provision cria Character, Sheet, SheetKlass, items, spells).
+
+### LoD (Law of Demeter)
+
+- Evitar `sheet_klass.klass.sub_klass.name` em loops; pré-carregar e mapear em batch.
+
+### SoC (Separation of Concerns)
+
+- Rotas → validação → orquestração (service) → acesso a dados → serialização.
+
+### KISS
+
+- Começar com a solução mais simples; extrair abstrações só quando houver duplicação.
+
+### CQRS
+
+- **Reads**: `CharacterSheetSummaryService` monta hash de leitura.
+- **Writes**: `CharacterProvisioningService` persiste e retorna sucesso/erro.
+
+### Divisão de services em funções legíveis
+
+1. **SRP / "Do One Thing"**: cada função tem uma única responsabilidade.
+2. **Nomes que revelam a intenção**: verbo + substantivo (`build_klasses`, `resolve_race_languages`, `apply_background_proficiencies`).
+3. **Um nível de abstração por função**: `#call` orquestra; detalhes em `load_*`, `build_*`, `apply_*`:
+
+```ruby
+def call
+  sheet = upsert_sheet(char, race, klass)
+  apply_race_summary(sheet, race)
+  apply_class_summary(sheet, klass)
+  apply_background(sheet, bg)
+  apply_progression(sheet, levels)
+  sync_abilities(sheet)
+  { character: char }
+end
+```
+
+4. **Extract Method**: bloco resumível em uma frase → extrair para método nomeado.
+
+---
+
+## Performance e N+1
+
+### Estratégias
+
+1. **`includes`/`preload`** para associações usadas na resposta:
+
+```ruby
+characters = base.preload(sheet: %i[race sub_race background])
+SheetKlass.where(sheet_id: sheet.id).includes(:klass, :sub_klass)
+```
+
+2. **Batch** de dados auxiliares em vez de loops individuais.
+3. **Paginação** no banco (`LIMIT`/`OFFSET`) para listagens.
+
+### Teste de N+1
+
+```ruby
+it 'does not exceed query limit avoiding N+1' do
+  query_count = 0
+  counter = lambda { |_name, _start, _finish, _id, payload|
+    query_count += 1 unless payload[:name] == 'CACHE'
+  }
+  ActiveSupport::Notifications.subscribed(counter, 'sql.active_record') do
+    get '/api/v1/player/characters', headers: headers
+  end
+  expect(response).to have_http_status(:ok)
+  expect(query_count).to be < 30
+end
+```
+
+---
+
+## Segurança OWASP
+
+### A01 — Broken Access Control
+- `before_action :authorize_request` em todos os endpoints player.
+- `@current_user.characters.find(id)` — escopo por dono, nunca `Character.find`.
+
+### A03 — Injection
+- Usar placeholders: `where(id: ids)`, `where('column = ?', value)`.
+- Nunca interpolar em SQL.
+
+### A04 — Insecure Design
+- Não expor dados sensíveis no JSON (senhas, tokens internos).
+- Sanitizar mensagens de erro.
+
+### Strong params
+Em writes: usar `params.require(:character).permit(...)`.
+A exceção `draft_data` (jsonb livre) deve ser explicitamente passada via `to_unsafe_h` com comentário justificando.
+
+---
+
+## Contrato Front ↔ Back
+
+### Princípio: BDD drive, TDD fix
+
+O front-end (Cypress BDD) é a fonte de verdade de **o que o usuário espera ver** na ficha. Quando um cenário BDD falha por dado ausente ou incorreto do backend:
+
+1. **Front identifica** o gap: assertion falha (ex: `sheet-class` mostra '—' em vez de 'Druida').
+2. **Front cria ticket** (ou o dev anota): "POST provision não retorna `main_class.name`".
+3. **Backend cria spec RED**: teste que verifica o contrato (chave presente, valor correto).
+4. **Backend corrige**: implementação mínima → spec GREEN.
+5. **Front re-roda BDD**: confirma que o cenário passa.
+
+### Endpoints críticos do contrato character/sheet
+
+| Endpoint | Chaves que o front espera | Spec file |
+|----------|--------------------------|-----------|
+| `POST /player/characters/provision` | `character.main_class.name`, `.subclass.name`, `.sheet.metadata` | `characters_provision_spec.rb` |
+| `GET /player/characters` (index) | `character[].main_class.name`, `.sheet_id`, `.sheet.race.name` | `characters_index_spec.rb` |
+| `GET /player/characters/:id` (show) | `character.main_class`, `.sheet.metadata`, `.sheet.race` | `characters_show_spec.rb` |
+| `GET /player/sheets/:id/summary` | `klasses[0].name`, `.subclass.name`, `proficiencies.languages[]`, `equipment.inventory[]` | `sheets_summary_spec.rb` |
+
+### Como o front trata dados faltantes
+
+O mapper `mergeSheetSummaryIntoCharacter` aplica fallbacks:
+
+```typescript
+class: classNameFromSummary || base.class,    // summary.klasses[0].name → fallback base.class
+subclass: subclassNameFromSummary || base.subclass,
+race: raceBlock?.name || base.race,
+```
+
+Esses fallbacks existem para resiliência, mas o backend **deve** enviar o dado correto. Se o fallback for acionado consistentemente, é bug de backend.
+
+---
+
+## Checklist Final e Integração
+
+Antes de considerar uma feature pronta:
+
+- [ ] Specs RSpec passando: `bundle exec rspec spec/requests/api/v1/player/...`
+- [ ] Service specs (se aplicável): `bundle exec rspec spec/services/...`
+- [ ] Sem regressões: `bundle exec rspec`
+- [ ] BDD front passando: `npm run cy:run:sheet-validation` (23 cenários)
+- [ ] Vitest front passando: `npm run test` (9 suites)
+- [ ] Sem N+1 introduzidos (verificar logs Docker `lafiga_api`)
+
+---
+
+## Apêndice: Estrutura e Convenções
+
+### Estrutura de pastas
+
+```
+api/
+  app/
+    controllers/
+      api/v1/
+        admin/          # Endpoints admin (CRUD completo)
+        player/         # Endpoints player (escopo por current_user)
+          characters_controller.rb
+          sheets_controller.rb
+          sheet_klasses_controller.rb
+          ...
+        public/          # Endpoints públicos (catálogo de raças, classes, etc.)
+    services/
+      character_provisioning_service.rb   # Cria personagem + ficha (write)
+      character_sheet_summary_service.rb  # Monta resumo da ficha (read)
+      class_rules.rb                     # Regras de classe (progressão, proficiências)
+      race_rules.rb                      # Regras de raça (bônus, idiomas)
+      ...
+    models/
+      character.rb       # Personagem (name, background, status, draft_data)
+      sheet.rb           # Ficha 1:1 com character (abilities, HP, metadata JSONB)
+      sheet_klass.rb     # Link ficha ↔ classe (nível, subclasse)
+      klass.rb           # Classe D&D (name, api_index, hit_die)
+      sub_klass.rb       # Subclasse D&D (name, klass_id, api_index)
+      ...
+  spec/
+    factories/           # FactoryBot definitions
+    models/              # Model specs
+    requests/api/v1/     # Request specs (integração)
+      player/
+      admin/
+      public/
+    services/            # Service specs
+    support/             # Helpers (auth, shared contexts)
+  config/
+    routes.rb            # api/v1/{admin,player,public}
+  db/
+    schema.rb            # Source of truth para tabelas
+```
+
+### Convenções de nomenclatura
+
+| Tipo | Convenção | Exemplo |
+|------|-----------|---------|
+| Controller | `Api::V1::Player::ResourcesController` | `CharactersController` |
+| Service | `ResourceActionService` | `CharacterProvisioningService` |
+| Spec | `resource_action_spec.rb` | `characters_provision_spec.rb` |
+| Factory | `factory :resource` | `factory :character`, `factory :sheet` |
+| Builder (controller private) | `resource_payload(obj)` | `player_character_payload(char)` |
+
+### Factories necessárias (a criar/expandir)
+
+```ruby
+# spec/factories/users.rb
+factory :user do
+  sequence(:email) { |n| "test#{n}@lafiga.test" }
+  password { 'password123' }
+end
+
+# spec/factories/sheets.rb
+factory :sheet do
+  association :character
+  association :race
+  current_level { 1 }
+  str { 10 }; dex { 10 }; con { 10 }; int { 10 }; wis { 10 }; cha { 10 }
+
+  trait :with_warrior_klass do
+    after(:create) do |sheet|
+      klass = Klass.find_by(api_index: 'fighter') || create(:klass, name: 'Guerreiro', api_index: 'fighter', hit_die: 10)
+      create(:sheet_klass, sheet: sheet, klass: klass, level: 7)
+    end
+  end
+end
+```
+
+### Rodando testes
+
+```bash
+# Backend no Docker (recomendado: mesma Ruby/DB do CI)
+# A partir da pasta lafiga-dev (onde está o docker-compose.yml com o serviço api):
+cd lafiga-dev
+docker compose exec api bundle exec rspec                              # Tudo
+docker compose exec api bundle exec rspec spec/requests/               # Só request specs
+docker compose exec api bundle exec rspec spec/services/               # Só service specs
+docker compose exec api bundle exec rspec spec/requests/api/v1/player/ # Só player
+docker compose exec api bundle exec rspec spec/models/race_spec.rb     # Exemplo: um ficheiro
+
+# O serviço api usa working_dir /lafiga-api (volume ../api montado no container).
+
+# Backend local (só se a Ruby do host coincidir com o Gemfile, ex. 3.2.2)
+cd api
+bundle exec rspec
+
+# Front-end
+cd front-lafiga
+npm run test                                   # Vitest (unit/BDD)
+npm run cy:run:sheet-validation                # Cypress BDD (E2E)
+npm run cy:run:class-level7                    # Só L7
+npm run cy:run:spellcaster-level10             # Só L10
+```

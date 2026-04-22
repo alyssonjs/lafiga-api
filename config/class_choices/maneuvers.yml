@@ -1,0 +1,154 @@
+# Manobras do Mestre de Batalha (Battle Master) — D&D 5e PHB.
+# Schema: api/config/class_choices/SCHEMA.md
+#
+# Slugs seguem o padrão `mn-*` (maneuver), 1:1 com o id do front
+# (front-lafiga/src/app/data/maneuvers.ts → Maneuver.id).
+# name_pt segue a tradução PHB BR usada pelo front.
+#
+# Manobras NÃO têm prereqs (todas disponíveis a partir do nv 3 do BM).
+# O `trigger` (campo descritivo extra do front) é embutido em
+# mechanical_summary aqui — não há campo dedicado no schema canônico.
+
+- slug: mn-commanders-strike
+  name_pt: Ataque do Comandante
+  name_en: Commander's Strike
+  description: |
+    Quando usar a ação Atacar, pode abrir mão de um ataque e usar ação bônus para direcionar um aliado a atacar. O aliado pode imediatamente usar sua reação para fazer um ataque com arma, somando o dado de superioridade ao dano.
+  mechanical_summary: Aliado ataca como reação + dado de sup. no dano
+  classes:
+    - fighter
+
+- slug: mn-disarming-attack
+  name_pt: Ataque Desarmante
+  name_en: Disarming Attack
+  description: |
+    Ao acertar ataque com arma, some o dado de superioridade ao dano. O alvo deve fazer TR de Força ou larga um objeto à sua escolha que esteja segurando.
+  mechanical_summary: "+dado dano, alvo larga objeto (TR FOR)"
+  classes:
+    - fighter
+
+- slug: mn-distracting-strike
+  name_pt: Golpe Distrativo
+  name_en: Distracting Strike
+  description: |
+    Ao acertar ataque com arma, some o dado de superioridade ao dano. O próximo ataque contra o alvo (feito por outro que não você) tem vantagem se ocorrer antes do início do seu próximo turno.
+  mechanical_summary: "+dado dano + vantagem no próximo ataque aliado"
+  classes:
+    - fighter
+
+- slug: mn-evasive-footwork
+  name_pt: Evasão Ágil
+  name_en: Evasive Footwork
+  description: |
+    Ao se mover, role o dado de superioridade e some o resultado à sua CA até parar de se mover.
+  mechanical_summary: "+dado CA enquanto se move"
+  classes:
+    - fighter
+
+- slug: mn-feinting-attack
+  name_pt: Ataque de Finta
+  name_en: Feinting Attack
+  description: |
+    Use ação bônus contra criatura a até 1,5m. Vantagem no próximo ataque contra ela neste turno. Em acerto, some o dado de superioridade ao dano.
+  mechanical_summary: "Ação bônus: vantagem no ataque + dado dano"
+  classes:
+    - fighter
+
+- slug: mn-goading-attack
+  name_pt: Ataque Provocante
+  name_en: Goading Attack
+  description: |
+    Ao acertar ataque com arma, some o dado de superioridade ao dano. O alvo faz TR de Sabedoria. Em falha, tem desvantagem em ataques contra alvos que não sejam você até o fim do seu próximo turno.
+  mechanical_summary: "+dado dano, alvo desvant. vs. outros (TR SAB)"
+  classes:
+    - fighter
+
+- slug: mn-lunging-attack
+  name_pt: Ataque de Investida
+  name_en: Lunging Attack
+  description: |
+    Ao fazer ataque corpo-a-corpo com arma, pode aumentar seu alcance em 1,5m. Em acerto, some o dado de superioridade ao dano.
+  mechanical_summary: "+1.5m alcance + dado dano"
+  classes:
+    - fighter
+
+- slug: mn-maneuvering-attack
+  name_pt: Ataque de Manobra
+  name_en: Maneuvering Attack
+  description: |
+    Ao acertar ataque com arma, some o dado de superioridade ao dano. Escolha um aliado: pode usar reação para se mover até metade do deslocamento sem provocar ataques de oportunidade.
+  mechanical_summary: "+dado dano, aliado se move sem AO"
+  classes:
+    - fighter
+
+- slug: mn-menacing-attack
+  name_pt: Ataque Ameaçador
+  name_en: Menacing Attack
+  description: |
+    Ao acertar ataque com arma, some o dado de superioridade ao dano. O alvo faz TR de Sabedoria ou fica amedrontado por você até o fim do seu próximo turno.
+  mechanical_summary: "+dado dano + amedrontado (TR SAB)"
+  classes:
+    - fighter
+
+- slug: mn-parry
+  name_pt: Aparar
+  name_en: Parry
+  description: |
+    Quando outra criatura causar dano a você com ataque corpo-a-corpo, pode usar reação e gastar um dado de superioridade para reduzir o dano em dado + mod. Destreza.
+  mechanical_summary: "Reação: reduz dano em dado + mod. DES"
+  classes:
+    - fighter
+
+- slug: mn-precision-attack
+  name_pt: Ataque Preciso
+  name_en: Precision Attack
+  description: |
+    Ao fazer ataque com arma, pode gastar um dado de superioridade e somar ao resultado da jogada de ataque. Pode usar após rolar mas antes de saber se acertou.
+  mechanical_summary: "+dado na jogada de ataque"
+  classes:
+    - fighter
+
+- slug: mn-pushing-attack
+  name_pt: Ataque Empurrador
+  name_en: Pushing Attack
+  description: |
+    Ao acertar ataque com arma, some o dado de superioridade ao dano. Se o alvo for Grande ou menor, faz TR de Força ou é empurrado até 4,5m para longe de você.
+  mechanical_summary: "+dado dano, empurra 4.5m (TR FOR)"
+  classes:
+    - fighter
+
+- slug: mn-rally
+  name_pt: Motivar
+  name_en: Rally
+  description: |
+    Use ação bônus para escolher criatura aliada que possa ver/ouvir em 18m. Ela ganha PV temporários = dado de superioridade + mod. Carisma.
+  mechanical_summary: "Ação bônus: aliado ganha PV temp"
+  classes:
+    - fighter
+
+- slug: mn-riposte
+  name_pt: Riposte
+  name_en: Riposte
+  description: |
+    Quando criatura errar ataque corpo-a-corpo contra você, pode usar reação para fazer ataque corpo-a-corpo contra ela. Em acerto, some o dado de superioridade ao dano.
+  mechanical_summary: "Reação: contra-ataque + dado dano"
+  classes:
+    - fighter
+
+- slug: mn-sweeping-attack
+  name_pt: Ataque Amplo
+  name_en: Sweeping Attack
+  description: |
+    Ao acertar ataque com arma corpo-a-corpo, pode tentar atingir outra criatura a até 1,5m do alvo original. Se o ataque original acertaria a segunda criatura, ela sofre dano igual ao dado de superioridade (mesmo tipo de dano).
+  mechanical_summary: Dano = dado sup. em 2ª criatura adjacente
+  classes:
+    - fighter
+
+- slug: mn-trip-attack
+  name_pt: Ataque Derrubador
+  name_en: Trip Attack
+  description: |
+    Ao acertar ataque com arma, some o dado de superioridade ao dano. Se o alvo for Grande ou menor, faz TR de Força ou cai no chão (knocked prone).
+  mechanical_summary: "+dado dano + derruba (TR FOR)"
+  classes:
+    - fighter

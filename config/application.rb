@@ -29,19 +29,9 @@ module LafigaApi
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
 
-    # Only loads a smaller set of middleware suitable for API only apps.
-    # Middleware like session, flash, cookies can be added back manually.
-    # Skip views, helpers and assets when generating a new resource.
-    config.middleware.insert_before 0, Rack::Cors do
-      allow do
-        origins '*'
-        resource(
-          '*',
-          headers: :any,
-          methods: [:get, :patch, :put, :delete, :post, :options]
-          )
-      end
-    end
+    # CORS is configured in config/initializers/cors.rb (per-environment origins).
+    # Do NOT add a Rack::Cors middleware here: it would shadow the initializer
+    # and silently allow `origins '*'` in production.
     config.api_only = true
   end
 end

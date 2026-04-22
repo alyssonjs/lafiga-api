@@ -1,0 +1,181 @@
+itens:
+  - api_index: pacote-aventureiro
+    name: Pacote de Aventureiro
+    kind: gear
+    category: pack
+    value_gp: 10
+    weight_kg: 27.0
+    rarity: common
+    requires_attunement: false
+    description: "Mochila, saco de dormir, kit de refeição, fogareiro, pederneira, 10 tochas, ração (10 dias), cantil, 15 m de corda de cânhamo."
+    tags: [pacote]
+    props: {}
+
+  - api_index: pacote-explorador
+    name: Pacote de Explorador
+    kind: gear
+    category: pack
+    value_gp: 10
+    weight_kg: 24.0
+    rarity: common
+    requires_attunement: false
+    description: "Mochila, pé-de-cabra, martelo, 10 pitões, 10 tochas, pederneira, ração (10 dias), cantil, 15 m de corda."
+    tags: [pacote]
+    props: {}
+
+  - api_index: pacote-diplomata
+    name: Pacote de Diplomata
+    kind: gear
+    category: pack
+    value_gp: 39
+    weight_kg: 24.0
+    rarity: common
+    requires_attunement: false
+    description: "Baú, 2 mapas, finos, frasco de tinta, tinteiro, caneta, 5 folhas de papel, frasco de perfume, cera de vedar, sabão."
+    tags: [pacote]
+    props: {}
+
+  - api_index: pacote-artista
+    name: Pacote de Artista
+    kind: gear
+    category: pack
+    value_gp: 40
+    weight_kg: 5.0
+    rarity: common
+    requires_attunement: false
+    description: "Mochila, saco de cama, 2 fantasias, 5 velas, 5 dias de ração, cantil, estojo de disfarces."
+    tags: [pacote]
+    props: {}
+
+  - api_index: pacote-estudioso
+    name: Pacote de Estudioso
+    kind: gear
+    category: pack
+    value_gp: 40
+    weight_kg: 6.5
+    rarity: common
+    requires_attunement: false
+    description: "Mochila, grimório, frasco de tinta, tinteiro, caneta, 10 folhas de pergaminho, saco de areia, pequena faca."
+    tags: [pacote]
+    props: {}
+
+  - api_index: pacote-sacerdote
+    name: Pacote de Sacerdote
+    kind: gear
+    category: pack
+    value_gp: 19
+    weight_kg: 12.0
+    rarity: common
+    requires_attunement: false
+    description: "Mochila, manta, incensário, 2 blocos de incenso, vestes, 2 dias de ração, cantil."
+    tags: [pacote]
+    props: {}
+
+  - api_index: pacote-assaltante
+    name: Pacote de Assaltante
+    kind: gear
+    category: pack
+    value_gp: 16
+    weight_kg: 7.5
+    rarity: common
+    requires_attunement: false
+    description: "Mochila, saco de 1.5 m, saco pequeno, 10 metros de corda de seda, pé-de-cabra, martelo, 10 pitões, lâmpada, óleo (2), 5 velas, pederneira, ração (5), cantil."
+    tags: [pacote]
+    props: {}
+
+  - api_index: bolsa-de-componentes
+    name: Bolsa de Componentes
+    kind: gear
+    category: arcane
+    value_gp: 25
+    weight_kg: 0.7
+    rarity: common
+    requires_attunement: false
+    description: "Bolsa com componentes materiais comuns para conjuração."
+    tags: [foco]
+    props: {}
+
+  - api_index: foco-arcano
+    name: Foco Arcano
+    kind: gear
+    category: arcane
+    value_gp: 10
+    weight_kg: 0.5
+    rarity: common
+    requires_attunement: false
+    description: "Varinha, orbe, cajado, cristal, etc. usado como foco de magias arcanas."
+    tags: [foco]
+    props: {}
+
+  - api_index: foco-druidico
+    name: Foco Druídico
+    kind: gear
+    category: druidic
+    value_gp: 5
+    weight_kg: 0.5
+    rarity: common
+    requires_attunement: false
+    description: "Ramo de visco, totem, cajado de madeira, etc."
+    tags: [foco]
+    props: {}
+
+  - api_index: simbolo-sagrado
+    name: Símbolo Sagrado
+    kind: gear
+    category: holy
+    value_gp: 5
+    weight_kg: 0.5
+    rarity: common
+    requires_attunement: false
+    description: "Emblema, amuleto ou relíquia sagrada usada como foco divino."
+    tags: [foco]
+    props: {}
+
+  - api_index: instrumento-musical
+    name: Instrumento Musical
+    kind: gear
+    category: instrument
+    sub_category: "alaúde|flauta|tambores|violino|chifre|lira|cítara"
+    value_gp: 30
+    weight_kg: 1.5
+    rarity: common
+    requires_attunement: false
+    description: "Escolha um tipo (alaúde, flauta, tambores, violino, etc.). Usado como ferramenta e foco de bardo."
+    tags: [instrumento]
+    props: {}
+
+  - api_index: ferramentas-de-ladrao
+    name: Ferramentas de Ladrão
+    kind: gear
+    category: tools
+    value_gp: 25
+    weight_kg: 0.5
+    rarity: common
+    requires_attunement: false
+    description: "Ganchos, limas, chaves, etc. necessárias para arrombamento e armadilhas."
+    tags: [ferramenta]
+    props: {}
+
+  - api_index: utensilios-de-cozinheiro
+    name: Utensílios de Cozinheiro
+    kind: gear
+    category: tools
+    value_gp: 1
+    weight_kg: 3.5
+    rarity: common
+    requires_attunement: false
+    description: "Panelas, conchas, facas e especiarias básicas."
+    tags: [ferramenta]
+    props: {}
+
+  - api_index: bolsa-de-cozinheiro
+    name: Bolsa de Cozinheiro
+    kind: gear
+    category: kit
+    value_gp: 2
+    weight_kg: 1.0
+    rarity: common
+    requires_attunement: false
+    description: "Ervas, panos, recipientes e apetrechos de viagem para cozinhar."
+    tags: [kit]
+    props: {}

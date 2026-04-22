@@ -1,104 +1,201 @@
 class EquipmentRules
-  WEAPON_TABLE = {
-    # Simple melee
-    'club'             => { type: 'melee', hands: 1, light: true,                          category: 'simple', damage_die: '1d4' },
-    'clava'            => { type: 'melee', hands: 1, light: true,                          category: 'simple', damage_die: '1d4' },
-    'dagger'           => { type: 'melee', hands: 1, light: true, finesse: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
-    'adaga'            => { type: 'melee', hands: 1, light: true, finesse: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
-    'greatclub'        => { type: 'melee', hands: 2,                                      category: 'simple', damage_die: '1d8' },
-    'mace'             => { type: 'melee', hands: 1,                                      category: 'simple', damage_die: '1d6' },
-    'maça'             => { type: 'melee', hands: 1,                                      category: 'simple', damage_die: '1d6' },
-    'sickle'           => { type: 'melee', hands: 1, light: true,                         category: 'simple', damage_die: '1d4' },
-    'foice'            => { type: 'melee', hands: 1, light: true,                         category: 'simple', damage_die: '1d4' },
-    'spear'            => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
-    'lança'            => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
-    'quarterstaff'     => { type: 'melee', hands: 1, versatile: true,                     category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
-    'cajado'           => { type: 'melee', hands: 1, versatile: true,                     category: 'simple', damage_die: '1d6', versatile_die: '1d8' },
-    'handaxe'          => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6' },
-    'machadinha'       => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6' },
-    'javelin'          => { type: 'melee', hands: 1, thrown: true, range: '30/120',       category: 'simple', damage_die: '1d6' },
-    'azagaia'          => { type: 'melee', hands: 1, thrown: true, range: '30/120',       category: 'simple', damage_die: '1d6' },
-    'light-hammer'     => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
-    'martelo-leve'     => { type: 'melee', hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4' },
-
-    # Simple ranged
-    'light-crossbow'   => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d8' },
-    'besta-leve'       => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d8' },
-    'dart'             => { type: 'ranged', hands: 1, finesse: true,                      category: 'simple', damage_die: '1d4' },
-    'dardo'            => { type: 'ranged', hands: 1, finesse: true,                      category: 'simple', damage_die: '1d4' },
-    'shortbow'         => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d6' },
-    'arco-curto'       => { type: 'ranged', hands: 2,                                     category: 'simple', damage_die: '1d6' },
-    'sling'            => { type: 'ranged', hands: 1,                                     category: 'simple', damage_die: '1d4' },
-    'funda'            => { type: 'ranged', hands: 1,                                     category: 'simple', damage_die: '1d4' },
-
-    # Martial melee
-    'battleaxe'        => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8' },
-    'machado-de-batalha'=>{ type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8' },
-    'flail'            => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
-    'glaive'           => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
-    'halberd'          => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
-    'alabarda'         => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
-    'greataxe'         => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d12' },
-    'machado-grande'   => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d12' },
-    'greatsword'       => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '2d6' },
-    'montante'         => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '2d6' },
-    'maul'             => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '2d6' },
-    'lance'            => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d12' },
-    'lanca-de-cavalaria'=>{ type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d12' },
-    'longsword'        => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
-    'espada-longa'     => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
-    'espada-bastarda'  => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
-    'morningstar'      => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
-    'maça-estrela'     => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
-    'pike'             => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10', reach: true, heavy: true },
-    'pique'            => { type: 'melee', hands: 2,                                      category: 'martial', damage_die: '1d10' },
-    'rapier'           => { type: 'melee', hands: 1, finesse: true,                       category: 'martial', damage_die: '1d8' },
-    'scimitar'         => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
-    'escimitarra'      => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
-    'shortsword'       => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
-    'espada-curta'     => { type: 'melee', hands: 1, light: true, finesse: true,          category: 'martial', damage_die: '1d6' },
-    'trident'          => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'martial', damage_die: '1d6', versatile_die: '1d8' },
-    'tridente'         => { type: 'melee', hands: 1, versatile: true, thrown: true, range: '20/60', category: 'martial', damage_die: '1d6', versatile_die: '1d8' },
-    'war-pick'         => { type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
-    'picareta-de-guerra'=>{ type: 'melee', hands: 1,                                      category: 'martial', damage_die: '1d8' },
-    'warhammer'        => { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
-    'martelo-de-guerra'=> { type: 'melee', hands: 1, versatile: true,                     category: 'martial', damage_die: '1d8', versatile_die: '1d10' },
-    'whip'             => { type: 'melee', hands: 1, finesse: true, reach: true,          category: 'martial', damage_die: '1d4' },
-    'chicote'          => { type: 'melee', hands: 1, finesse: true, reach: true,          category: 'martial', damage_die: '1d4' },
-
-    # Martial ranged
-    'blowgun'          => { type: 'ranged', hands: 1,                                     category: 'martial', damage_die: '1' },
-    'zarabatana'       => { type: 'ranged', hands: 1,                                     category: 'martial', damage_die: '1' },
-    'hand-crossbow'    => { type: 'ranged', hands: 1, loading: true, light: true,         category: 'martial', damage_die: '1d6', range: '30/120' },
-    'besta-de-mao'     => { type: 'ranged', hands: 1, loading: true, light: true,         category: 'martial', damage_die: '1d6', range: '30/120' },
-    'heavy-crossbow'   => { type: 'ranged', hands: 2, loading: true, heavy: true,         category: 'martial', damage_die: '1d10', range: '100/400' },
-    'besta-pesada'     => { type: 'ranged', hands: 2, loading: true, heavy: true,         category: 'martial', damage_die: '1d10', range: '100/400' },
-    'longbow'          => { type: 'ranged', hands: 2, heavy: true,                         category: 'martial', damage_die: '1d8', range: '150/600' },
-    'arco-longo'       => { type: 'ranged', hands: 2, heavy: true,                         category: 'martial', damage_die: '1d8', range: '150/600' },
-    'net'              => { type: 'ranged', hands: 1, special: true,                       category: 'martial', damage_die: '' },
-    'rede'             => { type: 'ranged', hands: 1, special: true,                       category: 'martial', damage_die: '' }
+  # Conversão de moedas -> sempre guardar em cp (cobre) para contas
+  CURRENCY = {
+    'pc' => 1,     # cobre
+    'pp' => 10,    # prata
+    'po' => 100,   # ouro
+    'pl' => 1000,  # platina (se aparecer)
   }.freeze
+
+  # ===== ARSENAL =====
+  # Adicionados: cost_cp (inteiro, em cp) e weight_kg (Float, em kg)
+  WEAPON_TABLE = {
+    # Simples Corpo-a-Corpo
+    'club'              => { type: 'melee',  hands: 1, light: true,                           category: 'simple',  damage_die: '1d4', cost_cp: 10,  weight_kg: 1.0  }, # Porrete 1 pp, ~1 kg
+    'clava'             => { type: 'melee',  hands: 1, light: true,                           category: 'simple',  damage_die: '1d4', cost_cp: 10,  weight_kg: 1.0  },
+    'dagger'            => { type: 'melee',  hands: 1, light: true, finesse: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4', cost_cp: 200, weight_kg: 0.5 },
+    'adaga'             => { type: 'melee',  hands: 1, light: true, finesse: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4', cost_cp: 200, weight_kg: 0.5 },
+    'greatclub'         => { type: 'melee',  hands: 2,                                         category: 'simple',  damage_die: '1d8', cost_cp: 20,  weight_kg: 5.0  }, # Clava grande 2 pp, 5 kg
+    'mace'              => { type: 'melee',  hands: 1,                                         category: 'simple',  damage_die: '1d6', cost_cp: 500, weight_kg: 2.0  }, # Maça 5 po? (texto mostra 2 po/5 po em blocos distintos; manter 5 po = 500 cp é o padrão)
+    'maça'              => { type: 'melee',  hands: 1,                                         category: 'simple',  damage_die: '1d6', cost_cp: 500, weight_kg: 2.0  },
+    'sickle'            => { type: 'melee',  hands: 1, light: true,                            category: 'simple',  damage_die: '1d4', cost_cp: 100, weight_kg: 1.0  }, # Foice curta 1 po, 1 kg
+    'foice'             => { type: 'melee',  hands: 1, light: true,                            category: 'simple',  damage_die: '1d4', cost_cp: 100, weight_kg: 1.0  },
+    'spear'             => { type: 'melee',  hands: 1, versatile: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', versatile_die: '1d8', cost_cp: 100, weight_kg: 1.5 },
+    'lança'             => { type: 'melee',  hands: 1, versatile: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', versatile_die: '1d8', cost_cp: 100, weight_kg: 1.5 },
+    'quarterstaff'      => { type: 'melee',  hands: 1, versatile: true,                        category: 'simple',  damage_die: '1d6', versatile_die: '1d8', cost_cp: 20,  weight_kg: 2.0  }, # Bordão 2 pp, 2 kg
+    'cajado'            => { type: 'melee',  hands: 1, versatile: true,                        category: 'simple',  damage_die: '1d6', versatile_die: '1d8', cost_cp: 20,  weight_kg: 2.0  },
+    'handaxe'           => { type: 'melee',  hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', cost_cp: 500, weight_kg: 1.0 }, # Machadinha 5 po, 1 kg
+    'machadinha'        => { type: 'melee',  hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d6', cost_cp: 500, weight_kg: 1.0 },
+    'javelin'           => { type: 'melee',  hands: 1, thrown: true, range: '30/120',          category: 'simple',  damage_die: '1d6', cost_cp: 50,  weight_kg: 1.0  }, # Azagaia 5 pp, 1 kg
+    'azagaia'           => { type: 'melee',  hands: 1, thrown: true, range: '30/120',          category: 'simple',  damage_die: '1d6', cost_cp: 50,  weight_kg: 1.0  },
+    'light-hammer'      => { type: 'melee',  hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4', cost_cp: 200, weight_kg: 1.0 }, # Martelo leve 2 po? (tabela “1 po 5 po 2 po” – adotar 2 po padrão SRD)
+    'martelo-leve'      => { type: 'melee',  hands: 1, light: true, thrown: true, range: '20/60', category: 'simple', damage_die: '1d4', cost_cp: 200, weight_kg: 1.0 },
+
+    # Simples à Distância
+    'light-crossbow'    => { type: 'ranged', hands: 2,                                          category: 'simple',  damage_die: '1d8', range: '80/320', loading: true, cost_cp: 2500, weight_kg: 2.5 }, # Besta leve 25 po, 2,5 kg
+    'besta-leve'        => { type: 'ranged', hands: 2,                                          category: 'simple',  damage_die: '1d8', range: '80/320', loading: true, cost_cp: 2500, weight_kg: 2.5 },
+    'dart'              => { type: 'ranged', hands: 1, finesse: true,                           category: 'simple',  damage_die: '1d4', range: '20/60', cost_cp: 5,    weight_kg: 0.1 }, # Dardo 5 pc, 0,1 kg
+    'dardo'             => { type: 'ranged', hands: 1, finesse: true,                           category: 'simple',  damage_die: '1d4', range: '20/60', cost_cp: 5,    weight_kg: 0.1 },
+    'shortbow'          => { type: 'ranged', hands: 2,                                          category: 'simple',  damage_die: '1d6', range: '80/320', cost_cp: 2500, weight_kg: 1.0 }, # Arco curto 25 po, 1 kg
+    'arco-curto'        => { type: 'ranged', hands: 2,                                          category: 'simple',  damage_die: '1d6', range: '80/320', cost_cp: 2500, weight_kg: 1.0 },
+    'sling'             => { type: 'ranged', hands: 1,                                          category: 'simple',  damage_die: '1d4', range: '30/120', cost_cp: 10,   weight_kg: 0.0 }, # Funda 1 pp, peso n/a
+    'funda'             => { type: 'ranged', hands: 1,                                          category: 'simple',  damage_die: '1d4', range: '30/120', cost_cp: 10,   weight_kg: 0.0 },
+
+    # Marciais Corpo-a-Corpo
+    'battleaxe'         => { type: 'melee',  hands: 1, versatile: true,                         category: 'martial', damage_die: '1d8', versatile_die: '1d10', cost_cp: 1000, weight_kg: 2.0 }, # 10 po, 2 kg
+    'machado-de-batalha'=> { type: 'melee',  hands: 1, versatile: true,                         category: 'martial', damage_die: '1d8', versatile_die: '1d10', cost_cp: 1000, weight_kg: 2.0 },
+    'flail'             => { type: 'melee',  hands: 1,                                          category: 'martial', damage_die: '1d8', cost_cp: 1000, weight_kg: 1.0 }, # 10 po, 1 kg
+    'glaive'            => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '1d10', reach: true, heavy: true, cost_cp: 2000, weight_kg: 3.0 },
+    'halberd'           => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '1d10', reach: true, heavy: true, cost_cp: 2000, weight_kg: 3.0 },
+    'alabarda'          => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '1d10', reach: true, heavy: true, cost_cp: 2000, weight_kg: 3.0 },
+    'greataxe'          => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '1d12', heavy: true, cost_cp: 3000, weight_kg: 3.5 },
+    'machado-grande'    => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '1d12', heavy: true, cost_cp: 3000, weight_kg: 3.5 },
+    'greatsword'        => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '2d6',  heavy: true, cost_cp: 5000, weight_kg: 3.0 },
+    'montante'          => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '2d6',  heavy: true, cost_cp: 5000, weight_kg: 3.0 },
+    'maul'              => { type: 'melee',  hands: 2,                                          category: 'martial', damage_die: '2d6',  heavy: true, cost_cp: 1000, weight_kg: 5.0 },
+    'lance'             => { type: 'melee',  hands: 1,                                          category: 'martial', damage_die: '1d12', reach: true, special: true, cost_cp: 1000, weight_kg: 2.5 }, # Lança de montaria
+    'lanca-de-cavalaria'=> { type: 'melee',  hands: 1,                                          category: 'martial', damage_die: '1d12', reach: true, special: true, cost_cp: 1000, weight_kg: 2.5 },
+    'longsword'         => { type: 'melee',  hands: 1, versatile: true,                         category: 'martial', damage_die: '1d8', versatile_die: '1d10', cost_cp: 1500, weight_kg: 1.5 },
+    'espada-longa'      => { type: 'melee',  hands: 1, versatile: true,                         category: 'martial', damage_die: '1d8', versatile_die: '1d10', cost_cp: 1500, weight_kg: 1.5 },
+    'morningstar'       => { type: 'melee',  hands: 1,                                          category: 'martial', damage_die: '1d8',  cost_cp: 1500, weight_kg: 2.0 }, # Maça estrela
+    'maça-estrela'      => { type: 'melee',  hands: 1,                                          category: 'martial', damage_die: '1d8',  cost_cp: 1500, weight_kg: 2.0 },
+    'pike'              => { type: 'melee',  hands: 2, reach: true, heavy: true,                category: 'martial', damage_die: '1d10', cost_cp: 500,  weight_kg: 3.0 }, # Pique 5 po? (texto mistura; manter 5 po padrão SRD=500 cp)
+    'pique'             => { type: 'melee',  hands: 2, reach: true, heavy: true,                category: 'martial', damage_die: '1d10', cost_cp: 500,  weight_kg: 3.0 },
+    'rapier'            => { type: 'melee',  hands: 1, finesse: true,                           category: 'martial', damage_die: '1d8',  cost_cp: 2500, weight_kg: 1.0 },
+    'scimitar'          => { type: 'melee',  hands: 1, light: true, finesse: true,              category: 'martial', damage_die: '1d6',  cost_cp: 2500, weight_kg: 1.5 },
+    'escimitarra'       => { type: 'melee',  hands: 1, light: true, finesse: true,              category: 'martial', damage_die: '1d6',  cost_cp: 2500, weight_kg: 1.5 },
+    'shortsword'        => { type: 'melee',  hands: 1, light: true, finesse: true,              category: 'martial', damage_die: '1d6',  cost_cp: 1000, weight_kg: 1.0 },
+    'espada-curta'      => { type: 'melee',  hands: 1, light: true, finesse: true,              category: 'martial', damage_die: '1d6',  cost_cp: 1000, weight_kg: 1.0 },
+    'trident'           => { type: 'melee',  hands: 1, versatile: true, thrown: true, range: '20/60', category: 'martial', damage_die: '1d6', versatile_die: '1d8', cost_cp: 500, weight_kg: 2.0 },
+    'tridente'          => { type: 'melee',  hands: 1, versatile: true, thrown: true, range: '20/60', category: 'martial', damage_die: '1d6', versatile_die: '1d8', cost_cp: 500, weight_kg: 2.0 },
+    'war-pick'          => { type: 'melee',  hands: 1,                                          category: 'martial', damage_die: '1d8',  cost_cp: 500,  weight_kg: 1.0 },
+    'picareta-de-guerra'=> { type: 'melee',  hands: 1,                                          category: 'martial', damage_die: '1d8',  cost_cp: 500,  weight_kg: 1.0 },
+    'warhammer'         => { type: 'melee',  hands: 1, versatile: true,                         category: 'martial', damage_die: '1d8',  versatile_die: '1d10', cost_cp: 1500, weight_kg: 1.0 },
+    'martelo-de-guerra' => { type: 'melee',  hands: 1, versatile: true,                         category: 'martial', damage_die: '1d8',  versatile_die: '1d10', cost_cp: 1500, weight_kg: 1.0 },
+    'whip'              => { type: 'melee',  hands: 1, finesse: true, reach: true,              category: 'martial', damage_die: '1d4',  cost_cp: 200,  weight_kg: 1.0 },
+    'chicote'           => { type: 'melee',  hands: 1, finesse: true, reach: true,              category: 'martial', damage_die: '1d4',  cost_cp: 200,  weight_kg: 1.0 },
+
+    # Marciais à Distância
+    'blowgun'           => { type: 'ranged', hands: 1,                                          category: 'martial', damage_die: '1',    range: '25/100', loading: true, cost_cp: 1000, weight_kg: 0.5 }, # Zarabatana 10 po, 0,5 kg
+    'zarabatana'        => { type: 'ranged', hands: 1,                                          category: 'martial', damage_die: '1',    range: '25/100', loading: true, cost_cp: 1000, weight_kg: 0.5 },
+    'hand-crossbow'     => { type: 'ranged', hands: 1, loading: true, light: true,              category: 'martial', damage_die: '1d6',  range: '30/120', cost_cp: 7500, weight_kg: 1.5 }, # Besta de mão 75 po, 1,5 kg
+    'besta-de-mao'      => { type: 'ranged', hands: 1, loading: true, light: true,              category: 'martial', damage_die: '1d6',  range: '30/120', cost_cp: 7500, weight_kg: 1.5 },
+    'heavy-crossbow'    => { type: 'ranged', hands: 2, loading: true, heavy: true,              category: 'martial', damage_die: '1d10', range: '100/400', cost_cp: 5000, weight_kg: 4.5 }, # Besta pesada 50 po, 4,5 kg
+    'besta-pesada'      => { type: 'ranged', hands: 2, loading: true, heavy: true,              category: 'martial', damage_die: '1d10', range: '100/400', cost_cp: 5000, weight_kg: 4.5 },
+    'longbow'           => { type: 'ranged', hands: 2, heavy: true,                             category: 'martial', damage_die: '1d8',  range: '150/600', cost_cp: 5000, weight_kg: 1.5 }, # Arco longo 50 po, 1,5 kg
+    'arco-longo'        => { type: 'ranged', hands: 2, heavy: true,                             category: 'martial', damage_die: '1d8',  range: '150/600', cost_cp: 5000, weight_kg: 1.5 },
+    'net'               => { type: 'ranged', hands: 1, special: true,                            category: 'martial', damage_die: '',     range: '5/15',   cost_cp: 100,  weight_kg: 1.5 }, # Rede 1 po, 1,5 kg
+    'rede'              => { type: 'ranged', hands: 1, special: true,                            category: 'martial', damage_die: '',     range: '5/15',   cost_cp: 100,  weight_kg: 1.5 }
+  }.freeze
+
   ARMOR_TABLE = {
-    # Light armor
+    # (mantida como estava; se quiser adiciono custo/peso da armadura também)
     'padded'           => { cat: 'light',  base: 11, dex_cap: nil, stealth_dis: true,  str_req: nil },
     'leather'          => { cat: 'light',  base: 11, dex_cap: nil, stealth_dis: false, str_req: nil },
     'studded-leather'  => { cat: 'light',  base: 12, dex_cap: nil, stealth_dis: false, str_req: nil },
-    # Medium armor
     'hide'             => { cat: 'medium', base: 12, dex_cap: 2,  stealth_dis: false, str_req: nil },
     'chain-shirt'      => { cat: 'medium', base: 13, dex_cap: 2,  stealth_dis: false, str_req: nil },
     'scale-mail'       => { cat: 'medium', base: 14, dex_cap: 2,  stealth_dis: true,  str_req: nil },
     'breastplate'      => { cat: 'medium', base: 14, dex_cap: 2,  stealth_dis: false, str_req: nil },
     'half-plate'       => { cat: 'medium', base: 15, dex_cap: 2,  stealth_dis: true,  str_req: nil },
-    # Heavy armor
     'ring-mail'        => { cat: 'heavy',  base: 14, dex_cap: 0,  stealth_dis: true,  str_req: nil },
     'chain-mail'       => { cat: 'heavy',  base: 16, dex_cap: 0,  stealth_dis: true,  str_req: 13 },
     'splint'           => { cat: 'heavy',  base: 17, dex_cap: 0,  stealth_dis: true,  str_req: 15 },
     'plate'            => { cat: 'heavy',  base: 18, dex_cap: 0,  stealth_dis: true,  str_req: 15 },
   }.freeze
 
+  # Itens genéricos (extensível)
+  # Ex.: 'corda-de-seda-15-m' => { cost_cp: 1000, weight_kg: 2.5 }
+  ITEM_TABLE = {
+    # (adicione aqui com o mesmo esquema quando quiser cobrir o bloco inteiro de “Equipamento”)
+  }.freeze
+
   SHIELD_INDEXES = ['shield', 'escudo'].freeze
 
   class << self
+    # ======= NOVO: utilidades de preço/peso =======
+    def cp(amount, unit)
+      (amount.to_f * CURRENCY[unit.to_s.downcase]).to_i
+    end
+
+    def format_currency(cp_amount)
+      # Converte cp -> po/pp/pc amigável (prioriza po/pp)
+      po, rem = cp_amount.divmod(100)
+      pp, pc = rem.divmod(10)
+      parts = []
+      parts << "#{po} po" if po > 0
+      parts << "#{pp} pp" if pp > 0
+      parts << "#{pc} pc" if pc > 0 || parts.empty?
+      parts.join(' ')
+    end
+
+    def item_weight_kg(item)
+      # Preferir coluna do banco quando existir
+      if item.respond_to?(:weight_kg) && !item.weight_kg.nil?
+        return item.weight_kg.to_f
+      end
+      key = normalize_index(item)
+      if WEAPON_TABLE[key] && WEAPON_TABLE[key][:weight_kg]
+        return WEAPON_TABLE[key][:weight_kg].to_f
+      end
+      if ITEM_TABLE[key] && ITEM_TABLE[key][:weight_kg]
+        return ITEM_TABLE[key][:weight_kg].to_f
+      end
+      # fallback via props_json
+      props = safe_props(item)
+      (props['weight_kg'] || props['weight'] || 0).to_f
+    end
+
+    def item_cost_cp(item)
+      # Preferir coluna normalizada do banco quando existir
+      if item.respond_to?(:value_gp) && !item.value_gp.nil?
+        return (item.value_gp.to_f * 100).to_i
+      end
+      key = normalize_index(item)
+      if WEAPON_TABLE[key] && WEAPON_TABLE[key][:cost_cp]
+        return WEAPON_TABLE[key][:cost_cp].to_i
+      end
+      if ITEM_TABLE[key] && ITEM_TABLE[key][:cost_cp]
+        return ITEM_TABLE[key][:cost_cp].to_i
+      end
+      # fallback via props_json (aceita { cost_cp: 123 } OU { cost: {amount: 5, unit: 'po'} })
+      props = safe_props(item)
+      if props['cost_cp']
+        return props['cost_cp'].to_i
+      elsif props['cost'].is_a?(Hash)
+        return cp(props['cost']['amount'], props['cost']['unit'] || 'pc')
+      end
+      0
+    end
+
+    # Soma custo/peso de uma coleção (Array de objetos de inventário)
+    def inventory_totals(items)
+      total_cp = 0
+      total_kg = 0.0
+      Array(items).each do |it|
+        qty = (it.respond_to?(:quantity) ? it.quantity : it[:quantity] rescue 1).to_i
+        qty = 1 if qty <= 0
+        total_cp += item_cost_cp(it) * qty
+        total_kg += item_weight_kg(it) * qty
+      end
+      { cost_cp: total_cp, weight_kg: total_kg, cost_human: format_currency(total_cp) }
+    end
+
+    def safe_props(item)
+      # Suporta AR Item com coluna props (JSONB) e sheet_items.props_json
+      if item.respond_to?(:props)
+        item.props || {}
+      elsif item.respond_to?(:props_json)
+        item.props_json || {}
+      elsif item.is_a?(Hash)
+        item[:props] || item[:props_json] || {}
+      else
+        {}
+      end
+    end
+
+    # ======= (resto da classe mantém igual) =======
+
     def proficiencies_for(sheet)
       meta = sheet.metadata || {}
       cs = (meta['class_summary'] || {})
@@ -111,197 +208,83 @@ class EquipmentRules
 
     def allowed_armor_categories(sheet)
       prof = proficiencies_for(sheet)
-      set = Set.new
-      prof[:armor].each do |a|
-        t = a.downcase
-        set << 'light'  if t.include?('leve') || t.include?('light')
-        set << 'medium' if t.include?('média') || t.include?('media') || t.include?('medium')
-        set << 'heavy'  if t.include?('pesad') || t.include?('heavy')
-        set << 'shields' if t.include?('escudo') || t.include?('shield') || t.include?('escudos')
-      end
-      set
+      ProficiencyResolver.resolve_armor_categories(prof[:armor])
     end
 
-    def effective_scores(sheet)
-      base = {
-        str: sheet.str.to_i, dex: sheet.dex.to_i, con: sheet.con.to_i,
-        int: sheet.int.to_i, wis: sheet.wis.to_i, cha: sheet.cha.to_i
-      }
-      meta = sheet.metadata || {}
-      inc = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }
-
-      # Race bonuses
-      begin
-        rb = meta['race_bonuses_applied'] || {}
-        inc[:str] += rb['str'].to_i
-        inc[:dex] += rb['dex'].to_i
-        inc[:con] += rb['con'].to_i
-        inc[:int] += rb['int'].to_i
-        inc[:wis] += rb['wis'].to_i
-        inc[:cha] += rb['cha'].to_i
-      rescue; end
-
-      # ASIs from per-level choices
-      begin
-        per = (meta.dig('class_choices','per_level') || {}).values
-        per.each do |row|
-          asi = row.is_a?(Hash) ? row['asi'] : nil
-          next unless asi.is_a?(Hash)
-          if asi['mode'] == 'attributes'
-            attrs = Array(asi['attributes'])
-            map = { 'STR'=>'str','DEX'=>'dex','DES'=>'dex','CON'=>'con','INT'=>'int','WIS'=>'wis','SAB'=>'wis','CHA'=>'cha','CAR'=>'cha' }
-            if attrs.length == 1
-              k = map[attrs.first.to_s.upcase]
-              inc[k.to_sym] += 2 if k
-            else
-              attrs.first(2).each do |a|
-                k = map[a.to_s.upcase]
-                inc[k.to_sym] += 1 if k
-              end
-            end
-          elsif asi['mode'] == 'feat'
-            # Some feats grant ability bonuses via choices
-            choices = asi['choices'] || {}
-            begin
-              ab = choices['ability_bonuses'] || {}
-              ab.each { |k,v| key = k.to_s.downcase; map = { 'str'=>:str,'dex'=>:dex,'con'=>:con,'int'=>:int,'wis'=>:wis,'cha'=>:cha,'for'=>:str,'des'=>:dex,'sab'=>:wis,'car'=>:cha }; sym = map[key]; inc[sym] += v.to_i if sym }
-            rescue; end
-          end
-        end
-      rescue; end
-
-      # Ability bonuses from feats in metadata
-      begin
-        feats_meta = Array(meta['feats'])
-        feats_meta.each do |f|
-          ab = f['ability_bonuses'] || {}
-          ab.each do |k, v|
-            key = k.to_s.downcase
-            map = { 'str'=>:str, 'dex'=>:dex, 'con'=>:con, 'int'=>:int, 'wis'=>:wis, 'cha'=>:cha, 'for'=>:str, 'des'=>:dex, 'sab'=>:wis, 'car'=>:cha }
-            sym = map[key]
-            inc[sym] += v.to_i if sym
-          end
-        end
-      rescue; end
-
-      out = {}
-      base.each_key do |k|
-        out[k] = base[k] + inc[k]
-      end
-      out
-    end
-
-    def dex_mod(sheet)
-      CharacterRules.modifier(effective_scores(sheet)[:dex])
-    end
-
-    def con_mod(sheet)
-      CharacterRules.modifier(effective_scores(sheet)[:con])
-    end
-
-    def wis_mod(sheet)
-      CharacterRules.modifier(effective_scores(sheet)[:wis])
-    end
-
-    def class_names(sheet)
-      begin
-        sheet.sheet_klasses.includes(:klass).map { |sk| (sk.klass&.name || '').downcase }
-      rescue
-        []
-      end
-    end
-
-    def ac_for(sheet:, armor_item: nil, shield_item: nil)
-      dex = dex_mod(sheet)
-      base_unarmored = 10 + dex
-
-      if armor_item.nil?
-        # Unarmored cases: consider Barbarian/Monk Unarmored Defense and shield rules
-        names = class_names(sheet)
-        has_barb = names.any? { |n| n.include?('bárbar') || n.include?('barbar') }
-        has_monk = names.any? { |n| n.include?('monge') || n.include?('monk') }
-
-        base_ac = base_unarmored + (shield_item ? 2 : 0)
-        best = { ac: base_ac, source: shield_item ? 'Sem armadura + Escudo' : 'Sem armadura' }
-
-        if has_barb
-          barb_ac = 10 + dex + con_mod(sheet) + (shield_item ? 2 : 0)
-          if barb_ac > best[:ac]
-            best = { ac: barb_ac, source: shield_item ? 'Sem armadura (Bárbaro) + Escudo' : 'Sem armadura (Bárbaro)' }
-          end
-        end
-
-        if has_monk && !shield_item
-          monk_ac = 10 + dex + wis_mod(sheet)
-          if monk_ac > best[:ac]
-            best = { ac: monk_ac, source: 'Sem armadura (Monge)' }
-          end
-        end
-
-        return best.merge(stealth_disadvantage: false, speed_penalty: false)
-      end
-
-      idx = normalize_index(armor_item)
-      row = ARMOR_TABLE[idx]
-      unless row
-        # fallback: try from props_json
-        if armor_item.props_json && armor_item.props_json['ac_base']
-          base = armor_item.props_json['ac_base'].to_i
-          cap = armor_item.props_json['dex_cap']
-          add = cap.nil? ? dex : [dex, cap.to_i].min
-          ac = base + [add, 0].max
-          ac += 2 if shield_item
-          return { ac: ac, source: armor_item.item_name, stealth_disadvantage: !!armor_item.props_json['stealth_disadvantage'], speed_penalty: false }
-        end
-        # unknown armor: treat as unarmored
-        ac = base_unarmored
-        ac += 2 if shield_item
-        return { ac: ac, source: 'Desconhecida', stealth_disadvantage: false, speed_penalty: false }
-      end
-
-      add = if row[:dex_cap].nil?
-              dex
-            else
-              [dex, row[:dex_cap]].min
-            end
-      add = 0 if add.nil?
-      ac = row[:base] + [add, 0].max
-      ac += 2 if shield_item
-      speed_pen = row[:cat] == 'heavy' && row[:str_req] && (sheet.str.to_i < row[:str_req].to_i)
-
-      src = idx
-      src += ' + Escudo' if shield_item
-      { ac: ac, source: src, stealth_disadvantage: !!row[:stealth_dis], speed_penalty: !!speed_pen }
-    end
-
-    def can_wear?(sheet:, armor_item:)
-      prof = allowed_armor_categories(sheet)
-      idx = normalize_index(armor_item)
-      row = ARMOR_TABLE[idx]
-      return { ok: true } unless row # unknown, allow
-      cat = row[:cat]
-      if !prof.include?(cat)
-        return { ok: false, reason: "Sem proficiência em armadura #{cat}" }
-      end
-      { ok: true }
+    def allowed_weapon_profile(sheet)
+      prof = proficiencies_for(sheet)
+      ProficiencyResolver.resolve_weapons(prof[:weapons])
     end
 
     def is_shield?(item)
-      key = (item.item_index || item.item_name || '').to_s.downcase
-      SHIELD_INDEXES.any? { |t| key.include?(t) }
+      return false unless item
+      key = normalize_index(item)
+      SHIELD_INDEXES.include?(key)
+    end
+
+    def ac_for(sheet:, armor_item:, shield_item:)
+      dex_mod = CharacterRules.modifier(sheet.dex)
+
+      armor_category = 'none'
+      stealth_disadvantage = false
+      speed_penalty = false
+      armor_data = nil
+
+      if armor_item
+        key = normalize_index(armor_item)
+        armor_data = ARMOR_TABLE[key]
+        if armor_data
+          base = armor_data[:base]
+          cap = armor_data[:dex_cap]
+          dex_bonus = cap.nil? ? dex_mod : [dex_mod, cap].min
+          ac = base + dex_bonus
+          source = armor_item.respond_to?(:item_name) ? armor_item.item_name : key
+          armor_category = armor_data[:cat].to_s
+          stealth_disadvantage = !!armor_data[:stealth_dis]
+          # 5e: armaduras com requisito de FOR não atendido aplicam -10 ft de
+          # deslocamento (a regra "speed_penalty" do summary).
+          if armor_data[:str_req] && sheet.str.to_i < armor_data[:str_req].to_i
+            speed_penalty = true
+          end
+        else
+          ac = 10 + dex_mod
+          source = 'Sem armadura'
+        end
+      else
+        ac = 10 + dex_mod
+        source = 'Sem armadura'
+      end
+
+      if shield_item
+        ac += 2
+        source = "#{source} + Escudo"
+      end
+
+      {
+        ac: ac,
+        source: source,
+        armor_category: armor_category,
+        armor_equipped: armor_category != 'none',
+        stealth_disadvantage: stealth_disadvantage,
+        speed_penalty: speed_penalty,
+        str_requirement: armor_data ? armor_data[:str_req] : nil
+      }
     end
 
     def is_weapon?(item)
       return false unless item
       key = normalize_index(item)
       return true if WEAPON_TABLE.key?(key)
-      # fallback by category
       (item.category || '').to_s.downcase.include?('weapon')
     end
 
     def normalize_index(item)
-      key = (item.item_index || item.item_name || '').to_s.downcase
-      key.strip.gsub(' ', '-').gsub(/ç/,'c').gsub(/á|à|ã|â/,'a').gsub(/é|ê/,'e').gsub(/í/,'i').gsub(/ó|ô|õ/,'o').gsub(/ú/,'u')
+      key = (item.respond_to?(:item_index) ? item.item_index : item[:item_index] rescue nil) ||
+            (item.respond_to?(:item_name)  ? item.item_name  : item[:item_name]  rescue '') ||
+            item.to_s
+      key.to_s.downcase.strip
+         .gsub(' ', '-')
+         .gsub(/ç/,'c').gsub(/á|à|ã|â/,'a').gsub(/é|ê/,'e').gsub(/í/,'i').gsub(/ó|ô|õ/,'o').gsub(/ú/,'u')
     end
 
     def weapon_props(item)
@@ -309,8 +292,7 @@ class EquipmentRules
       key = normalize_index(item)
       row = WEAPON_TABLE[key]
       unless row
-        # best-effort from props_json
-        props = (item.respond_to?(:props_json) ? item.props_json : (item[:props_json] rescue {})) || {}
+        props = safe_props(item)
         return {
           type: props['type'] || (props['ranged'] ? 'ranged' : 'melee'),
           hands: (props['hands'] || (props['two_handed'] ? 2 : 1)).to_i,
@@ -325,7 +307,10 @@ class EquipmentRules
           loading: !!props['loading'],
           special: !!props['special'],
           thrown: !!props['thrown'],
-          range: props['range']
+          range: props['range'],
+          # novos campos (se vierem via props_json):
+          cost_cp: props['cost_cp'],
+          weight_kg: props['weight_kg']
         }
       end
       row

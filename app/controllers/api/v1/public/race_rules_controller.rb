@@ -1,11 +1,15 @@
 class Api::V1::Public::RaceRulesController < ApplicationController
   def index
-    render json: { race_rules: RaceRules.rules }, status: :ok
+    render json: {
+      race_rules: RaceRules.rules,
+      trait_definitions: RaceRules.trait_definitions
+    }, status: :ok
   end
 
   def show
     rule = RaceRules.find(params[:id])
     return render json: { error: 'not found' }, status: :not_found unless rule
+
     render json: { race_rule: rule }, status: :ok
   end
 

@@ -1,2887 +1,749 @@
----
-version: 1
+version: 2
 source: livro_do_jogador.txt
+
+# Esquema padronizado (referência):
+# backgrounds.<slug>:
+#   name: string
+#   starting_proficiencies:
+#     skills: [string]
+#     tools: [string]                   # opcional
+#     languages: { count: int, from?: [string] }  # opcional
+#   starting_equipment: [ { item: string, qty: int, container: string|null } ]
+#   starting_equipment_options: [ { choose: int, from: [ { item: string, qty: int } ] } ]
+#   feature: { name: string, desc: string }
+#   personality_traits: { choose: int, options: [string] }
+#   ideals: { choose: int, options: [ { desc: string, alignments: [alignment] } ] }
+#   bonds: { choose: int, options: [string] }
+#   flaws: { choose: int, options: [string] }
+
 backgrounds:
+
   acolyte:
     name: Acólito
     starting_proficiencies:
-      skills:
-      - Intuição
-      - Religião
-      languages: 2
+      skills: [Intuição, Religião]
+      languages: { count: 2 }
     starting_equipment:
-    - Um símbolo sagrado
-    - Um livro de orações
-    - Um incensário com incenso
-    - Vestes comuns
-    - Uma algibeira contendo 15 po
+      - { item: "Símbolo sagrado",        qty: 1, container: null }
+      - { item: "Livro/roda de orações",  qty: 1, container: null }
+      - { item: "Incenso (5 varetas)",    qty: 5, container: "bolsa" }
+      - { item: "Vestes comuns",          qty: 1, container: null }
+      - { item: "Algibeira (15 po)",      qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: ABRIGO DOS FIÉIS
-      desc:
-      - |-
-        Como um acólito, você detém o respeito daqueles que compartilham de sua fé, 
-        e você pode realizar cerimônias de sua divindade. Você e seus companheiros 
-        de aventura podem até receber cura e caridade de um templo, santuário ou 
-        outro posto de sua fé, embora devam fornecer quaisquer componentes materiais 
-        necessários para as magias. Aqueles que compartilham de sua religião vão 
-        garantir a você (mas apenas você), custeando um estilo de vida modesto.
-        
-        Você também pode possuir laços com um templo específico devotado à sua 
-        divindade ou panteão, e fixar residência nele. Pode ser o templo que você 
-        está acostumado a servir, se ainda tiver boas relações com ele, ou um templo 
-        no qual você encontrou um novo lar. Enquanto frequentar as redondezas desse 
-        templo, você pode solicitar os sacerdotes para assisti-lo, desde que essa 
-        assistência não seja de alguma forma perigosa e que você sempre esteja em 
-        uma boa relação com seu templo.
+      name: Abrigo dos Fiéis
+      desc: >
+        Fiéis de sua religião oferecem hospitalidade modesta, cura e caridade
+        (componentes materiais por sua conta). Você mantém laços com um templo
+        e pode pedir ajuda não perigosa aos sacerdotes locais.
     personality_traits:
       choose: 2
       options:
-      - Eu idolatro um herói particular do meu panteão e sempre me refiro aos feitos e exemplos dessa pessoa.
-      - Posso encontrar pontos comuns entre os mais ferozes inimigos, empatizando com eles e sempre trabalhando pela paz.
-      - Eu vejo presságios em cada evento e ação. Os deuses tentam falar conosco, só precisamos escutar.
-      - Nada pode me abalar da minha devoção religiosa.
-      - Eu sou intolerante (ou tolerante) de outras religiões e respeito (ou condeno) a adoração de outros deuses.
-      - Minha piedade me leva a ajudar todos os que precisam, mesmo que isso me prejudique.
-      - Eu confio que minha divindade me guiará. Eu aceito o que acontece comigo como a vontade de um poder superior.
-      - Eu gosto de manter meus pensamentos e preces para mim mesmo. Aqueles que esperam mais devoção ou zelo me irritam.
+        - Idolatro um herói do meu panteão e cito seus feitos.
+        - Procuro conciliar até inimigos jurados.
+        - Vejo presságios em tudo.
+        - Nada abala minha devoção.
+        - Sou (in)tolerante com outras religiões.
+        - Ajudo quem precisa mesmo com custo pessoal.
+        - Aceito o destino como vontade divina.
+        - Evito ostentar minha fé em público.
     ideals:
       choose: 1
       options:
-      - desc: Tradição. As antigas tradições de adoração e sacrifício devem ser preservadas e mantidas. (Leal)
-        alignments:
-        - lawful-good
-        - lawful-neutral
-        - lawful-evil
-      - desc: Caridade. Sempre ajudo aqueles que precisam, sem esperar recompensa. (Bom)
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-      - desc: Mudança. Precisamos ajudar a trazer as mudanças que os deuses estão constantemente trabalhando no mundo. (Caótico)
-        alignments:
-        - chaotic-good
-        - chaotic-neutral
-        - chaotic-evil
-      - desc: Poder. Espero um dia ascender à liderança da hierarquia da minha fé. (Qualquer)
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Fé. Confio que minha divindade me guiará. Os deuses nos colocam onde precisamos estar. (Qualquer)
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Aspiração. Busco provar que sou digno da graça do meu deus, correspondendo minhas ações aos seus ensinamentos. (Qualquer)
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Tradição. Ritos antigos devem ser preservados.", alignments: [lawful-good, lawful-neutral, lawful-evil] }
+        - { desc: "Caridade. Ajudar os necessitados sem esperar retorno.", alignments: [lawful-good, neutral-good, chaotic-good] }
+        - { desc: "Mudança. O mundo divino pede renovação constante.", alignments: [chaotic-good, chaotic-neutral, chaotic-evil] }
+        - { desc: "Poder. Busco posição na hierarquia da fé.", alignments: [lawful-good, neutral, lawful-evil] }
+        - { desc: "Fé. Confio na orientação dos deuses.", alignments: [lawful-good, neutral-good, chaotic-good, lawful-neutral, neutral, chaotic-neutral, lawful-evil, neutral-evil, chaotic-evil] }
+        - { desc: "Aspiração. Quero ser digno da graça da minha divindade.", alignments: [neutral] }
     bonds:
       choose: 1
       options:
-      - Eu morreria para recuperar uma relíquia ancestral de minha fé, perdida há muito tempo.
-      - Eu ainda terei minha vingança contra o templo corrupto que me acusou de heresia.
-      - Eu devo minha vida ao sacerdote que me acolheu quando meus pais morreram.
-      - Tudo o que faço, faço pelo povo.
-      - Eu farei qualquer coisa para proteger o templo que sirvo.
-      - Eu busco guardar um texto sagrado que meus inimigos dizem ser herético e tentam destruí-lo.
+        - Daria a vida por uma relíquia sagrada perdida.
+        - Busco vingança contra um templo corrupto.
+        - Devo minha vida ao sacerdote que me acolheu.
+        - Tudo que faço é pelo povo.
+        - Protegerei meu templo a qualquer custo.
+        - Guardo um texto sagrado proibido.
     flaws:
       choose: 1
       options:
-      - Eu julgo outros com dureza, e eu mesmo ainda mais severamente.
-      - Coloco muito pouco valor na minha própria vida em comparação com a vida dos outros.
-      - Minha piedade me leva a ajudar todos os que precisam, mesmo que isso me prejudique.
-      - Minha devoção religiosa às vezes me leva a fechar os olhos para a realidade de uma situação.
-      - Eu sou inflexível em meu pensamento.
-      - Eu suspeito de estranhos e sempre espero o pior deles.
+        - Julgo os outros com dureza.
+        - Desvalorizo minha própria vida.
+        - Minha fé me cega para fatos.
+        - Sou inflexível.
+        - Desconfio de estranhos.
+        - Tenho dificuldade em admitir erro.
 
   criminal:
     name: Criminoso
     starting_proficiencies:
-      skills:
-      - Enganação
-      - Furtividade
-      tools:
-      - Ferramentas de Ladrão
-      - Um tipo de jogo de azar
+      skills: [Enganação, Furtividade]
+      tools: ["Ferramentas de ladrão", "Jogo de azar (à escolha)"]
     starting_equipment:
-    - Uma alavanca de ferro
-    - Um punhal escuro com capuz
-    - Um conjunto de roupas escuras comuns
-    - Uma algibeira contendo 15 po
+      - { item: "Alavanca de ferro",               qty: 1, container: null }
+      - { item: "Roupas escuras comuns (com capuz)", qty: 1, container: null }
+      - { item: "Algibeira (15 po)",               qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: CONTATO CRIMINOSO
-      desc:
-      - |-
-        Você tem um contato confiável e confiável que atua como sua ligação com uma rede 
-        de outros criminosos. Você sabe como enviar mensagens para e receber mensagens 
-        de e através de sua rede de contatos criminosos, mesmo através de grandes 
-        distâncias. Você conhece os sinais locais, as senhas e os códigos usados para 
-        marcar locais seguros para reuniões criminosas, como um armazém abandonado ou 
-        uma taverna de beira de estrada onde os criminosos se reúnem para compartilhar 
-        suas histórias e negócios.
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+      name: Contato Criminoso
+      desc: >
+        Você possui um contato confiável que o conecta a uma rede criminosa.
+        Sabe usar sinais, senhas e intermediários para enviar/receber mensagens.
+    personality_traits:
+      choose: 2
+      options:
+        - Sempre tenho um plano de fuga.
+        - Coleciono segredos alheios.
+        - Não deixo lucro fácil passar.
+        - Falo pouco e observo muito.
+        - Confio em ferramentas mais que em pessoas.
+        - Brinco para aliviar a tensão.
+        - Leal ao meu bando acima de tudo.
+        - Frio sob pressão.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Comunidade. O grupo vem primeiro.", alignments: [lawful-good, lawful-neutral, lawful-evil] }
+        - { desc: "Generosidade. Uso meus talentos para ajudar.", alignments: [neutral-good] }
+        - { desc: "Liberdade. Ninguém manda em mim.", alignments: [chaotic-good, chaotic-neutral, chaotic-evil] }
+        - { desc: "Ganância. Lucro acima de tudo.", alignments: [lawful-evil, neutral-evil, chaotic-evil] }
+        - { desc: "Povo. Importo-me com pessoas reais, não com ideais.", alignments: [neutral] }
+        - { desc: "Aspiração. Serei o melhor no meu ofício.", alignments: [any] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Tenho uma dívida com alguém perigoso.
+        - Protegerei meu parceiro de crimes.
+        - Recuperarei um bem roubado de mim.
+        - Devo lealdade ao meu bando de infância.
+        - Quero derrubar um chefão local.
+        - Conheço um esconderijo que ninguém mais sabe.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Desconfio de todo mundo.
+        - Não resisto a um arrombamento.
+        - Sou impulsivo demais.
+        - A ganância me cega.
+        - Guardo rancor por anos.
+        - Quebro promessas por conveniência.
+
   charlatan:
     name: Charlatão
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Enganação, Prestidigitação]
+      tools: ["Kit de disfarce", "Kit de falsificação"]
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Roupas finas",             qty: 1, container: null }
+      - { item: "Kit de disfarce",          qty: 1, container: null }
+      - { item: "Ferramentas do golpe (baralho marcado / dados viciados / frascos coloridos)", qty: 1, container: "bolsa" }
+      - { item: "Sinetes falsos variados",  qty: 1, container: "bolsa" }
+      - { item: "Algibeira (15 po)",        qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: IDENTIDADE FALSA
-      desc:
-      - |-
-        Você criou uma segunda identidade que inclui                   5    Uma pessoa poderosa matou alguém que eu amava.
-        documentos, conhecidos estabelecidos e disfarces que                Algum dia, em breve, terei minha vingança.
-                                                                       6    Eu enganei e arruinei a vida de uma pessoa que não
-        possibilitam que você assuma essa persona. Além disso,
-                                                                            merecia. Eu busco reparar meus erros, mas talvez nunca
-        você pode forjar documentos, incluindo papeis oficiais e
-                                                                            seja capaz de me perdoar.
-        cartas pessoais, contanto que você tenha visto um
-        exemplo desse tipo de documento ou a caligrafia de quem
+      name: Identidade Falsa
+      desc: >
+        Você mantém uma segunda identidade, com documentos, contatos e disfarces.
+        Consegue forjar papéis oficiais e cartas após ver um exemplo.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Minto com naturalidade.
+        - Leio pessoas como livros abertos.
+        - Adoro trambiques elaborados.
+        - Sou vaidoso com meus disfarces.
+        - Falo rápido e confundo ouvintes.
+        - Finjo remorso quando convém.
+        - Odeio ser desmascarado.
+        - Tenho um lema para cada golpe.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Liberdade. Regras existem para ser contornadas.", alignments: [chaotic-neutral] }
+        - { desc: "Caridade. Golpeio os ricos, ajudo os pobres.", alignments: [neutral-good] }
+        - { desc: "Ambição. Subirei usando meu talento.", alignments: [lawful-evil, neutral-evil] }
+        - { desc: "Honra entre malandros. Protejo meus cúmplices.", alignments: [lawful-neutral] }
+        - { desc: "Diversão. O jogo é melhor que o prêmio.", alignments: [chaotic-good] }
+        - { desc: "Sobrevivência. Faço o que for preciso.", alignments: [neutral] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Um antigo comparsa me salvou a vida.
+        - Alguém inocente sofreu por um golpe meu; devo reparo.
+        - Tenho um alvo que jurei derrubar.
+        - Um disfarce virou minha “verdadeira” vida.
+        - Devo proteção à minha pequena gangue.
+        - Carrego um token de um admirador enganado.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
-  criminal:
-    name: Criminoso
-    starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
-    starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
-    starting_equipment_options: []
-    feature:
-      name: CONTATO CRIMINAL
-      desc:
-      - |-
-        Você possui contatos de confiança que agem como seus
-        informantes em uma rede criminosa. Você sabe como se
-        comunicar com eles mesmo em grandes distâncias. Você
-        conhece em especial os mensageiros locais, mestres de
-        caravana corruptos, e marinheiros escusos que podem
-        transmitir seus recados.
-    personality_traits:
-      choose: 2
-      options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
-    ideals:
-      choose: 1
-      options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-    bonds:
-      choose: 1
-      options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
-    flaws:
-      choose: 1
-      options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Acredito nas minhas próprias mentiras.
+        - Não resisto a uma aposta.
+        - Subestimo pessoas honestas.
+        - Fico paranoico com exposição.
+        - Prometo demais, cumpro de menos.
+        - Desisto quando o golpe fica difícil.
+
   entertainer:
     name: Artista
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Acrobacia, Atuação]
+      tools: ["Kit de disfarce", "Instrumento musical (à escolha)"]
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Instrumento musical (à escolha)", qty: 1, container: null }
+      - { item: "Lembrança de admirador (p.ex., carta de amor)", qty: 1, container: "bolsa" }
+      - { item: "Figurino",                 qty: 1, container: null }
+      - { item: "Algibeira (15 po)",        qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: PELA DEMANDA POPULAR
-      desc: []
+      name: Pela Demanda Popular
+      desc: >
+        Você sempre encontra lugar para se apresentar. Em tais locais,
+        recebe comida e alojamento modestos gratuitos enquanto atuar.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Vivo para os aplausos.
+        - Transformo drama em espetáculo.
+        - Sou amigo de todos os donos de taverna.
+        - Exagero nas histórias.
+        - Nunca perco o ritmo.
+        - Adoro improvisar.
+        - Coleciono figurinos chamativos.
+        - Tenho fãs em todo lugar.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Beleza. A arte torna o mundo melhor.", alignments: [good] }
+        - { desc: "Tradição. Canções antigas devem viver.", alignments: [lawful] }
+        - { desc: "Criatividade. O novo inspira coragem.", alignments: [chaotic] }
+        - { desc: "Fama. Eu quero o centro das atenções.", alignments: [neutral] }
+        - { desc: "Generosidade. Entretenho para aliviar dores.", alignments: [good] }
+        - { desc: "Lucro. Minha arte deve pagar bem.", alignments: [evil] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Alguém me ensinou tudo; devo honrá-lo.
+        - Um público específico conquistou meu coração.
+        - Um rival quer me superar.
+        - Meu instrumento é um tesouro de família.
+        - Devo um favor a um patrono rico.
+        - Quero levar minha trupe à fama.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Vaidade me cega a críticas.
+        - Invejo artistas melhores.
+        - Gasto tudo com luxos.
+        - Não sei lidar com vaias.
+        - Flerto com perigo por aplausos.
+        - Quebro regras de etiqueta.
+
   folk-hero:
     name: Herói do Povo
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Adestrar Animais, Sobrevivência]
+      tools: ["Ferramentas de artesão (à escolha)", "Veículos (terrestres)"]
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Ferramentas de artesão (à escolha)", qty: 1, container: null }
+      - { item: "Pá",                       qty: 1, container: null }
+      - { item: "Panela de ferro",          qty: 1, container: null }
+      - { item: "Roupas comuns",            qty: 1, container: null }
+      - { item: "Algibeira (10 po)",        qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: HOSPITALIDADE RÚSTICA
-      desc:
-      - |-
-        Já que você ascendeu da categoria de pessoas comuns até                     e cego aos riscos e falhas.
-        onde você está agora, é fácil se misturar a eles. Você pode            3    As pessoas que me conhecem desde criança sabem de
-        encontrar lugar entre os camponeses para se esconder,                       um vergonhoso segredo meu, eu não poderei voltar para
-        descansar ou se recuperar, a menos que isso ofereça um                      casa nunca.
-        risco direto a eles. Eles o esconderão da lei e de qualquer            4    Eu tenho uma fraqueza pelos vícios da cidade,
-        um que venha perguntando por você, desde que não                            especialmente a bebedeira.
-        tenham que arriscar suas vidas.                                        5    Secretamente, eu acredito que as coisas estariam
-                                                                                    melhores se algum tirano comandasse a região.
+      name: Hospitalidade Rústica
+      desc: >
+        Camponeses oferecem abrigo e ajuda, contanto que não se coloquem
+        em risco direto. Você se mistura facilmente entre o povo.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Enfrento valentões sem hesitar.
+        - Falo por quem não tem voz.
+        - Trabalho primeiro, glória depois.
+        - Sou prático e direto.
+        - Não abandono os meus.
+        - Odeio injustiças pequenas.
+        - Tenho orgulho da minha vila.
+        - Desconfio de nobres.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Comunidade. A força está nos laços.", alignments: [lawful] }
+        - { desc: "Bondade. Ajudar quem precisa.", alignments: [good] }
+        - { desc: "Liberdade. Povo livre, terra livre.", alignments: [chaotic] }
+        - { desc: "Honra. Vencer sem trapacear.", alignments: [lawful] }
+        - { desc: "Pragmatismo. Fazer o necessário.", alignments: [neutral] }
+        - { desc: "Revolta. Derrubar tiranos.", alignments: [chaotic] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Protegerei minha comunidade.
+        - Um tirano me fez mal; não esqueceré.
+        - Devo tudo ao meu mentor.
+        - Carrego um símbolo da minha vila.
+        - Busco justiça por um desastre local.
+        - Minha família depende de mim.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Me meto em brigas por orgulho.
+        - Subestimo autoridades.
+        - Pouco tato com nobres.
+        - Não sei recusar pedidos de ajuda.
+        - Guardo rancor de quem explora o povo.
+        - Arrisco demais para proteger os outros.
+
   guild-artisan:
     name: Artesão da Guilda
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Intuição, Persuasão]
+      tools: ["Ferramentas de artesão (à escolha)"]
+      languages: { count: 1 }
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Ferramentas de artesão (à escolha)", qty: 1, container: null }
+      - { item: "Carta de apresentação da guilda",    qty: 1, container: null }
+      - { item: "Roupas de viajante",                 qty: 1, container: null }
+      - { item: "Algibeira (15 po)",                  qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: ASSOCIADOS DA GUILDA
-      desc:
-      - |-
-        Como um membro cativo e respeitado da guilda, você
-                                                                    pode contar com certos benefícios que a sociedade
-                                                                    garante. Seus camaradas, membros da guilda, irão provê-
-                                                                    lo com hospedagem e comida, se necessário, e pagarão
-                                                                    pelo seu funeral se preciso for. Em algumas cidades e
-                                                                    vilas, um salão da guilda oferece um local central para
-                                                                    conhecer outros membros de profissão, podendo ser um
-                                                                    bom lugar para se conhecer patrões, aliados e empregados
-                                                                    em potencial.
-                                                                        Guildas, muitas vezes, detêm tremendos poderes
-                                                                    políticos. Se você for acusado de um crime, sua guilda irá
-                                                                    ampará-lo se uma boa defesa puder ser apresentada para
-                                                                    provar sua inocência ou se o crime for justificável. Você
-                                                                    pode, também, ter acesso a figuras políticas poderosas
-                                                                    através da guilda, se você for um membro bem
-                                                                    posicionado. Tais conexões devem exigir doações de
-                                                                    dinheiro ou itens mágicos para os cofres da guilda.
-                                                                        Você deve pagar cotas de 5 po por mês a guilda. Se
-                                                                    você não pagar, você irá contrair uma dívida para
-                                                                    permanecer nas boas graças da guilda.
+      name: Associados da Guilda
+      desc: >
+        A guilda fornece contatos, oportunidades e, em necessidade, comida/hospedagem.
+        Você deve pagar 5 po/mês em cotas para manter os benefícios.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Perfeccionista com meu ofício.
+        - Falo com orgulho do meu trabalho.
+        - Negocio até o último cobre.
+        - Cumpro prazos custe o que custar.
+        - Prezo por materiais de qualidade.
+        - Ajudo aprendizes com paciência.
+        - Tenho clientes fiéis em toda parte.
+        - Desconfio de mercadores desonestos.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Comunidade. A guilda fortalece a cidade.", alignments: [lawful] }
+        - { desc: "Qualidade. Trabalho bem-feito acima de tudo.", alignments: [neutral] }
+        - { desc: "Progresso. Novas técnicas e invenções.", alignments: [chaotic] }
+        - { desc: "Prestígio. Quero meu nome em todas as portas.", alignments: [neutral] }
+        - { desc: "Justo preço. Nem fraude, nem esmola.", alignments: [lawful] }
+        - { desc: "Lucro. Negócio é negócio.", alignments: [evil] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Minha loja/oficina é meu lar.
+        - Devo meu sucesso à guilda.
+        - Um cliente importante confia em mim.
+        - Um concorrente me roubou um design.
+        - Meu mestre desapareceu; vou encontrá-lo.
+        - Forneço para uma causa nobre.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Teimoso com padrões próprios.
+        - Sovina ao extremo.
+        - Subestimo quem não é “profissional”.
+        - Vício em trabalho.
+        - Guardo rancor de clientes maus pagadores.
+        - Vaidoso com minha marca.
+
   hermit:
     name: Eremita
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Medicina, Religião]
+      tools: ["Kit de herbalismo"]
+      languages: { count: 1 }
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Estojo com anotações/diário", qty: 1, container: null }
+      - { item: "Cobertor de inverno",        qty: 1, container: null }
+      - { item: "Roupas comuns",              qty: 1, container: null }
+      - { item: "Kit de herbalismo",          qty: 1, container: null }
+      - { item: "Algibeira (5 po)",           qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: DESCOBERTA
-      desc:
-      - |-
-        A calma reclusão da seu eremitério prolongado lhe deu
-                                                                           acesso a descobertas únicas e poderosas. A natureza exata
-                                                                           dessas revelações depende da natureza da sua reclusão.
-                                                                           Poderia ser uma grande verdade sobre o cosmos, os
-                                                                           deuses, os poderosos seres de outros planos ou as forças
-                                                                           da natureza. Poderia ser um local nunca visto por mais
-                                                                           ninguém. Você pode ter descoberto um fato que a muito
-                                                                           foi esquecido, ou desenterrado uma relíquia do passado
-                                                                           que poderia reescrever a história. Poderia ser uma
-                                                                           informação que seria prejudicial para as pessoas
-                                                                           responsáveis pelo seu exilio, consequentemente, a razão
-                                                                           que fez você voltar para a sociedade.
-                                                                               Converse com o Mestre para determinar os detalhes
-                                                                           da sua descoberta e o impacto na campanha.
+      name: Descoberta
+      desc: >
+        Sua reclusão levou a uma revelação singular (cosmológica, histórica,
+        espiritual ou pessoal). Combine com o Mestre os detalhes e impacto.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Prefiro silêncio e contemplação.
+        - Falo por enigmas.
+        - Escuto mais do que falo.
+        - Registro tudo em meu diário.
+        - Confio em presságios naturais.
+        - Sou gentil, porém distante.
+        - Valorizo rotinas simples.
+        - Evito multidões.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Autoconhecimento. O caminho está dentro.", alignments: [neutral] }
+        - { desc: "Tradição. Guardião de saberes antigos.", alignments: [lawful] }
+        - { desc: "Iluminação. Compartilhar a verdade descoberta.", alignments: [good] }
+        - { desc: "Segredo. Alguns saberes não devem se espalhar.", alignments: [evil] }
+        - { desc: "Liberdade. Viver longe das amarras sociais.", alignments: [chaotic] }
+        - { desc: "Devoção. Minha vida serve a um propósito maior.", alignments: [lawful] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Protejo meu eremitério/mosteiro.
+        - Minha descoberta precisa de guardiões.
+        - Um mentor salvou minha sanidade.
+        - Faço vigília por um mal adormecido.
+        - Devo uma cura a alguém.
+        - Carrego relíquia/objeto do meu retiro.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Socialmente desajeitado.
+        - Obsessivo com rituais pessoais.
+        - Desconfio da civilização.
+        - Fixo em uma teoria única.
+        - Falo verdades na hora errada.
+        - Fujo de confrontos.
+
   noble:
     name: Nobre
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [História, Persuasão]
+      tools: ["Jogo de azar (à escolha)"]
+      languages: { count: 1 }
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Roupas finas",        qty: 1, container: null }
+      - { item: "Anel de sinete",      qty: 1, container: "estojo" }
+      - { item: "Registro de linhagem",qty: 1, container: null }
+      - { item: "Algibeira (25 po)",   qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: POSIÇÃO PRIVILEGIADA
-      desc:
-      - |-
-        Graças a sua origem nobre, as pessoas tendem a pensar o             2     Eu escondo um segredo verdadeiramente escandaloso
-        melhor de você. Você é bem-vindo na alta sociedade e as                   que poderia arruinar minha família para sempre.
-        pessoas assumem que você tem o direito de estar onde                3     Muitas vezes eu ouço insultos e ameaças veladas em
-        está. As pessoas comuns fazem todos os esforços para                      cada palavra dirigida a mim, e me irrito muito rápido.
-        acomodá-lo e evitar seu desprazer, e outros nobres o                4     Eu tenho um desejo insaciável por prazeres carnais.
-        tratam como um membro da mesma classe social. Você                  5     Na verdade, o mundo gira ao meu redor.
-        pode conseguir uma audiência com um nobre local se                  6     Pelas minhas palavras e ações, muitas vezes, envergonho
-        precisar.                                                                 minha família.
+      name: Posição Privilegiada
+      desc: >
+        A alta sociedade o recebe com deferência; pessoas comuns evitam
+        desagradar você. Consegue audiência com nobres locais com facilidade.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Educação impecável em público.
+        - Orgulho do brasão da família.
+        - Trato criados com respeito (ou desdém).
+        - Falo como quem espera ser obedecido.
+        - Gosto de festas e intrigas.
+        - Coletor de favores e alianças.
+        - Caridoso com os pobres (ou indiferente).
+        - Odeio humilhações públicas.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Dever. Nobreza é serviço.", alignments: [lawful-good] }
+        - { desc: "Tradição. Manter costumes e títulos.", alignments: [lawful] }
+        - { desc: "Liberdade. Nobre é quem age com coragem.", alignments: [chaotic] }
+        - { desc: "Poder. Minha casa deve prosperar.", alignments: [evil] }
+        - { desc: "Responsabilidade. Dar exemplo ao povo.", alignments: [good] }
+        - { desc: "Pragmatismo. Política é jogo de resultados.", alignments: [neutral] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Minha família acima de tudo.
+        - Um rival de outra casa me persegue.
+        - Devo lealdade a um soberano.
+        - Um escândalo ameaça minha linhagem.
+        - Protejo um vassalo fiel.
+        - Quero recuperar terras perdidas.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Arrogância de berço.
+        - Vícios caros.
+        - Ira diante de insultos.
+        - Desprezo pelos plebeus.
+        - Vaidade com aparência.
+        - Cedo a bajulações.
+
   outlander:
     name: Forasteiro
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Atletismo, Sobrevivência]
+      tools: ["Instrumento musical (à escolha)"]
+      languages: { count: 1 }
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Bastão",                 qty: 1, container: null }
+      - { item: "Armadilha de caça",      qty: 1, container: null }
+      - { item: "Troféu de caça",         qty: 1, container: "bolsa" }
+      - { item: "Roupas de viajante",     qty: 1, container: null }
+      - { item: "Algibeira (10 po)",      qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: ANDARILHO
-      desc:
-      - |-
-        Você tem uma memória excelente para mapas                             d6   Defeito
-        e geografia, e você sempre pode recobrar                              1    Sou muito apaixonado por cerveja, vinho e outras
-        o plano geral de terrenos, assentamentos                                   bebidas.
-        ou outras características ao seu redor. Além disso, você              2    Não existe lugar para precaução em uma vida vivida ao
-        pode encontrar comida e água fresca para você a até cinco                  máximo.
-        outras pessoas a cada dia, considerando que a terra                   3    Eu lembro de cada insulto que sofri e nutro um
-        ofereça bagas, pequenas frutas, água e similares.                          ressentimento silencioso contra qualquer um que já tenha
-                                                                                   me insultado
+      name: Andarilho
+      desc: >
+        Excelente memória de rotas e geografia. Normalmente encontra comida
+        e água para si e até cinco pessoas por dia, se o ambiente permitir.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Prefiro o céu aberto às muralhas.
+        - Conheço histórias de todo vale.
+        - Caminho em silêncio, observo muito.
+        - Sou direto e prático.
+        - Respeito espíritos da natureza.
+        - Valorizo liberdade acima de conforto.
+        - Carrego mapas feitos à mão.
+        - Temo cidades superlotadas.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Equilíbrio. Viver em harmonia com a terra.", alignments: [neutral] }
+        - { desc: "Hospitalidade. Compartilhar abrigo e comida.", alignments: [good] }
+        - { desc: "Independência. Sigo meu próprio caminho.", alignments: [chaotic] }
+        - { desc: "Tradição. Costumes do clã importam.", alignments: [lawful] }
+        - { desc: "Exploração. Descobrir o que há além.", alignments: [neutral] }
+        - { desc: "Caça. Somente os fortes prosperam.", alignments: [evil] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Protejo minha tribo/clã.
+        - Guio viajantes perdidos.
+        - Busco um local sagrado.
+        - Carrego lembrança de um animal-tótem.
+        - Um predador me deixou cicatriz e promessa.
+        - Tenho uma rota secreta valiosa.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Impaciência com etiqueta urbana.
+        - Subestimo perigos de cidade.
+        - Desconfio de “confortos”.
+        - Odeio ficar preso a um lugar.
+        - Levo ofensas a sério demais.
+        - Insisto em fazer do meu jeito.
+
   sage:
     name: Sábio
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Arcana, História]
+      languages: { count: 2 }
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Tinta preta (frasco)",   qty: 1, container: "estojo" }
+      - { item: "Pena",                   qty: 1, container: null }
+      - { item: "Faca pequena",           qty: 1, container: null }
+      - { item: "Carta de colega falecido", qty: 1, container: "bolsa" }
+      - { item: "Roupas comuns",          qty: 1, container: null }
+      - { item: "Algibeira (10 po)",      qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: PESQUISADOR
-      desc: []
+      name: Pesquisador
+      desc: >
+        Quando não sabe uma informação, você geralmente sabe onde e de quem
+        obtê-la. Frequentemente tem acesso a bibliotecas e contatos acadêmicos.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Anoto tudo meticulosamente.
+        - Corrijo erros com educação (ou não).
+        - Perco a noção do tempo estudando.
+        - Cito fontes o tempo todo.
+        - Sou curioso até demais.
+        - Questiono dogmas.
+        - Compartilho conhecimento livremente.
+        - Sou distraído com o mundo prático.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Conhecimento. Saber por si só é valioso.", alignments: [neutral] }
+        - { desc: "Verdade. Separar fato de ficção.", alignments: [lawful] }
+        - { desc: "Descoberta. Empurrar as fronteiras do saber.", alignments: [chaotic] }
+        - { desc: "Utilidade. Saber que ajuda pessoas.", alignments: [good] }
+        - { desc: "Controle. Informação é poder.", alignments: [evil] }
+        - { desc: "Preservação. Proteger acervos e memórias.", alignments: [neutral] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Devo tudo ao meu mentor.
+        - Defendo uma biblioteca/arquivo.
+        - Pesquiso um mistério específico.
+        - Um livro raro me foi roubado.
+        - Minha tese precisa de prova.
+        - Protejo aprendizes promissores.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Arrogância intelectual.
+        - Distração crônica.
+        - Subestimo ignorância alheia.
+        - Falo demais quando empolgado.
+        - Obsessão por um tema.
+        - Dificuldade em admitir equívoco.
+
   sailor:
     name: Marinheiro
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Atletismo, Percepção]
+      tools: ["Ferramentas de navegador", "Veículos (aquáticos)"]
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Cavilha de amarrar (clava)", qty: 1, container: null }
+      - { item: "Corda de seda (15 m)",       qty: 1, container: "ombro" }
+      - { item: "Amuleto da sorte (bugiganga)", qty: 1, container: "pescoço" }
+      - { item: "Roupas comuns",              qty: 1, container: null }
+      - { item: "Algibeira (10 po)",          qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: PASSAGEM DE NAVIO
-      desc: []
+      name: Passagem de Navio
+      desc: >
+        Você consegue passagem gratuita para si e companheiros em um navio
+        onde possua contatos, em troca de ajuda a bordo.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Canto shanties em qualquer tarefa.
+        - Conto histórias de tempestades.
+        - Supersticioso com presságios do mar.
+        - Mantenho a calma sob ondas e açoites.
+        - Respeito a hierarquia do convés.
+        - Gosto de jogos de sorte.
+        - Sou camarada com marujos.
+        - Acordo antes do nascer do sol.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Ordem. Disciplina mantém o navio flutuando.", alignments: [lawful] }
+        - { desc: "Liberdade. O mar não tem amos.", alignments: [chaotic] }
+        - { desc: "Sobrevivência. O que importa é retornar.", alignments: [neutral] }
+        - { desc: "Lealdade. Tripulação é família.", alignments: [good] }
+        - { desc: "Saque. Mar paga a quem arrisca.", alignments: [evil] }
+        - { desc: "Exploração. Novas rotas e horizontes.", alignments: [neutral] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Devo minha vida ao capitão.
+        - Tenho saudades de um porto específico.
+        - Procuro um navio perdido.
+        - Carrego um mapa incompleto.
+        - Protejo minha tripulação.
+        - Um motim me marcou.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Vício em bebida.
+        - Desrespeito azar trazido por tabus.
+        - Vanglória perigosa.
+        - Aversão a ordens em terra.
+        - Falo demais em tavernas.
+        - Péssimo em guardar segredos.
+
   soldier:
     name: Soldado
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 5
-      type: languages
+      skills: [Atletismo, Intimidação]
+      tools: ["Jogo de azar (à escolha)", "Veículos (terrestres)"]
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Insígnia de patente",          qty: 1, container: null }
+      - { item: "Troféu de inimigo",            qty: 1, container: "bolsa" }
+      - { item: "Jogo (dados/osso ou cartas)",  qty: 1, container: "bolsa" }
+      - { item: "Roupas comuns",                qty: 1, container: null }
+      - { item: "Algibeira (10 po)",            qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: PATENTE MILITAR
-      desc: []
+      name: Patente Militar
+      desc: >
+        Sua patente inspira respeito entre soldados leais e aliados do seu exército.
+        Você pode requisitar alojamento simples e assistência limitada.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Sigo ordens com disciplina.
+        - Sou leal à minha unidade.
+        - Mantenho armas impecáveis.
+        - Direto e objetivo.
+        - Defendo os fracos.
+        - Cresci em campanhas longas.
+        - Falo em jargão militar.
+        - Nunca abandono um camarada.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Responsabilidade. Dever acima de tudo.", alignments: [lawful] }
+        - { desc: "Sacrifício. Melhor morrer do que falhar.", alignments: [good] }
+        - { desc: "Independência. Questiono ordens injustas.", alignments: [chaotic] }
+        - { desc: "Glória. Busco renome em batalha.", alignments: [neutral] }
+        - { desc: "Domínio. Força é autoridade.", alignments: [evil] }
+        - { desc: "Camaradagem. A tropa é família.", alignments: [neutral] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Protejo minha antiga unidade.
+        - Guardo o estandarte do meu regimento.
+        - Quero vingar um companheiro caído.
+        - Devo lealdade a um comandante.
+        - Defendo uma fronteira em perigo.
+        - Prometi voltar para casa em paz.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Rígido demais com regras.
+        - Traço trauma de guerra.
+        - Impaciente com civis.
+        - Subestimo inimigos astutos.
+        - Bebo para esquecer.
+        - Gosto demais de brigas de taverna.
+
   urchin:
     name: Órfão
     starting_proficiencies:
-      skills:
-      - Furtividade
-      - Prestidigitação                  ensinou a vida nas ruas
-      tools:
-      - Kit de disfarce
-      - 4     Eu tenho uma dívida que nunca poderei pagar com uma
-    language_options:
-      choose: 0
-      type: languages
+      skills: [Prestidigitação, Furtividade]
+      tools: ["Kit de disfarce", "Ferramentas de ladrão"]
     starting_equipment:
-    - Um vidro de tinta escura
-    - uma pena
-    - uma 4    Eu durmo encostado em um muro ou árvore
-    - abraçado faca pequena
-    - uma carta de um falecido colega com todas as minhas posses. perguntando a você
-      algo que você nunca terá a chance 5    Eu como feito um porco e tenho maus modos.                    de
-      responder
-    - um conjunto de roupas comuns e uma 6    Eu acho que todos que são gentis comigo
-      tem segundas          algibeira contendo 10 po intenções. 7    Eu não gosto
-      de tomar banho.                               ESPECIALIDADE 8    Eu digo na
-      cara o que as outras pessoas insinuam ou        Para determinar a natureza de
-      seus estudos
-    - role um d8 escondem.                                                  ou escolha
-      na tabela abaixo.
+      - { item: "Faca pequena",                 qty: 1, container: null }
+      - { item: "Mapa da cidade natal (tosco)", qty: 1, container: "bolsa" }
+      - { item: "Rato de estimação",            qty: 1, container: "bolso" }
+      - { item: "Ricordação dos pais",          qty: 1, container: "bolsa" }
+      - { item: "Roupas comuns",                qty: 1, container: null }
+      - { item: "Algibeira (10 po)",            qty: 1, container: "cinto" }
     starting_equipment_options: []
     feature:
-      name: SEGREDOS DA CIDADE
-      desc:
-      - |-
-        1      Se eu estiver em desvantagem, eu vou fugir de uma briga.
-        Você conhece os padrões secretos e o fluxo das cidades e
-        pode encontrar passagens através da expansão urbana               2      Ouro parece ser muito dinheiro pra mim, e eu faria
-        que os outros deixariam passar. Quando você não estiver                  praticamente qualquer coisa por mais dele.
-        em combate, você (e os companheiros que você guiar)               3      Eu nunca vou confiar em ninguém plenamente, além de mim
-        podem viajar entre dois locais quaisquer na cidade com o                 mesmo.
-        dobro da velocidade normalmente permitida.                        4      Eu prefiro matar alguém enquanto dorme que uma luta
-                                                                                 justa.
+      name: Segredos da Cidade
+      desc: >
+        Você conhece atalhos, passagens e padrões urbanos; fora de combate,
+        guia o grupo através da cidade com o dobro da velocidade normal.
     personality_traits:
       choose: 2
       options:
-      - Eu acredito que tudo que valha a pena fazer, vale a pena ser MERCADOR DE GUILDA
-        feito direito. Eu não posso evitar – Eu sou perfeccionista. Ao invés de um
-        artesão de guilda, você pertence a uma
-      - Eu sou um esnobe que olha de cima a baixo aqueles que          guilda de mercadores,
-        mestres de caravana ou não sabem apreciar artes requintadas.                          comerciantes.
-        Você não constrói itens, mas ganhou a vida
-      - Eu sempre quero aprender como as coisas funcionam e o          comprando e
-        vendendo os trabalhos dos outros (ou a que deixa as pessoas motivadas.                                matéria-prima
-        que os artesãos precisam para praticar
-      - Eu sou cheio de aforismos espirituosos e tenho um              seus ofícios).
-        Sua guilda deve ser um grande consorcio (ou proverbio para cada ocasião.                                   família)
-        de mercadores com interesses por toda a região. Talvez você transporte bens
-        de um lugar para outro, de
-      - Eu sou grosso com as pessoas que não tem o mesmo               barco, carroça
-        ou em caravana, ou compra esses bens de comprometimento que eu com o trabalho
-        duro e honesto. comerciantes que viajam e os vende na sua própria
-      - Eu gosto de falar longamente sobre minha profissão.            pequena loja.
-        De certas formas, a vida de comerciante
-      - Eu não gasto meu dinheiro facilmente e vou barganhar           viajante por
-        si, tende a levar a aventuras, muito mais que incansavelmente para conseguir
-        o melhor acordo possível.       a vida de artesão.
-      - Eu sou bem conhecido pelo meu trabalho e quero ter                 Ao invés
-        de proficiência com ferramentas de artesão, certeza que todos o apreciam.
-        Eu sempre fico surpreso          você deveria ter proficiência com ferramentas
-        de quando conheço pessoas que não ouviram falar de mim.           navegador
-        ou um idioma adicional. E, ao invés de ferramentas de artesão, você poderia
-        começar com uma d6   Ideal                                                          mula
-        ou carroça.
-      - Comunidade. É dever de todo cidadão civilizado
+        - Desconfio de estranhos.
+        - Sou rápido com as mãos.
+        - Tenho amigos em becos e telhados.
+        - Durmo leve e acordo alerta.
+        - Compartilho o pouco que tenho.
+        - Fujo de brigas perdidas.
+        - Sei ouvir sem ser notado.
+        - Tenho faro para problemas.
     ideals:
       choose: 1
       options:
-      - desc: Comunidade. É dever de todo cidadão civilizado fortalecer os elos da
-          comunidade e a segurança da civilização. (Leal) ARTISTA
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Generosidade. Meus talentos me foram dados para que            Você
-          cresce em frente a uma audiência. Você sabe como eu pudesse usá-los para
-          beneficiar o mundo. (Bom)              fasciná-los, entretê-los e, até mesmo,
-          inspirá-los. Suas poesias podem avivar o coração daqueles que te ouvem,
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Liberdade. Todos deveriam ser livres para perseguir seus       despertando
-          tristeza ou alegria, risadas ou ira. Sua próprios meios de vida. (Caótico)                              música
-          ergue seus espíritos ou captura suas aflições. Seus
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Ganância. Eu só estou aqui pelo dinheiro. (Mau)                passos
-          de dança cativam, seu humor os extasia
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: Povo. Eu sou cometido com o povo com quem me                   rapidamente.
-          Qualquer que sejam as técnicas que você importo, não com ideias. (Neutro)                              use,
-          sua arte é sua vida.
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: 'Aspiração. Eu trabalho duro para ser o melhor no meu           Proficiência
-          em Perícias: Acrobacia, Atuação ofício. (Qualquer)                                             Proficiência
-          em Ferramentas: Kit de disfarce, um tipo de instrumento musical d6   Vínculo                                                        Equipamento:
-          Um instrumento musical (à sua escolha),'
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
-      - desc: A oficina onde aprendi meu negócio é o local mais                um
-          presente de um admirador (carta de amor, mecha
-        alignments:
-        - lawful-good
-        - neutral-good
-        - chaotic-good
-        - lawful-neutral
-        - neutral
-        - chaotic-neutral
-        - lawful-evil
-        - neutral-evil
-        - chaotic-evil
+        - { desc: "Solidariedade. Cuidar dos meus é lei.", alignments: [good] }
+        - { desc: "Liberdade. Ninguém prende um de rua.", alignments: [chaotic] }
+        - { desc: "Prudência. Viver é sobreviver.", alignments: [neutral] }
+        - { desc: "Revanche. A cidade me deve.", alignments: [evil] }
+        - { desc: "Esperança. Dá para sair da sarjeta.", alignments: [good] }
+        - { desc: "Código das ruas. Não entrego os meus.", alignments: [lawful-neutral] }
     bonds:
       choose: 1
       options:
-      - A oficina onde aprendi meu negócio é o local mais                um presente
-        de um admirador (carta de amor, mecha importante do mundo pra mim.                                     de
-        cabelo ou uma bijuteria), um traje e uma algibeira contendo 15 po
-      - Eu criei um trabalho incrível para alguém, mas descobri que ele não era merecedor
-        de recebê-lo. Ainda estou à procura de alguém que seja merecedor.                          ROTINAS
-        DE ARTISTA
-      - Eu tenho uma grande dívida para com minha guilda por           Um bom artista
-        é versátil, apimentando cada atuação fazer de mim a pessoa que sou hoje.                            com
-        uma variedade de rotinas diferentes. Escolha de uma a três rotinas, ou role
-        na tabela abaixo, para definir suas
-      - Eu busco riqueza para conseguir o amor de alguém. especialidades artísticas.
-      - Um dia eu voltarei para a minha guilda e provarei que sou o maior artesão
-        dentre eles.                                    d10    Rotinas de Artista      d10    Rotinas
-        de Artista
-      - Eu irem me vingar das forças malignas que destruíram             1     Acrobata                  6    Engolidor
-        de fogo meu local de negócios e arruinaram meu estilo de vida.           2     Ator                      7    Instrumentista
-      - Bufão                     8    Malabarista
+        - Protejo outras crianças de rua.
+        - Um mentor me ensinou a viver.
+        - Busco um parente desaparecido.
+        - Conheço um esconderijo valioso.
+        - Devo a vida a um taverneiro.
+        - Quero comprar um lar de verdade.
     flaws:
       choose: 1
       options:
-      - Eu farei de tudo para pôr minha mãos em algo raro ou             5     Dançarino                10    Poeta
-        inestimável.
-      - 'Eu rapidamente presumo que alguém está tentando me trapacear.                                                     CARACTERÍSTICA:
-        PELA DEMANDA POPULAR'
-      - Ninguém nunca poderá saber que eu, certa vez, roubei           Você sempre
-        encontra um lugar para atuar, geralmente dinheiro dos cofres da guilda.                                 em
-        tavernas ou estalagens mas, possivelmente em circos,
-      - Eu nunca estou satisfeito com o que tenho – eu sempre          teatros ou
-        até em cortes nobres. Em tais lugares, você quero mais.                                                    recebe
-        alojamento e comida modesta ou de patrões
-      - Eu mataria para adquirir um título de nobreza.                 confortáveis,
-        de graça (dependendo da qualidade do
-      - Eu sou terrivelmente invejoso com qualquer um que              estabelecimento),
-        contanto que você atue a cada noite. possa ofuscar meu ofício. Todo lugar
-        que eu vou, estou         Além disso, sua atuação torna você um tipo de figura
-        cercado de rivais.                                             local. Quando
-        estranhos reconhecerem você em uma cidade em que você já tenha atuado, eles
-        geralmente gostaram de você. 129 CARACTERÍSTICAS SUGERIDAS                                        d6   Ideal
-        Artistas bem sucedidos tem que ser capazes de capturar e         1    Beleza.
-        Quando eu atuo, eu torno o mundo um lugar prender a atenção da plateia, por
-        isso, eles tendem a ter             melhor. (Bom) personalidades extravagantes
-        ou conturbadas. Eles são            2    Tradição. As histórias, lendas e
-        canções do passado propensos ao romantismo e, muitas vezes, se agarram a                 nunca
-        devem ser esquecidas, pois elas nos ensinam nobres ideais sobre a pratica
-        da arte e apreciação da                 quem nós somos. (Leal) beleza.                                                          3    Criatividade.
-        O mundo precisa de novas ideias e ações ousadas. (Caótico) d8   Traço de Personalidade                                     4    Ganância.
-        Eu só estou aqui pelo dinheiro e pela fama.
-      - Eu conheço uma história relevante de praticamente todas         (Mau)
+        - Pego “emprestado” sem pedir.
+        - Não confio em autoridades.
+        - Guardarei rancor por anos.
+        - Coloco a sobrevivência acima da honra.
+        - Minto para evitar punições.
+        - Fico nervoso em lugares ricos.

@@ -4,7 +4,17 @@ require 'ostruct'
 class EquipmentCatalog
   class << self
     def normalize_index(key)
-      (key || '').to_s.downcase.strip.gsub(' ', '-').gsub(/ç/,'c').gsub(/á|à|ã|â/,'a').gsub(/é|ê/,'e').gsub(/í/,'i').gsub(/ó|ô|õ/,'o').gsub(/ú/,'u')
+      (key || '').to_s.downcase.strip
+        .gsub(' ', '-')
+        .gsub(/ç/, 'c')
+        .gsub(/á|à|ã|â/, 'a')
+        .gsub(/é|ê/, 'e')
+        .gsub(/í/, 'i')
+        .gsub(/ó|ô|õ/, 'o')
+        .gsub(/ú/, 'u')
+        .gsub(/[^a-z0-9\-]+/, '-')
+        .gsub(/-+/, '-')
+        .gsub(/^-|-$/, '')
     end
 
     def data
@@ -17,7 +27,11 @@ class EquipmentCatalog
       end
       @data['weapons'] ||= {}
       @data['armors']  ||= {}
-      @data['shields'] ||= ['shield']
+      @data['shields'] ||= default_shields_payload
+      @data['gear']    ||= {}
+      @data['packs']   ||= {}
+      @data['tools']   ||= {}
+      @data['consumables'] ||= {}
       @data
     rescue => e
       Rails.logger.warn("EquipmentCatalog load failed: #{e.class}: #{e.message}")
@@ -26,7 +40,7 @@ class EquipmentCatalog
 
     def weapon_row(idx)
       key = normalize_index(idx)
-      w = data['weapons'][key]
+      w = lookup_entry(data['weapons'], key)
       if w
         props = Array(w['properties']).map { |p| normalize_index(p) }
         return {
@@ -52,7 +66,7 @@ class EquipmentCatalog
 
     def armor_row(idx)
       key = normalize_index(idx)
-      a = data['armors'][key]
+      a = lookup_entry(data['armors'], key)
       if a
         return {
           cat: a['cat'],
@@ -66,7 +80,18 @@ class EquipmentCatalog
     end
 
     def shield_indexes
-      Array(data['shields']).map { |s| normalize_index(s) }
+      raw = data['shields']
+      list = case raw
+      when Hash
+        raw.keys
+      when Array
+        raw
+      when nil
+        []
+      else
+        Array(raw)
+      end
+      list.map { |s| normalize_index(s) }.uniq
     end
 
     def list_weapons_by_property(prop)
@@ -129,6 +154,75 @@ class EquipmentCatalog
 
     def list_armors
       data['armors'].keys.presence || (EquipmentRules::ARMOR_TABLE.keys rescue [])
+    end
+
+    # Finds the canonical YAML slug for an item name, alias, or index
+    # This is a PUBLIC method used by StartingEquipmentService
+    def find_index(name)
+      key = normalize_index(name)
+      sections = %w[weapons armors gear packs tools consumables]
+      sections.each do |section|
+        store = data[section] || {}
+        next unless store.is_a?(Hash)
+        return key if store[key]
+        store.each do |slug, row|
+          normalized_name = normalize_index(row['name']) if row.is_a?(Hash) && row['name']
+          aliases = Array(row['aliases']).map { |a| normalize_index(a) }
+          return slug if aliases.include?(key) || normalized_name == key
+        end
+      end
+
+      shields = data['shields']
+      case shields
+      when Hash
+        return key if shields[key]
+        shields.each do |slug, row|
+          aliases = Array(row['aliases']).map { |a| normalize_index(a) }
+          normalized_name = normalize_index(row['name']) if row['name']
+          return slug if aliases.include?(key) || normalized_name == key
+        end
+      when Array
+        shields.each do |slug|
+          idx = normalize_index(slug)
+          return idx if idx == key
+        end
+      end
+      
+      # Also check database items by props aliases
+      if defined?(Item)
+        item = Item.find_by(api_index: key)
+        return item.api_index if item
+        # Search by aliases in props
+        Item.where("props->>'aliases' IS NOT NULL").find_each do |it|
+          aliases = Array(it.props['aliases']).map { |a| normalize_index(a) }
+          return it.api_index if aliases.include?(key)
+        end
+      end
+      
+      nil
+    end
+
+    private
+
+    def default_shields_payload
+      {
+        'shield' => {
+          'name' => 'Escudo',
+          'aliases' => %w[escudo shield],
+          'ac_bonus' => 2
+        }
+      }
+    end
+
+    def lookup_entry(collection, key)
+      return nil unless collection.is_a?(Hash)
+      entry = collection[key]
+      return entry if entry
+      collection.each do |_slug, row|
+        aliases = Array(row['aliases']).map { |a| normalize_index(a) }
+        return row if aliases.include?(key)
+      end
+      nil
     end
   end
 end

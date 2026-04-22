@@ -91,7 +91,8 @@ class RandomCharacterGenerator
       if sc.spells_known
         kn_cnt = sc.spells_known.to_i
         if kn_cnt > 0
-          pool = spell_list.select { |sp| sp.level.to_i > 0 && SpellRules.can_learn_spell?(sk, sp) }
+          gate_level = SpellRules.gate_for(sheet, klass)
+          pool = spell_list.where('level > 0 AND level <= ?', gate_level).to_a
           pool.sample([kn_cnt, pool.size].min).each do |sp|
             SpellLearningService.call(sheet_klass: sk, spell_id: sp.id)
           end
@@ -223,4 +224,3 @@ class RandomCharacterGenerator
     end
   end
 end
-

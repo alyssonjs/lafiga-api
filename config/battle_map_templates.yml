@@ -1,0 +1,76 @@
+# Templates pre-prontos do Map Builder. Carregados em
+# Api::V1::Player::BattleMapTemplatesController#index e usados pelo modal
+# "Novo Mapa" do front (tab Templates). NAO sao Active Record — sao apenas
+# blueprints lidos em runtime.
+#
+# Schema (por template):
+#   slug:        identificador (string, kebab-case)
+#   name:        nome em PT-BR (string)
+#   description: 1-2 frases (string)
+#   category:    'dungeon' | 'wilderness' | 'urban' | 'misc'
+#   width:       colunas (5..50)
+#   height:      linhas (5..50)
+#   base_terrain: terrain padrao para preencher (default 'empty')
+#   patches:     [{ x:, y:, w:, h:, terrain: }]   patches retangulares aplicados em ordem
+#
+templates:
+  - slug: empty-grid
+    name: "Grid Vazio"
+    description: "Grade limpa para construir do zero."
+    category: misc
+    width: 20
+    height: 15
+    base_terrain: empty
+    patches: []
+
+  - slug: dungeon-room
+    name: "Sala de Masmorra"
+    description: "Sala 10x8 cercada por pedra com piso interno."
+    category: dungeon
+    width: 14
+    height: 12
+    base_terrain: empty
+    patches:
+      - { x: 0,  y: 0,  w: 14, h: 1,  terrain: stone }   # parede norte
+      - { x: 0,  y: 11, w: 14, h: 1,  terrain: stone }   # parede sul
+      - { x: 0,  y: 1,  w: 1,  h: 10, terrain: stone }   # parede oeste
+      - { x: 13, y: 1,  w: 1,  h: 10, terrain: stone }   # parede leste
+      - { x: 1,  y: 1,  w: 12, h: 10, terrain: wood }    # piso interno
+
+  - slug: forest-clearing
+    name: "Clareira na Floresta"
+    description: "Clareira de grama cercada por arvores (representadas por pedra escura)."
+    category: wilderness
+    width: 20
+    height: 15
+    base_terrain: grass
+    patches:
+      - { x: 0,  y: 0,  w: 20, h: 2,  terrain: stone }
+      - { x: 0,  y: 13, w: 20, h: 2,  terrain: stone }
+      - { x: 0,  y: 0,  w: 2,  h: 15, terrain: stone }
+      - { x: 18, y: 0,  w: 2,  h: 15, terrain: stone }
+
+  - slug: tavern
+    name: "Taverna"
+    description: "Sala de taverna com piso de madeira."
+    category: urban
+    width: 16
+    height: 12
+    base_terrain: wood
+    patches:
+      - { x: 0,  y: 0,  w: 16, h: 1,  terrain: stone }
+      - { x: 0,  y: 11, w: 16, h: 1,  terrain: stone }
+      - { x: 0,  y: 1,  w: 1,  h: 10, terrain: stone }
+      - { x: 15, y: 1,  w: 1,  h: 10, terrain: stone }
+
+  - slug: desert-oasis
+    name: "Oasis no Deserto"
+    description: "Mar de areia com manchas de grama no centro."
+    category: wilderness
+    width: 22
+    height: 16
+    base_terrain: sand
+    patches:
+      - { x: 9, y: 6, w: 4, h: 4, terrain: grass }
+      - { x: 8, y: 7, w: 1, h: 2, terrain: water }
+      - { x: 13, y: 7, w: 1, h: 2, terrain: water }

@@ -22,3 +22,6 @@
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 translate-key.json
+
+# Manifest local Phase 8.1 (user_id / emails / chibi exportados do DB de dev)
+/docs/imported_sheets_provision_manifest.json

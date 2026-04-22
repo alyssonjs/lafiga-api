@@ -1,0 +1,240 @@
+cozinheiro:
+  id: cozinheiro
+  name: "Cozinheiro"
+  levels:
+    - level: 1
+      features:
+        - api_index: cook_bag
+          name: "Bolsa de Cozinheiro"
+          category: class_feature
+          description: >
+            Você fabrica uma bolsa que preserva magicamente seus petiscos e
+            ingredientes. Reabasteça ao menos a cada 30 dias: compre 10 po em
+            comida em um mercado ou passe 8 horas vasculhando por alimentos.
+            Se a perder, pode criar outra em 8 horas gastando 100 po em couro,
+            gemas e materiais. A bolsa mantém os petiscos frescos; fora dela,
+            um petisco estraga após 1 rodada.
+
+        - api_index: snacks
+          name: "Petiscos"
+          category: class_feature
+          description: >
+            Você imbui pequenas porções de comida com efeitos mágicos. Escolha
+            3 petiscos conhecidos no 1º nível (lista ao fim da classe).
+            Você aprende novos petiscos conforme sobe de nível (veja a tabela
+            da classe) e, a cada nível, pode substituir 1 que conhece por outro.
+            Uma criatura só pode estar sob o efeito de 1 petisco por vez; ingerir
+            outro encerra o efeito anterior. Você pode cozinhar um número de
+            petiscos igual ao seu modificador de Constituição a cada Descanso
+            Curto ou Longo (mínimo 1), podendo repetir tipos. Todos ficam na
+            sua Bolsa de Cozinheiro e estragam se removidos por mais de 6
+            segundos (1 rodada) ou na próxima vez que você cozinhar petiscos.
+            Usar Ação: alimentar uma criatura que você possa tocar (mão livre
+            necessária). Alguns petiscos exigem Teste de Resistência:
+            CD = 8 + bônus de Proficiência + modificador de CON.
+
+        - api_index: aromatic_salts
+          name: "Temperos Aromáticos"
+          category: class_feature
+          description: >
+            Como Ação Bônus, coloque os temperos sob o nariz de uma criatura
+            Enfeitiçada ou Amedrontada que você possa tocar. Se ela realizou
+            um teste de resistência contra a condição, pode repeti-lo
+            imediatamente, encerrando-a em caso de sucesso. Cada uso só permite
+            repetir 1 condição por vez e não repete o teste para a mesma
+            condição mais de uma vez. Aprimoramentos: no 7º nível, também
+            permite repetir testes contra Atordoado; no 13º nível, contra
+            Paralisado.
+
+    - level: 2
+      features:
+        - api_index: expertise_cook
+          name: "Especialização"
+          category: class_feature
+          description: >
+            Escolha duas perícias em que seja proficiente, OU uma perícia
+            proficiente e os Utensílios de Cozinheiro. Você dobra seu bônus de
+            Proficiência em testes com essas escolhas.
+        - api_index: mise_en_place
+          name: "Mise en Place"
+          category: class_feature
+          description: >
+            Sua preparação meticulosa reduz desperdício e melhora eficiência,
+            concedendo pequenas vantagens narrativas. O mestre pode permitir um
+            bônus situacional (tipicamente +1) em testes com Utensílios de
+            Cozinheiro quando apropriado.
+
+    - level: 3
+      features:
+        - api_index: chef_archetype_3
+          name: "Arquétipo de Cozinheiro"
+          category: class_feature
+          description: >
+            Você escolhe um arquétipo: Mestre da Fritura, Alquimista Gourmet,
+            Doceiro Encantado, Mestre do Fogo e Fumaça ou Cantineiro de Guerra.
+            Você recebe características do arquétipo agora e novamente nos níveis 6, 10, 14 e 18.
+
+    - level: 5
+      features:
+        - api_index: asi_5
+          name: "Incremento no Valor de Habilidade"
+          category: ability_score_improvement
+          description: >
+            Aumente um valor de habilidade em +2 ou dois valores em +1 (máximo
+            20, a menos que sua campanha permita ultrapassar).
+    
+    - level: 4
+      features:
+        - api_index: rotund_reflection
+          name: "Reflexão Rotunda"
+          category: class_feature
+          description: >
+            Quando uma criatura Grande ou menor a 1,5 m de você acertar um
+            ataque corpo-a-corpo, você pode usar sua Reação para forçá-la a
+            fazer um teste de Destreza contra a CD de Petisco. Em falha, a
+            velocidade dela se torna 0 até o fim do turno e você escolhe:
+            empurrá-la 3 m para longe ou derrubá-la.
+
+    - level: 6
+      features:
+        - api_index: chef_archetype_6
+          name: "Arquétipo de Cozinheiro"
+          category: class_feature
+          description: >
+            Você ganha uma característica do seu arquétipo de cozinheiro.
+
+    - level: 7
+      features:
+        - api_index: taking_orders
+          name: "Aceitando Pedidos"
+          category: class_feature
+          description: >
+            Ao cozinhar petiscos durante um Descanso Longo, você pode preparar
+            um número adicional de petiscos igual ao seu modificador de CON.
+            Esses adicionais não podem ter pré-requisitos. No 11º nível, você
+            também pode prepará-los em Descanso Curto.
+        - api_index: aromatic_salts_upgrade_7
+          name: "Temperos Aromáticos Aprimorados"
+          category: class_feature
+          description: >
+            Seus temperos agora também permitem repetir testes contra a
+            condição Atordoado.
+
+    - level: 8
+      features:
+        - api_index: asi_8
+          name: "Incremento no Valor de Habilidade"
+          category: ability_score_improvement
+          description: >
+            Aumente um valor de habilidade em +2 ou dois valores em +1 (máximo 20).
+
+    - level: 9
+      features:
+        - api_index: expertise_cook_2
+          name: "Especialização (Aprimorada)"
+          category: class_feature
+          description: >
+            Escolha outras duas proficiências (perícias ou Utensílios de
+            Cozinheiro). Você dobra seu bônus de Proficiência em testes com elas.
+        - api_index: ostrich_stomach
+          name: "Estômago de Avestruz"
+          category: class_feature
+          description: >
+            Você é imune a quaisquer venenos ingeridos e à condição Envenenado.
+
+    - level: 10
+      features:
+        - api_index: chef_archetype_10
+          name: "Arquétipo de Cozinheiro"
+          category: class_feature
+          description: >
+            Você ganha uma característica do seu arquétipo de cozinheiro.
+
+    - level: 11
+      features:
+        - api_index: taking_orders_upgrade_11
+          name: "Aceitando Pedidos (Aprimorado)"
+          category: class_feature
+          description: >
+            Você também pode preparar os petiscos adicionais de Aceitando
+            Pedidos durante um Descanso Curto.
+
+    - level: 12
+      features:
+        - api_index: asi_12
+          name: "Incremento no Valor de Habilidade"
+          category: ability_score_improvement
+          description: >
+            Aumente um valor de habilidade em +2 ou dois valores em +1 (máximo 20).
+
+    - level: 13
+      features:
+        - api_index: aromatic_salts_upgrade_13
+          name: "Temperos Aromáticos Superior"
+          category: class_feature
+          description: >
+            Seus temperos agora também permitem repetir testes contra a
+            condição Paralisado.
+
+    - level: 14
+      features:
+        - api_index: chef_archetype_14
+          name: "Arquétipo de Cozinheiro"
+          category: class_feature
+          description: >
+            Você ganha uma característica do seu arquétipo de cozinheiro.
+
+    - level: 15
+      features:
+        - api_index: soul_of_food
+          name: "Alma da Comida"
+          category: class_feature
+          description: >
+            Você pode conjurar Criar Comida e Água 1 vez por Descanso Longo.
+            A comida criada é saborosa e não estraga por 7 dias. Além disso,
+            quando cozinhar petiscos sem ter ingredientes restantes, você
+            conjura os ingredientes necessários como parte da preparação.
+
+    - level: 16
+      features:
+        - api_index: asi_16
+          name: "Incremento no Valor de Habilidade"
+          category: ability_score_improvement
+          description: >
+            Aumente um valor de habilidade em +2 ou dois valores em +1 (máximo 20).
+
+    - level: 17
+      features:
+        - api_index: comforting_meal
+          name: "Refeição Reconfortante"
+          category: class_feature
+          description: >
+            Ao alimentar com um petisco uma criatura que compartilhou um
+            Descanso Longo com você (inclusive você mesmo), você pode dobrar a
+            duração do efeito daquele petisco.
+
+    - level: 18
+      features:
+        - api_index: chef_archetype_18
+          name: "Arquétipo de Cozinheiro"
+          category: class_feature
+          description: >
+            Você ganha uma característica do seu arquétipo de cozinheiro.
+
+    - level: 19
+      features:
+        - api_index: asi_19
+          name: "Incremento no Valor de Habilidade"
+          category: ability_score_improvement
+          description: >
+            Aumente um valor de habilidade em +2 ou dois valores em +1 (máximo 20).
+
+    - level: 20
+      features:
+        - api_index: leftovers
+          name: "Sobras"
+          category: class_feature
+          description: >
+            Quando rolar iniciativa sem nenhum petisco restante, você conjura
+            automaticamente 1 petisco que sabe preparar dentro da sua Bolsa de
+            Cozinheiro.

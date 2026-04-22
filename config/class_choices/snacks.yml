@@ -1,0 +1,550 @@
+# Petiscos do Cozinheiro (Cook class) — D&D 5e (homebrew Lafiga).
+# Schema: api/config/class_choices/SCHEMA.md
+#
+# Slugs: padrão `cook-snack-*` (1:1 com apiIndex do front).
+# `prereqs.level`    → nível mínimo de Cozinheiro (0 = sempre).
+# `prereqs.subclass` → subclasse api_index requerida (gating canônico).
+# `school`/`range`/`duration` → metadata de gameplay/UI.
+# `higher_level`     → escalonamento opcional.
+# `mechanical_summary` é exibido como resumo curto (max 100 chars).
+
+- slug: cook-snack-corte-fresco
+  name_pt: Corte Fresco
+  name_en: Corte Fresco
+  description: 'Cura aliados ou fere inimigos ao ser ingerido. Aliado recupera 2d6
+    PV. Inimigo faz TR de CON; falha: 2d6 de dano ácido, sucesso: metade.'
+  mechanical_summary: 'Aliado recupera 2d6 PV ou inimigo TR CON: 2d6 ácido'
+  school: Transmutation
+  range: Touch
+  duration: Instantaneous
+  classes:
+  - cozinheiro
+  higher_level: 'A cura e o dano aumentam: 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6),
+    20º (7d6).'
+- slug: cook-snack-cacarola-de-cenoura
+  name_pt: Caçarola de Cenoura
+  name_en: Caçarola de Cenoura
+  description: Concede visão no escuro de 18 m por 8 horas; se já possuir, aumenta
+    em 18 m.
+  mechanical_summary: Visão no escuro 18 m por 8 horas (acumulável)
+  school: Transmutation
+  range: Touch
+  duration: 8 hours
+  classes:
+  - cozinheiro
+- slug: cook-snack-cha-verde
+  name_pt: Chá Verde
+  name_en: Chá Verde
+  description: O alvo adiciona 1d4 a todos os TR de CON, testes de INT e WIS por 1
+    hora.
+  mechanical_summary: "+1d4 em TR CON e testes INT/WIS por 1 hora"
+  school: Abjuration
+  range: Touch
+  duration: 1 hour
+  classes:
+  - cozinheiro
+- slug: cook-snack-costeleta-porco-defumada
+  name_pt: Costeleta de Porco Defumada
+  name_en: Costeleta de Porco Defumada
+  description: Resistência a frio e imunidade à condição envenenado por 10 minutos.
+  mechanical_summary: Resistência a frio + imune a envenenado 10 min
+  school: Abjuration
+  range: Touch
+  duration: 10 minutes
+  classes:
+  - cozinheiro
+- slug: cook-snack-cristais-de-acucar
+  name_pt: Cristais de Açúcar
+  name_en: Cristais de Açúcar
+  description: Aumenta deslocamento em 1,5 m por 10 minutos.
+  mechanical_summary: "+1,5 m de deslocamento por 10 min"
+  school: Transmutation
+  range: Touch
+  duration: 10 minutes
+  classes:
+  - cozinheiro
+  higher_level: 'Bônus de deslocamento: 5º (+3 m), 10º (+4,5 m), 15º (+6 m), 20º (+7,5
+    m).'
+- slug: cook-snack-entranhas-de-vaca
+  name_pt: Entranhas de Vaca
+  name_en: Entranhas de Vaca
+  description: 'TR de CON. Falha: desvantagem em todos os testes de CAR por 10 min
+    e criaturas não podem ser enfeitiçadas por ele.'
+  mechanical_summary: 'TR CON; falha: desvant. CAR + sem enfeitiçar 10m'
+  school: Enchantment
+  range: Touch
+  duration: 10 minutes
+  classes:
+  - cozinheiro
+- slug: cook-snack-gelo-com-sabor
+  name_pt: Gelo com Sabor
+  name_en: Gelo com Sabor
+  description: 'TR de INT. Falha: 1d6 de frio e desvantagem em testes de Concentração
+    até o fim do seu próximo turno; sucesso: metade do dano.'
+  mechanical_summary: 'TR INT; falha: 1d6 frio + desvant. concentração'
+  school: Evocation
+  range: Touch
+  duration: Until end of your next turn
+  classes:
+  - cozinheiro
+  higher_level: 'Dano: 4º (2d6), 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6).'
+- slug: cook-snack-leite-de-amendoas
+  name_pt: Leite de Amêndoas
+  name_en: Leite de Amêndoas
+  description: 'TR de CON. Falha: após 1 minuto, fica inconsciente por 10 minutos.
+    Acorda se sofrer dano ou for sacudido. Criaturas que não dormem são imunes.'
+  mechanical_summary: 'TR CON; falha: inconsciente 10 min após 1 min'
+  school: Enchantment
+  range: Touch
+  duration: 10 minutes (see text)
+  classes:
+  - cozinheiro
+- slug: cook-snack-pao-duro
+  name_pt: Pão Duro
+  name_en: Pão Duro
+  description: 'TR de FOR. Falha: 1d6 de concussão e desvantagem nas jogadas de ataque
+    até o começo do próximo turno; sucesso: metade do dano.'
+  mechanical_summary: 'TR FOR; falha: 1d6 concussão + desvant. ataque'
+  school: Evocation
+  range: Touch
+  duration: Until start of your next turn
+  classes:
+  - cozinheiro
+  higher_level: 'Dano: 4º (2d6), 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6).'
+- slug: cook-snack-pimenta-ardida
+  name_pt: Pimenta Ardida
+  name_en: Pimenta Ardida
+  description: Resistência a fogo e imunidade à condição agarrado por 10 minutos.
+  mechanical_summary: Resistência a fogo + imune a agarrado 10 min
+  school: Abjuration
+  range: Touch
+  duration: 10 minutes
+  classes:
+  - cozinheiro
+- slug: cook-snack-proteina-concentrada
+  name_pt: Proteína Concentrada
+  name_en: Proteína Concentrada
+  description: Por 1 minuto, adiciona 1d4 a todas as rolagens de dano e testes usando
+    FOR.
+  mechanical_summary: "+1d4 em dano e testes de FOR por 1 minuto"
+  school: Transmutation
+  range: Touch
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  higher_level: 'Dado do bônus: 10º (1d6), 15º (1d8), 20º (1d10).'
+- slug: cook-snack-sucos-revigorantes
+  name_pt: Sucos Revigorantes
+  name_en: Sucos Revigorantes
+  description: Concede 1d8 PV temporários por 1 minuto.
+  mechanical_summary: "+1d8 PV temporários por 1 minuto"
+  school: Abjuration
+  range: Touch
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  higher_level: 'PV temporários: 4º (2d8), 7º (3d8), 9º (4d8), 13º (5d8), 17º (6d8),
+    20º (7d8).'
+- slug: cook-snack-faisao-assado
+  name_pt: Faisão Assado
+  name_en: Faisão Assado
+  description: Queda lenta variável (1,5 m/rodada até 18 m/rodada, escolha no início
+    de cada turno). Sem dano de queda se aterrissar.
+  mechanical_summary: Queda lenta variável; sem dano de queda
+  school: Transmutation
+  range: Self
+  duration: 10 minutes
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+- slug: cook-snack-lebre-na-brasa
+  name_pt: Lebre na Brasa
+  name_en: Lebre na Brasa
+  description: Efeitos da magia Salto por 1 hora.
+  mechanical_summary: Efeito de Salto por 1 hora
+  school: Transmutation
+  range: Self
+  duration: 1 hour
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+- slug: cook-snack-mingau-encorpado
+  name_pt: Mingau Encorpado
+  name_en: Mingau Encorpado
+  description: Efeito da magia Pele de Árvore por 10 minutos.
+  mechanical_summary: Pele de Árvore por 10 minutos (CA 16 mín.)
+  school: Abjuration
+  range: Self
+  duration: 10 minutes
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+- slug: cook-snack-ovos-de-aranha
+  name_pt: Ovos de Aranha
+  name_en: Ovos de Aranha
+  description: Efeito da magia Patas de Aranha por 1 hora.
+  mechanical_summary: Patas de Aranha por 1 hora
+  school: Transmutation
+  range: Self
+  duration: 1 hour
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+- slug: cook-snack-truta-amanteigada
+  name_pt: Truta Amanteigada
+  name_en: Truta Amanteigada
+  description: Efeito da magia Respirar Água por 1 hora e deslocamento de natação
+    igual ao de caminhada.
+  mechanical_summary: Respirar Água + natação = caminhada por 1h
+  school: Transmutation
+  range: Self
+  duration: 1 hour
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+- slug: cook-snack-beterrabas-agridoce
+  name_pt: Beterrabas Agridoce
+  name_en: Beterrabas Agridoce
+  description: Primeiro ataque de arma que acerta o alvo a cada turno causa +1d6 de
+    dano extra por 1 minuto.
+  mechanical_summary: "+1d6 no 1º ataque de arma do turno (1 min)"
+  school: Transmutation
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 11
+- slug: cook-snack-brotos-espectrais
+  name_pt: Brotos Espectrais
+  name_en: Brotos Espectrais
+  description: Efeito de Ver Invisibilidade por 1 minuto e pode entrar/sair do Plano
+    Etéreo como ação.
+  mechanical_summary: Ver Invisibilidade + entrar/sair do Etéreo
+  school: Divination
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 11
+- slug: cook-snack-cha-de-camomila
+  name_pt: Chá de Camomila
+  name_en: Chá de Camomila
+  description: Sempre que realizar um golpe armado, subtrai 1d6 do dano por 1 minuto
+    (enfraquece ataques).
+  mechanical_summary: "-1d6 dano em golpes armados por 1 min"
+  school: Transmutation
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 11
+- slug: cook-snack-folhas-de-canhamo
+  name_pt: Folhas de Cânhamo
+  name_en: Folhas de Cânhamo
+  description: 'TR de SAB; falha: torna-se indiferente a todas as criaturas por 1
+    minuto (termina antes se sofrer dano).'
+  mechanical_summary: 'TR SAB; falha: indiferente a tudo (1 min)'
+  school: Enchantment
+  range: Touch
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 11
+- slug: cook-snack-sementes-estrelares
+  name_pt: Sementes Estelares
+  name_en: Sementes Estelares
+  description: Role 1d4; recupera espaços de magia gastos com soma de níveis ≤ resultado.
+    Se não usados em 1 minuto, são perdidos.
+  mechanical_summary: 1d4 níveis de slots recuperados (1 min)
+  school: Transmutation
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 11
+- slug: cook-snack-cauda-de-dragao-cozida
+  name_pt: Cauda de Dragão Cozida
+  name_en: Cauda de Dragão Cozida
+  description: "+1 CA e, 1/ação, escolha: Presença Ameaçadora (TR de SAB, amedrontado
+    1 min) ou Ataque de Cauda (alcance 3 m, +8, 4d8 fogo)."
+  mechanical_summary: "+1 CA + Presença Amedrontadora ou Cauda 4d8"
+  school: Transmutation
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 15
+- slug: cook-snack-lingua-de-hidra
+  name_pt: Língua de Hidra
+  name_en: Língua de Hidra
+  description: 'Surge segunda cabeça por 1 min: 1d10 PV temporários no início do turno;
+    regenera membros; +1 reação (ataques de oportunidade); +1 ação (Desengajar, Ajudar
+    ou Procurar).'
+  mechanical_summary: '2ª cabeça: 1d10 PVT/turno + reação/ação extra'
+  school: Transmutation
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 15
+- slug: cook-snack-torta-elemental
+  name_pt: Torta Elemental
+  name_en: Torta Elemental
+  description: Resistência a Ácido, Elétrico, Fogo, Trovão e Veneno; deslocamentos
+    de voo e natação iguais ao de caminhada por 1 minuto.
+  mechanical_summary: Resist. 5 elementos + voo/natação por 1 min
+  school: Transmutation
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 15
+- slug: cook-snack-carne-vital
+  name_pt: Carne Vital
+  name_en: Carne Vital
+  description: Preparado em descanso longo (não estraga). Ao ingerir, escolha e receba
+    um benefício da habilidade Colheita Vital por 1 minuto.
+  mechanical_summary: Bênção de Colheita Vital à escolha (1 min)
+  school: Transmutation
+  range: Touch
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 18
+- slug: cook-snack-uvas-cristalizadas
+  name_pt: Uvas Cristalizadas
+  name_en: Uvas Cristalizadas
+  description: Por 1 minuto, +1d4 a todas as rolagens de dano e testes de DEX.
+  mechanical_summary: "+1d4 em dano e testes de DEX por 1 minuto"
+  school: Transmutation
+  range: Touch
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  higher_level: 'Dado do bônus: 10º (1d6), 15º (1d8), 20º (1d10).'
+  prereqs:
+    level: 3
+    subclass: mestre-da-fritura
+- slug: cook-snack-cerveja-forte
+  name_pt: Cerveja Forte
+  name_en: Cerveja Forte
+  description: Resistência a concussão, cortante e perfurante de armas não mágicas
+    por 1 minuto.
+  mechanical_summary: Resist. dano físico não-mágico por 1 minuto
+  school: Abjuration
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+    subclass: mestre-da-fritura
+- slug: cook-snack-peixe-no-mel
+  name_pt: Peixe no Mel
+  name_en: Peixe no Mel
+  description: Vantagem em todos os testes de INT, WIS e CAR por 1 minuto.
+  mechanical_summary: Vantagem em testes INT/WIS/CAR por 1 minuto
+  school: Abjuration
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 13
+    subclass: mestre-da-fritura
+- slug: cook-snack-pure-de-pinhoes
+  name_pt: Purê de Pinhões
+  name_en: Purê de Pinhões
+  description: 'Aura de 3 m perfumada: todas as criaturas na área têm vantagem em
+    todos os testes de resistência por 1 minuto.'
+  mechanical_summary: 'Aura 3 m: vant. TR para aliados (1 min)'
+  school: Abjuration
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 17
+    subclass: mestre-da-fritura
+- slug: cook-snack-brotos-fedorentos
+  name_pt: Brotos Fedorentos
+  name_en: Brotos Fedorentos
+  description: Imunidade às condições amedrontado e enfeitiçado por 1 minuto.
+  mechanical_summary: Imune a amedrontado/enfeitiçado por 1 min
+  school: Abjuration
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 3
+    subclass: mestre-do-fogo-e-fumaca
+- slug: cook-snack-feijoes-de-inchaco
+  name_pt: Feijões de Inchaço
+  name_en: Feijões de Inchaço
+  description: Dobra de tamanho (até próxima categoria), peso ×8, vantagem em testes
+    de FOR e TR de FOR por 1 minuto.
+  mechanical_summary: Dobra de tamanho + vant. FOR por 1 minuto
+  school: Transmutation
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+    subclass: mestre-do-fogo-e-fumaca
+- slug: cook-snack-cafe-tremulante
+  name_pt: Café Tremulante
+  name_en: Café Tremulante
+  description: Se reduzido a 0 PV por dano, fica com 1 PV em vez disso e o efeito
+    termina.
+  mechanical_summary: Resgata em 1 PV se cair a 0 (uma vez)
+  school: Necromancy
+  range: Self
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 13
+    subclass: mestre-do-fogo-e-fumaca
+- slug: cook-snack-aveia-gorda
+  name_pt: Aveia Gorda
+  name_en: Aveia Gorda
+  description: Resistência a todo tipo de dano até o fim do próximo turno.
+  mechanical_summary: Resist. a todo dano até fim do próx. turno
+  school: Abjuration
+  range: Self
+  duration: Until end of your next turn
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 17
+    subclass: mestre-do-fogo-e-fumaca
+- slug: cook-snack-papa-gordurosa
+  name_pt: Papa Gordurosa
+  name_en: Papa Gordurosa
+  description: 'TR de CON; falha: 1d6 de ácido e fica restringido por até 1 min (TR
+    ao fim dos turnos encerra); sucesso: metade do dano.'
+  mechanical_summary: 'TR CON; falha: 1d6 ácido + restringido 1 min'
+  school: Evocation
+  range: Touch
+  duration: Up to 1 minute
+  classes:
+  - cozinheiro
+  higher_level: 'Dano: 4º (2d6), 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6).'
+  prereqs:
+    level: 3
+    subclass: alquimista-gourmet
+- slug: cook-snack-sais-de-fogo
+  name_pt: Sais de Fogo
+  name_en: Sais de Fogo
+  description: 'Todas as criaturas em 4,5 m fazem TR de DEX; falha: 4d6 fogo; sucesso:
+    metade.'
+  mechanical_summary: 'Aura 4,5 m: TR DEX, 4d6 fogo (metade no sucesso)'
+  school: Evocation
+  range: Self (4.5 m radius)
+  duration: Instantaneous
+  classes:
+  - cozinheiro
+  higher_level: 'Dano: 9º (5d6), 13º (6d6), 17º (7d6), 20º (8d6).'
+  prereqs:
+    level: 7
+    subclass: alquimista-gourmet
+- slug: cook-snack-atim-no-alho
+  name_pt: Atum no Alho
+  name_en: Atum no Alho
+  description: 'TR de CON das criaturas hostis em 3 m; falha: desvantagem em todos
+    os TR por 1 minuto.'
+  mechanical_summary: 'Aura 3 m: TR CON, falha = desvant. TR (1 min)'
+  school: Enchantment
+  range: Self (3 m)
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 13
+    subclass: alquimista-gourmet
+- slug: cook-snack-cebola-rancosa
+  name_pt: Cebola Rançosa
+  name_en: Cebola Rançosa
+  description: 'Criaturas hostis em 9 m fazem TR de CON; falha: paralisadas até próximo
+    turno e cegas por 1 minuto (TR ao fim dos turnos encerra cegueira).'
+  mechanical_summary: 'Aura 9 m: TR CON, falha = paralisada+cega'
+  school: Necromancy
+  range: Self (9 m)
+  duration: 1 minute (see text)
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 17
+    subclass: alquimista-gourmet
+- slug: cook-snack-gole-do-subterraneo
+  name_pt: Gole do Subterrâneo
+  name_en: Gole do Subterrâneo
+  description: Vomita escuridão mágica (raio 3 m) por 1 minuto; aliados veem através
+    dela; visão no escuro não atravessa.
+  mechanical_summary: Escuridão mágica 3 m; aliados veem (1 min)
+  school: Evocation
+  range: Self (3 m radius)
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 3
+    subclass: cantineiro-de-guerra
+- slug: cook-snack-raspadinha-de-vodka
+  name_pt: Raspadinha de Vodka
+  name_en: Raspadinha de Vodka
+  description: 'Cria neve em 4,5 m (terreno difícil para hostis). Hostis fazem TR
+    de FOR; falha: puxados para fora da área.'
+  mechanical_summary: 'Neve 4,5 m: TR FOR ou puxar fora; difícil'
+  school: Evocation
+  range: Self (4.5 m radius)
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 7
+    subclass: cantineiro-de-guerra
+- slug: cook-snack-whisky-de-fogo-infernal
+  name_pt: Whisky de Fogo Infernal
+  name_en: Whisky de Fogo Infernal
+  description: 'Aura de penumbra 3 m por 1 min; hostil Grande ou menor que entrar/iniciar
+    turno faz TR de CON; falha: 1 nível de exaustão.'
+  mechanical_summary: 'Aura 3 m: TR CON, falha = +1 nível exaustão'
+  school: Necromancy
+  range: Self (3 m bright dim aura)
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 13
+    subclass: cantineiro-de-guerra
+- slug: cook-snack-beijo-de-anjo
+  name_pt: Beijo de Anjo
+  name_en: Beijo de Anjo
+  description: 'Luz plena 9 m + penumbra 9 m por 1 min; hostil que iniciar turno na
+    luz plena faz TR de CON; falha: cego até próximo turno.'
+  mechanical_summary: 'Luz 9 m: TR CON, falha = cego até próx. turno'
+  school: Evocation
+  range: Self (9 m bright + 9 m dim)
+  duration: 1 minute
+  classes:
+  - cozinheiro
+  prereqs:
+    level: 17
+    subclass: cantineiro-de-guerra

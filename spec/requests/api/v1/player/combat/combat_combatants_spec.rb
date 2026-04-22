@@ -1,0 +1,271 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :request do
+  let(:dm_role)     { Role.find_or_create_by!(name: 'DM') }
+  let(:player_role) { Role.find_or_create_by!(name: 'Player') }
+
+  let(:dm)        { create(:user, role: dm_role) }
+  let(:player)    { create(:user, role: player_role) }
+  let(:outsider)  { create(:user, role: player_role) }
+
+  let(:schedule)  { create(:schedule) }
+  let!(:player_character) { create(:character, user: player, group: schedule.group) }
+
+  let(:dm_headers)        { bearer_headers_for(dm) }
+  let(:player_headers)    { bearer_headers_for(player) }
+  let(:outsider_headers)  { bearer_headers_for(outsider) }
+
+  let!(:cs) { create(:combat_state, schedule: schedule, active: true, round: 1) }
+
+  describe 'GET index' do
+    it 'lists combatants in position order for a member' do
+      npc = create(:combat_npc, schedule: schedule)
+      a = create(:combat_combatant, combat_state: cs, combatable: player_character, position: 1)
+      b = create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 0)
+
+      get "/api/v1/player/schedules/#{schedule.id}/combat_combatants", headers: player_headers
+      expect(response).to have_http_status(:ok)
+      ids = response.parsed_body['combatants'].pluck('id')
+      expect(ids).to eq([b.id, a.id])
+    end
+
+    it '200 for outsider (hub read)' do
+      get "/api/v1/player/schedules/#{schedule.id}/combat_combatants", headers: outsider_headers
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'returns empty list when there is no combat_state yet' do
+      cs.destroy!
+      get "/api/v1/player/schedules/#{schedule.id}/combat_combatants", headers: player_headers
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['combatants']).to eq([])
+    end
+  end
+
+  describe 'POST create' do
+    it 'creates a PC combatant with HP defaults from the Sheet (DM)' do
+      sheet = create(:sheet, character: player_character, hp_current: 18, hp_max: 25)
+
+      payload = {
+        combatant: {
+          type: 'pc',
+          combatable_id: player_character.id,
+          initiative: 14,
+          initiative_bonus: 2,
+        }
+      }
+
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants",
+           params: payload, headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = response.parsed_body['combatant']
+      expect(json).to include('name' => player_character.name, 'hp_current' => 18, 'hp_max' => 25, 'initiative' => 14)
+    end
+
+    it 'creates an NPC combatant copying HP from the CombatNpc' do
+      npc = create(:combat_npc, schedule: schedule, hp_current: 9, hp_max: 9, ac: 14)
+
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants",
+           params: { combatant: { type: 'npc', combatable_id: npc.id, initiative: 12, initiative_bonus: 1 } },
+           headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = response.parsed_body['combatant']
+      expect(json).to include('hp_current' => 9, 'hp_max' => 9, 'ac' => 14)
+    end
+
+    it '422 when adding a Character from another group' do
+      other_group = create(:group)
+      foreign_char = create(:character, group: other_group)
+
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants",
+           params: { combatant: { type: 'pc', combatable_id: foreign_char.id, initiative: 10, initiative_bonus: 0 } },
+           headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it '403 when called by Player' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants",
+           params: { combatant: { type: 'pc', combatable_id: player_character.id, initiative: 10 } },
+           headers: player_headers, as: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it '422 when the combat has not been started' do
+      cs.destroy!
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants",
+           params: { combatant: { type: 'pc', combatable_id: player_character.id, initiative: 10 } },
+           headers: dm_headers, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
+
+  describe 'PATCH update' do
+    let!(:combatant) { create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0, hp_current: 20, hp_max: 20) }
+
+    it 'updates conditions and actions_used' do
+      payload = {
+        combatant: {
+          conditions: [{ id: 'poisoned', turns_left: 3 }],
+          actions_used: { action: true, bonus_action: false, movement: true, reaction: false },
+        }
+      }
+      patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+            params: payload, headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = response.parsed_body['combatant']
+      expect(json['conditions']).to eq([{ 'id' => 'poisoned', 'turns_left' => 3 }])
+      expect(json['actions_used']).to include('action' => true, 'movement' => true)
+    end
+
+    it 'allows the owning player to set initiative once while it is nil' do
+      combatant.update_column(:initiative, nil)
+      patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+            params: { combatant: { initiative: 18 } }, headers: player_headers, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(combatant.reload.initiative).to eq(18)
+    end
+
+    it '403 for Player when initiative is already set' do
+      expect(combatant.reload.initiative).not_to be_nil
+      patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+            params: { combatant: { initiative: 99 } }, headers: player_headers, as: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe 'DELETE destroy' do
+    it 'deletes the combatant for the DM' do
+      combatant = create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0)
+      expect {
+        delete "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}", headers: dm_headers
+      }.to change { CombatCombatant.count }.by(-1)
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  describe 'POST reorder' do
+    let!(:c0) { create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0, name: 'A') }
+    let!(:c1) {
+      char2 = create(:character, group: schedule.group, name: 'B-char')
+      create(:combat_combatant, combat_state: cs, combatable: char2, position: 1, name: 'B')
+    }
+    let!(:c2) {
+      npc = create(:combat_npc, schedule: schedule)
+      create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 2, name: 'C')
+    }
+
+    it 'reorders atomically (DM)' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/reorder",
+           params: { ordered_combatant_ids: [c2.id, c0.id, c1.id] },
+           headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(c0.reload.position).to eq(1)
+      expect(c1.reload.position).to eq(2)
+      expect(c2.reload.position).to eq(0)
+    end
+
+    it '422 when ordered list does not cover all combatants' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/reorder",
+           params: { ordered_combatant_ids: [c0.id, c1.id] },
+           headers: dm_headers, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it '403 for Player' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/reorder",
+           params: { ordered_combatant_ids: [c2.id, c0.id, c1.id] },
+           headers: player_headers, as: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe 'POST apply_damage' do
+    let!(:combatant) {
+      create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0,
+             hp_current: 20, hp_max: 20, temp_hp: 5)
+    }
+
+    it 'applies damage consuming temp_hp first' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/apply_damage",
+           params: { amount: 8 }, headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = response.parsed_body
+      expect(json['combatant']['hp_current']).to eq(17)
+      expect(json['combatant']['temp_hp']).to eq(0)
+      expect(json['damage_applied']).to eq(8)
+      expect(json['concentration_check_required']).to be false
+    end
+
+    it 'flags concentration_check_required and computes DC = max(10, dmg/2)' do
+      combatant.update!(is_concentrating: true, concentration_spell: 'bless')
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/apply_damage",
+           params: { amount: 30 }, headers: dm_headers, as: :json
+
+      json = response.parsed_body
+      expect(json['concentration_check_required']).to be true
+      expect(json['concentration_dc']).to eq(15) # max(10, 30/2)
+    end
+
+    it 'DC=10 floor for small damage' do
+      combatant.update!(is_concentrating: true)
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/apply_damage",
+           params: { amount: 4 }, headers: dm_headers, as: :json
+
+      expect(response.parsed_body['concentration_dc']).to eq(10)
+    end
+
+    it '403 for Player' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/apply_damage",
+           params: { amount: 5 }, headers: player_headers, as: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe 'POST heal' do
+    let!(:combatant) {
+      create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0,
+             hp_current: 5, hp_max: 20)
+    }
+
+    it 'heals the combatant' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/heal",
+           params: { amount: 7 }, headers: dm_headers, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['combatant']['hp_current']).to eq(12)
+    end
+  end
+
+  describe 'POST record_death_save' do
+    let!(:combatant) {
+      create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0,
+             hp_current: 0)
+    }
+
+    it 'increments successes and stabilizes on the third' do
+      2.times do
+        post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/record_death_save",
+             params: { kind: 'success' }, headers: dm_headers, as: :json
+      end
+      expect(combatant.reload.is_stabilized).to be false
+
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/record_death_save",
+           params: { kind: 'success' }, headers: dm_headers, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(combatant.reload.is_stabilized).to be true
+    end
+
+    it '422 for unknown kind' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/record_death_save",
+           params: { kind: 'critical' }, headers: dm_headers, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
+end

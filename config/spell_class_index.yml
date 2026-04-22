@@ -1,0 +1,255 @@
+# Mapeia cada magia (api_index) para as classes que a aprendem e o nível correspondente
+spell_class_index:
+  vicious-mockery:
+    bardo: 0
+
+  dissonant-whispers:
+    bardo: 1
+
+  thaumaturgy:
+    clérigo: 0
+
+  web:
+    feiticeiro: 2
+    mago: 2
+
+  telekinesis:
+    feiticeiro: 5
+    mago: 5
+
+  telepathy:
+    mago: 8
+
+  teleport:
+    bardo: 7
+    feiticeiro: 7
+    mago: 7
+
+  teleportation-circle:
+    bardo: 5
+    feiticeiro: 5
+    mago: 5
+
+  plane-shift:
+    bruxo: 7
+    clérigo: 7
+    druida: 7
+    feiticeiro: 7
+    mago: 7
+
+  transport-via-plants:
+    druida: 6
+
+  storm-of-vengeance:
+    druida: 9
+
+  fire-storm:
+    bardo: 7
+    clérigo: 7
+    druida: 7
+    feiticeiro: 7
+
+  ice-storm:
+    druida: 4
+    feiticeiro: 4
+    mago: 4
+
+  black-tentacles:
+    mago: 4
+
+  earthquake:
+    clérigo: 8
+    druida: 8
+    feiticeiro: 8
+
+  hallucinatory-terrain:
+    bardo: 4
+    bruxo: 4
+    druida: 4
+    feiticeiro: 4
+    mago: 4
+    patrulheiro: 4
+
+  chill-touch:
+    bruxo: 0
+    feiticeiro: 0
+    mago: 0
+
+  shocking-grasp:
+    feiticeiro: 0
+    mago: 0
+
+  vampiric-touch:
+    bruxo: 3
+    mago: 3
+
+  arcane-lock:
+    mago: 2
+
+  rope-trick:
+    mago: 2
+
+  tsunami:
+    druida: 8
+
+  haste:
+    feiticeiro: 3
+    mago: 3
+
+  see-invisibility:
+    bardo: 2
+    feiticeiro: 2
+    mago: 2
+
+  scrying:
+    bardo: 5
+    bruxo: 5
+    clérigo: 5
+    druida: 5
+    mago: 5
+
+  warding-bond:
+    clérigo: 2
+
+  grasping-vine:
+    druida: 4
+    patrulheiro: 4
+
+  true-seeing:
+    bardo: 6
+    bruxo: 6
+    clérigo: 6
+    feiticeiro: 6
+    mago: 6
+
+  darkvision:
+    druida: 2
+    feiticeiro: 2
+    mago: 2
+    patrulheiro: 2
+
+  false-life:
+    feiticeiro: 1
+    mago: 1
+
+  fly:
+    feiticeiro: 3
+    mago: 3
+
+  zone-of-truth:
+    bardo: 2
+    clérigo: 2
+    paladino: 2
+
+  silence:
+    bardo: 2
+    bruxo: 2
+    clérigo: 2
+    patrulheiro: 2
+
+  mass-suggestion:
+    bardo: 6
+    bruxo: 6
+    feiticeiro: 6
+    mago: 6
+
+  sunbeam:
+    druida: 6
+    feiticeiro: 6
+    mago: 6
+
+  prismatic-spray:
+    feiticeiro: 7
+    mago: 7
+
+  suggestion:
+    bardo: 2
+    bruxo: 2
+    feiticeiro: 2
+    mago: 2
+
+  dream:
+    bardo: 5
+    bruxo: 5
+    mago: 5
+
+  regenerate:
+    bardo: 7
+    clérigo: 7
+    druida: 7
+
+  resurrection:
+    bardo: 7
+    clérigo: 7
+
+  true-resurrection:
+    clérigo: 9
+    druida: 9
+
+  symbol:
+    bardo: 7
+    clérigo: 7
+    mago: 7
+
+sleet-storm:
+  druida: 3
+  feiticeiro: 3
+  mago: 3
+
+cloudkill:
+  feiticeiro: 5
+  mago: 5
+
+fog-cloud:
+  druida: 1
+  patrulheiro: 1
+  feiticeiro: 1
+  mago: 1
+
+blur:
+  feiticeiro: 2
+  mago: 2
+
+stinking-cloud:
+  bardo: 3
+  feiticeiro: 3
+  mago: 3
+
+cloud-of-daggers:
+  bardo: 2
+  bruxo: 2
+  feiticeiro: 2
+  mago: 2
+
+incendiary-cloud:
+  feiticeiro: 8
+  mago: 8
+
+arcane-eye:
+  mago: 4
+
+destructive-wave:
+  paladino: 5
+
+thunderwave:
+  bardo: 1
+  druida: 1
+  feiticeiro: 1
+  mago: 1
+
+prayer-of-healing:
+  clérigo: 2
+
+chromatic-orb:
+  feiticeiro: 1
+  mago: 1
+
+guidance:
+  clérigo: 0
+  druida: 0
+
+hypnotic-pattern:
+  bardo: 3
+  bruxo: 3
+  feiticeiro: 3
+  mago: 3

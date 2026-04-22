@@ -13,7 +13,7 @@ class Api::V1::Public::ClassRulesController < ApplicationController
   # body: { selection: { klass_id, level, skills_selected: [], instruments_selected: [], picks: {...} } }
   def apply
     selection = params.require(:selection).permit!
-    result = ClassRules.apply(selection.to_h.symbolize_keys)
+    result = ClassRules.apply_with_derived(selection.to_h.symbolize_keys)
     render json: { result: result }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity

@@ -1,0 +1,70 @@
+Truques
+Nível 1
+Nível 2
+Nível 3
+Nível 4
+Nível 5
+Nível 6
+Nível 7
+Nível 8
+Nível 9
+Abjuração
+Adivinhação
+Conjuração
+Encantamento
+Evocação
+Ilusão
+Necromancia
+Transmutação
+Ritual
+Talentos
+Adepto Elemental
+Adepto Marcial
+Alerta
+Ambidestro
+Atacante Bestial
+Atirador Aguçado
+Atirador De Magia
+Atleta
+Ator
+Combatente Montado
+Conjurador De Guerra
+Conjurador De Ritual
+Curandeiro
+Duelista Defensivo
+Especialista Em Besta
+Especialista Em Briga
+Explorador De Cavernas
+Imobilizador
+Iniciado Em Magia
+Investida Poderosa
+Líder Inspirador
+Maestria Em Arma De Haste
+Maestria Em Armadura Média
+Maestria Em Armadura Pesada
+Matador De Conjuradores
+Mente Afiada
+Mestre De Armas
+Mestre De Armas Grandes
+Mestre De Escudo
+Mobilidade
+Observador
+Perito
+Poliglota
+Proteção Leve
+Proteção Moderada
+Proteção Pesada
+Resiliente
+Resistente
+Robusto
+Sentinela
+Sorrateiro
+Sortudo
+Bardo
+Bruxo
+Clérigo
+Druida
+Feiticeiro
+Mago
+Paladino
+Patrulheiro

@@ -51,4 +51,15 @@ Rails.application.configure do
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
+
+  # ActionCable: explicitly allow Vite dev server origins so the WebSocket
+  # handshake succeeds when the SPA at :5173 connects to the API at :3000.
+  # Without this, the connection upgrades but `subscribed` never fires
+  # (silent "connecting forever" symptom).
+  config.action_cable.allowed_request_origins = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    %r{\Ahttp://localhost(:\d+)?\z},
+    %r{\Ahttp://127\.0\.0\.1(:\d+)?\z},
+  ]
 end

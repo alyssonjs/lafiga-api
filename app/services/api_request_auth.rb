@@ -30,7 +30,7 @@ class ApiRequestAuth
     if headers['Authorization'].present?
       return verify_token(headers['Authorization']) ? headers['Authorization'].split(' ').last : false
     else
-      raise(ExceptionHandler::MissingToken, Message.missing_token)
+      raise(ExceptionHandler::MissingToken, 'Missing token')
     end
     nil
   end

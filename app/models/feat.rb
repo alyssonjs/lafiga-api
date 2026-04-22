@@ -27,10 +27,26 @@ class Feat < ApplicationRecord
   end
 
   def features_data
-    return {} if features.blank?
-    JSON.parse(features)
-  rescue JSON::ParserError
-    {}
+    raw = features
+    return {} if raw.blank?
+    data = raw
+    if raw.is_a?(String)
+      begin
+        data = JSON.parse(raw)
+      rescue JSON::ParserError
+        begin
+          data = JSON.parse(raw.to_s.gsub('=>', ':'))
+        rescue StandardError
+          return {}
+        end
+      end
+    end
+    return {} unless data.is_a?(Hash)
+    out = data.transform_keys(&:to_s)
+    if out.key?('description') && !out.key?('desc')
+      out['desc'] = out.delete('description')
+    end
+    out
   end
 
   # Get ability score bonuses for a specific feat

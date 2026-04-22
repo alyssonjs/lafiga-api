@@ -1,0 +1,36 @@
+# ——————————————————————————————————————————————————————————
+# SALVAGUARDAS — D&D 5e (PT-BR)
+# Mapeamento de IDs em inglês para nomes em português
+# ——————————————————————————————————————————————————————————
+
+saving_throws:
+  - id: STR
+    name: FOR
+    full_name: Força
+    ability: str
+    
+  - id: DEX
+    name: DES
+    full_name: Destreza
+    ability: dex
+    
+  - id: CON
+    name: CON
+    full_name: Constituição
+    ability: con
+    
+  - id: INT
+    name: INT
+    full_name: Inteligência
+    ability: int
+    
+  - id: WIS
+    name: SAB
+    full_name: Sabedoria
+    ability: wis
+    
+  - id: CHA
+    name: CAR
+    full_name: Carisma
+    ability: cha
+

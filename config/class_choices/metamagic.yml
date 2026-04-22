@@ -1,0 +1,101 @@
+# Metamágicas do Feiticeiro (PHB).
+# Schema: api/config/class_choices/SCHEMA.md
+# Os name_pt seguem a tradução do PHB BR oficial usada pelo front.
+# Os aliases preservam compat com nomes legados que existiam no backend
+# (class_rules.rb antes do Kit 1) — chars antigos não quebram.
+
+- slug: mm-careful
+  name_pt: Magia Cuidadosa
+  name_en: Careful Spell
+  aliases:
+    - Suturar Magia
+  description: |
+    Quando você conjura uma magia que obriga outras criaturas a fazerem um teste de resistência, você pode proteger algumas delas da força total da magia. Para isso, gaste 1 ponto de feitiçaria e escolha um número de criaturas igual ao seu modificador de Carisma (mínimo 1). Uma criatura escolhida passa automaticamente no teste de resistência da magia.
+  mechanical_summary: Aliados na AoE passam automaticamente no TR
+  cost: 1
+  classes:
+    - sorcerer
+
+- slug: mm-distant
+  name_pt: Magia Distante
+  name_en: Distant Spell
+  aliases:
+    - Alcançar Magia
+  description: |
+    Quando conjurar uma magia com alcance de 1,5 metro ou mais, gaste 1 ponto de feitiçaria para dobrar o alcance. Quando conjurar uma magia com alcance de toque, gaste 1 ponto para tornar o alcance 9 metros.
+  mechanical_summary: "Dobra alcance OU toque -> 9m"
+  cost: 1
+  classes:
+    - sorcerer
+
+- slug: mm-empowered
+  name_pt: Magia Elevada
+  name_en: Empowered Spell
+  aliases:
+    - Potencializar Magia
+  description: |
+    Quando rolar dano para uma magia, gaste 1 ponto de feitiçaria para rolar novamente até um número de dados de dano igual ao seu modificador de Carisma (mínimo 1). Deve usar os novos resultados. Pode ser combinada com outra metamagia.
+  mechanical_summary: Re-rola até mod. CAR dados de dano
+  cost: 1
+  classes:
+    - sorcerer
+
+- slug: mm-extended
+  name_pt: Magia Estendida
+  name_en: Extended Spell
+  aliases:
+    - Estender Magia
+  description: |
+    Quando conjurar uma magia com duração de 1 minuto ou mais, gaste 1 ponto de feitiçaria para dobrar a duração, até um máximo de 24 horas.
+  mechanical_summary: Dobra duração (máx 24h)
+  cost: 1
+  classes:
+    - sorcerer
+
+- slug: mm-heightened
+  name_pt: Magia Intensificada
+  name_en: Heightened Spell
+  aliases:
+    - Expandir Magia
+  description: |
+    Quando conjurar uma magia que obriga uma criatura a fazer um teste de resistência, gaste 3 pontos de feitiçaria para dar a um alvo da magia desvantagem no primeiro teste de resistência contra ela.
+  mechanical_summary: 1 alvo tem desvantagem no 1º TR
+  cost: 3
+  classes:
+    - sorcerer
+
+- slug: mm-quickened
+  name_pt: Magia Acelerada
+  name_en: Quickened Spell
+  aliases:
+    - Acelerar Magia
+  description: |
+    Quando conjurar uma magia com tempo de conjuração de 1 ação, gaste 2 pontos de feitiçaria para mudar o tempo de conjuração para 1 ação bônus nesta conjuração.
+  mechanical_summary: "Ação -> ação bônus"
+  cost: 2
+  classes:
+    - sorcerer
+
+- slug: mm-subtle
+  name_pt: Magia Sutil
+  name_en: Subtle Spell
+  aliases:
+    - Sutilizar Magia
+  description: |
+    Quando conjurar uma magia, gaste 1 ponto de feitiçaria para conjurá-la sem componentes verbais ou somáticos.
+  mechanical_summary: Sem componentes V/S
+  cost: 1
+  classes:
+    - sorcerer
+
+- slug: mm-twinned
+  name_pt: Magia Gêmea
+  name_en: Twinned Spell
+  aliases:
+    - Transmutar Magia
+  description: |
+    Quando conjurar uma magia que mire apenas uma criatura e não tenha alcance pessoal, gaste pontos de feitiçaria iguais ao nível da magia (1 para cantrips) para mirar uma segunda criatura ao alcance.
+  mechanical_summary: Segundo alvo grátis (custo = nível da magia)
+  cost: spell_level
+  classes:
+    - sorcerer

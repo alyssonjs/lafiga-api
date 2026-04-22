@@ -1,0 +1,917 @@
+{
+  "klasses": {
+    "barbarian": {
+      "name": "Bárbaro",
+      "hit_die": 12,
+      "subclass_level": 3
+    },
+    "bard": {
+      "name": "Bardo",
+      "hit_die": 8,
+      "subclass_level": 3
+    },
+    "cleric": {
+      "name": "Clérigo",
+      "hit_die": 8,
+      "subclass_level": 1
+    },
+    "cozinheiro": {
+      "name": "Cozinheiro",
+      "hit_die": 8,
+      "subclass_level": 3
+    },
+    "druid": {
+      "name": "Druida",
+      "hit_die": 8,
+      "subclass_level": 2
+    },
+    "fighter": {
+      "name": "Guerreiro",
+      "hit_die": 10,
+      "subclass_level": 2
+    },
+    "monk": {
+      "name": "Monge",
+      "hit_die": 8,
+      "subclass_level": 3
+    },
+    "paladin": {
+      "name": "Paladino",
+      "hit_die": 10,
+      "subclass_level": 3
+    },
+    "ranger": {
+      "name": "Patrulheiro",
+      "hit_die": 10,
+      "subclass_level": 3
+    },
+    "rogue": {
+      "name": "Ladino",
+      "hit_die": 8,
+      "subclass_level": 3
+    },
+    "sorcerer": {
+      "name": "Feiticeiro",
+      "hit_die": 6,
+      "subclass_level": 1
+    },
+    "warlock": {
+      "name": "Bruxo",
+      "hit_die": 8,
+      "subclass_level": 1
+    },
+    "wizard": {
+      "name": "Mago",
+      "hit_die": 6,
+      "subclass_level": 2
+    }
+  },
+  "subklasses": {
+    "barbarian": {
+      "berserker": {
+        "name": "Caminho do Furioso"
+      },
+      "totem": {
+        "name": "Caminho do Guerreiro Totêmico"
+      },
+      "barbaro-cicatrizes-runicas": {
+        "name": "Caminho do Bárbaro das Cicatrizes Rúnicas"
+      },
+      "desistente": {
+        "name": "Caminho do Desistente"
+      },
+      "furioso-imortal": {
+        "name": "Caminho do Furioso Imortal"
+      },
+      "guerreiro-urso": {
+        "name": "Caminho do Guerreiro Urso"
+      },
+      "protetor-tribal": {
+        "name": "Caminho do Protetor Tribal"
+      },
+      "raivoso-elemental": {
+        "name": "Caminho do Raivoso Elemental"
+      }
+    },
+    "bard": {
+      "lore": {
+        "name": "Colégio do Conhecimento"
+      },
+      "colegio-busca-cancao": {
+        "name": "Colégio da Busca da Canção"
+      },
+      "colegio-comedia": {
+        "name": "Colégio da Comédia"
+      },
+      "colegio-fortuna": {
+        "name": "Colégio da Fortuna"
+      },
+      "colegio-quietude": {
+        "name": "Colégio da Quietude"
+      },
+      "colegio-pavor": {
+        "name": "Colégio do Pavor"
+      },
+      "colegio-virtuosismo": {
+        "name": "Colégio do Virtuosismo"
+      },
+      "valor": {
+        "name": "Colégio da Bravura"
+      },
+      "colegio-do-glamour": {
+        "name": "Colégio do Glamour"
+      }
+    },
+    "cleric": {
+      "life": {
+        "name": "Life"
+      },
+      "dominio-agua": {
+        "name": "Domínio da Água"
+      },
+      "dominio-ar": {
+        "name": "Domínio do Ar"
+      },
+      "dominio-do-conhecimento": {
+        "name": "Domínio do Conhecimento"
+      },
+      "dominio-da-vida": {
+        "name": "Domínio da Vida"
+      },
+      "dominio-da-luz": {
+        "name": "Domínio da Luz"
+      },
+      "dominio-da-natureza": {
+        "name": "Domínio da Natureza"
+      },
+      "dominio-da-tempestade": {
+        "name": "Domínio da Tempestade"
+      },
+      "dominio-da-trapaca": {
+        "name": "Domínio da Enganação"
+      },
+      "dominio-da-guerra": {
+        "name": "Domínio da Guerra"
+      },
+      "criacao": {
+        "name": "Domínio da Criação"
+      },
+      "mente": {
+        "name": "Domínio da Mente"
+      },
+      "terra": {
+        "name": "Domínio da Terra"
+      },
+      "tempo": {
+        "name": "Domínio do Tempo"
+      },
+      "dominio-criacao": {
+        "name": "Domínio da Criação"
+      },
+      "dominio-mente": {
+        "name": "Domínio da Mente"
+      },
+      "dominio-terra": {
+        "name": "Domínio da Terra"
+      },
+      "dominio-tempo": {
+        "name": "Domínio do Tempo"
+      }
+    },
+    "druid": {
+      "land": {
+        "name": "Land"
+      },
+      "circulo-da-terra": {
+        "name": "Círculo da Terra"
+      },
+      "circulo-da-lua": {
+        "name": "Círculo da Lua"
+      },
+      "infestacao": {
+        "name": "Círculo da Infestação"
+      },
+      "vida": {
+        "name": "Círculo da Vida"
+      },
+      "fadas": {
+        "name": "Círculo das Fadas"
+      },
+      "feras": {
+        "name": "Círculo das Feras"
+      },
+      "mundos": {
+        "name": "Círculo dos Mundos"
+      },
+      "verdejante": {
+        "name": "Círculo Verdejante"
+      },
+      "circulo-infestacao": {
+        "name": "Círculo da Infestação"
+      },
+      "circulo-fadas": {
+        "name": "Círculo das Fadas"
+      },
+      "circulo-mundos": {
+        "name": "Círculo dos Mundos"
+      },
+      "circulo-vida": {
+        "name": "Círculo da Vida"
+      },
+      "circulo-feras": {
+        "name": "Círculo das Feras"
+      }
+    },
+    "fighter": {
+      "champion": {
+        "name": "Champion"
+      },
+      "campeao": {
+        "name": "Campeão"
+      },
+      "mestre-de-batalha": {
+        "name": "Mestre de Batalha"
+      },
+      "cavaleiro-arcano": {
+        "name": "Cavaleiro Arcano"
+      },
+      "atirador_inigualavel": {
+        "name": "Atirador Inigualável"
+      },
+      "cavaleiro_implacavel": {
+        "name": "Cavaleiro Implacável"
+      },
+      "defensor_dedicado": {
+        "name": "Defensor Dedicado"
+      },
+      "kensai": {
+        "name": "Kensai"
+      },
+      "mestre_correntes": {
+        "name": "Mestre das Correntes"
+      },
+      "mestre_arremesso": {
+        "name": "Mestre do Arremesso"
+      }
+    },
+    "monk": {
+      "open-hand": {
+        "name": "Open Hand"
+      },
+      "mao-aberta": {
+        "name": "Caminho da Mão Aberta"
+      },
+      "sombra": {
+        "name": "Caminho da Sombra"
+      },
+      "quatro-elementos": {
+        "name": "Caminho dos Quatro Elementos"
+      },
+      "caminho_aco": {
+        "name": "Caminho do Aço"
+      },
+      "caminho_mestre_bebado": {
+        "name": "Caminho do Mestre Bêbado"
+      },
+      "caminho_monge_tatuado": {
+        "name": "Caminho do Monge Tatuado"
+      },
+      "caminho_ninjuts": {
+        "name": "Caminho do Ninjútsu"
+      },
+      "caminho_punho_sagrado": {
+        "name": "Caminho do Punho Sagrado"
+      },
+      "caminho_sadhaka": {
+        "name": "Caminho do Sadhaka"
+      }
+    },
+    "paladin": {
+      "devotion": {
+        "name": "Juramento de Devoção"
+      },
+      "ancients": {
+        "name": "Juramento dos Anciões"
+      },
+      "vengeance": {
+        "name": "Juramento de Vingança"
+      },
+      "juramento-pureza": {
+        "name": "Juramento de Pureza"
+      },
+      "juramento_danacao": {
+        "name": "Juramento de Danação"
+      },
+      "juramento_equilibrio": {
+        "name": "Juramento de Equilíbrio"
+      },
+      "juramento_liberdade": {
+        "name": "Juramento de Liberdade"
+      },
+      "juramento_misericordia": {
+        "name": "Juramento de Misericórdia"
+      },
+      "juramento_ordenacao": {
+        "name": "Juramento de Ordenação"
+      },
+      "juramento-danacao": {
+        "name": "Juramento de Danação"
+      },
+      "juramento-equilibrio": {
+        "name": "Juramento de Equilíbrio"
+      },
+      "juramento-liberdade": {
+        "name": "Juramento de Liberdade"
+      },
+      "juramento-misericordia": {
+        "name": "Juramento de Misericórdia"
+      },
+      "juramento-ordenacao": {
+        "name": "Juramento de Ordenação"
+      }
+    },
+    "ranger": {
+      "hunter": {
+        "name": "Caçador"
+      },
+      "arqueiro_floresta_alta": {
+        "name": "Arqueiro da Floresta Alta"
+      },
+      "guardiao_selvagem": {
+        "name": "Guardião Selvagem"
+      },
+      "rastreador_urbano": {
+        "name": "Rastreador Urbano"
+      },
+      "flagelo-dos-inimigos": {
+        "name": "Flagelo dos Inimigos"
+      },
+      "beast_master": {
+        "name": "Mestre das Bestas"
+      }
+    },
+    "rogue": {
+      "thief": {
+        "name": "Thief"
+      },
+      "ladrao": {
+        "name": "Ladrão"
+      },
+      "assassino": {
+        "name": "Assassino"
+      },
+      "trapaceiro-arcano": {
+        "name": "Trapaceiro Arcano"
+      },
+      "mimetizador": {
+        "name": "Mimetizador"
+      },
+      "cacador-de-tesouros": {
+        "name": "Caçador de Tesouros"
+      },
+      "dancarino-das-sombras": {
+        "name": "Dançarino das Sombras"
+      },
+      "face-fantasmagorica": {
+        "name": "Face Fantasmagórica"
+      },
+      "lamina-invisivel": {
+        "name": "Lâmina Invisível"
+      },
+      "larapio-de-almas": {
+        "name": "Larápio de Almas"
+      }
+    },
+    "sorcerer": {
+      "draconic": {
+        "name": "Draconic"
+      },
+      "wild": {
+        "name": "Magia Selvagem"
+      },
+      "feiticaria_espada": {
+        "name": "Feitiçaria da Espada"
+      },
+      "feiticaria_sangue": {
+        "name": "Feitiçaria do Sangue"
+      },
+      "linhagem_elemental": {
+        "name": "Linhagem Elemental"
+      },
+      "origem_aberrante": {
+        "name": "Origem Aberrante"
+      },
+      "origem_abissal": {
+        "name": "Origem Abissal"
+      },
+      "origem_mutavel": {
+        "name": "Origem Mutável"
+      },
+      "feiticaria-da-espada": {
+        "name": "Feitiçaria da Espada"
+      },
+      "feiticaria-do-sangue": {
+        "name": "Feitiçaria do Sangue"
+      },
+      "linhagem-elemental": {
+        "name": "Linhagem Elemental"
+      },
+      "origem-aberrante": {
+        "name": "Origem Aberrante"
+      },
+      "origem-abissal": {
+        "name": "Origem Abissal"
+      },
+      "origem-mutavel": {
+        "name": "Origem Mutável"
+      }
+    },
+    "warlock": {
+      "fiend": {
+        "name": "Corruptor"
+      },
+      "archfey": {
+        "name": "Arquifada"
+      },
+      "great_old_one": {
+        "name": "Grande Antigo"
+      },
+      "patrono-morte": {
+        "name": "A Morte"
+      },
+      "patrono-arcanjo-vingador": {
+        "name": "O Arcanjo Vingador"
+      },
+      "patrono-espirito-heroico": {
+        "name": "O Espírito Heroico"
+      },
+      "patrono-supragenio": {
+        "name": "O Supragênio"
+      },
+      "patrono-tita-caido": {
+        "name": "O Titã Caído"
+      },
+      "patrono-vazio": {
+        "name": "O Vazio"
+      }
+    },
+    "wizard": {
+      "escola-de-evocacao": {
+        "name": "Escola de Evocação"
+      },
+      "escola-de-abjuracao": {
+        "name": "Escola de Abjuração"
+      },
+      "escola-de-adivinhacao": {
+        "name": "Escola de Adivinhação"
+      },
+      "escola-de-conjuracao": {
+        "name": "Escola de Conjuração"
+      },
+      "escola-de-encantamento": {
+        "name": "Escola de Encantamento"
+      },
+      "escola-de-ilusao": {
+        "name": "Escola de Ilusão"
+      },
+      "escola-de-necromancia": {
+        "name": "Escola de Necromancia"
+      },
+      "escola-de-transmutacao": {
+        "name": "Escola de Transmutação"
+      },
+      "arquearia-arcana": {
+        "name": "Arquearia Arcana"
+      },
+      "iniciacao-demonologia": {
+        "name": "Iniciação em Demonologia"
+      },
+      "maestria-alquimica": {
+        "name": "Maestria Alquímica"
+      },
+      "maestria-dos-automatos": {
+        "name": "Maestria dos Autômatos"
+      },
+      "navegacao-planar": {
+        "name": "Navegação Planar"
+      },
+      "teurgia-mistica": {
+        "name": "Teurgia Mística"
+      },
+      "evocacao": {
+        "name": "Evocacao"
+      }
+    },
+    "cozinheiro": {
+      "mestre-da-fritura": {
+        "name": "Mestre da Fritura"
+      },
+      "alquimista-gourmet": {
+        "name": "Alquimista Gourmet"
+      },
+      "doceiro-encantado": {
+        "name": "Doceiro Encantado"
+      },
+      "mestre-do-fogo-e-fumaca": {
+        "name": "Mestre do Fogo e Fumaça"
+      },
+      "cantineiro-de-guerra": {
+        "name": "Cantineiro de Guerra"
+      }
+    }
+  },
+  "races": {
+    "aarakocra": {
+      "name": "Aarakocra"
+    },
+    "centaur": {
+      "name": "Centauro"
+    },
+    "dragonborn": {
+      "name": "Draconato"
+    },
+    "dwarf": {
+      "name": "Anão"
+    },
+    "elf": {
+      "name": "Elfo"
+    },
+    "gnome": {
+      "name": "Gnomo"
+    },
+    "half_elf": {
+      "name": "Meio-Elfo"
+    },
+    "halfling": {
+      "name": "Halfling"
+    },
+    "half_orc": {
+      "name": "Meio-Orc"
+    },
+    "human": {
+      "name": "Humano"
+    },
+    "minotaur": {
+      "name": "Minotauro"
+    },
+    "tiefling": {
+      "name": "Tiefling"
+    }
+  },
+  "subraces": {
+    "aarakocra": {
+      "falconicos": {
+        "name": "Falcônicos"
+      },
+      "nocturnos": {
+        "name": "Nocturnos"
+      },
+      "cypselanos": {
+        "name": "Cypselanos"
+      }
+    },
+    "dwarf": {
+      "hill": {
+        "name": "Anão da Colina"
+      },
+      "mountain": {
+        "name": "Anão da Montanha"
+      }
+    },
+    "elf": {
+      "high": {
+        "name": "Alto Elfo"
+      },
+      "wood": {
+        "name": "Elfo da Floresta"
+      },
+      "drow": {
+        "name": "Elfo Negro (Drow)"
+      }
+    },
+    "human": {
+      "standard": {
+        "name": "Humano Padrão"
+      },
+      "variant": {
+        "name": "Humano Variante"
+      }
+    },
+    "dragonborn": {
+      "black": {
+        "name": "Preto (Ácido)"
+      },
+      "blue": {
+        "name": "Azul (Relâmpago)"
+      },
+      "brass": {
+        "name": "Latão (Fogo)"
+      },
+      "bronze": {
+        "name": "Bronze (Relâmpago)"
+      },
+      "copper": {
+        "name": "Cobre (Ácido)"
+      },
+      "gold": {
+        "name": "Ouro (Fogo)"
+      },
+      "green": {
+        "name": "Verde (Veneno)"
+      },
+      "red": {
+        "name": "Vermelho (Fogo)"
+      },
+      "silver": {
+        "name": "Prata (Frio)"
+      },
+      "white": {
+        "name": "Branco (Frio)"
+      }
+    },
+    "gnome": {
+      "forest": {
+        "name": "Gnomo da Floresta"
+      },
+      "rock": {
+        "name": "Gnomo das Rochas"
+      }
+    },
+    "halfling": {
+      "lightfoot": {
+        "name": "Pés Leves"
+      },
+      "stout": {
+        "name": "Robusto"
+      }
+    },
+    "tiefling": {
+      "abissal": {
+        "name": "Abissal"
+      },
+      "ctonico": {
+        "name": "Ctônico"
+      },
+      "infernal": {
+        "name": "Infernal"
+      }
+    }
+  },
+  "backgrounds": {
+    "acolyte": {
+      "name": "Acolyte",
+      "feature_name": "Shelter of the Faithful",
+      "feature_desc": "As an acolyte, you command the respect of those who share your faith, and you can perform the religious ceremonies of your deity. You and your adventuring companions can expect to receive free healing and care at a temple, shrine, or other established presence of your faith, though you must provide any material components needed for spells. Those who share your religion will support you (but only you) at a modest lifestyle.\n\nYou might also have ties to a specific temple dedicated to your chosen deity or pantheon, and you have a residence there. This could be the temple where you used to serve, if you remain on good terms with it, or a temple where you have found a new home. While near your temple, you can call upon the priests for assistance, provided the assistance you ask for is not hazardous and you remain in good standing with your temple."
+    },
+    "charlatan": {
+      "name": "Charlatão",
+      "feature_name": "IDENTIDADE FALSA",
+      "feature_desc": "Você criou uma segunda identidade que inclui                   5    Uma pessoa poderosa matou alguém que eu amava.\ndocumentos, conhecidos estabelecidos e disfarces que                Algum dia, em breve, terei minha vingança.\n                                                               6    Eu enganei e arruinei a vida de uma pessoa que não\npossibilitam que você assuma essa persona. Além disso,\n                                                                    merecia. Eu busco reparar meus erros, mas talvez nunca\nvocê pode forjar documentos, incluindo papeis oficiais e\n                                                                    seja capaz de me perdoar.\ncartas pessoais, contanto que você tenha visto um\nexemplo desse tipo de documento ou a caligrafia de quem"
+    },
+    "criminal": {
+      "name": "Criminoso",
+      "feature_name": "CONTATO CRIMINAL",
+      "feature_desc": "Você possui contatos de confiança que agem como seus\ninformantes em uma rede criminosa. Você sabe como se\ncomunicar com eles mesmo em grandes distâncias. Você\nconhece em especial os mensageiros locais, mestres de\ncaravana corruptos, e marinheiros escusos que podem\ntransmitir seus recados."
+    },
+    "entertainer": {
+      "name": "Artista",
+      "feature_name": "PELA DEMANDA POPULAR",
+      "feature_desc": "—"
+    },
+    "folk-hero": {
+      "name": "Herói do Povo",
+      "feature_name": "HOSPITALIDADE RÚSTICA",
+      "feature_desc": "Já que você ascendeu da categoria de pessoas comuns até                     e cego aos riscos e falhas.\nonde você está agora, é fácil se misturar a eles. Você pode            3    As pessoas que me conhecem desde criança sabem de\nencontrar lugar entre os camponeses para se esconder,                       um vergonhoso segredo meu, eu não poderei voltar para\ndescansar ou se recuperar, a menos que isso ofereça um                      casa nunca.\nrisco direto a eles. Eles o esconderão da lei e de qualquer            4    Eu tenho uma fraqueza pelos vícios da cidade,\num que venha perguntando por você, desde que não                            especialmente a bebedeira.\ntenham que arriscar suas vidas.                                        5    Secretamente, eu acredito que as coisas estariam\n                                                                            melhores se algum tirano comandasse a região."
+    },
+    "guild-artisan": {
+      "name": "Artesão da Guilda",
+      "feature_name": "ASSOCIADOS DA GUILDA",
+      "feature_desc": "Como um membro cativo e respeitado da guilda, você\n                                                            pode contar com certos benefícios que a sociedade\n                                                            garante. Seus camaradas, membros da guilda, irão provê-\n                                                            lo com hospedagem e comida, se necessário, e pagarão\n                                                            pelo seu funeral se preciso for. Em algumas cidades e\n                                                            vilas, um salão da guilda oferece um local central para\n                                                            conhecer outros membros de profissão, podendo ser um\n                                                            bom lugar para se conhecer patrões, aliados e empregados\n                                                            em potencial.\n                                                                Guildas, muitas vezes, detêm tremendos poderes\n                                                            políticos. Se você for acusado de um crime, sua guilda irá\n                                                            ampará-lo se uma boa defesa puder ser apresentada para\n                                                            provar sua inocência ou se o crime for justificável. Você\n                                                            pode, também, ter acesso a figuras políticas poderosas\n                                                            através da guilda, se você for um membro bem\n                                                            posicionado. Tais conexões devem exigir doações de\n                                                            dinheiro ou itens mágicos para os cofres da guilda.\n                                                                Você deve pagar cotas de 5 po por mês a guilda. Se\n                                                            você não pagar, você irá contrair uma dívida para\n                                                            permanecer nas boas graças da guilda."
+    },
+    "hermit": {
+      "name": "Eremita",
+      "feature_name": "DESCOBERTA",
+      "feature_desc": "A calma reclusão da seu eremitério prolongado lhe deu\n                                                                   acesso a descobertas únicas e poderosas. A natureza exata\n                                                                   dessas revelações depende da natureza da sua reclusão.\n                                                                   Poderia ser uma grande verdade sobre o cosmos, os\n                                                                   deuses, os poderosos seres de outros planos ou as forças\n                                                                   da natureza. Poderia ser um local nunca visto por mais\n                                                                   ninguém. Você pode ter descoberto um fato que a muito\n                                                                   foi esquecido, ou desenterrado uma relíquia do passado\n                                                                   que poderia reescrever a história. Poderia ser uma\n                                                                   informação que seria prejudicial para as pessoas\n                                                                   responsáveis pelo seu exilio, consequentemente, a razão\n                                                                   que fez você voltar para a sociedade.\n                                                                       Converse com o Mestre para determinar os detalhes\n                                                                   da sua descoberta e o impacto na campanha."
+    },
+    "noble": {
+      "name": "Nobre",
+      "feature_name": "POSIÇÃO PRIVILEGIADA",
+      "feature_desc": "Graças a sua origem nobre, as pessoas tendem a pensar o             2     Eu escondo um segredo verdadeiramente escandaloso\nmelhor de você. Você é bem-vindo na alta sociedade e as                   que poderia arruinar minha família para sempre.\npessoas assumem que você tem o direito de estar onde                3     Muitas vezes eu ouço insultos e ameaças veladas em\nestá. As pessoas comuns fazem todos os esforços para                      cada palavra dirigida a mim, e me irrito muito rápido.\nacomodá-lo e evitar seu desprazer, e outros nobres o                4     Eu tenho um desejo insaciável por prazeres carnais.\ntratam como um membro da mesma classe social. Você                  5     Na verdade, o mundo gira ao meu redor.\npode conseguir uma audiência com um nobre local se                  6     Pelas minhas palavras e ações, muitas vezes, envergonho\nprecisar.                                                                 minha família."
+    },
+    "outlander": {
+      "name": "Forasteiro",
+      "feature_name": "ANDARILHO",
+      "feature_desc": "Você tem uma memória excelente para mapas                             d6   Defeito\ne geografia, e você sempre pode recobrar                              1    Sou muito apaixonado por cerveja, vinho e outras\no plano geral de terrenos, assentamentos                                   bebidas.\nou outras características ao seu redor. Além disso, você              2    Não existe lugar para precaução em uma vida vivida ao\npode encontrar comida e água fresca para você a até cinco                  máximo.\noutras pessoas a cada dia, considerando que a terra                   3    Eu lembro de cada insulto que sofri e nutro um\nofereça bagas, pequenas frutas, água e similares.                          ressentimento silencioso contra qualquer um que já tenha\n                                                                           me insultado"
+    },
+    "sage": {
+      "name": "Sábio",
+      "feature_name": "PESQUISADOR",
+      "feature_desc": "—"
+    },
+    "sailor": {
+      "name": "Marinheiro",
+      "feature_name": "PASSAGEM DE NAVIO",
+      "feature_desc": "—"
+    },
+    "soldier": {
+      "name": "Soldado",
+      "feature_name": "PATENTE MILITAR",
+      "feature_desc": "—"
+    },
+    "urchin": {
+      "name": "Órfão",
+      "feature_name": "SEGREDOS DA CIDADE",
+      "feature_desc": "1      Se eu estiver em desvantagem, eu vou fugir de uma briga.\nVocê conhece os padrões secretos e o fluxo das cidades e\npode encontrar passagens através da expansão urbana               2      Ouro parece ser muito dinheiro pra mim, e eu faria\nque os outros deixariam passar. Quando você não estiver                  praticamente qualquer coisa por mais dele.\nem combate, você (e os companheiros que você guiar)               3      Eu nunca vou confiar em ninguém plenamente, além de mim\npodem viajar entre dois locais quaisquer na cidade com o                 mesmo.\ndobro da velocidade normalmente permitida.                        4      Eu prefiro matar alguém enquanto dorme que uma luta\n                                                                         justa."
+    }
+  },
+  "alignments": {
+    "chaotic-evil": {
+      "name": "Chaotic Evil"
+    },
+    "chaotic-good": {
+      "name": "Chaotic Good"
+    },
+    "chaotic-neutral": {
+      "name": "Chaotic Neutral"
+    },
+    "lawful-evil": {
+      "name": "Lawful Evil"
+    },
+    "lawful-good": {
+      "name": "Lawful Good"
+    },
+    "lawful-neutral": {
+      "name": "Lawful Neutral"
+    },
+    "neutral": {
+      "name": "Neutral"
+    },
+    "neutral-evil": {
+      "name": "Neutral Evil"
+    },
+    "neutral-good": {
+      "name": "Neutral Good"
+    }
+  },
+  "feats": {
+    "observador": "Observador",
+    "duravel": "Durável",
+    "atirador_agucado": "Atirador Aguçado",
+    "sentinela": "Sentinela",
+    "resiliente": "Resiliente",
+    "atleta": "Atleta",
+    "especialista_em_armas": "Especialista em Armas",
+    "magico_iniciante": "Mágico Iniciante",
+    "especialista_em_armadura": "Especialista em Armadura",
+    "especialista_em_escudo": "Especialista em Escudo",
+    "mestre_de_armas_duplas": "Mestre de Armas Duplas",
+    "mobilidade": "Mobilidade",
+    "atirador_eximio": "Atirador Exímio",
+    "mestre_de_armas_grandes": "Mestre de Armas Grandes",
+    "sortudo": "Sortudo",
+    "robusto": "Robusto",
+    "conjurador_de_batalha": "Conjurador de Batalha",
+    "especialista_em_besta": "Especialista em Besta",
+    "mestre_do_escudo": "Mestre do Escudo",
+    "duelista_defensivo": "Duelista Defensivo",
+    "mestre_arma_de_haste": "Mestre de Arma de Haste",
+    "perito": "Perito",
+    "poliglota": "Poliglota",
+    "protecao_leve": "Proteção Leve",
+    "protecao_moderada": "Proteção Moderada",
+    "protecao_pesada": "Proteção Pesada",
+    "duelista_montado": "Duelista Montado",
+    "atacante_selvagem": "Atacante Selvagem",
+    "sorrateiro": "Sorrateiro",
+    "lider_inspirador": "Líder Inspirador",
+    "explorador_de_cavernas": "Explorador de Cavernas",
+    "curandeiro": "Curandeiro",
+    "imobilizador": "Imobilizador",
+    "conjurador_de_ritual": "Conjurador de Ritual",
+    "sniper_magico": "Sniper Mágico"
+  },
+  "fighting_styles": [
+    "Defesa",
+    "Arquearia",
+    "Duelos",
+    "Combate com Duas Armas",
+    "Proteção",
+    "Grande Arma"
+  ],
+  "languages": [
+    "Comum",
+    "[:always, [\"Comum\", \"Aarakocra\", \"Auran\"]]",
+    "[:always, [\"Comum\", \"Anão\"]]",
+    "[:always, [\"Comum\", \"Dracônico\"]]",
+    "[:always, [\"Comum\", \"Gnômico\"]]",
+    "[:always, [\"Comum\", \"Halfling\"]]",
+    "[:always, [\"Comum\", \"Infernal\"]]",
+    "[:always, [\"Comum\", \"Minotauro\"]]",
+    "[:always, [\"Comum\", \"Orc\"]]",
+    "[:always, [\"Comum\", \"Silvestre\"]]",
+    "[:always, [\"Comum\", \"Élfico\"]]",
+    "[:always, [\"Comum\"]]",
+    "[:choiceCount, 0]",
+    "[:choiceCount, 1]",
+    "[:choiceList, [\"Anão\", \"Halfling\", \"Dracônico\", \"Gnômico\", \"Orc\", \"Infernal\"]]",
+    "[:choiceList, [\"Anão\", \"Élfico\", \"Halfling\", \"Dracônico\", \"Gnômico\", \"Orc\", \"Infernal\"]]"
+  ],
+  "subclass_rules_alternatives": {
+    "barbarian": [
+      "cicatrizes_runicas",
+      "desistente",
+      "furioso_imortal",
+      "guerreiro_urso",
+      "protetor_tribal",
+      "raivoso_elemental"
+    ],
+    "bard": [
+      "busca_da_cancao",
+      "comedia",
+      "fortuna",
+      "quietude",
+      "pavor",
+      "virtuosismo"
+    ],
+    "warlock": [
+      "a_morte",
+      "arcanjo_vingador",
+      "espirito_heroico",
+      "supragenio",
+      "tita_caido",
+      "vazio"
+    ],
+    "cleric": [
+      "agua",
+      "criacao",
+      "mente",
+      "terra",
+      "ar",
+      "tempo"
+    ],
+    "druid": [
+      "infestacao",
+      "vida",
+      "fadas",
+      "feras",
+      "mundos",
+      "verdejante"
+    ],
+    "sorcerer": [
+      "feiticaria_espada",
+      "feiticaria_sangue",
+      "linhagem_elemental",
+      "origem_aberrante",
+      "origem_abissal",
+      "origem_mutavel"
+    ],
+    "fighter": [
+      "atirador_inigualavel",
+      "cavaleiro_implacavel",
+      "defensor_dedicado",
+      "kensai",
+      "mestre_correntes",
+      "mestre_arremesso"
+    ],
+    "rogue": [
+      "cacador_tesouros",
+      "dancarino_sombras",
+      "face_fantasmagorica",
+      "lamina_invisivel",
+      "larapio_almas",
+      "mimetizador"
+    ],
+    "wizard": [
+      "arquearia_arcana",
+      "iniciacao_demonologia",
+      "maestria_alquimica",
+      "maestria_automatos",
+      "navegacao_planar",
+      "teurgia_mistica"
+    ],
+    "monk": [
+      "caminho_aco",
+      "caminho_mestre_bebado",
+      "caminho_monge_tatuado",
+      "caminho_ninjuts",
+      "caminho_punho_sagrado",
+      "caminho_sadhaka"
+    ],
+    "paladin": [
+      "juramento_danacao",
+      "juramento_equilibrio",
+      "juramento_liberdade",
+      "juramento_misericordia",
+      "juramento_ordenacao",
+      "juramento_pureza"
+    ],
+    "ranger": [
+      "arqueiro_floresta_alta",
+      "batedor",
+      "flagelo_inimigos",
+      "guardiao_selvagem",
+      "mestre_bestas",
+      "rastreador_urbano"
+    ]
+  }
+}

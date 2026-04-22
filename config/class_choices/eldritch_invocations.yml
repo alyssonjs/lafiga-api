@@ -1,0 +1,291 @@
+# Invocações Místicas do Bruxo (PHB).
+# Schema: api/config/class_choices/SCHEMA.md
+#
+# Slugs seguem o padrão `ei-*` (eldritch invocation), 1:1 com o id do front
+# (front-lafiga/src/app/data/eldritchInvocations.ts → EldritchInvocation.id).
+# name_pt segue a tradução PHB BR usada pelo front.
+# aliases preservam compat com:
+#   - nomes EN do PHB (usados em prereqs hardcoded do guard antes do Kit 1)
+#   - traduções alternativas que podem aparecer em chars legados
+#
+# Prereqs (chaves permitidas: level, pact, spell, blast, ability_min):
+#   level: N            → exige Bruxo nível >= N
+#   pact: chain|blade|tome → exige aquele Pacto escolhido
+#   spell: 'Eldritch Blast' → exige conhecer aquele truque/magia
+#   blast: true         → atalho para spell: 'Eldritch Blast' (legado, ainda aceito)
+
+# === SEM PRÉ-REQUISITO (apenas spell para os Eldritch Blast) ===
+
+- slug: ei-agonizing-blast
+  name_pt: Explosão Agônica
+  name_en: Agonizing Blast
+  aliases:
+    - Rajada Agonizante
+  description: |
+    Quando conjurar Rajada Mística, adicione seu modificador de Carisma ao dano que ela causa em um acerto.
+  mechanical_summary: Rajada Mística + mod. CAR no dano
+  classes:
+    - warlock
+  prereqs:
+    spell: Eldritch Blast
+
+- slug: ei-repelling-blast
+  name_pt: Explosão Repulsora
+  name_en: Repelling Blast
+  description: |
+    Quando acertar uma criatura com Rajada Mística, pode empurrá-la até 3 metros em linha reta para longe de você.
+  mechanical_summary: Rajada Mística empurra 3m por acerto
+  classes:
+    - warlock
+  prereqs:
+    spell: Eldritch Blast
+
+- slug: ei-eldritch-spear
+  name_pt: Lança Eldritch
+  name_en: Eldritch Spear
+  description: |
+    Quando conjurar Rajada Mística, o alcance da magia aumenta para 90 metros.
+  mechanical_summary: Rajada Mística com alcance 90m
+  classes:
+    - warlock
+  prereqs:
+    spell: Eldritch Blast
+
+- slug: ei-devils-sight
+  name_pt: Visão do Demônio
+  name_en: Devil's Sight
+  aliases:
+    - Visão do Diabo
+  description: |
+    Você pode ver normalmente em escuridão, tanto mágica quanto não-mágica, até uma distância de 36 metros.
+  mechanical_summary: "Darkvision 36m (ignora escuridão mágica)"
+  classes:
+    - warlock
+
+- slug: ei-eldritch-sight
+  name_pt: Visão Eldritch
+  name_en: Eldritch Sight
+  description: |
+    Você pode conjurar Detectar Magia à vontade, sem gastar um espaço de magia.
+  mechanical_summary: Detectar Magia à vontade
+  classes:
+    - warlock
+
+- slug: ei-eyes-of-rune-keeper
+  name_pt: Olhos do Guardião das Runas
+  name_en: Eyes of the Rune Keeper
+  description: |
+    Você pode ler qualquer escrita.
+  mechanical_summary: Lê qualquer escrita/idioma
+  classes:
+    - warlock
+
+- slug: ei-mask-of-many-faces
+  name_pt: Máscara das Muitas Faces
+  name_en: Mask of Many Faces
+  description: |
+    Você pode conjurar Disfarce à vontade, sem gastar um espaço de magia.
+  mechanical_summary: Disfarce à vontade
+  classes:
+    - warlock
+
+- slug: ei-beast-speech
+  name_pt: Fala das Bestas
+  name_en: Beast Speech
+  description: |
+    Você pode conjurar Falar com Animais à vontade, sem gastar um espaço de magia.
+  mechanical_summary: Falar com Animais à vontade
+  classes:
+    - warlock
+
+- slug: ei-beguiling-influence
+  name_pt: Influência Sedutora
+  name_en: Beguiling Influence
+  description: |
+    Você ganha proficiência nas perícias Enganação e Persuasão.
+  mechanical_summary: Proficiência em Enganação + Persuasão
+  classes:
+    - warlock
+
+- slug: ei-armor-of-shadows
+  name_pt: Armadura de Sombras
+  name_en: Armor of Shadows
+  description: |
+    Você pode conjurar Armadura Arcana em si mesmo à vontade, sem gastar um espaço de magia ou componentes materiais.
+  mechanical_summary: "Armadura Arcana à vontade (CA 13 + DES)"
+  classes:
+    - warlock
+
+- slug: ei-fiendish-vigor
+  name_pt: Vigor Demoníaco
+  name_en: Fiendish Vigor
+  description: |
+    Você pode conjurar Vida Falsa em si mesmo à vontade como magia de 1º nível, sem gastar slot ou componentes materiais.
+  mechanical_summary: "Vida Falsa à vontade (1d4+4 PV temp)"
+  classes:
+    - warlock
+
+# === REQUER PACTO DA CORRENTE ===
+
+- slug: ei-voice-of-chain-master
+  name_pt: Voz do Mestre da Corrente
+  name_en: Voice of the Chain Master
+  description: |
+    Você pode se comunicar telepaticamente com seu familiar e perceber através dos sentidos dele enquanto estiverem no mesmo plano. Além disso, pode falar através do familiar com sua própria voz.
+  mechanical_summary: Comunicação telepática + sentidos do familiar
+  classes:
+    - warlock
+  prereqs:
+    pact: chain
+
+- slug: ei-investment-of-chain
+  name_pt: Investida do Familiar
+  name_en: Investment of the Chain Master
+  description: |
+    Quando usar a ação Atacar, pode abrir mão de um dos seus ataques para permitir que seu familiar use sua reação para fazer um ataque.
+  mechanical_summary: Familiar pode atacar como reação
+  classes:
+    - warlock
+  prereqs:
+    pact: chain
+
+- slug: ei-chains-of-carceri
+  name_pt: Correntes de Carceri
+  name_en: Chains of Carceri
+  description: |
+    Você pode conjurar Imobilizar Monstro à vontade contra celestiais, corruptores e elementais, sem gastar slot. Deve terminar descanso longo antes de usar na mesma criatura.
+  mechanical_summary: "Imobilizar Monstro à vontade (celestial/corruptor/elemental)"
+  classes:
+    - warlock
+  prereqs:
+    pact: chain
+    level: 15
+
+# === REQUER PACTO DA LÂMINA ===
+
+- slug: ei-thirsting-blade
+  name_pt: Sede da Lâmina
+  name_en: Thirsting Blade
+  description: |
+    Você pode atacar com sua arma do pacto duas vezes, em vez de uma, quando usar a ação Atacar no seu turno.
+  mechanical_summary: Ataque Extra com arma do pacto
+  classes:
+    - warlock
+  prereqs:
+    pact: blade
+    level: 5
+
+- slug: ei-lifedrinker
+  name_pt: Bebedor de Vida
+  name_en: Lifedrinker
+  description: |
+    Quando acertar uma criatura com sua arma do pacto, a criatura sofre dano necrótico extra igual ao seu modificador de Carisma (mínimo 1).
+  mechanical_summary: "+mod. CAR dano necrótico (arma do pacto)"
+  classes:
+    - warlock
+  prereqs:
+    pact: blade
+    level: 12
+
+# === REQUER PACTO DO TOMO ===
+
+- slug: ei-book-of-ancient-secrets
+  name_pt: Livro dos Segredos Antigos
+  name_en: Book of Ancient Secrets
+  description: |
+    Você pode inscrever rituais mágicos em seu Livro das Sombras. Escolha duas magias de 1º nível com a tag ritual de qualquer lista de classe. Com o livro em mãos, pode conjurá-las como rituais. Pode copiar mais rituais encontrados.
+  mechanical_summary: Rituais de qualquer lista no Livro das Sombras
+  classes:
+    - warlock
+  prereqs:
+    pact: tome
+
+# === REQUER NÍVEL MÍNIMO ===
+
+- slug: ei-sign-of-ill-omen
+  name_pt: Signo de Danação
+  name_en: Sign of Ill Omen
+  description: |
+    Você pode conjurar Rogar Maldição uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
+  mechanical_summary: Rogar Maldição 1x por descanso longo
+  classes:
+    - warlock
+  prereqs:
+    level: 5
+
+- slug: ei-mire-the-mind
+  name_pt: Atolar a Mente
+  name_en: Mire the Mind
+  description: |
+    Você pode conjurar Lentidão uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
+  mechanical_summary: Lentidão 1x por descanso longo
+  classes:
+    - warlock
+  prereqs:
+    level: 5
+
+- slug: ei-dreadful-word
+  name_pt: Palavra Terrível
+  name_en: Dreadful Word
+  description: |
+    Você pode conjurar Confusão uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
+  mechanical_summary: Confusão 1x por descanso longo
+  classes:
+    - warlock
+  prereqs:
+    level: 7
+
+- slug: ei-sculptor-of-flesh
+  name_pt: Escultor de Carne
+  name_en: Sculptor of Flesh
+  description: |
+    Você pode conjurar Metamorfose uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
+  mechanical_summary: Metamorfose 1x por descanso longo
+  classes:
+    - warlock
+  prereqs:
+    level: 7
+
+- slug: ei-ascendant-step
+  name_pt: Ascender às Alturas
+  name_en: Ascendant Step
+  description: |
+    Você pode conjurar Levitar em si mesmo à vontade, sem gastar um espaço de magia ou componentes materiais.
+  mechanical_summary: Levitar à vontade
+  classes:
+    - warlock
+  prereqs:
+    level: 9
+
+- slug: ei-otherworldly-leap
+  name_pt: Salto Transmundano
+  name_en: Otherworldly Leap
+  description: |
+    Você pode conjurar Salto em si mesmo à vontade, sem gastar um espaço de magia ou componentes materiais.
+  mechanical_summary: "Salto à vontade (3x distância)"
+  classes:
+    - warlock
+  prereqs:
+    level: 9
+
+- slug: ei-witch-sight
+  name_pt: Visão da Bruxa
+  name_en: Witch Sight
+  description: |
+    Você pode ver a forma verdadeira de qualquer metamorfo ou criatura ocultada por magia de ilusão ou transmutação, desde que esteja a até 9 metros e na sua linha de visão.
+  mechanical_summary: Vê formas verdadeiras em 9m
+  classes:
+    - warlock
+  prereqs:
+    level: 15
+
+- slug: ei-visions-of-distant-realms
+  name_pt: Visões do Distante
+  name_en: Visions of Distant Realms
+  description: |
+    Você pode conjurar Olho Arcano à vontade, sem gastar um espaço de magia.
+  mechanical_summary: Olho Arcano à vontade
+  classes:
+    - warlock
+  prereqs:
+    level: 15

@@ -71,7 +71,14 @@ class BackgroundRules
     noble: {
       id: 'noble', name: 'Nobre',
       skills: ['História','Persuasão'],
-      tools: ['Um tipo de jogo de azar'],
+      tools: [
+        {
+          gaming_set: {
+            choose: 1,
+            choices: ['Conjunto de dados', 'Xadrez de dragão', 'Baralho de cartas', 'Conjunto de Três-Dragões Ante']
+          }
+        }
+      ],
       languages: { choose: 1, choices: ['Anão','Élfico','Halfling','Dracônico','Gnômico','Orc','Infernal','Anão das Profundezas','Silvestre'] },
       equipment: ['Um insígnia de posto', 'Uma carta de apresentação de um nobre', 'Um conjunto de roupas finas', 'Uma algibeira contendo 25 po'],
       feature: {
@@ -82,7 +89,14 @@ class BackgroundRules
     outlander: {
       id: 'outlander', name: 'Forasteiro',
       skills: ['Atletismo','Sobrevivência'],
-      tools: ['Um tipo de instrumento musical'],
+      tools: [
+        {
+          instrument: {
+            choose: 1,
+            choices: ['Alaúde', 'Charamela', 'Cítara', 'Cornamusa', 'Flauta', 'Flauta de Pã', 'Gaita de foles', 'Lira', 'Tambor', 'Viola']
+          }
+        }
+      ],
       languages: { choose: 1, choices: ['Anão','Élfico','Halfling','Dracônico','Gnômico','Orc','Infernal','Anão das Profundezas','Silvestre'] },
       equipment: ['Um bastão', 'Uma armadilha de caça', 'Um troféu de animal', 'Um conjunto de roupas de viagem', 'Uma algibeira contendo 10 po'],
       feature: {
@@ -130,34 +144,50 @@ class BackgroundRules
   end
 
   def self.find(key)
-    RULES[key.to_s]
+    RULES[key.to_s.to_sym]
   end
 
   # Applies a selection (hash) and returns a normalized summary
-  # selection: { key:, choices: { languages: [], gaming_set: [] } }
+  # selection: { key:, choices: { languages: [], tools: [], gaming_set: [] (legado) } }
   def self.apply(selection)
     bg = find(selection[:key])
     raise ArgumentError, 'background não encontrado' unless bg
-    choices = selection[:choices] || {}
+    choices = selection[:choices]
+    choices = {} unless choices.is_a?(Hash)
+    ch = choices.respond_to?(:with_indifferent_access) ? choices.with_indifferent_access : {}.with_indifferent_access
 
     langs = []
     if bg.dig(:languages, :choose).to_i > 0
-      langs = Array(choices[:languages]).map { |x| (x.is_a?(Hash) ? x['name'] || x[:name] : x).to_s }
+      langs = Array(ch[:languages]).map { |x| (x.is_a?(Hash) ? x['name'] || x[:name] : x).to_s }
       langs = langs.first(bg[:languages][:choose].to_i)
     end
 
-    gaming = nil
+    tool_queue = Array(ch[:tools]).map { |x| (x.is_a?(Hash) ? (x['name'] || x[:name]) : x).to_s }.reject(&:blank?)
+
     tools = []
     Array(bg[:tools]).each do |t|
       if t.is_a?(Hash) && t[:gaming_set]
         opts = t[:gaming_set]
-        pick = Array(choices[:gaming_set]).map { |x| (x.is_a?(Hash) ? x['name'] || x[:name] : x).to_s }.first(opts[:choose].to_i)
-        gaming = pick.first if pick.any?
-        tools << 'Jogo de ' + (gaming || 'Escolher')
+        n = opts[:choose].to_i.nonzero? || 1
+        from_gs = Array(ch[:gaming_set]).map { |x| (x.is_a?(Hash) ? x['name'] || x[:name] : x).to_s }.reject(&:blank?)
+        picked = from_gs.any? ? from_gs.first(n) : tool_queue.shift(n)
+        label = Array(picked).flatten.compact.first
+        tools << ('Jogo de ' + (label.presence || 'Escolher'))
+      elsif t.is_a?(Hash) && t[:instrument]
+        opts = t[:instrument]
+        n = opts[:choose].to_i.nonzero? || 1
+        from_ins = Array(ch[:instrument]).map { |x| (x.is_a?(Hash) ? x['name'] || x[:name] : x).to_s }.reject(&:blank?)
+        picked = from_ins.any? ? from_ins.first(n) : tool_queue.shift(n)
+        label = Array(picked).flatten.compact.first
+        tools << (label.presence || 'Instrumento musical (escolher)')
       else
         tools << t
       end
     end
+    personality_traits = Array(ch[:personalityTraits]).map { |x| x.to_s.strip }.reject(&:blank?)
+    ideals_chosen = Array(ch[:ideals]).map { |x| x.to_s.strip }.reject(&:blank?)
+    bonds_chosen = Array(ch[:bonds]).map { |x| x.to_s.strip }.reject(&:blank?)
+    flaws_chosen = Array(ch[:flaws]).map { |x| x.to_s.strip }.reject(&:blank?)
 
     {
       key: bg[:id],
@@ -166,7 +196,11 @@ class BackgroundRules
       tools: tools,
       languages: langs,
       equipment: Array(bg[:equipment] || []),
-      feature: bg[:feature] || {}
+      feature: bg[:feature] || {},
+      personality_traits: personality_traits,
+      ideals: ideals_chosen,
+      bonds: bonds_chosen,
+      flaws: flaws_chosen
     }
   end
 end

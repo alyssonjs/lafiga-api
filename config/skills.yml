@@ -1,0 +1,78 @@
+# ——————————————————————————————————————————————————————————
+# PERÍCIAS — D&D 5e (PT-BR)
+# Fonte única de verdade para nomes de perícias
+# ——————————————————————————————————————————————————————————
+
+skills:
+  - id: athletics
+    name: Atletismo
+    ability: STR
+    
+  - id: acrobatics
+    name: Acrobacia
+    ability: DEX
+    
+  - id: sleight-of-hand
+    name: Prestidigitação
+    ability: DEX
+    
+  - id: stealth
+    name: Furtividade
+    ability: DEX
+    
+  - id: arcana
+    name: Arcanismo
+    ability: INT
+    
+  - id: history
+    name: História
+    ability: INT
+    
+  - id: investigation
+    name: Investigação
+    ability: INT
+    
+  - id: nature
+    name: Natureza
+    ability: INT
+    
+  - id: religion
+    name: Religião
+    ability: INT
+    
+  - id: animal-handling
+    name: Lidar com Animais
+    ability: WIS
+    
+  - id: insight
+    name: Intuição
+    ability: WIS
+    
+  - id: medicine
+    name: Medicina
+    ability: WIS
+    
+  - id: perception
+    name: Percepção
+    ability: WIS
+    
+  - id: survival
+    name: Sobrevivência
+    ability: WIS
+    
+  - id: deception
+    name: Enganação
+    ability: CHA
+    
+  - id: intimidation
+    name: Intimidação
+    ability: CHA
+    
+  - id: performance
+    name: Atuação
+    ability: CHA
+    
+  - id: persuasion
+    name: Persuasão
+    ability: CHA
+

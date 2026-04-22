@@ -1,15 +1,74 @@
 class SheetItem < ApplicationRecord
   belongs_to :sheet
+  belongs_to :item, optional: true
+
+  # ── Slots aceitos ─────────────────────────────────────────────────
+  # Slots clássicos (combate / armadura)
+  COMBAT_SLOTS    = %w[main_hand off_hand armor shield].freeze
+  # Slots de acessório (Fase 2.1) — desbloqueiam itens como anel da
+  # vontade, manopla da força, manto de resistência, botas aladas, etc.
+  # ring_left/ring_right permitem ATÉ 2 anéis equipados simultaneamente.
+  ACCESSORY_SLOTS = %w[ring_left ring_right amulet cloak boots helmet gloves belt].freeze
+  ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS).freeze
 
   validates :sheet_id, presence: true
   validates :item_name, presence: true
   validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :slot, inclusion: { in: ALL_SLOTS, allow_nil: true,
+                                message: "deve ser um destes: #{ALL_SLOTS.join(', ')}" }
   validate  :validate_equipment_proficiency
 
+  before_validation :resolve_catalog_item
   before_save :sanitize_slot
   after_save  :enforce_slot_exclusivity_and_conflicts
 
+  # Serialização canônica usada pelo frontend (CharacterBag/HubBag).
+  # Mantém o mesmo shape que `EquipmentProfileService#as_json` para que o
+  # mapper único `mapApiInventoryItem` funcione tanto vindo do GET character
+  # quanto dos endpoints `/sheet_items`.
+  def as_inventory_json
+    weapon_props = begin
+      EquipmentRules.weapon_props(self)
+    rescue NameError
+      nil
+    end
+
+    {
+      id: id,
+      index: item_index,
+      name: item_name,
+      category: category,
+      quantity: quantity,
+      equipped: equipped,
+      slot: slot,
+      source: source,
+      props: props_json,
+      weapon_props: weapon_props,
+      notes: notes,
+    }
+  end
+
   private
+
+  # Garante que todo SheetItem aponte para um Item canonico no catalogo.
+  # Se o caller (controller, service, importer) ja passou item_id, respeita.
+  # Caso contrario, resolve via ItemResolver — que tenta achar Item existente
+  # por nome/slug ou cria um novo a partir das tabelas EquipmentRules. O
+  # `item_index` tambem e populado para manter consistencia com o frontend
+  # (mapApiInventoryItem usa `index` como chave estavel pra weapons).
+  def resolve_catalog_item
+    return if item_id.present?
+    return if item_name.blank?
+
+    resolver = ItemResolver.new
+    item = resolver.resolve(name: item_name, category: category)
+    return unless item
+
+    self.item_id = item.id
+    self.item_index = item.api_index if item_index.blank?
+  rescue StandardError => e
+    Rails.logger.warn("SheetItem#resolve_catalog_item failed: #{e.class}: #{e.message}")
+  end
 
   def sanitize_slot
     unless equipped

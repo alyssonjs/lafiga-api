@@ -9,7 +9,7 @@ class CreateMagicItems < ActiveRecord::Migration[6.0]
       t.boolean :requires_attunement, null: false, default: false
       t.string  :attunement_note
       t.decimal :weight_kg, precision: 8, scale: 2
-      t.decimal :value_gp,  precision: 10, scale: 2
+      t.decimal :value_gp, precision: 10, scale: 2
       t.string  :source
       t.boolean :cursed, default: false
       t.text    :curse_text
@@ -19,6 +19,8 @@ class CreateMagicItems < ActiveRecord::Migration[6.0]
       t.jsonb   :properties, default: {}
       t.text    :description
       t.text    :tags, array: true, default: []
+      t.jsonb   :effects, default: []
+
       t.timestamps
     end
 
@@ -29,4 +31,3 @@ class CreateMagicItems < ActiveRecord::Migration[6.0]
     add_index :magic_items, :tags, using: :gin
   end
 end
-

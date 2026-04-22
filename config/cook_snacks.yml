@@ -1,0 +1,622 @@
+spells:
+  - api_index: cook-snack-corte-fresco
+    name: "Corte Fresco"
+    level: 0
+    school: "Transmutation"
+    range: "Touch"
+    components: ["V","S"]
+    material:
+    ritual: false
+    duration: "Instantaneous"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Cura aliados ou fere inimigos ao ser ingerido. Aliado recupera 2d6 PV. Inimigo faz TR de CON; falha: 2d6 de dano ácido, sucesso: metade."
+      - "O uso é por ação ao alimentar o alvo; só um petisco ativo por criatura."
+      - "Pré-requisito de classe e limitações de uso são regidas pelas regras do Cozinheiro."
+    higher_level:
+      - "A cura e o dano aumentam: 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6)."
+
+  - api_index: cook-snack-cacarola-de-cenoura
+    name: "Caçarola de Cenoura"
+    level: 0
+    school: "Transmutation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "8 hours"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Concede visão no escuro de 18 m por 8 horas; se já possuir, aumenta em 18 m."
+
+  - api_index: cook-snack-cha-verde
+    name: "Chá Verde"
+    level: 0
+    school: "Abjuration"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 hour"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "O alvo adiciona 1d4 a todos os TR de CON, testes de INT e WIS por 1 hora."
+
+  - api_index: cook-snack-costeleta-porco-defumada
+    name: "Costeleta de Porco Defumada"
+    level: 0
+    school: "Abjuration"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "10 minutes"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Resistência a frio e imunidade à condição envenenado por 10 minutos."
+
+  - api_index: cook-snack-cristais-de-acucar
+    name: "Cristais de Açúcar"
+    level: 0
+    school: "Transmutation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "10 minutes"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Aumenta deslocamento em 1,5 m por 10 minutos."
+    higher_level:
+      - "Bônus de deslocamento: 5º (+3 m), 10º (+4,5 m), 15º (+6 m), 20º (+7,5 m)."
+
+  - api_index: cook-snack-entranhas-de-vaca
+    name: "Entranhas de Vaca"
+    level: 0
+    school: "Enchantment"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "10 minutes"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "TR de CON. Falha: desvantagem em todos os testes de CAR por 10 min e criaturas não podem ser enfeitiçadas por ele. Se alguém já estava enfeitiçado pelo alvo, o efeito fica suspenso enquanto durar."
+
+  - api_index: cook-snack-gelo-com-sabor
+    name: "Gelo com Sabor"
+    level: 0
+    school: "Evocation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "Until end of your next turn"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "TR de INT. Falha: 1d6 de frio e desvantagem em testes de Concentração até o fim do seu próximo turno; sucesso: metade do dano e sem desvantagem."
+    higher_level:
+      - "Dano: 4º (2d6), 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6)."
+
+  - api_index: cook-snack-leite-de-amendoas
+    name: "Leite de Amêndoas"
+    level: 0
+    school: "Enchantment"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "10 minutes (see text)"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "TR de CON. Falha: após 1 minuto, fica inconsciente por 10 minutos. Acorda se sofrer dano ou for sacudido/levado um tapa (ação). Criaturas que não dormem são imunes."
+
+  - api_index: cook-snack-pao-duro
+    name: "Pão Duro"
+    level: 0
+    school: "Evocation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "Until start of your next turn"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "TR de FOR. Falha: 1d6 de concussão e desvantagem nas jogadas de ataque até o começo do seu próximo turno; sucesso: metade do dano sem desvantagem."
+    higher_level:
+      - "Dano: 4º (2d6), 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6)."
+
+  - api_index: cook-snack-pimenta-ardida
+    name: "Pimenta Ardida"
+    level: 0
+    school: "Abjuration"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "10 minutes"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Resistência a fogo e imunidade à condição agarrado por 10 minutos."
+
+  - api_index: cook-snack-proteina-concentrada
+    name: "Proteína Concentrada"
+    level: 0
+    school: "Transmutation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Por 1 minuto, adiciona 1d4 a todas as rolagens de dano e testes usando FOR."
+    higher_level:
+      - "Dado do bônus: 10º (1d6), 15º (1d8), 20º (1d10)."
+
+  - api_index: cook-snack-sucos-revigorantes
+    name: "Sucos Revigorantes"
+    level: 0
+    school: "Abjuration"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Concede 1d8 PV temporários por 1 minuto."
+    higher_level:
+      - "PV temporários: 4º (2d8), 7º (3d8), 9º (4d8), 13º (5d8), 17º (6d8), 20º (7d8)."
+
+  # ======== Petiscos (Pré-requisito 7º nível) ========
+  - api_index: cook-snack-faisao-assado
+    name: "Faisão Assado"
+    level: 0
+    min_level: 7
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "10 minutes"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível (Cozinheiro). Queda lenta variável (1,5 m/rodada até 18 m/rodada, escolha no início de cada turno). Sem dano de queda se aterrissar durante a duração."
+
+  - api_index: cook-snack-lebre-na-brasa
+    name: "Lebre na Brasa"
+    level: 0
+    min_level: 7
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 hour"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível. Efeitos da magia Salto por 1 hora."
+
+  - api_index: cook-snack-mingau-encorpado
+    name: "Mingau Encorpado"
+    level: 0
+    min_level: 7
+    school: "Abjuration"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "10 minutes"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível. Efeito da magia Pele de Árvore por 10 minutos."
+
+  - api_index: cook-snack-ovos-de-aranha
+    name: "Ovos de Aranha"
+    level: 0
+    min_level: 7
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 hour"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível. Efeito da magia Patas de Aranha por 1 hora."
+
+  - api_index: cook-snack-truta-amanteigada
+    name: "Truta Amanteigada"
+    level: 0
+    min_level: 7
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 hour"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível. Efeito da magia Respirar Água por 1 hora e deslocamento de natação igual ao de caminhada."
+
+  # ======== Petiscos (Pré-requisito 11º nível) ========
+  - api_index: cook-snack-beterrabas-agridoce
+    name: "Beterrabas Agridoce"
+    level: 0
+    min_level: 11
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 11º nível. Primeiro ataque de arma que acerta o alvo a cada turno causa +1d6 de dano extra por 1 minuto (o alvo fica mais vulnerável a ataques)."
+
+  - api_index: cook-snack-brotos-espectrais
+    name: "Brotos Espectrais"
+    level: 0
+    min_level: 11
+    school: "Divination"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 11º nível. Efeito de Ver Invisibilidade por 1 minuto e o alvo pode usar uma ação para entrar/sair do Plano Etéreo durante a duração."
+
+  - api_index: cook-snack-cha-de-camomila
+    name: "Chá de Camomila"
+    level: 0
+    min_level: 11
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 11º nível. Sempre que realizar um golpe armado, subtrai 1d6 do dano por 1 minuto (enfraquece seus próprios ataques)."
+
+  - api_index: cook-snack-folhas-de-canhamo
+    name: "Folhas de Cânhamo"
+    level: 0
+    min_level: 11
+    school: "Enchantment"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 11º nível. TR de SAB; falha: torna-se indiferente a todas as criaturas por 1 minuto (termina antes se sofrer dano). Imunes a enfeitiçar são imunes."
+
+  - api_index: cook-snack-sementes-estrelares
+    name: "Sementes Estelares"
+    level: 0
+    min_level: 11
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 11º nível. Role 1d4; recupera espaços de magia gastos com soma de níveis ≤ resultado. Se não usados em 1 minuto, são perdidos."
+
+  # ======== Petiscos (Pré-requisito 15º nível) ========
+  - api_index: cook-snack-cauda-de-dragao-cozida
+    name: "Cauda de Dragão Cozida"
+    level: 0
+    min_level: 15
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 15º nível. +1 CA e, 1/ação, escolha: Presença Ameaçadora (TR de SAB, amedrontado 1 min, testes ao fim do turno) ou Ataque de Cauda (alcance 3 m, +8, 4d8 fogo)."
+      - "TR usam a CD de Petisco do Cozinheiro."
+
+  - api_index: cook-snack-lingua-de-hidra
+    name: "Língua de Hidra"
+    level: 0
+    min_level: 15
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 15º nível. Surge segunda cabeça por 1 min: ganha 1d10 PV temporários no início do turno; regenera membros amputados nas últimas 24h; +1 reação (apenas ataques de oportunidade); +1 ação (apenas Desengajar, Ajudar ou Procurar)."
+
+  - api_index: cook-snack-torta-elemental
+    name: "Torta Elemental"
+    level: 0
+    min_level: 15
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 15º nível. Resistência a Ácido, Elétrico, Fogo, Trovão e Veneno; deslocamentos de voo e natação iguais ao de caminhada por 1 minuto."
+
+  # ======== Petisco Lendário (18º) ========
+  - api_index: cook-snack-carne-vital
+    name: "Carne Vital"
+    level: 0
+    min_level: 18
+    school: "Transmutation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 18º nível. Durante um descanso longo, prepara 1 porção que não estraga até o próximo descanso longo. Ao ingerir, escolhe e recebe um benefício da habilidade Colheita Vital por 1 minuto."
+
+  # ======== Petiscos por Arquétipo: Sous Chef ========
+  - api_index: cook-snack-uvas-cristalizadas
+    name: "Uvas Cristalizadas"
+    level: 0
+    min_level: 3
+    school: "Transmutation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: sous_chef
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: característica Sous Chef. Por 1 minuto, +1d4 a todas as rolagens de dano e testes de DEX."
+    higher_level:
+      - "Dado do bônus: 10º (1d6), 15º (1d8), 20º (1d10)."
+
+  - api_index: cook-snack-cerveja-forte
+    name: "Cerveja Forte"
+    level: 0
+    min_level: 7
+    school: "Abjuration"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: sous_chef
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível, Sous Chef. Resistência a concussão, cortante e perfurante de armas não mágicas por 1 minuto."
+
+  - api_index: cook-snack-peixe-no-mel
+    name: "Peixe no Mel"
+    level: 0
+    min_level: 13
+    school: "Abjuration"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: sous_chef
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 13º nível, Sous Chef. Vantagem em todos os testes de INT, WIS e CAR por 1 minuto."
+
+  - api_index: cook-snack-pure-de-pinhoes
+    name: "Purê de Pinhões"
+    level: 0
+    min_level: 17
+    school: "Abjuration"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: sous_chef
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 17º nível, Sous Chef. Aura de 3 m perfumada: todas as criaturas na área (incluindo o alvo) têm vantagem em todos os testes de resistência por 1 minuto."
+
+  # ======== Petiscos por Arquétipo: Sargento Alimentar ========
+  - api_index: cook-snack-brotos-fedorentos
+    name: "Brotos Fedorentos"
+    level: 0
+    min_level: 3
+    school: "Abjuration"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: sargento_alimentar
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: característica Sargento Alimentar. Imunidade às condições amedrontado e enfeitiçado por 1 minuto."
+
+  - api_index: cook-snack-feijoes-de-inchaco
+    name: "Feijões de Inchaço"
+    level: 0
+    min_level: 7
+    school: "Transmutation"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: sargento_alimentar
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível, Sargento Alimentar. Dobra de tamanho (até a próxima categoria), peso ×8, vantagem em testes de FOR e TR de FOR por 1 minuto."
+
+  - api_index: cook-snack-cafe-tremulante
+    name: "Café Tremulante"
+    level: 0
+    min_level: 13
+    school: "Necromancy"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: sargento_alimentar
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 13º nível, Sargento Alimentar. Se reduzido a 0 PV por dano, fica com 1 PV em vez disso e o efeito termina."
+
+  - api_index: cook-snack-aveia-gorda
+    name: "Aveia Gorda"
+    level: 0
+    min_level: 17
+    school: "Abjuration"
+    range: "Self"
+    components: ["V","S"]
+    ritual: false
+    duration: "Until end of your next turn"
+    requires_subclass: sargento_alimentar
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 17º nível, Sargento Alimentar. Resistência a todo tipo de dano até o fim do seu próximo turno."
+
+  # ======== Petiscos por Arquétipo: Mestre-Cuca ========
+  - api_index: cook-snack-papa-gordurosa
+    name: "Papa Gordurosa"
+    level: 0
+    min_level: 3
+    school: "Evocation"
+    range: "Touch"
+    components: ["V","S"]
+    ritual: false
+    duration: "Up to 1 minute"
+    requires_subclass: mestre_cuca
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: característica Mestre-Cuca. TR de CON; falha: 1d6 de ácido e fica restringido por até 1 min (TR ao fim dos turnos encerra); sucesso: metade do dano e não fica restringido."
+    higher_level:
+      - "Dano: 4º (2d6), 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6)."
+
+  - api_index: cook-snack-sais-de-fogo
+    name: "Sais de Fogo"
+    level: 0
+    min_level: 7
+    school: "Evocation"
+    range: "Self (4.5 m radius)"
+    components: ["V","S"]
+    ritual: false
+    duration: "Instantaneous"
+    requires_subclass: mestre_cuca
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível, Mestre-Cuca. Todas as criaturas em 4,5 m (incluindo o alvo) fazem TR de DEX; falha: 4d6 fogo; sucesso: metade."
+    higher_level:
+      - "Dano: 9º (5d6), 13º (6d6), 17º (7d6), 20º (8d6)."
+
+  - api_index: cook-snack-atim-no-alho
+    name: "Atum no Alho"
+    level: 0
+    min_level: 13
+    school: "Enchantment"
+    range: "Self (3 m)"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: mestre_cuca
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 13º nível, Mestre-Cuca. TR de CON das criaturas hostis em 3 m (incluindo o alvo); falha: essas criaturas têm desvantagem em todos os TR por 1 minuto."
+
+  - api_index: cook-snack-cebola-rancosa
+    name: "Cebola Rançosa"
+    level: 0
+    min_level: 17
+    school: "Necromancy"
+    range: "Self (9 m)"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute (see text)"
+    requires_subclass: mestre_cuca
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 17º nível, Mestre-Cuca. Criaturas hostis em 9 m (incluindo o alvo) fazem TR de CON; falha: ficam paralisadas até o início do seu próximo turno e cegas por 1 minuto. Ao fim de cada turno, podem repetir o TR para encerrar a cegueira."
+
+  # ======== Petiscos por Arquétipo: Mestre Cervejeiro ========
+  - api_index: cook-snack-gole-do-subterraneo
+    name: "Gole do Subterrâneo"
+    level: 0
+    min_level: 3
+    school: "Evocation"
+    range: "Self (3 m radius)"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: mestre_cervejeiro
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: característica Mestre Cervejeiro. Vomita escuridão mágica (raio 3 m) por 1 minuto; aliados do alvo veem através dela; visão no escuro não atravessa; luz não mágica não ilumina."
+
+  - api_index: cook-snack-raspadinha-de-vodka
+    name: "Raspadinha de Vodka"
+    level: 0
+    min_level: 7
+    school: "Evocation"
+    range: "Self (4.5 m radius)"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: mestre_cervejeiro
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 7º nível, Mestre Cervejeiro. Cria neve em 4,5 m (terreno difícil para hostis). Hostis na área fazem TR de FOR; falha: são puxados para fora da área, para longe do alvo."
+
+  - api_index: cook-snack-whisky-de-fogo-infernal
+    name: "Whisky de Fogo Infernal"
+    level: 0
+    min_level: 13
+    school: "Necromancy"
+    range: "Self (3 m bright dim aura)"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: mestre_cervejeiro
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 13º nível, Mestre Cervejeiro. Aura de penumbra 3 m por 1 min; criatura hostil Grande ou menor que entrar ou iniciar turno na aura faz TR de CON; falha: sofre 1 nível de exaustão."
+
+  - api_index: cook-snack-beijo-de-anjo
+    name: "Beijo de Anjo"
+    level: 0
+    min_level: 17
+    school: "Evocation"
+    range: "Self (9 m bright + 9 m dim)"
+    components: ["V","S"]
+    ritual: false
+    duration: "1 minute"
+    requires_subclass: mestre_cervejeiro
+    concentration: false
+    casting_time: "1 action"
+    desc:
+      - "Pré-requisito: 17º nível, Mestre Cervejeiro. Emite luz plena 9 m e penumbra +9 m por 1 min; criatura hostil que iniciar o turno na luz plena faz TR de CON; falha: fica cega até o início do próximo turno."
