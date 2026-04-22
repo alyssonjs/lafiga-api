@@ -35,8 +35,12 @@ class SubklassSlugResolver
     'open-hand' => 'mao-aberta',
     'shadow' => 'sombra',
     'four_elements' => 'quatro-elementos',
-    'four-elements' => 'quatro-elementos'
-    # Mago: NÃO precisa alias. O subclass_overrides.yml grava as escolas com
+    'four-elements' => 'quatro-elementos',
+    # Mago: escolas no DB são `escola-de-*` (subclass_overrides / dnd import).
+    # O extrator `extract_xlsx_sheets.py` e payloads antigos ainda mandam o
+    # atalho `evocacao` — sem isto o LevelUpService falha em prod.
+    'evocacao' => 'escola-de-evocacao',
+    # Mago: demais escolas — o subclass_overrides.yml grava as escolas com
     # api_index 'escola-de-<nome>' (ex.: 'escola-de-evocacao'). O fallback
     # `ascii_slug` no resolver devolve o próprio slug PT-BR e o LevelUpService
     # encontra direto. Antes existia 'escola-de-evocacao' => 'evocation' aqui

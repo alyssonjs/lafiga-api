@@ -25,10 +25,13 @@ RSpec.describe SubklassSlugResolver do
       expect(described_class.normalize('life')).to eq('dominio-da-vida')
     end
 
-    it 'devolve o próprio slug PT-BR para escolas de wizard (sem alias quebrado)' do
+    it 'mapeia atalho legacy evocacao → escola-de-evocacao (import XLSX / provision)' do
+      expect(described_class.normalize('evocacao')).to eq('escola-de-evocacao')
+    end
+
+    it 'devolve o próprio slug PT-BR para escolas de wizard canônicas (sem alias quebrado evocation)' do
       # Phase 3.0 regression — antes existia 'escola-de-evocacao' => 'evocation'
-      # mas 'evocation' não está no DB (seed cria 'escola-de-evocacao' e
-      # 'evocacao' como compatibilidade). Corrigido removendo o alias errado.
+      # mas 'evocation' nunca foi seedado no DB. Corrigido removendo esse alias.
       expect(described_class.normalize('escola-de-evocacao')).to eq('escola-de-evocacao')
       expect(described_class.normalize('escola-de-abjuracao')).to eq('escola-de-abjuracao')
       expect(described_class.normalize('escola-de-conjuracao')).to eq('escola-de-conjuracao')

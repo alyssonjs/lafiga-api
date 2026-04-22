@@ -59,7 +59,8 @@ SKIP_FROM_AUDIT = {"Modelo", "Drugoy", "Tony Ramos", "Pandora"}
 # fixtures de teste (TODO confirmar com GM se algum destes nao bate com
 # a campanha real). Mapeia tab_name -> subclass_api_index.
 MANUAL_SUBCLASS_OVERRIDES = {
-    "Nayara":   "evocacao",   # Mago — escola padrao PHB (api_index do DB)
+    # Alinhar a subclass_overrides.yml / SubKlass em prod (`escola-de-*`, não o atalho `evocacao`).
+    "Nayara":   "escola-de-evocacao",   # Mago — Escola de Evocação (PHB)
     "Miguel":   "devotion",   # Paladino — Juramento de Devocao
     "Alieksey": "fiend",      # Bruxo — O Infero (Tiefling -> default)
 }
