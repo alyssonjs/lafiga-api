@@ -140,6 +140,10 @@ class Api::V1::Player::SheetKlassesController < ApplicationController
     candidates = [base, base.tr('_','-'), base.tr('-','_')]
     candidates += (synonyms[base] || [])
     candidates = candidates.map(&:downcase).uniq
+    if klass_id.present?
+      klass_api = Klass.find_by(id: klass_id)&.api_index
+      candidates = SubklassSlugResolver.with_wizard_evocation_aliases(klass_api, candidates) if klass_api
+    end
 
     # 1) Exact api_index within klass scope
     sub = scope.where('LOWER(api_index) IN (?)', candidates).first

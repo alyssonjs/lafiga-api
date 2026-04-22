@@ -207,6 +207,7 @@ class LevelUpService
       candidates = [base, base.tr('_','-'), base.tr('-','_')]
       candidates += (synonyms[base] || [])
       candidates = candidates.map(&:downcase).uniq
+      candidates = SubklassSlugResolver.with_wizard_evocation_aliases(@klass.api_index, candidates)
 
       scope = SubKlass.where(klass_id: @klass.id)
       sub = scope.where('LOWER(api_index) IN (?)', candidates).first

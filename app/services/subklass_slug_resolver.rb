@@ -62,6 +62,18 @@ class SubklassSlugResolver
     SLUG[ascii_slug(s)] || ascii_slug(s)
   end
 
+  # `dnd:apply_subclass_overrides` (SUBCLASS_ALIASES) grava a Escola de Evocação no
+  # `api_index` SRD `evocation`, enquanto JSON importado / wizard mandam
+  # `escola-de-evocacao` (ou `evocacao` → normalizado). Junta ambos na lista de lookup.
+  def self.with_wizard_evocation_aliases(klass_api_index, candidates)
+    list = Array(candidates).map(&:to_s).map(&:downcase).uniq
+    return list unless klass_api_index.to_s == 'wizard'
+    # `evocacao` aparece cru em alguns PATCH de sheet_klass (sem passar pelo normalize).
+    return list unless (list & %w[escola-de-evocacao evocation evocacao]).any?
+
+    (list + %w[escola-de-evocacao evocation]).uniq
+  end
+
   # 'Círculo da Vida' → 'circulo-da-vida' (sem acentos, espaços/underscore → '-')
   def self.ascii_slug(text)
     s = text.to_s.unicode_normalize(:nfd).gsub(/\p{Mn}/, '').downcase.strip

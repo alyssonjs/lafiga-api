@@ -47,6 +47,25 @@ RSpec.describe SubklassSlugResolver do
     end
   end
 
+  describe '.with_wizard_evocation_aliases' do
+    it 'expande escola-de-evocacao ↔ evocation quando classe é wizard' do
+      expect(
+        described_class.with_wizard_evocation_aliases('wizard', %w[escola-de-evocacao])
+      ).to contain_exactly('escola-de-evocacao', 'evocation')
+    end
+
+    it 'expande quando o input cru é evocacao (sheet_klass sem normalize)' do
+      expect(
+        described_class.with_wizard_evocation_aliases('wizard', %w[evocacao])
+      ).to contain_exactly('evocacao', 'escola-de-evocacao', 'evocation')
+    end
+
+    it 'não altera lista para outras classes ou outros slugs' do
+      expect(described_class.with_wizard_evocation_aliases('fighter', %w[champion])).to eq(%w[champion])
+      expect(described_class.with_wizard_evocation_aliases('wizard', %w[escola-de-abjuracao])).to eq(%w[escola-de-abjuracao])
+    end
+  end
+
   describe '.ascii_slug' do
     it 'remove acentos e espaços' do
       expect(described_class.ascii_slug('Coração de Pedra')).to eq('coracao-de-pedra')
