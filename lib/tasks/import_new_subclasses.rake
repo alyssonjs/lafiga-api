@@ -159,14 +159,9 @@ namespace :subclasses do
     puts "    Spellcasting detectado para #{sub_klass.name}"
     puts "    Habilidade: #{spellcasting_data[:ability]}"
     puts "    Lista: #{spellcasting_data[:spell_list]}"
-    
-    # Criar spellcasting para cada nível da subclasse
-    sub_klass.sub_klass_levels.each do |level_record|
-      spellcasting = SubclassSpellcastingService.create_spellcasting_record(sub_klass, level_record.level)
-      if spellcasting
-        puts "      Spellcasting criado para nível #{level_record.level}"
-      end
-    end
+    # Spellcasting AR belongs_to :class_level only; subclass slots/cantrips are driven by
+    # config/subclass_spellcasting.yml (SubclassSpellcasting.lookup), not SubKlassLevel rows.
+    puts "    (tabela por nível: config/subclass_spellcasting.yml — nada a persistir aqui)"
   end
   
   def generate_api_index(name)
