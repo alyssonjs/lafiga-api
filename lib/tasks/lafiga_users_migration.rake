@@ -96,7 +96,7 @@ namespace :lafiga do
         end
 
         role_name = row["role"].to_s.strip.presence || "Player"
-        role = Role.find_by(name: role_name)
+        role = Role.where("LOWER(roles.name) = ?", role_name.downcase).first
         unless role
           puts "  • Ignorado: role desconhecida #{role_name.inspect} | #{email}"
           skipped += 1
