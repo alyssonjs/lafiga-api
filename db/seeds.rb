@@ -3,7 +3,7 @@
 require 'rake'
 
 SEED_SCOPE = ENV['SEED_ONLY']&.strip
-RACE_ONLY = SEED_SCOPE == 'races' || %w[1 true yes].include?(ENV['RACE_ONLY']&.to_s.strip.downcase)
+RACE_ONLY = SEED_SCOPE == 'races' || %w[1 true yes].include?(ENV['RACE_ONLY']&.to_s&.strip&.downcase)
 
 FULL_PURGE_LIST = %w[
   SheetPreparedSpell SheetKnownSpell SpellSource SheetKlass Sheet
@@ -202,6 +202,8 @@ rescue => e
   false
 end
 
+# Após dnd:load_local: opcional SEED_MONSTERS=1 (db/seeds/monsters.json) e
+# SEED_IMPORTED_SHEETS_REHYDRATE=1 (docs/imported_sheets.json) — ver api/README.md
 preferred_task = if ENV['SEED_DND_TASK'].present?
   ENV['SEED_DND_TASK']
 elsif ENV['SKIP_DND_API'] == '1'
