@@ -1,0 +1,33 @@
+# =============================================================================
+# ATENÇÃO: este ficheiro é SÓ documentação + 1 linha de exemplo. A rake
+# NÃO o altera. O export escreve noutro sítio: config/users_migration.yml
+# (ou o caminho em USERS_MIGRATION_OUT). Abre esse ficheiro após o export.
+# =============================================================================
+#
+# Cópia de modelo para migrar utilizadores (local -> produção) sem passwords no ficheiro.
+#
+# 1) No AMBIENTE LOCAL (com a DB que queres replicar), com emails @lafiga.com:
+#      USERS_MIGRATION_EMAIL_DOMAIN=lafiga.com \
+#        USERS_MIGRATION_OUT=config/users_migration.yml \
+#        bin/rails lafiga:users:export_for_migration
+#    Ignorar contas de teste (ids), ex.:
+#      USERS_MIGRATION_EXPORT_EXCLUDE_IDS=3,4,416 \ ...
+#    Sem reescrever domínio (fica o email real da BD):
+#      bin/rails lafiga:users:export_for_migration > config/users_migration.yml
+#
+# 2) Revisa o YAML, remove contas de teste se quiseres, e copia o ficheiro
+#    para o servidor (ou merge com production_users / admins manuais).
+#
+# 3) Em PRODUÇÃO:
+#      USERS_MIGRATION_PASSWORD='senha_inicial_unica' \
+#        bin/rails lafiga:users:import_from_yaml
+#    (ou: USERS_MIGRATION_YML=/caminho/custom.yml ...)
+
+users:
+  - email: exemplo@lafiga.com
+    username: exemplo_user
+    name: "Exemplo (Dev)"
+    phone: "0000000000"
+    role: Player
+# role: tem de existir em `roles` (ex.: DM, Player, Admin, User) — o mesmo
+#        que após o db:seed. Não incluir password: é definida só na import.

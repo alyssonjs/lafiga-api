@@ -25,3 +25,6 @@ translate-key.json
 
 # Manifest local Phase 8.1 (user_id / emails / chibi exportados do DB de dev)
 /docs/imported_sheets_provision_manifest.json
+
+# Export local de users para import em outro ambiente (gerado; não versionar)
+/config/users_migration.yml
