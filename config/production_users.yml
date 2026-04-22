@@ -1,0 +1,36 @@
+# Utilizadores de produção Lafiga — carregados por `rake lafiga:users:seed_production`
+#
+# Pré-requisitos:
+#   - Roles já existentes (ex.: após `db:seed` ou migrações).
+#   - Em production: defina PROD_BOOTSTRAP_PASSWORD (password inicial dos utilizadores
+#     NOVOS; utilizadores já existentes mantêm a password salvo se não quiseres alterar).
+#
+# Uso:
+#   PROD_BOOTSTRAP_PASSWORD='sua_senha_forte' bin/rails lafiga:users:seed_production
+#
+# ---------------------------------------------------------------------------
+# Admins (papel DM — mestre / administração do site)
+# ---------------------------------------------------------------------------
+admins:
+  - email: alysson-admin@lafiga.com
+    username: alysson_admin
+    name: Alysson (Admin)
+    phone: "0000000000"
+    role: DM
+  - email: bruno-admin@lafiga.com
+    username: bruno_admin
+    name: Bruno (Admin)
+    phone: "0000000000"
+    role: DM
+
+# ---------------------------------------------------------------------------
+# Utilizadores demo dos seeds locais (db/seeds.rb) — só atualiza o email
+# (procura por username). Password não é alterada aqui.
+# ---------------------------------------------------------------------------
+demo_email_migration:
+  - username: carol_dm
+    email: dm@lafiga.com
+  - username: alice123
+    email: alice@lafiga.com
+  - username: bob456
+    email: bob@lafiga.com
