@@ -19,6 +19,11 @@ Rails.application.routes.draw do
     namespace :v1 do
       namespace :admin do
         get 'dm_user_picker', to: 'dm_user_picker#index'
+        resources :dm_users, only: %i[index show update] do
+          member do
+            post :reset_password
+          end
+        end
         resources :users, only: [:index, :show, :update]
         resource :dm_progression_settings, only: [:show, :update], controller: 'dm_progression_settings'
         resources :characters, only: [:index, :show, :create, :update, :destroy] do

@@ -221,6 +221,18 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
 
       expect(response).to have_http_status(:ok)
     end
+
+    it 'permite ao mestre apagar grupo com personagens (desvincula no DB)' do
+      group     = create(:group, name: 'Mesa com heroi', dm_user_id: dm_user.id)
+      character = create(:character, user: user, group: group)
+
+      expect {
+        delete "/api/v1/player/groups/#{group.id}", headers: dm_headers
+      }.to change(Group, :count).by(-1)
+
+      expect(response).to have_http_status(:ok)
+      expect(character.reload.group_id).to be_nil
+    end
   end
 
   describe 'POST /api/v1/player/groups com upload de cover_image' do

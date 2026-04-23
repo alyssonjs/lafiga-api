@@ -143,4 +143,18 @@ RSpec.describe 'Api::V1::Admin::GroupsController', type: :request do
       expect(response.parsed_body['unchanged']).to eq(true)
     end
   end
+
+  describe 'DELETE /api/v1/admin/groups/:id' do
+    it 'apaga grupo mesmo com personagens vinculados (group_id vira null)' do
+      group     = create(:group, name: 'Com PCs')
+      character = create(:character, user: other_user, group: group)
+
+      expect {
+        delete "/api/v1/admin/groups/#{group.id}", headers: headers
+      }.to change(Group, :count).by(-1)
+
+      expect(response).to have_http_status(:ok)
+      expect(character.reload.group_id).to be_nil
+    end
+  end
 end

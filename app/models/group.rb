@@ -5,7 +5,9 @@ class Group < ApplicationRecord
   validates :day, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 120 }
 
   has_many :schedules, dependent: :nullify
-  has_many :characters
+  # Personagens ficam na conta do jogador; ao apagar a campanha apenas
+  # desvinculamos (evita PG::ForeignKeyViolation em destroys via API).
+  has_many :characters, dependent: :nullify
   has_many :campaign_notes, dependent: :destroy
   has_many :battle_maps, dependent: :nullify
 
