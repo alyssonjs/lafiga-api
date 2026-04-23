@@ -22,6 +22,33 @@ class Schedule < ApplicationRecord
   has_many :combat_npcs,   dependent: :destroy
   has_many :session_logs,  dependent: :destroy
 
+  LINKED_NPC_CHARACTER_IDS_COL = 'linked_npc_character_ids'.freeze
+  DM_TEMP_NPC_CHARACTER_IDS_COL = 'dm_temp_npc_character_ids'.freeze
+
+  # Coluna JSONB opcional até `db:migrate`; evita NoMethodError se o deploy
+  # adiantar o código sem o schema.
+  def self.supports_linked_npc_sheet_ids?
+    attribute_names.include?(LINKED_NPC_CHARACTER_IDS_COL)
+  end
+
+  def self.supports_dm_temp_npc_character_ids?
+    attribute_names.include?(DM_TEMP_NPC_CHARACTER_IDS_COL)
+  end
+
+  # @return [Array<Integer>]
+  def linked_npc_sheet_ids_normalized
+    return [] unless self.class.supports_linked_npc_sheet_ids?
+
+    Array(linked_npc_character_ids).map(&:to_i).reject(&:zero?).uniq
+  end
+
+  # @return [Array<Integer>]
+  def dm_temp_npc_character_ids_normalized
+    return [] unless self.class.supports_dm_temp_npc_character_ids?
+
+    Array(dm_temp_npc_character_ids).map(&:to_i).reject(&:zero?).uniq
+  end
+
   validates :status, :date_dimension_id, :title, presence: true
   validates :xp_awarded, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :scheduled_time,

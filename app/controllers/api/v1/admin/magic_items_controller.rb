@@ -1,5 +1,7 @@
 class Api::V1::Admin::MagicItemsController < ApplicationController
-  before_action :authorize_admin_request
+  # Compêndio / editor de itens mágicos: mestres site-wide (DM) e Admin — não só papel "Admin"
+  # (authorize_admin_request barrava DM e o front recebia 401 → logout global no apiClient).
+  before_action :authorize_site_wide_dm
   before_action :set_item, only: [:show, :update, :destroy]
 
   def index

@@ -99,4 +99,23 @@ RSpec.describe CharacterDraftPayloadBuilder do
         }
     end
   end
+
+  describe 'wizard.general (NPC / mestre)' do
+    it 'inclui isNPC e campos opcionais quando presentes no draft' do
+      char = create(:character, user: user, status: :draft, draft_data: build_draft.merge(
+        'isNPC' => true,
+        'npcRole' => 'Mercador',
+        'npcFaction' => 'Guilda',
+        'playerName' => 'Alice'
+      ))
+      payload = described_class.build(char)
+      gen = payload.dig('wizard', 'general')
+      expect(gen).to include(
+        'isNPC' => true,
+        'npcRole' => 'Mercador',
+        'npcFaction' => 'Guilda',
+        'playerName' => 'Alice'
+      )
+    end
+  end
 end

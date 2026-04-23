@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_23_120000) do
+ActiveRecord::Schema.define(version: 2026_04_24_103000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -487,6 +487,8 @@ ActiveRecord::Schema.define(version: 2026_04_23_120000) do
     t.string "campaign_name"
     t.bigint "battle_map_id"
     t.text "dm_notes"
+    t.jsonb "linked_npc_character_ids", default: [], null: false
+    t.jsonb "dm_temp_npc_character_ids", default: [], null: false
     t.index ["battle_map_id"], name: "index_schedules_on_battle_map_id"
     t.index ["campaign_name"], name: "index_schedules_on_campaign_name"
     t.index ["group_id", "date_dimension_id"], name: "idx_schedules_active_per_group_date", unique: true, where: "((group_id IS NOT NULL) AND (status <> 4))"

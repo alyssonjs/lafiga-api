@@ -56,12 +56,22 @@ class Api::V1::Admin::CharactersController < ApplicationController
   end
 
   def update
-    if @character.update(character_params)
-      @character.reload
-      render json: { character: admin_character_payload(@character, slim_sheet: false) }, status: :ok
-    else
-      render json: { errors: @character.errors.full_messages }, status: :unprocessable_entity
+    raw = character_update_params
+    make_npc = ActiveModel::Type::Boolean.new.cast(raw.delete(:make_npc))
+    attrs = raw.to_h
+    attrs[:user_id] = @current_user.id if make_npc
+
+    ActiveRecord::Base.transaction do
+      unless @character.update(attrs)
+        render json: { errors: @character.errors.full_messages }, status: :unprocessable_entity
+        return
+      end
+      promote_character_to_npc!(@character) if make_npc
+      clear_npc_flag_for_player_owner!(@character) unless make_npc
     end
+
+    @character.reload
+    render json: { character: admin_character_payload(@character, slim_sheet: false) }, status: :ok
   end
 
   # POST /api/v1/admin/characters/provision
@@ -174,6 +184,45 @@ class Api::V1::Admin::CharactersController < ApplicationController
     params.require(:character).permit(
       :name, :background, :user_id, :group_id, :status
     )
+  end
+
+  def character_update_params
+    params.require(:character).permit(
+      :name, :background, :user_id, :group_id, :status, :make_npc
+    )
+  end
+
+  # Hub DM "Tornar NPC": dono passa a ser o mestre atual + flag em sheet.metadata['general'].
+  def promote_character_to_npc!(character)
+    sheet = character.sheet
+    return if sheet.blank?
+
+    sheet.with_lock do
+      meta = (sheet.metadata || {}).deep_stringify_keys
+      gen = (meta['general'] || {}).dup.stringify_keys
+      gen['isNPC'] = true
+      meta['general'] = gen
+      sheet.update!(metadata: meta)
+    end
+  end
+
+  # Dono jogador (papel Player) nao pode manter NPC: remove marca apos PUT (ex.: modal "Definir dono").
+  def clear_npc_flag_for_player_owner!(character)
+    character.reload
+    user = character.user
+    return if user.blank?
+    return unless user.role&.name.to_s == 'Player'
+
+    sheet = character.sheet
+    return if sheet.blank?
+
+    sheet.with_lock do
+      meta = (sheet.metadata || {}).deep_stringify_keys
+      gen = (meta['general'] || {}).dup.stringify_keys
+      gen['isNPC'] = false
+      meta['general'] = gen
+      sheet.update!(metadata: meta)
+    end
   end
 
   def dm_level_unlock_pending?(character, unlock_ids)

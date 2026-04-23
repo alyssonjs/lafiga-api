@@ -109,6 +109,29 @@ class BattleMap < ApplicationRecord
       readable_via_hub_schedule?(user)
   end
 
+  # Deep copy (cells/tokens/fog) para nova posse. Usado ao duplicar mapa na UI
+  # e ao continuar mesa entre sessões (`ScheduleContinuity`).
+  def self.duplicate_for_user(source, user, name: nil)
+    raise ArgumentError, 'user obrigatório' if user.nil?
+
+    copy = source.dup
+    copy.user_id = user.id
+    copy.name = name.presence || "#{source.name} (Copia)"
+    copy.cells = deep_dup_nested_arrays(source.cells)
+    copy.tokens = deep_dup_nested_arrays(source.tokens)
+    copy.fog = source.fog.nil? ? nil : deep_dup_nested_arrays(source.fog)
+    copy.save!
+    copy
+  end
+
+  def self.deep_dup_nested_arrays(arr)
+    return [] if arr.nil?
+
+    arr.map do |row|
+      row.is_a?(Array) ? row.dup : (row.respond_to?(:deep_dup) ? row.deep_dup : row.dup)
+    end
+  end
+
   private
 
   # Mapa referenciado por alguma sessão agendada — leitores do hub (não membros).

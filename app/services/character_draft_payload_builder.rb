@@ -32,17 +32,21 @@ class CharacterDraftPayloadBuilder
   end
 
   def build
+    wizard = {
+      'meta'       => meta_block,
+      'race'       => race_block,
+      'background' => background_block,
+      'klass'      => klass_block,
+      'equipment'  => equipment_block,
+      'avatar'     => avatar_block,
+      'spells'     => spells_block
+    }
+    gen = general_block
+    wizard['general'] = gen if gen.present?
+
     payload = {
       'character' => character_block,
-      'wizard'    => {
-        'meta'       => meta_block,
-        'race'       => race_block,
-        'background' => background_block,
-        'klass'      => klass_block,
-        'equipment'  => equipment_block,
-        'avatar'     => avatar_block,
-        'spells'     => spells_block
-      }
+      'wizard'    => wizard
     }
     assert_minimum_payload!(payload)
     payload
@@ -66,6 +70,24 @@ class CharacterDraftPayloadBuilder
       'name'         => draft['name'],
       'alignmentKey' => alignment_api_key
     }.compact
+  end
+
+  # Mesmas chaves que GeneralEditService / contrato do front (`wizard.general`).
+  def general_block
+    gen = {}
+    %w[playerName isNPC npcRole npcFaction npcLocation npcStatus dmNotes].each do |k|
+      next unless draft.key?(k)
+
+      v = draft[k]
+      if k == 'isNPC'
+        gen[k] = ActiveModel::Type::Boolean.new.cast(v)
+        next
+      end
+      next if v.nil?
+
+      gen[k] = v
+    end
+    gen
   end
 
   def race_block

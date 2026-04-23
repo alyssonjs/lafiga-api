@@ -191,6 +191,7 @@ class CharacterProvisioningService
         }
       }.compact
       metadata['race_bonuses_applied'] = race_bonuses_applied if race_bonuses_applied.present?
+      merge_wizard_general_into_metadata!(metadata, wizard)
 
       # Upsert or create Sheet
       sheet = char.sheet || Sheet.new(character: char)
@@ -756,6 +757,27 @@ class CharacterProvisioningService
   end
 
   private
+
+  # Alinha com CharacterSheetEdits::GeneralEditService — `sheet.metadata['general']`.
+  def merge_wizard_general_into_metadata!(metadata, wizard)
+    raw = wizard['general'] || wizard[:general]
+    return unless raw.is_a?(Hash) && raw.present?
+
+    gen = {}
+    %w[playerName isNPC npcRole npcFaction npcLocation npcStatus dmNotes].each do |k|
+      next unless raw.key?(k) || raw.key?(k.to_sym)
+
+      v = raw[k] || raw[k.to_sym]
+      if k == 'isNPC'
+        gen[k] = ActiveModel::Type::Boolean.new.cast(v)
+        next
+      end
+      next if v.nil?
+
+      gen[k] = v
+    end
+    metadata['general'] = gen if gen.present?
+  end
 
   # Reprovisão idempotente de itens "automáticos" (source ∈ ['class','background']).
   #

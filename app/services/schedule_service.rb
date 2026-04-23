@@ -56,10 +56,20 @@ class ScheduleService
 
       self.class.assert_bookable_date_dimension!(attrs[:date_dimension_id] || attrs['date_dimension_id'])
 
+      unless Schedule.supports_linked_npc_sheet_ids?
+        attrs.delete(:linked_npc_character_ids)
+        attrs.delete('linked_npc_character_ids')
+      end
+      unless Schedule.supports_dm_temp_npc_character_ids?
+        attrs.delete(:dm_temp_npc_character_ids)
+        attrs.delete('dm_temp_npc_character_ids')
+      end
+
       schedule = Schedule.new(attrs)
       schedule.save!
 
       attach_characters(schedule, raw_character_ids)
+      ScheduleContinuity.copy_from_prior_session!(schedule, current_user: @current_user)
 
       schedule
     end

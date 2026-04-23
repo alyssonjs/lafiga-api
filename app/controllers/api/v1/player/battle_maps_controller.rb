@@ -77,17 +77,10 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # Deep copy. Util para template -> personalizar.
   def duplicate
     return forbidden unless @map.readable_by?(@current_user)
-    copy = @map.dup
-    copy.user_id = @current_user.id
-    copy.name = "#{@map.name} (Copia)"
-    copy.cells = deep_dup_array(@map.cells)
-    copy.tokens = deep_dup_array(@map.tokens)
-    copy.fog = @map.fog.nil? ? nil : deep_dup_array(@map.fog)
-    if copy.save
-      render json: { battle_map: BattleMapSerializer.serialize(copy, mode: :full) }, status: :created
-    else
-      render json: { errors: copy.errors.full_messages }, status: :unprocessable_entity
-    end
+    copy = BattleMap.duplicate_for_user(@map, @current_user)
+    render json: { battle_map: BattleMapSerializer.serialize(copy, mode: :full) }, status: :created
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   # POST /api/v1/player/battle_maps/import_legacy
@@ -213,10 +206,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   end
 
   def deep_dup_array(arr)
-    return [] if arr.nil?
-    arr.map do |row|
-      row.is_a?(Array) ? row.dup : (row.respond_to?(:deep_dup) ? row.deep_dup : row.dup)
-    end
+    BattleMap.deep_dup_nested_arrays(arr)
   end
 
   def normalize_legacy_payload(item)

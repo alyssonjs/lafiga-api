@@ -158,6 +158,36 @@ RSpec.describe 'Api::V1::Admin::CharactersController', type: :request do
 
   describe 'PATCH /api/v1/admin/characters/:id' do
     let!(:re_pc) { create(:character, user: player_alice, name: 'ReassignTarget', background: 'Eremita') }
+    let!(:re_pc_sheet) { create(:sheet, character: re_pc, metadata: { 'race_choices' => {} }) }
+
+    it 'com make_npc transfere dono para o DM autenticado e persiste metadata.general.isNPC' do
+      patch "/api/v1/admin/characters/#{re_pc.id}",
+            params: { character: { make_npc: true } },
+            headers: dm_headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(re_pc.reload.user_id).to eq(dm_user.id)
+      expect(re_pc_sheet.reload.metadata.dig('general', 'isNPC')).to eq(true)
+      json = response.parsed_body['character']
+      expect(json.dig('user', 'id')).to eq(dm_user.id)
+    end
+
+    let!(:npc_owned_by_dm) { create(:character, user: dm_user, name: 'NpcHandoff', background: 'Eremita') }
+    let!(:npc_owned_by_dm_sheet) do
+      create(:sheet, character: npc_owned_by_dm, metadata: { 'general' => { 'isNPC' => true } })
+    end
+
+    it 'ao atribuir dono a jogador remove metadata.general.isNPC' do
+      patch "/api/v1/admin/characters/#{npc_owned_by_dm.id}",
+            params: { character: { user_id: player_alice.id } },
+            headers: dm_headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(npc_owned_by_dm.reload.user_id).to eq(player_alice.id)
+      expect(npc_owned_by_dm_sheet.reload.metadata.dig('general', 'isNPC')).to eq(false)
+    end
 
     it 'permite DM alterar user_id e devolve envelope com user atualizado' do
       patch "/api/v1/admin/characters/#{re_pc.id}",

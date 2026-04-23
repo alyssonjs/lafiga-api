@@ -60,6 +60,17 @@ RSpec.describe CharacterProvisioningService, type: :service do
     }
   end
 
+  it 'persiste metadata["general"]["isNPC"] quando wizard.general vem no payload' do
+    p = payload.deep_dup
+    p[:wizard] = p[:wizard].merge(general: { 'isNPC' => true, 'npcRole' => 'Mercador' })
+    cmd = described_class.call(user: user, payload: p)
+    expect(cmd.success?).to be(true), -> { cmd.errors.full_messages.join('; ') rescue cmd.inspect }
+
+    sheet = Sheet.order(:id).last
+    expect(sheet.metadata&.dig('general', 'isNPC')).to eq(true)
+    expect(sheet.metadata&.dig('general', 'npcRole')).to eq('Mercador')
+  end
+
   it 'persiste race_summary[:speed_ft] = 35 para Wood Elf (sub-raça sobrescreve speed base)' do
     cmd = described_class.call(user: user, payload: payload)
     expect(cmd.success?).to be(true), -> { cmd.errors.full_messages.join('; ') rescue cmd.inspect }

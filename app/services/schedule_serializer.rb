@@ -40,6 +40,8 @@ class ScheduleSerializer
       character_ids: schedule.schedule_characters.loaded? ?
         schedule.schedule_characters.map(&:character_id) :
         schedule.schedule_characters.pluck(:character_id),
+      linked_npc_character_ids: schedule.linked_npc_sheet_ids_normalized,
+      dm_temp_npc_character_ids: schedule.dm_temp_npc_character_ids_normalized,
     }
   end
 

@@ -83,6 +83,116 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
 
       expect(response).to have_http_status(:forbidden)
     end
+
+    it 'copia mapa, NPCs de combate, estado de combate e linked_npc_character_ids da sessao anterior do grupo' do
+      day_prev = Date.current + 45
+      day_next = day_prev + 1
+      dim_prev = DateDimension.find_or_create_by!(date: day_prev) do |d|
+        d.assign_attributes(
+          year: day_prev.year,
+          month: day_prev.month,
+          day: day_prev.day,
+          day_of_week: day_prev.wday,
+          day_name: day_prev.strftime('%A'),
+          is_weekend: day_prev.saturday? || day_prev.sunday?,
+          available: true,
+        )
+      end
+      dim_next = DateDimension.find_or_create_by!(date: day_next) do |d|
+        d.assign_attributes(
+          year: day_next.year,
+          month: day_next.month,
+          day: day_next.day,
+          day_of_week: day_next.wday,
+          day_name: day_next.strftime('%A'),
+          is_weekend: day_next.saturday? || day_next.sunday?,
+          available: true,
+        )
+      end
+
+      prior_map = create(:battle_map, :with_tokens, user: user, group: group)
+      prior = create(
+        :schedule,
+        group: group,
+        date_dimension: dim_prev,
+        status: :completed,
+        battle_map_id: prior_map.id,
+        scheduled_time: '19:00',
+        linked_npc_character_ids: [char_a.id],
+      )
+      [char_a, char_b, char_c].each { |c| ScheduleCharacter.create!(schedule: prior, character: c) }
+
+      npc = create(:combat_npc, schedule: prior, name: 'Orc Guerreiro')
+      cs = create(:combat_state, schedule: prior, active: true, round: 2, current_turn_index: 1)
+      create(
+        :combat_combatant,
+        combat_state: cs,
+        combatable: npc,
+        name: 'Orc Guerreiro',
+        position: 0,
+        initiative: 15,
+        hp_current: 3,
+        hp_max: 15,
+      )
+      create(
+        :combat_combatant,
+        combat_state: cs,
+        combatable: char_b,
+        name: char_b.name,
+        position: 1,
+        initiative: 12,
+        hp_current: 5,
+        hp_max: 22,
+      )
+
+      if Schedule.supports_dm_temp_npc_character_ids?
+        prior.update!(dm_temp_npc_character_ids: [char_b.id])
+      end
+
+      payload = {
+        schedule: {
+          group_id: group.id,
+          title: 'Sessao continua',
+          date: day_next.iso8601,
+          scheduled_time: '19:00',
+          character_ids: [char_a.id],
+        },
+      }
+
+      expect do
+        post '/api/v1/player/schedules', params: payload, headers: headers, as: :json
+      end.to change(Schedule, :count).by(1)
+        .and change(BattleMap, :count).by(1)
+        .and change(CombatNpc, :count).by(1)
+        .and change(CombatState, :count).by(1)
+        .and change(CombatCombatant, :count).by(2)
+
+      expect(response).to have_http_status(:created)
+      body = response.parsed_body['schedule']
+      new_sched = Schedule.find(body['id'])
+      expect(new_sched.battle_map_id).not_to eq(prior_map.id)
+      expect(new_sched.battle_map.tokens.size).to eq(prior_map.tokens.size)
+      expect(new_sched.linked_npc_character_ids).to eq([char_a.id])
+      expect(body['linked_npc_character_ids']).to eq([char_a.id])
+      if Schedule.supports_dm_temp_npc_character_ids?
+        expect(new_sched.reload.dm_temp_npc_character_ids_normalized).to eq([])
+      end
+
+      expect(new_sched.combat_npcs.count).to eq(1)
+      expect(new_sched.combat_npcs.first.name).to eq('Orc Guerreiro')
+      expect(new_sched.combat_state).to be_present
+      expect(new_sched.combat_state.active).to eq(true)
+      expect(new_sched.combat_state.round).to eq(2)
+      expect(new_sched.combat_state.current_turn_index).to eq(1)
+
+      ccs = new_sched.combat_state.combat_combatants.order(:position).to_a
+      expect(ccs.size).to eq(2)
+      orc_row = ccs.find { |c| c.combatable_type == 'CombatNpc' }
+      pc_row = ccs.find { |c| c.combatable_type == 'Character' }
+      expect(orc_row.hp_current).to eq(3)
+      expect(pc_row.combatable_id).to eq(char_b.id)
+      expect(pc_row.hp_current).to eq(5)
+    end
   end
 
   describe 'PATCH /api/v1/player/schedules/:id' do
@@ -155,6 +265,45 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(response).to have_http_status(:ok)
       expect(schedule.reload.battle_map_id).to eq(battle_map.id)
       expect(response.parsed_body['schedule']['battle_map_id']).to eq(battle_map.id)
+    end
+
+    it 'permite atualizar linked_npc_character_ids' do
+      patch "/api/v1/player/schedules/#{schedule.id}",
+            params: { schedule: { linked_npc_character_ids: [char_a.id, char_c.id] } },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(schedule.reload.linked_npc_character_ids).to eq([char_a.id, char_c.id])
+      expect(response.parsed_body['schedule']['linked_npc_character_ids']).to eq([char_a.id, char_c.id])
+    end
+
+    it 'permite ao mestre da mesa atualizar dm_temp_npc_character_ids' do
+      skip unless Schedule.supports_dm_temp_npc_character_ids?
+
+      patch "/api/v1/player/schedules/#{schedule.id}",
+            params: { schedule: { dm_temp_npc_character_ids: [char_a.id] } },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(schedule.reload.dm_temp_npc_character_ids_normalized).to eq([char_a.id])
+      expect(response.parsed_body['schedule']['dm_temp_npc_character_ids']).to eq([char_a.id])
+    end
+
+    it 'ignora dm_temp_npc_character_ids no PATCH quando o usuario nao e mestre da mesa' do
+      skip unless Schedule.supports_dm_temp_npc_character_ids?
+
+      group.update!(dm_user: other_user)
+
+      patch "/api/v1/player/schedules/#{schedule.id}",
+            params: { schedule: { dm_temp_npc_character_ids: [char_a.id] } },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(schedule.reload.dm_temp_npc_character_ids_normalized).to eq([])
+      expect(response.parsed_body['schedule']['dm_temp_npc_character_ids']).to eq([])
     end
 
     it 'permite atualizar dm_notes' do

@@ -108,6 +108,16 @@ class Api::V1::Player::SchedulesController < ApplicationController
     unless schedule_dm_notes_visible_to?(@current_user, @schedule)
       attrs.delete('dm_notes')
     end
+    unless Schedule.supports_linked_npc_sheet_ids?
+      attrs.delete('linked_npc_character_ids')
+    end
+    unless Schedule.supports_dm_temp_npc_character_ids?
+      attrs.delete('dm_temp_npc_character_ids')
+    end
+    if attrs.key?('dm_temp_npc_character_ids') &&
+       !(Group.user_is_dm?(@current_user) || @schedule.group&.owned_by?(@current_user))
+      attrs.delete('dm_temp_npc_character_ids')
+    end
 
     if attrs.key?('group_id')
       new_gid = attrs['group_id']
@@ -232,7 +242,9 @@ class Api::V1::Player::SchedulesController < ApplicationController
       :scheduled_time, :campaign_name,
       :started_at, :ended_at, :battle_map_id,
       highlights: [:text, :type],
-      character_ids: []
+      character_ids: [],
+      linked_npc_character_ids: [],
+      dm_temp_npc_character_ids: [],
     )
 
     if permitted.key?(:highlights)
