@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_22_180000) do
+ActiveRecord::Schema.define(version: 2026_04_23_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -82,6 +82,8 @@ ActiveRecord::Schema.define(version: 2026_04_22_180000) do
     t.decimal "cell_world_ft", precision: 6, scale: 2, default: "5.0", null: false
     t.jsonb "aoe_placements", default: [], null: false
     t.string "fog_mode", default: "hidden_cells", null: false
+    t.integer "background_image_pixel_width"
+    t.integer "background_image_pixel_height"
     t.index ["group_id", "updated_at"], name: "index_battle_maps_on_group_id_and_updated_at"
     t.index ["group_id"], name: "index_battle_maps_on_group_id"
     t.index ["user_id", "updated_at"], name: "index_battle_maps_on_user_id_and_updated_at"

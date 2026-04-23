@@ -31,9 +31,7 @@ class GroupSerializer
       dm_user_id: group.dm_user_id,
       sessions_count: sessions_count,
       character_ids: characters.map(&:id),
-      members: characters.map { |c|
-        { id: c.id, name: c.name, user_id: c.user_id }
-      },
+      members: characters.map { |c| serialize_member_for_roster(c) },
       created_at: group.created_at,
       updated_at: group.updated_at,
     }
@@ -41,6 +39,63 @@ class GroupSerializer
 
   def self.serialize_collection(groups)
     Array(groups).map { |g| serialize(g) }
+  end
+
+  # Prefixo de import legado (ex.: provision `[P81] Nome`) — só afeta rótulo na UI.
+  ROSTER_IMPORT_NAME_PREFIX = /\A\[P\d+\]\s*/i.freeze
+
+  # Dados públicos de roster (calendário / mesa): jogadores da mesma campanha veem
+  # nível, classe, chibi (avatar_customization) uns dos outros; não expõe stats,
+  # magias ou notas.
+  def self.serialize_member_for_roster(character)
+    raw_name = character.name.to_s
+    stripped = raw_name.sub(ROSTER_IMPORT_NAME_PREFIX, '').strip
+
+    h = {
+      id: character.id,
+      name: raw_name,
+      display_name: stripped.present? ? stripped : raw_name,
+      user_id: character.user_id,
+      level: nil,
+      race_name: nil,
+      class_name: nil,
+      subclass_name: nil,
+      klass_api_index: nil,
+    }
+    sheet = character.sheet
+    return h unless sheet
+
+    h[:level] = CharacterRules.total_level(sheet)
+    h[:race_name] = sheet.race&.name
+    pk = roster_primary_sheet_klass(sheet)
+    if pk&.klass
+      h[:class_name] = pk.klass.name
+      h[:klass_api_index] = pk.klass.api_index
+    end
+    if pk&.sub_klass
+      h[:subclass_name] = pk.sub_klass.name
+    elsif pk&.klass_id.present?
+      # Fallback: outra linha da mesma classe com subclasse (import / dados parciais).
+      sk = sheet.sheet_klasses.where(klass_id: pk.klass_id).order(level: :desc, id: :asc).detect { |row| row.sub_klass.present? }
+      h[:subclass_name] = sk.sub_klass.name if sk&.sub_klass
+    end
+
+    ac = sheet.avatar_customization
+    h[:avatar_customization] = ac.deep_stringify_keys if ac.is_a?(Hash) && ac.present?
+
+    h
+  end
+
+  # Mesmo critério geral que a summary (nível desc); reforça subclasse quando a
+  # linha "principal" veio sem `sub_klass_id` mas existe outra linha da classe.
+  def self.roster_primary_sheet_klass(sheet)
+    rows = sheet.sheet_klasses.includes(:klass, :sub_klass).order(level: :desc, id: :asc).to_a
+    return nil if rows.empty?
+
+    pk = rows.first
+    return pk if pk.sub_klass.present? || pk.klass_id.blank?
+
+    rows.find { |sk| sk.klass_id == pk.klass_id && sk.sub_klass.present? } || pk
   end
 
   # Prioridade da capa (Fase 4c):

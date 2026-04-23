@@ -21,6 +21,14 @@ Saidas:
 - `api/docs/imported_sheets.json` (~340 KB, 39 fichas)
 - `api/docs/imported_sheets.summary.txt` (relatorio human-readable)
 
+## Re-hidratação de itens/moedas (Rails)
+
+Com `imported_sheets.json` presente e fichas já provisionadas na BD, podes
+correr `sheet_items:rehydrate_imported` à mão (ver `lib/tasks/sheet_items_rehydrate.rake`).
+
+Para encadear no mesmo fluxo do `db:seed` / `dnd:load_local`, usa
+`SEED_IMPORTED_SHEETS_REHYDRATE=1` (documentado em `api/README.md`).
+
 ## Re-provision com mesmo dono / grupo / chibi (Phase 8.1)
 
 O script `front-lafiga/scripts/provision-imported-as-bob.ts` pode reler um manifest
@@ -32,7 +40,7 @@ gerado a partir do banco **antes** de apagar as fichas `[P81]`:
    `docker exec -e DISABLE_SPRING=1 lafiga_api bin/rake phase81:export_manifest`
 3. **Limpar** fichas de teste: `docker exec -e DISABLE_SPRING=1 lafiga_api bin/rake phase81:cleanup`
 4. **Rodar** o script TS; se o manifest existir e tiver entradas com `user_id`, o fluxo usa
-   login do DM (`dm@lafiga.test` / `LAFIGA_DM_EMAIL`) e `POST /api/v1/admin/characters/provision`.
+   login do DM (`dm@lafiga.com` / `LAFIGA_DM_EMAIL`) e `POST /api/v1/admin/characters/provision`.
    `group_id` e `wizard.avatar.customization` vêm do manifest para todas as linhas que casarem a aba.
 
 Schema do manifest (exemplo):
@@ -41,7 +49,7 @@ Schema do manifest (exemplo):
 {
   "Lyra": {
     "user_id": 2,
-    "user_email": "bob@example.com",
+    "user_email": "bob@lafiga.com",
     "group_id": 1,
     "avatarCustomization": { "hairColor": "#553322" }
   }

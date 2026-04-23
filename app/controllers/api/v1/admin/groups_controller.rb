@@ -7,7 +7,9 @@ class Api::V1::Admin::GroupsController < ApplicationController
   before_action :set_group, only: [:show, :update, :destroy, :add_character, :remove_character]
 
   def index
-    groups = Group.includes(:characters, :schedules).order(:name)
+    groups = Group
+      .includes(:schedules, characters: { sheet: [:race, { sheet_klasses: %i[klass sub_klass] }] })
+      .order(:name)
     render json: { groups: GroupSerializer.serialize_collection(groups) }, status: 200
   end
 
@@ -92,7 +94,9 @@ class Api::V1::Admin::GroupsController < ApplicationController
   private
 
   def set_group
-    @group = Group.find(params[:id])
+    @group = Group
+      .includes(characters: { sheet: [:race, { sheet_klasses: %i[klass sub_klass] }] })
+      .find(params[:id])
   rescue StandardError => e
     render json: { error: e.message }, status: :not_found
   end

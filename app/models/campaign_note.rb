@@ -26,7 +26,7 @@ class CampaignNote < ApplicationRecord
   scope :recent_first, -> { order(updated_at: :desc) }
   scope :pinned_first, -> { order(pinned: :desc, updated_at: :desc) }
   scope :visible_to,   ->(user) {
-    if user&.role&.name == "Admin"
+    if Group.user_is_dm?(user)
       all
     else
       where(visibility: visibilities[:group])

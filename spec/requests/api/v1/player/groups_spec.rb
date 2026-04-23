@@ -108,6 +108,45 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
       ids = response.parsed_body['groups'].map { |g| g['id'] }
       expect(ids.count(g.id)).to eq(1)
     end
+
+    it 'inclui nivel, raca, classe e subclasse em members para roster da campanha' do
+      grp = create(:group, name: 'RosterCamp')
+      k = create(:klass, name: 'Patrulheiro', api_index: 'ranger_spec_roster')
+      sk = create(:sub_klass, klass: k, name: 'Rastreador Urbano', api_index: 'urban_tracker_roster')
+      elf = create(:race, name: 'Elfo da Spec')
+      char = create(:character, user: user, group: grp, name: 'Adimael')
+      sheet = create(:sheet, character: char, race: elf, avatar_customization: { 'hairStyle' => 'long', 'outfit' => 'ranger-leathers' })
+      create(:sheet_klass, sheet: sheet, klass: k, sub_klass: sk, level: 9)
+
+      get '/api/v1/player/groups', headers: headers
+
+      expect(response).to have_http_status(:ok)
+      g = response.parsed_body['groups'].find { |x| x['id'] == grp.id }
+      expect(g).to be_present
+      m = g['members'].find { |x| x['id'] == char.id }
+      expect(m['name']).to eq('Adimael')
+      expect(m['display_name']).to eq('Adimael')
+      expect(m['avatar_customization']).to include('hairStyle' => 'long', 'outfit' => 'ranger-leathers')
+      expect(m['level']).to eq(9)
+      expect(m['race_name']).to eq('Elfo da Spec')
+      expect(m['class_name']).to eq('Patrulheiro')
+      expect(m['subclass_name']).to eq('Rastreador Urbano')
+      expect(m['klass_api_index']).to eq('ranger_spec_roster')
+    end
+
+    it 'expoe display_name sem prefixo [Pn] mantendo name bruto' do
+      grp = create(:group, name: 'TagCamp')
+      hum = create(:race, name: 'Humano Spec')
+      char = create(:character, user: user, group: grp, name: '[P81] Zorro')
+      create(:sheet, character: char, race: hum)
+
+      get '/api/v1/player/groups', headers: headers
+
+      g = response.parsed_body['groups'].find { |x| x['id'] == grp.id }
+      m = g['members'].find { |x| x['id'] == char.id }
+      expect(m['name']).to eq('[P81] Zorro')
+      expect(m['display_name']).to eq('Zorro')
+    end
   end
 
   describe 'GET /api/v1/player/groups/:id' do

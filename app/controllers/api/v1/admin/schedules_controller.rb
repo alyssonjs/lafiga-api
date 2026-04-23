@@ -29,7 +29,7 @@ class Api::V1::Admin::SchedulesController < ApplicationController
                   .offset(offset)
 
     render json: {
-      schedules: ScheduleSerializer.serialize_collection(records),
+      schedules: ScheduleSerializer.serialize_collection(records, viewer: @current_user),
       meta: { page: page, per_page: per_page, total: total },
     }, status: 200
   end

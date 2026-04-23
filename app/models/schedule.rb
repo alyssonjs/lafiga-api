@@ -137,6 +137,18 @@ class Schedule < ApplicationRecord
 
   class StateError < StandardError; end
 
+  # Cancelamento: mestre (papel site-wide DM/Admin) ou jogador com personagem
+  # em `schedule_characters` para esta sessão.
+  def cancellable_by?(user)
+    return false if user.nil?
+    return true if Group.user_is_dm?(user)
+
+    cids = user.respond_to?(:character_ids) ? user.character_ids : user.characters.ids
+    return false if cids.blank?
+
+    schedule_characters.exists?(character_id: cids)
+  end
+
   private
 
   # Normaliza `highlights` em uma lista de hashes `{text, type}` com chaves
@@ -199,12 +211,18 @@ class Schedule < ApplicationRecord
   end
 
   def broadcast_created
-    ActionCable.server.broadcast("group_#{group_id}_schedules", { event: 'created', schedule: ScheduleSerializer.serialize(self) })
+    ActionCable.server.broadcast(
+      "group_#{group_id}_schedules",
+      { event: 'created', schedule: ScheduleSerializer.serialize(self, include_dm_notes: false) },
+    )
     Rails.logger.info({ event: 'schedule.created', schedule_id: id, group_id: group_id, date_dimension_id: date_dimension_id }.to_json)
   end
 
   def broadcast_updated
-    ActionCable.server.broadcast("group_#{group_id}_schedules", { event: 'updated', schedule: ScheduleSerializer.serialize(self) })
+    ActionCable.server.broadcast(
+      "group_#{group_id}_schedules",
+      { event: 'updated', schedule: ScheduleSerializer.serialize(self, include_dm_notes: false) },
+    )
     Rails.logger.info({ event: 'schedule.updated', schedule_id: id, group_id: group_id, date_dimension_id: date_dimension_id }.to_json)
   end
 

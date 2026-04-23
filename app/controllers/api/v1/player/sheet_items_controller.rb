@@ -71,20 +71,32 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   end
 
   def ensure_ownership_by_sheet
-    sheet = Sheet.find(params[:sheet_id] || params.dig(:sheet_item, :sheet_id))
-    raise StandardError, 'Forbidden' unless sheet.character.user_id == @current_user.id
+    sheet_id = params[:sheet_id].presence || params.dig(:sheet_item, :sheet_id)
+    sheet = Sheet.find(sheet_id)
+    return if Group.user_is_dm?(@current_user)
+    return if sheet.character.user_id == @current_user.id
+
+    render json: { error: 'Forbidden' }, status: :forbidden
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Not found' }, status: :not_found
   end
 
   def ensure_ownership_by_item
     @item = SheetItem.find(params[:id])
-    raise StandardError, 'Forbidden' unless @item.sheet.character.user_id == @current_user.id
+    return if Group.user_is_dm?(@current_user)
+    return if @item.sheet.character.user_id == @current_user.id
+
+    render json: { error: 'Forbidden' }, status: :forbidden
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Not found' }, status: :not_found
   end
 
   def ensure_ownership_by_item_for_member
     @item = SheetItem.find(params[:id])
-    raise StandardError, 'Forbidden' unless @item.sheet.character.user_id == @current_user.id
+    return if Group.user_is_dm?(@current_user)
+    return if @item.sheet.character.user_id == @current_user.id
+
+    render json: { error: 'Forbidden' }, status: :forbidden
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Not found' }, status: :not_found
   end

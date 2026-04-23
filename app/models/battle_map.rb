@@ -35,6 +35,12 @@ class BattleMap < ApplicationRecord
   validates :schema_version, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
   validates :distance_display_unit, inclusion: { in: %w[ft m] }
   validates :fog_mode, inclusion: { in: FOG_MODES }
+  validates :background_image_pixel_width,
+            numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 8192 },
+            allow_nil: true
+  validates :background_image_pixel_height,
+            numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 8192 },
+            allow_nil: true
   validate :cell_world_ft_valid
 
   validate :cells_matrix_well_formed

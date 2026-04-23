@@ -174,7 +174,7 @@ class RandomCharacterGenerator
     end
 
     def generate_one_per_class(max_level: 20, user: nil)
-      current_user = user || User.first || User.create!(name: 'Smoke Tester', username: 'smoke', email: 'smoke@example.com', password: 'secret', password_confirmation: 'secret')
+      current_user = user || User.first || User.create!(name: 'Smoke Tester', username: 'smoke', email: 'smoke@lafiga.com', password: 'secret', password_confirmation: 'secret')
       races = Race.all.to_a
       sub_by_race = SubRace.all.group_by(&:race_id)
       klasses = Klass.all.order(:id).to_a

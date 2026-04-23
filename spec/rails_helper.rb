@@ -1,4 +1,5 @@
-ENV['RAILS_ENV'] ||= 'test'
+# Force test so `docker compose` (API com RAILS_ENV=development) não corre specs em development.
+ENV['RAILS_ENV'] = 'test'
 require File.expand_path('../config/environment', __dir__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require 'rspec/rails'

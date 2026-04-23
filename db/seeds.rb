@@ -121,14 +121,14 @@ roles.each do |attrs|
   role.save!
 end
 
-# Usuários de exemplo:
-#   - dm@lafiga.test       => Role: DM. Use este para testar combate/wizard de DM.
-#   - alice@example.com    => Role: Player. Personagem em Group A.
-#   - bob@example.com      => Role: Player. Personagem em Group B.
+# Usuários de exemplo (domínio @lafiga.com, alinhado a production_users.yml):
+#   - dm@lafiga.com   => Role: DM. Use para testar combate / wizard de DM.
+#   - alice@lafiga.com => Role: Player, Group A.
+#   - bob@lafiga.com  => Role: Player, Group B.
 users = [
-  { name: 'Carol Mestre', username: 'carol_dm', email: 'dm@lafiga.test',     phone: '0000000000', password: 'password', role: Role.find_by!(name: 'DM') },
-  { name: 'Alice',        username: 'alice123', email: 'alice@example.com',  phone: '1234567890', password: 'password', role: Role.find_by!(name: 'Player') },
-  { name: 'Bob',          username: 'bob456',   email: 'bob@example.com',    phone: '9876543210', password: 'password', role: Role.find_by!(name: 'Player') }
+  { name: 'Carol Mestre', username: 'carol_dm', email: 'dm@lafiga.com',     phone: '0000000000', password: 'password', role: Role.find_by!(name: 'DM') },
+  { name: 'Alice',        username: 'alice123', email: 'alice@lafiga.com',  phone: '1234567890', password: 'password', role: Role.find_by!(name: 'Player') },
+  { name: 'Bob',          username: 'bob456',   email: 'bob@lafiga.com',    phone: '9876543210', password: 'password', role: Role.find_by!(name: 'Player') }
 ]
 users.each do |attrs|
   user = User.find_or_initialize_by(username: attrs[:username])

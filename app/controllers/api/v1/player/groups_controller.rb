@@ -16,7 +16,9 @@ class Api::V1::Player::GroupsController < ApplicationController
         Group.where(id: (group_ids + owned_ids).uniq)
       end
 
-    groups = groups.includes(:characters, :schedules).order(:name)
+    groups = groups
+      .includes(:schedules, characters: { sheet: [:race, { sheet_klasses: %i[klass sub_klass] }] })
+      .order(:name)
 
     render json: { groups: GroupSerializer.serialize_collection(groups) }, status: 200
   end
@@ -75,11 +77,15 @@ class Api::V1::Player::GroupsController < ApplicationController
 
     notes = @group.campaign_notes.visible_to(@current_user).pinned_first.limit(50)
 
+    last = @group.schedules.concluded.chronological.last
     render json: {
       group: GroupSerializer.serialize(@group),
-      schedules: ScheduleSerializer.serialize_collection(schedules),
+      schedules: ScheduleSerializer.serialize_collection(schedules, viewer: @current_user),
       notes: notes.map(&:as_journal_json),
-      last_completed: ScheduleSerializer.serialize(@group.schedules.concluded.chronological.last),
+      last_completed: last && ScheduleSerializer.serialize(
+        last,
+        include_dm_notes: ScheduleSerializer.dm_notes_visible_to_user?(@current_user, last),
+      ),
     }, status: 200
   end
 
@@ -146,7 +152,9 @@ class Api::V1::Player::GroupsController < ApplicationController
   #   Não basta ser `dm_user_id` legado sem PC — evita campanha "fantasma"
   #   visível só por ter sido criador sem personagem vinculado.
   def set_group
-    @group = Group.find_by(id: params[:id])
+    @group = Group
+      .includes(characters: { sheet: [:race, { sheet_klasses: %i[klass sub_klass] }] })
+      .find_by(id: params[:id])
     return render(json: { error: 'Grupo não encontrado' }, status: :not_found) unless @group
 
     authorized = if Group.user_is_dm?(@current_user)

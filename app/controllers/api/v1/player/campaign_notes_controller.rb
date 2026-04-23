@@ -19,7 +19,7 @@ class Api::V1::Player::CampaignNotesController < ApplicationController
   end
 
   def create
-    note = @group.campaign_notes.new(note_params.merge(user_id: @current_user.id))
+    note = @group.campaign_notes.new(filtered_campaign_note_params.merge(user_id: @current_user.id))
     if note.save
       render json: { note: note.as_journal_json }, status: :created
     else
@@ -28,12 +28,23 @@ class Api::V1::Player::CampaignNotesController < ApplicationController
   end
 
   def update
-    # Player só pode editar a própria nota; DM/Admin tem rota específica.
-    unless @note.user_id == @current_user.id
-      return render json: { error: 'Você só pode editar suas próprias notas.' }, status: :forbidden
+    is_owner = @note.user_id == @current_user.id
+    is_dm = Group.user_is_dm?(@current_user)
+
+    unless is_owner
+      return render json: { error: 'Você só pode editar suas próprias notas.' }, status: :forbidden unless is_dm
+
+      # Mestre: ajustar fixar / visibilidade em notas de outros jogadores (ex.: pin na lista).
+      meta = params.require(:campaign_note).permit(:pinned, :visibility)
+      if @note.update(meta)
+        render json: { note: @note.as_journal_json }, status: 200
+      else
+        render json: { errors: @note.errors.full_messages }, status: :unprocessable_entity
+      end
+      return
     end
 
-    if @note.update(note_params)
+    if @note.update(filtered_campaign_note_params)
       render json: { note: @note.as_journal_json }, status: 200
     else
       render json: { errors: @note.errors.full_messages }, status: :unprocessable_entity
@@ -68,5 +79,15 @@ class Api::V1::Player::CampaignNotesController < ApplicationController
 
   def note_params
     params.require(:campaign_note).permit(:title, :body, :kind, :visibility, :pinned, :schedule_id)
+  end
+
+  # Só mestre site-wide (DM/Admin) pode fixar nota ou marcar como só para o mestre.
+  def filtered_campaign_note_params
+    p = note_params
+    return p if Group.user_is_dm?(@current_user)
+
+    p[:visibility] = :group
+    p[:pinned] = false
+    p
   end
 end

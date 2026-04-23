@@ -44,6 +44,8 @@ class BattleMapSerializer
       backgroundImage: map.background_image_url,
       backgroundImageOffsetX: map.background_image_offset_x,
       backgroundImageOffsetY: map.background_image_offset_y,
+      backgroundImagePixelWidth: map.background_image_pixel_width,
+      backgroundImagePixelHeight: map.background_image_pixel_height,
     )
   end
 

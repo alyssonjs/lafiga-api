@@ -90,6 +90,7 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
     let(:schedule) { create(:schedule, group: group, date_dimension: date_dim, status: :waiting) }
 
     before do
+      group.update!(dm_user: user)
       [char_a, char_b].each { |c| ScheduleCharacter.create!(schedule: schedule, character: c) }
     end
 
@@ -165,6 +166,20 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(response).to have_http_status(:ok)
       expect(schedule.reload.dm_notes).to eq("Rumo ao covil — lembrete de loot.\n")
       expect(response.parsed_body['schedule']['dm_notes']).to eq("Rumo ao covil — lembrete de loot.\n")
+    end
+
+    it 'ignora dm_notes no PATCH quando o usuario nao e mestre da campanha' do
+      group.update!(dm_user: other_user)
+      schedule.update!(dm_notes: 'Original')
+
+      patch "/api/v1/player/schedules/#{schedule.id}",
+            params: { schedule: { dm_notes: 'Tentativa' } },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(schedule.reload.dm_notes).to eq('Original')
+      expect(response.parsed_body['schedule']['dm_notes']).to eq('')
     end
 
     it 'rejeita group_id de grupo alheio com 403' do
@@ -277,11 +292,11 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(response.parsed_body['schedule']['dm_notes']).to eq('')
     end
 
-    it 'exibe dm_notes no show para jogador com personagem na sessão' do
+    it 'redige dm_notes no show mesmo para jogador com personagem na sessão' do
       get "/api/v1/player/schedules/#{foreign_schedule.id}", headers: bearer_headers_for(other_user)
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body['schedule']['dm_notes']).to eq('Segredo do mestre')
+      expect(response.parsed_body['schedule']['dm_notes']).to eq('')
     end
 
     it 'rejeita PATCH de jogador alheio (404 — fora do for_hub_player)' do
@@ -392,6 +407,48 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
 
       expect(response).to have_http_status(:created)
       expect(Schedule.last.group_id).to eq(foreign_group.id)
+    end
+  end
+
+  describe 'POST /api/v1/player/schedules/:id/cancel' do
+    let(:date_dim) do
+      DateDimension.find_or_create_by!(date: Date.tomorrow) do |d|
+        d.assign_attributes(
+          year: Date.tomorrow.year, month: Date.tomorrow.month, day: Date.tomorrow.day,
+          day_of_week: Date.tomorrow.wday, day_name: Date.tomorrow.strftime('%A'),
+          is_weekend: false, available: true,
+        )
+      end
+    end
+    let(:schedule) { create(:schedule, group: group, date_dimension: date_dim, status: :waiting, title: 'Sessao cancelavel') }
+
+    before { ScheduleCharacter.create!(schedule: schedule, character: char_a) }
+
+    it 'permite jogador com personagem na sessão cancelar' do
+      post "/api/v1/player/schedules/#{schedule.id}/cancel", headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(schedule.reload).to be_cancelled
+    end
+
+    it 'rejeita jogador sem personagem na sessão com 403' do
+      post "/api/v1/player/schedules/#{schedule.id}/cancel",
+           headers: bearer_headers_for(other_user),
+           as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(schedule.reload).to be_waiting
+    end
+
+    it 'permite DM site-wide cancelar' do
+      dm_role = Role.find_or_create_by!(name: 'DM')
+      dm_user = create(:user, role: dm_role)
+      post "/api/v1/player/schedules/#{schedule.id}/cancel",
+           headers: bearer_headers_for(dm_user),
+           as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(schedule.reload).to be_cancelled
     end
   end
 end

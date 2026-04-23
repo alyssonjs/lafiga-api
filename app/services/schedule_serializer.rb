@@ -2,8 +2,18 @@
 # + WebSocket) consome. Único ponto de verdade — usado pelo controller, pelo
 # broadcast e pelos endpoints de timeline.
 class ScheduleSerializer
+  # Notas do mestre (`dm_notes`): apenas usuário com papel site-wide DM/Admin ou
+  # o dono da campanha (`groups.dm_user_id`). Jogadores nunca recebem o texto,
+  # mesmo com personagem na sessão (evita vazamento via JSON ou ActionCable).
+  def self.dm_notes_visible_to_user?(user, schedule)
+    return false if user.nil? || schedule.nil?
+    return true if Group.user_is_dm?(user)
+
+    schedule.group&.owned_by?(user)
+  end
+
   # @param include_dm_notes [Boolean] quando false, omite notas do mestre (leitores
-  #   sem vínculo com a mesa — ver SchedulesController + for_hub_player).
+  #   sem privilégio — ver #dm_notes_visible_to_user?).
   def self.serialize(schedule, include_dm_notes: true)
     return nil unless schedule
 
@@ -33,19 +43,11 @@ class ScheduleSerializer
     }
   end
 
-  # @param viewer [User, nil] se presente e não for DM site-wide, redige `dm_notes`
-  #   nas sessões fora do escopo `Schedule.for_hub_player(viewer)`.
+  # @param viewer [User, nil] usuário atual; `dm_notes` só entram no JSON se
+  #   #dm_notes_visible_to_user?(viewer, schedule). Com viewer nil, tudo redigido.
   def self.serialize_collection(schedules, viewer: nil)
-    privileged_ids =
-      if viewer.nil? || Group.user_is_dm?(viewer)
-        nil
-      else
-        Schedule.for_hub_player(viewer).pluck(:id).to_set
-      end
-
     schedules.map do |s|
-      include_dm = privileged_ids.nil? || privileged_ids.include?(s.id)
-      serialize(s, include_dm_notes: include_dm)
+      serialize(s, include_dm_notes: dm_notes_visible_to_user?(viewer, s))
     end
   end
 end

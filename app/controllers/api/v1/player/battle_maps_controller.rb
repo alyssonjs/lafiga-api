@@ -195,6 +195,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     permitted = raw.permit(
       :name, :width, :height, :cell_size_px, :group_id,
       :background_image_url, :background_image_offset_x, :background_image_offset_y,
+      :background_image_pixel_width, :background_image_pixel_height,
       :grid_opacity, :schema_version, :distance_display_unit, :cell_world_ft,
       :fog_mode,
     ).to_h
@@ -237,6 +238,8 @@ class Api::V1::Player::BattleMapsController < ApplicationController
         tokens: h['tokens'] || [],
         fog: h['fog'],
         background_image_url: h['backgroundImage'],
+        background_image_pixel_width: legacy_positive_int(h['backgroundImagePixelWidth']),
+        background_image_pixel_height: legacy_positive_int(h['backgroundImagePixelHeight']),
         grid_opacity: h['gridOpacity'],
         schema_version: (h['schemaVersion'] || 1).to_i,
         distance_display_unit: %w[ft m].include?(h['distanceDisplayUnit'].to_s) ? h['distanceDisplayUnit'].to_s : 'm',
@@ -244,6 +247,12 @@ class Api::V1::Player::BattleMapsController < ApplicationController
         aoe_placements: h['aoePlacements'].is_a?(Array) ? h['aoePlacements'] : [],
       },
     }
+  end
+
+  def legacy_positive_int(raw)
+    return nil if raw.nil? || raw == ''
+    i = raw.to_i
+    i.positive? ? i : nil
   end
 
   def parse_iso(str)

@@ -3,10 +3,10 @@
     "tab": "Nayara",
     "name": "ABIGAIL LE FAY",
     "classIdx": "wizard",
-    "subIdx": "evocacao",
+    "subIdx": "escola-de-evocacao",
     "level": 9,
-    "status": "SKIPPED",
-    "detail": "dry-run"
+    "status": 201,
+    "characterId": 89
   },
   {
     "tab": "Fininho",
@@ -14,7 +14,304 @@
     "classIdx": "ranger",
     "subIdx": "rastreador_urbano",
     "level": 9,
-    "status": "SKIPPED",
-    "detail": "dry-run"
+    "status": 201,
+    "characterId": 90
+  },
+  {
+    "tab": "Caio",
+    "name": "STIVI MAGAL",
+    "classIdx": "rogue",
+    "subIdx": "cacador-de-tesouros",
+    "level": 9,
+    "status": 201,
+    "characterId": 91
+  },
+  {
+    "tab": "Allan",
+    "name": "Sirius Bastião de Ferro",
+    "classIdx": "fighter",
+    "subIdx": "cavaleiro-arcano",
+    "level": 7,
+    "status": 201,
+    "characterId": 92
+  },
+  {
+    "tab": "João",
+    "name": "Lenny",
+    "classIdx": "rogue",
+    "subIdx": "assassino",
+    "level": 7,
+    "status": 201,
+    "characterId": 93
+  },
+  {
+    "tab": "Amani",
+    "name": "Amani Okoye",
+    "classIdx": "paladin",
+    "subIdx": "juramento-misericordia",
+    "level": 4,
+    "status": 201,
+    "characterId": 94
+  },
+  {
+    "tab": "Levi",
+    "name": "Igris Elthred",
+    "classIdx": "fighter",
+    "subIdx": "champion",
+    "level": 4,
+    "status": 201,
+    "characterId": 95
+  },
+  {
+    "tab": "Ellel",
+    "name": "Ellel Pés Macios",
+    "classIdx": "cozinheiro",
+    "subIdx": null,
+    "level": 1,
+    "status": 201,
+    "characterId": 96
+  },
+  {
+    "tab": "Kalt",
+    "name": "Kalt",
+    "classIdx": "druid",
+    "subIdx": "circulo-da-terra",
+    "level": 3,
+    "status": 201,
+    "characterId": 97
+  },
+  {
+    "tab": "Miguel",
+    "name": "Rolander",
+    "classIdx": "paladin",
+    "subIdx": "devotion",
+    "level": 7,
+    "status": 201,
+    "characterId": 98
+  },
+  {
+    "tab": "Milo",
+    "name": "Milo",
+    "classIdx": "druid",
+    "subIdx": "circulo-da-lua",
+    "level": 6,
+    "status": 201,
+    "characterId": 99
+  },
+  {
+    "tab": "Bult",
+    "name": "Bult Seewell",
+    "classIdx": "barbarian",
+    "subIdx": "barbaro-cicatrizes-runicas",
+    "level": 5,
+    "status": 201,
+    "characterId": 100
+  },
+  {
+    "tab": "Namari",
+    "name": "Namari",
+    "classIdx": "fighter",
+    "subIdx": "mestre-de-batalha",
+    "level": 5,
+    "status": 201,
+    "characterId": 101
+  },
+  {
+    "tab": "Bellamy",
+    "name": "Bellamy",
+    "classIdx": "warlock",
+    "subIdx": "archfey",
+    "level": 5,
+    "status": 201,
+    "characterId": 102
+  },
+  {
+    "tab": "Thaindriel",
+    "name": "Thaindriel",
+    "classIdx": "monk",
+    "subIdx": "sombra",
+    "level": 6,
+    "status": 201,
+    "characterId": 103
+  },
+  {
+    "tab": "Trall",
+    "name": "Thralliant",
+    "classIdx": "barbarian",
+    "subIdx": "guerreiro-urso",
+    "level": 5,
+    "status": 201,
+    "characterId": 104
+  },
+  {
+    "tab": "Alieksey",
+    "name": "Darkmenos",
+    "classIdx": "warlock",
+    "subIdx": "fiend",
+    "level": 5,
+    "status": 201,
+    "characterId": 105
+  },
+  {
+    "tab": "Lyra",
+    "name": "Lyra El'Asah",
+    "classIdx": "ranger",
+    "subIdx": "flagelo-dos-inimigos",
+    "level": 6,
+    "status": 201,
+    "characterId": 106
+  },
+  {
+    "tab": "Shanti",
+    "name": "Shanti",
+    "classIdx": "cleric",
+    "subIdx": "dominio-da-vida",
+    "level": 5,
+    "status": 201,
+    "characterId": 107
+  },
+  {
+    "tab": "Joe",
+    "name": "Joe",
+    "classIdx": "bard",
+    "subIdx": "colegio-comedia",
+    "level": 6,
+    "status": 201,
+    "characterId": 108
+  },
+  {
+    "tab": "Kanlu",
+    "name": "Kanlu Wanderblade",
+    "classIdx": "sorcerer",
+    "subIdx": "feiticaria-da-espada",
+    "level": 8,
+    "status": 201,
+    "characterId": 109
+  },
+  {
+    "tab": "Orsik",
+    "name": "Orsik Stoneforge",
+    "classIdx": "cleric",
+    "subIdx": "dominio-da-guerra",
+    "level": 7,
+    "status": 201,
+    "characterId": 110
+  },
+  {
+    "tab": "Torres",
+    "name": "Vallen Evenwood",
+    "classIdx": "fighter",
+    "subIdx": null,
+    "level": 1,
+    "status": 201,
+    "characterId": 111
+  },
+  {
+    "tab": "Lucinano",
+    "name": "Avalon Mellion",
+    "classIdx": "wizard",
+    "subIdx": "navegacao-planar",
+    "level": 4,
+    "status": 201,
+    "characterId": 112
+  },
+  {
+    "tab": "Ruric",
+    "name": "Ruric",
+    "classIdx": "barbarian",
+    "subIdx": "furioso-imortal",
+    "level": 6,
+    "status": 201,
+    "characterId": 113
+  },
+  {
+    "tab": "Ainor",
+    "name": "Ainor",
+    "classIdx": "bard",
+    "subIdx": "colegio-fortuna",
+    "level": 5,
+    "status": 201,
+    "characterId": 114
+  },
+  {
+    "tab": "Aberrama",
+    "name": "Aberama Gold",
+    "classIdx": "fighter",
+    "subIdx": "atirador_inigualavel",
+    "level": 8,
+    "status": 201,
+    "characterId": 115
+  },
+  {
+    "tab": "Ysari",
+    "name": "Ysari Nyrae’vell",
+    "classIdx": "cleric",
+    "subIdx": "dominio-da-tempestade",
+    "level": 4,
+    "status": 201,
+    "characterId": 116
+  },
+  {
+    "tab": "Jamerson",
+    "name": "Erlingorn",
+    "classIdx": "ranger",
+    "subIdx": null,
+    "level": 3,
+    "status": 201,
+    "characterId": 117
+  },
+  {
+    "tab": "Rorinar",
+    "name": "Rorinar",
+    "classIdx": "barbarian",
+    "subIdx": "guerreiro-urso",
+    "level": 4,
+    "status": 201,
+    "characterId": 118
+  },
+  {
+    "tab": "Valac",
+    "name": "Valac Gigamaquia",
+    "classIdx": "wizard",
+    "subIdx": "maestria-dos-automatos",
+    "level": 4,
+    "status": 201,
+    "characterId": 119
+  },
+  {
+    "tab": "Sabrino",
+    "name": "Sabrino",
+    "classIdx": "warlock",
+    "subIdx": "great_old_one",
+    "level": 4,
+    "status": 201,
+    "characterId": 120
+  },
+  {
+    "tab": "Nikos",
+    "name": "Nikos",
+    "classIdx": "monk",
+    "subIdx": null,
+    "level": 3,
+    "status": 201,
+    "characterId": 121
+  },
+  {
+    "tab": "Sanda",
+    "name": "Sanda",
+    "classIdx": "monk",
+    "subIdx": "caminho_mestre_bebado",
+    "level": 3,
+    "status": 201,
+    "characterId": 122
+  },
+  {
+    "tab": "Angelina",
+    "name": "Angelina",
+    "classIdx": "warlock",
+    "subIdx": "patrono-morte",
+    "level": 10,
+    "status": 201,
+    "characterId": 123
   }
 ]

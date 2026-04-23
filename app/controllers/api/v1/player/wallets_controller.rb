@@ -48,7 +48,12 @@ class Api::V1::Player::WalletsController < ApplicationController
   private
 
   def set_sheet
-    @sheet = @current_user.sheets.find(params[:id] || params[:sheet_id])
+    # Paridade com Api::V1::Player::SheetsController#sheets_scope_for_current_user
+    # — o Mestre (fluxo /character/:id?dm=true) precisa de ler/ajustar algibeira
+    # de personagens de outros utilizadores.
+    sheet_id = params[:id].presence || params[:sheet_id].presence
+    scope = Group.user_is_dm?(@current_user) ? Sheet : @current_user.sheets
+    @sheet = scope.find(sheet_id)
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Not found' }, status: :not_found
   end

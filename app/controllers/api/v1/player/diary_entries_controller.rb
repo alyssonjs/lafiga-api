@@ -45,8 +45,12 @@ class Api::V1::Player::DiaryEntriesController < ApplicationController
   private
 
   def set_character
-    @character = @current_user.characters.find_by(id: params[:character_id])
-    render json: { error: 'Character not found' }, status: :not_found unless @character
+    @character = if Group.user_is_dm?(@current_user)
+                   Character.find_by(id: params[:character_id])
+                 else
+                   @current_user.characters.find_by(id: params[:character_id])
+                 end
+    render json: { error: 'Character not found' }, status: :not_found if @character.nil?
   end
 
   def set_entry

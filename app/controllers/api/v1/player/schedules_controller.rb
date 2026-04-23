@@ -1,10 +1,11 @@
 class Api::V1::Player::SchedulesController < ApplicationController
   before_action :authorize_request
   before_action :set_schedule_readable, only: [:show]
-  before_action :set_schedule_mutatable, only: [:update, :destroy, :start, :complete, :cancel]
+  before_action :set_schedule_mutatable, only: [:update, :destroy, :start, :complete]
+  before_action :set_schedule_cancelable, only: [:cancel]
 
-  # Lista sessões (calendário hub): jogador vê todas; DM idem. `dm_notes` só
-  # aparecem para quem está em `Schedule.for_hub_player`. Aceita filtros:
+  # Lista sessões (calendário hub). `dm_notes` só para DM site-wide ou dono da
+  # campanha (`group.dm_user_id`). Aceita filtros:
   #   ?character_id=  → filtra pelo personagem
   #   ?group_id=      → filtra por grupo (usado pelo SessionManager)
   #   ?status=        → "completed" / lista de status
@@ -12,7 +13,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
   def index
     # Calendário / hub: qualquer jogador autenticado vê todas as sessões (como o
     # overlay público em date_dimensions). Notas do mestre são redigidas no
-    # serializer para quem não está em `for_hub_player`. Mutations continuam
+    # serializer para quem não é mestre da campanha. Mutations continuam
     # restritas em `set_schedule_mutatable`.
     base = Schedule.all
 
@@ -70,8 +71,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
   end
 
   def show
-    include_dm = schedule_dm_notes_visible_to?(@current_user, @schedule)
-    render json: { schedule: ScheduleSerializer.serialize(@schedule, include_dm_notes: include_dm) }, status: 200
+    render json: { schedule: serialize_schedule_for_current_user(@schedule) }, status: 200
   end
 
   def create
@@ -91,7 +91,9 @@ class Api::V1::Player::SchedulesController < ApplicationController
 
     result = ScheduleService.new(attrs, current_user: @current_user).call
     if result.success?
-      render json: { schedule: ScheduleSerializer.serialize(result.result) }, status: :created
+      sched = result.result
+      include_dm = schedule_dm_notes_visible_to?(@current_user, sched)
+      render json: { schedule: ScheduleSerializer.serialize(sched, include_dm_notes: include_dm) }, status: :created
     else
       render json: { errors: result.errors.full_messages }, status: :unprocessable_entity
     end
@@ -103,6 +105,9 @@ class Api::V1::Player::SchedulesController < ApplicationController
 
   def update
     attrs = schedule_params.to_h.deep_dup
+    unless schedule_dm_notes_visible_to?(@current_user, @schedule)
+      attrs.delete('dm_notes')
+    end
 
     if attrs.key?('group_id')
       new_gid = attrs['group_id']
@@ -133,7 +138,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
         if raw_character_ids
           reconcile_schedule_characters(@schedule, raw_character_ids)
         end
-        render json: { schedule: ScheduleSerializer.serialize(@schedule.reload) }, status: 200
+        render json: { schedule: serialize_schedule_for_current_user(@schedule.reload) }, status: 200
       else
         render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
         raise ActiveRecord::Rollback
@@ -155,7 +160,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
   # Marca a sessão como em andamento. Idempotente.
   def start
     @schedule.start!
-    render json: { schedule: ScheduleSerializer.serialize(@schedule) }, status: 200
+    render json: { schedule: serialize_schedule_for_current_user(@schedule) }, status: 200
   rescue Schedule::StateError => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -167,7 +172,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
     summary = params[:summary].presence
     highlights = normalize_highlight_param(params[:highlights])
     @schedule.complete!(xp: xp, summary: summary, highlights: highlights)
-    render json: { schedule: ScheduleSerializer.serialize(@schedule) }, status: 200
+    render json: { schedule: serialize_schedule_for_current_user(@schedule) }, status: 200
   rescue Schedule::StateError => e
     render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
@@ -177,7 +182,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
   # Cancela a sessão (sem distribuir XP). Body opcional: { reason: String }.
   def cancel
     @schedule.cancel!(reason: params[:reason].presence)
-    render json: { schedule: ScheduleSerializer.serialize(@schedule) }, status: 200
+    render json: { schedule: serialize_schedule_for_current_user(@schedule) }, status: 200
   rescue Schedule::StateError => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -199,10 +204,25 @@ class Api::V1::Player::SchedulesController < ApplicationController
     return render(json: { error: 'Sessão não encontrada' }, status: :not_found) unless @schedule
   end
 
-  def schedule_dm_notes_visible_to?(user, schedule)
-    return true if Group.user_is_dm?(user)
+  def set_schedule_cancelable
+    @schedule = Schedule.find_by(id: params[:id])
+    unless @schedule
+      return render(json: { error: 'Sessão não encontrada' }, status: :not_found)
+    end
+    unless @schedule.cancellable_by?(@current_user)
+      return render(json: { error: 'Sem permissão para cancelar esta sessão' }, status: :forbidden)
+    end
+  end
 
-    Schedule.for_hub_player(user).exists?(id: schedule.id)
+  def schedule_dm_notes_visible_to?(user, schedule)
+    ScheduleSerializer.dm_notes_visible_to_user?(user, schedule)
+  end
+
+  def serialize_schedule_for_current_user(schedule)
+    ScheduleSerializer.serialize(
+      schedule,
+      include_dm_notes: schedule_dm_notes_visible_to?(@current_user, schedule),
+    )
   end
 
   def schedule_params

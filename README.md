@@ -2,7 +2,7 @@
 
 API Rails (Lafiga). Stack típico: Ruby 3.2, Postgres, Redis; ver `Dockerfile` / `docker-compose.yml` em `lafiga-dev/` para desenvolvimento.
 
-**Branch principal:** `main` (integração e deploy alinhados ao monorepo `lafiga`). Usa `git checkout main` antes de commits; push com `git push origin main`.
+**Branch principal:** `main` (integração e deploy alinhados ao monorepo `lafiga`). Usa `git checkout main` antes de commits; push com `git push origin main`. Outras branches (ex.: `develop`) podem existir no remoto por histórico, mas **não** são a referência para integração com o monorepo — usar sempre **`main`** para trabalho e push.
 
 ## Importação de dados D&D no banco de dados
 
