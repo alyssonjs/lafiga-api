@@ -29,7 +29,10 @@ class Api::V1::Admin::CharactersController < ApplicationController
 
     characters = scope
       .preload(:user, sheet: [:race, :sub_race, :background, { sheet_klasses: [:klass, :sub_klass] }])
-      .order(created_at: :desc)
+      # updated_at: personagens recém editados aparecem na primeira página; created_at
+      # empurrava PJs “antigos” para fora do corte padrão, sumindo da mesa após
+      # refresh (mergedCharacters) mesmo ainda vinculados ao grupo.
+      .order(updated_at: :desc)
       .limit(per_page)
       .offset((page - 1) * per_page)
 

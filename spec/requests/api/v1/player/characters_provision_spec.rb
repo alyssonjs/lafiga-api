@@ -39,6 +39,41 @@ RSpec.describe 'Api::V1::Player::CharactersController provision', type: :request
       end
     end
 
+    context 'when reprovisioning a character linked to a group' do
+      it 'keeps group_id when payload omits character.group_id (edição Não desvincula do grupo/campanha)' do
+        g = create(:group)
+        race  = human_race
+        sub   = human_standard_subrace(race)
+        klass = barbarian_klass
+        bg    = acolyte_background
+        align = lawful_good_alignment
+
+        ch = create(
+          :character,
+          user: user,
+          group: g,
+          name: 'Ligado à mesa',
+          background: bg.name,
+          status: :active
+        )
+        expect(ch.reload.group_id).to eq(g.id)
+
+        payload = minimal_l1_barbarian_provision_payload(
+          race: race, sub_race: sub, klass: klass, background: bg, alignment: align
+        )
+        payload[:character][:id] = ch.id
+        payload[:character][:name] = 'Ligado após edit'
+        # O wizard de edição muitas vezes não manda `group_id` (igual `draftToProvisionPayload`).
+
+        post '/api/v1/player/characters/provision', params: payload, headers: headers, as: :json
+
+        expect(response).to have_http_status(:created), -> { response.body }
+        ch.reload
+        expect(ch.group_id).to eq(g.id)
+        expect(ch.name).to eq('Ligado após edit')
+      end
+    end
+
     context 'when payload is a valid L1 barbarian (human standard)' do
       it 'returns 201 with character.main_class.name and sheet_id' do
         race = human_race

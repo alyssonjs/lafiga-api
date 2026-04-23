@@ -74,12 +74,20 @@ class CharacterProvisioningService
           else
             owner.characters.find(cid)
           end
-        char.assign_attributes(
+        # Só tocar em `group_id` se o payload trouxer a chave. Caso contrário, o
+        # `||` cai em `nil` e o assign_attributes *desvinculava* o personagem
+        # do grupo em todo reprovision/edição — grupo/campanha perdia o membro;
+        # o `schedule.character_ids` do calendário continuava antigo (5 na UI)
+        # enquanto o GroupSerializer listava só quem ainda tem `group_id` (4).
+        attrs = {
           name: name_fallback,
           background: background_fallback,
-          group_id: cdata['group_id'] || cdata[:group_id],
           status: cdata['status'] || cdata[:status] || 'active'
-        )
+        }
+        if cdata.key?('group_id') || cdata.key?(:group_id)
+          attrs[:group_id] = cdata['group_id'] || cdata[:group_id]
+        end
+        char.assign_attributes(attrs)
         # keep draft_data if present from client
         char.draft_data = cdata['draft_data'] || cdata[:draft_data] if cdata.key?('draft_data') || cdata.key?(:draft_data)
         char.current_step = cdata['current_step'] || cdata[:current_step] if cdata.key?('current_step') || cdata.key?(:current_step)
