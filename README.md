@@ -2,6 +2,8 @@
 
 API Rails (Lafiga). Stack típico: Ruby 3.2, Postgres, Redis; ver `Dockerfile` / `docker-compose.yml` em `lafiga-dev/` para desenvolvimento.
 
+**Branch principal:** `main` (integração e deploy alinhados ao monorepo `lafiga`). Usa `git checkout main` antes de commits; push com `git push origin main`.
+
 ## Importação de dados D&D no banco de dados
 
 O conteúdo de jogo na BD divide-se em **duas camadas**:
