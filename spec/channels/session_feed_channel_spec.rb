@@ -198,6 +198,45 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'broadcasts attack rolls with attackHitOutcome so the DM sees pending via ActionCable' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    roll = valid_roll.merge(
+      'rollGroupId' => 'rg-atk-1',
+      'attackHitOutcome' => 'pending',
+    )
+    expect do
+      perform :feed_item, item: roll
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'roll',
+        'type' => 'attack',
+        'rollGroupId' => 'rg-atk-1',
+        'attackHitOutcome' => 'pending',
+      ),
+    )
+  end
+
+  it 'broadcasts attack_hit_resolution from the DM to all clients' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    resolution = {
+      'kind' => 'attack_hit_resolution',
+      'id' => 'ahr-1',
+      'timestamp' => 1_700_000_000_006,
+      'sessionId' => schedule.id.to_s,
+      'rollGroupId' => 'rg-atk-1',
+      'outcome' => 'hit',
+    }
+    expect do
+      perform :feed_item, item: resolution
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'attack_hit_resolution',
+        'rollGroupId' => 'rg-atk-1',
+        'outcome' => 'hit',
+      ),
+    )
+  end
+
   it 'does not broadcast junk kind' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     expect do

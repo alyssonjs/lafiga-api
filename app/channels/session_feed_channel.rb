@@ -17,6 +17,8 @@ class SessionFeedChannel < ApplicationCable::Channel
 
   CHAT_ROLES = %w[dm player visitor].freeze
   ROLL_TYPES = %w[attack damage skill save ability initiative heal spell custom].freeze
+  ATTACK_HIT_OUTCOMES = %w[pending hit miss].freeze
+  DM_ATTACK_OUTCOMES = %w[hit miss].freeze
 
   def self.stream_name_for(schedule_id)
     "session_feed_#{schedule_id}"
@@ -112,6 +114,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_roll(h)
     when 'roll_pending'
       normalize_roll_pending(h)
+    when 'attack_hit_resolution'
+      normalize_attack_hit_resolution(h)
     else
       nil
     end
@@ -265,7 +269,41 @@ class SessionFeedChannel < ApplicationCable::Channel
     accent = sanitize_hex_color(h['cardAccentColor'])
     out['cardAccentColor'] = accent if accent.present?
 
+    if type == 'attack'
+      aho = h['attackHitOutcome'].to_s
+      out['attackHitOutcome'] = aho if ATTACK_HIT_OUTCOMES.include?(aho)
+    end
+
     out
+  end
+
+  # Atualização in-place do `attackHitOutcome` numa rolagem de ataque (eco p/ todos os clientes).
+  def normalize_attack_hit_resolution(h)
+    return nil unless h.is_a?(Hash)
+
+    h = h.stringify_keys
+    return nil unless h['kind'].to_s == 'attack_hit_resolution'
+
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    roll_group_id = h['rollGroupId'].to_s
+    return nil if roll_group_id.empty? || roll_group_id.length > MAX_ID_LENGTH
+
+    outcome = h['outcome'].to_s
+    return nil unless DM_ATTACK_OUTCOMES.include?(outcome)
+
+    {
+      'kind' => 'attack_hit_resolution',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'rollGroupId' => roll_group_id.truncate(MAX_ID_LENGTH),
+      'outcome' => outcome
+    }
   end
 
   # Fase suspense — sem total/d20; o cliente mostra animação até o `roll` com o mesmo rollGroupId.
