@@ -41,6 +41,26 @@ RSpec.describe Sheet, 'coin_pouches' do
     sheet.destroy_coin_pouch!(extra_id)
     expect(sheet.coin_pouches.size).to eq(1)
   end
+
+  it 'transfer_pouch_coins! move moedas entre algibeiras' do
+    sheet.add_coin_pouch!('Cofre')
+    primary = sheet.coin_pouches.first['id']
+    cofre_id = sheet.coin_pouches.last['id']
+    sheet.set_pouch_wallet!(cofre_id, { gp: 5, cp: 0, sp: 0, ep: 0, pp: 0 })
+    sheet.transfer_pouch_coins!(cofre_id, primary, { gp: 2 })
+    sheet.reload
+    expect(sheet.coin_pouches.last['gp']).to eq(3)
+    expect(sheet.coin_pouches.first['gp']).to eq(7 + 2)
+  end
+
+  it 'transfer_pouch_coins! falha se pedir mais do que ha na origem' do
+    sheet.add_coin_pouch!('Cofre')
+    cofre_id = sheet.coin_pouches.last['id']
+    sheet.set_pouch_wallet!(cofre_id, { gp: 1, cp: 0, sp: 0, ep: 0, pp: 0 })
+    expect do
+      sheet.transfer_pouch_coins!(cofre_id, sheet.coin_pouches.first['id'], { gp: 5 })
+    end.to raise_error(ArgumentError, /Saldo insuficiente/)
+  end
 end
 
 RSpec.describe AlgibeiraCoinParser do

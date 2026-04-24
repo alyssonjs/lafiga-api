@@ -61,5 +61,25 @@ module Api::V1::Player::Combat
 
     cc.combatable&.user_id == @current_user.id
   end
-end
+
+  # PUT .../combat_state/update_movement_ledger — DM ou dono do PC no turno actual.
+  def authorize_movement_ledger_update!
+    return if site_or_table_dm?
+    return if editing_movement_ledger_for_own_pc_turn?
+
+    render json: { error: 'apenas o DM, o dono do avatar no turno, ou o dono da mesa pode actualizar o movimento' },
+           status: :forbidden
+  end
+
+  def editing_movement_ledger_for_own_pc_turn?
+    return false unless @schedule
+    cs = @schedule.combat_state
+    return false unless cs&.active?
+
+    cc = cs.combat_combatants.find_by(position: cs.current_turn_index, is_dead: false)
+    return false unless cc&.combatable_type == Character.name
+
+    cc.combatable&.user_id == @current_user.id
+  end
+  end
 end

@@ -210,4 +210,48 @@ RSpec.describe 'Api::V1::Player::Combat::CombatStatesController', type: :request
       expect(cs.reload.round).to eq(7)
     end
   end
+
+  describe 'PUT :update_movement_ledger' do
+    let!(:cs) { create(:combat_state, schedule: schedule, active: true, round: 1, current_turn_index: 0) }
+    let!(:combatant_pc) { create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0) }
+
+    let(:valid_entries) do
+      [
+        { 'kind' => 'manual', 'ft' => 5.0 },
+        { 'kind' => 'map', 'ft' => 10.0, 'tokenId' => 'tok-1', 'prevCol' => 2, 'prevRow' => 3 }
+      ]
+    end
+
+    it 'persists and returns movement_ledger for the DM' do
+      put "/api/v1/player/schedules/#{schedule.id}/combat_state/update_movement_ledger",
+          params: { entries: valid_entries }, headers: dm_headers, as: :json
+      expect(response).to have_http_status(:ok)
+      json = response.parsed_body['combat_state']
+      expect(json['movement_ledger'].size).to eq(2)
+      expect(cs.reload.movement_ledger).to be_a(Array)
+    end
+
+    it 'allows the player whose turn is the active PC' do
+      put "/api/v1/player/schedules/#{schedule.id}/combat_state/update_movement_ledger",
+          params: { entries: [{ 'kind' => 'manual', 'ft' => 2.0 }] },
+          headers: player_headers, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['combat_state']['movement_ledger'].first['ft']).to eq(2.0)
+    end
+
+    it '403 for a player not on the active turn' do
+      create(:combat_combatant, combat_state: cs, combatable: create(:character, user: player2, group: schedule.group), position: 1)
+      cs.update_column(:current_turn_index, 1)
+      put "/api/v1/player/schedules/#{schedule.id}/combat_state/update_movement_ledger",
+          params: { entries: valid_entries }, headers: player_headers, as: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it '422 for invalid entries' do
+      put "/api/v1/player/schedules/#{schedule.id}/combat_state/update_movement_ledger",
+          params: { entries: [{ 'kind' => 'map', 'ft' => 1 }] },
+          headers: dm_headers, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
 end

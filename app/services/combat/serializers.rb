@@ -16,6 +16,7 @@ module Combat
         started_at: cs.started_at,
         ended_at: cs.ended_at,
         updated_at: cs.updated_at,
+        movement_ledger: Array.wrap(cs.movement_ledger),
       }
     end
 

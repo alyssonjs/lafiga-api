@@ -138,6 +138,39 @@ class Sheet < ApplicationRecord
     assign_pouches_and_save!(list)
   end
 
+  # Move moedas entre duas algibeiras num único save (origem/destino distintos).
+  # `amounts_hash` — apenas chaves COIN_KEYS; valores inteiros >= 0 a debitar da origem.
+  def transfer_pouch_coins!(from_pouch_id, to_pouch_id, amounts_hash)
+    from_id = from_pouch_id.to_s
+    to_id = to_pouch_id.to_s
+    raise ArgumentError, 'Origem e destino não podem ser iguais' if from_id == to_id
+
+    list = dup_pouches
+    from_idx = list.index { |p| p['id'].to_s == from_id }
+    to_idx = list.index { |p| p['id'].to_s == to_id }
+    raise ActiveRecord::RecordNotFound, 'Algibeira de origem não encontrada' unless from_idx
+    raise ActiveRecord::RecordNotFound, 'Algibeira de destino não encontrada' unless to_idx
+
+    slice = sanitize_wallet(amounts_hash)
+    moved = false
+    COIN_KEYS.each do |k|
+      want = slice[k].to_i
+      next if want <= 0
+
+      moved = true
+      have = list[from_idx][k].to_i
+      if want > have
+        raise ArgumentError, "Saldo insuficiente em #{k.upcase} (pedido #{want}, disponível #{have})"
+      end
+
+      list[from_idx][k] = have - want
+      list[to_idx][k] = list[to_idx][k].to_i + want
+    end
+    raise ArgumentError, 'Informe ao menos uma moeda com valor positivo' unless moved
+
+    assign_pouches_and_save!(list)
+  end
+
   private
 
   def reconcile_coins_into_primary_pouch_if_needed

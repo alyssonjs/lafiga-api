@@ -12,7 +12,8 @@ module Api::V1::Player::Combat
   # `advance_turn`) o jogador dono do PC do turno ativo.
   class CombatStatesController < BaseController
     before_action :authorize_write!, only: [:begin, :finish, :advance_turn, :set_round]
-    before_action :set_combat_state, only: [:show, :finish, :advance_turn, :set_round]
+    before_action :set_combat_state, only: [:show, :finish, :advance_turn, :set_round, :update_movement_ledger]
+    before_action :authorize_movement_ledger_update!, only: [:update_movement_ledger]
 
     # GET — devolve o combat_state existente (se houver). Retorna 200 com null
     # quando nunca foi iniciado, em vez de 404, para o front decidir mostrar
@@ -73,6 +74,23 @@ module Api::V1::Player::Combat
       render json: { combat_state: ::Combat::Serializers.state(@combat_state) }, status: :ok
     rescue ArgumentError => e
       render json: { error: e.message }, status: :unprocessable_entity
+    end
+
+    # PUT — corpo: { "entries": [ { "kind": "manual", "ft": 5 }, ... ] }
+    def update_movement_ledger
+      return render(json: { error: 'combat_state inexistente' }, status: :unprocessable_entity) unless @combat_state
+      return render(json: { error: 'combat não está activo' }, status: :unprocessable_entity) unless @combat_state.active?
+
+      raw = request.request_parameters['entries'] || request.request_parameters[:entries] || params[:entries]
+      entries = ::Combat::ValidateMovementLedgerPayload.call(raw)
+      if entries.nil?
+        return render(json: { error: 'movement_ledger inválido' }, status: :unprocessable_entity)
+      end
+
+      @combat_state.update!(movement_ledger: entries)
+      @combat_state.reload
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      render json: { combat_state: ::Combat::Serializers.state(@combat_state) }, status: :ok
     end
 
     private

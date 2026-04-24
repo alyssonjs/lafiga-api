@@ -59,4 +59,36 @@ RSpec.describe 'Api::V1::Admin::Sheet items + wallet for site-wide DM', type: :r
       expect(response).to have_http_status(:forbidden)
     end
   end
+
+  describe 'PUT /api/v1/admin/sheets/:id/wallet coin_transfer' do
+    it 'transfere moedas entre algibeiras' do
+      sheet.reload
+      primary_id = sheet.coin_pouches.first['id']
+      primary_gp_before = sheet.coin_pouches.first['gp'].to_i
+      sheet.add_coin_pouch!('Reserva')
+      extra_id = sheet.coin_pouches.last['id']
+      sheet.set_pouch_wallet!(extra_id, { gp: 10, cp: 0, sp: 0, ep: 0, pp: 0 })
+
+      put(
+        "/api/v1/admin/sheets/#{sheet.id}/wallet",
+        params: {
+          coin_transfer: {
+            from_pouch_id: extra_id,
+            to_pouch_id: primary_id,
+            wallet: { gp: 3, cp: 0, sp: 0, ep: 0, pp: 0 }
+          }
+        },
+        headers: dm_headers.merge('Content-Type' => 'application/json'),
+        as: :json
+      )
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      pouches = body['coin_pouches']
+      extra = pouches.find { |p| p['id'] == extra_id }
+      prim = pouches.find { |p| p['id'] == primary_id }
+      expect(extra['gp']).to eq(7)
+      expect(prim['gp']).to eq(primary_gp_before + 3)
+    end
+  end
 end

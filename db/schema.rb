@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_24_103000) do
+ActiveRecord::Schema.define(version: 2026_04_24_160000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -250,6 +250,7 @@ ActiveRecord::Schema.define(version: 2026_04_24_103000) do
     t.datetime "ended_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "movement_ledger", default: [], null: false
     t.index ["schedule_id"], name: "index_combat_states_on_schedule_id", unique: true
   end
 

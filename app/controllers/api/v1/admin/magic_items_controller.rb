@@ -1,4 +1,24 @@
 class Api::V1::Admin::MagicItemsController < ApplicationController
+  # Strong params: `effects: []` sozinho descarta hashes dentro do array (Rails
+  # só aceita escalares no array). Listar chaves por elemento para o JSONB
+  # persistir ao criar/editar pelo editor DM.
+  MAGIC_ITEM_EFFECTS_PERMIT = [
+    :kind,
+    :value,
+    :type,
+    :note,
+    :dice,
+    :damage_type,
+    :ability,
+    :name,
+    :desc,
+    :source,
+    { damage_types: [] },
+    { conditions: [] },
+    { abilities: [] },
+    { skills: [] },
+  ].freeze
+
   # Compêndio / editor de itens mágicos: mestres site-wide (DM) e Admin — não só papel "Admin"
   # (authorize_admin_request barrava DM e o front recebia 401 → logout global no apiClient).
   before_action :authorize_site_wide_dm
@@ -92,7 +112,7 @@ class Api::V1::Admin::MagicItemsController < ApplicationController
       :weight_kg, :value_gp, :source,
       :cursed, :curse_text, :charges, :recharge,
       :description,
-      { bonuses: {} }, { properties: {} }, { tags: [] }, { effects: [] }
+      { bonuses: {} }, { properties: {} }, { tags: [] }, { effects: MAGIC_ITEM_EFFECTS_PERMIT }
     )
   end
 end

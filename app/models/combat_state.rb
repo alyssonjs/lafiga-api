@@ -27,6 +27,7 @@ class CombatState < ApplicationRecord
       current_turn_index: 0,
       started_at: started_at || Time.current,
       ended_at: nil,
+      movement_ledger: [],
     )
     self
   end
@@ -35,7 +36,7 @@ class CombatState < ApplicationRecord
   def finish!
     return self unless active?
 
-    update!(active: false, ended_at: Time.current)
+    update!(active: false, ended_at: Time.current, movement_ledger: [])
     self
   end
 
@@ -97,7 +98,7 @@ class CombatState < ApplicationRecord
         end
       end
 
-      update!(current_turn_index: new_index, round: new_round)
+      update!(current_turn_index: new_index, round: new_round, movement_ledger: [])
       receiver = combat_combatants.find_by(position: new_index)
       receiver&.reset_turn_actions!
 
@@ -111,7 +112,7 @@ class CombatState < ApplicationRecord
   def set_round!(new_round)
     n = new_round.to_i
     raise ArgumentError, 'round deve ser >= 1 com combate ativo' if active? && n < 1
-    update!(round: n)
+    update!(round: n, movement_ledger: [])
     self
   end
 
