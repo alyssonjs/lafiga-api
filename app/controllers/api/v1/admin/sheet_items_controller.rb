@@ -1,5 +1,8 @@
 class Api::V1::Admin::SheetItemsController < ApplicationController
-  before_action :authorize_admin_request
+  # Mestre (papel DM) — mesmo critério que `SheetsController#summary` e
+  # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
+  # literal e dava 401 em prod para contas "Mestre" da plataforma.
+  before_action :authorize_site_wide_dm
   before_action :set_item, only: [:update, :destroy, :equip, :unequip]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID

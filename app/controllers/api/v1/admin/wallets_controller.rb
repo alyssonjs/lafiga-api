@@ -1,5 +1,6 @@
 class Api::V1::Admin::WalletsController < ApplicationController
-  before_action :authorize_admin_request
+  # Mestre (papel DM) alinhado a `SheetsController#summary` / `coin_pouches`.
+  before_action :authorize_site_wide_dm
   before_action :set_sheet
 
   # GET /api/v1/admin/sheets/:sheet_id/wallet
