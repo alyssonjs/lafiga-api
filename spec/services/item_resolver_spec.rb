@@ -33,6 +33,30 @@ RSpec.describe ItemResolver do
       end
     end
 
+    context 'ambiguidade "Arco" / typo "bestas leve" (evitar Item kind=gear no catalogo)' do
+      it 'resolve "Arco" para arco-curto mesmo existindo Item gear com api_index arco' do
+        rogue = Item.find_or_initialize_by(api_index: 'arco')
+        rogue.assign_attributes(name: 'Arco', kind: :gear)
+        rogue.save!
+        canon = Item.find_or_initialize_by(api_index: 'arco-curto')
+        canon.assign_attributes(name: 'Arco Curto', kind: :weapon, category: 'simple')
+        canon.save!
+
+        expect(resolver.resolve(name: 'Arco')).to eq(canon)
+      end
+
+      it 'resolve "bestas leve" para besta-leve' do
+        rogue = Item.find_or_initialize_by(api_index: 'bestas-leve')
+        rogue.assign_attributes(name: 'bestas leve', kind: :gear)
+        rogue.save!
+        canon = Item.find_or_initialize_by(api_index: 'besta-leve')
+        canon.assign_attributes(name: 'Besta Leve', kind: :weapon, category: 'simple')
+        canon.save!
+
+        expect(resolver.resolve(name: 'bestas leve')).to eq(canon)
+      end
+    end
+
     context 'quando o catalogo ainda nao tem mas a categoria diz que e armadura' do
       it 'infere kind=armor a partir da category' do
         unique = "spec-armor-#{SecureRandom.hex(4)}"

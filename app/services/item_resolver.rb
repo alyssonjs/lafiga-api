@@ -31,6 +31,16 @@
 #     # => Item(api_index="anel-de-sinete", name="Anel de Sinete", kind="gear")
 #
 class ItemResolver
+  # Slugs ambíguos criados por import/backfill sem categoria "Armas" (ex.: Excel
+  # com só "Arco", ou typo "bestas leve") — viravam `kind: :gear` e poluíam o
+  # catálogo público / busca na bolsa. Redirecionamos para o api_index de arma
+  # canónico do equipment.yml antes de lookup_existing.
+  AMBIGUOUS_WEAPON_SLUG_TO_CANON = {
+    'arco' => 'arco-curto',
+    'bestas-leve' => 'besta-leve',
+    'bestas-leves' => 'besta-leve',
+  }.freeze
+
   # Categorias usadas no SheetItem.category (vindas do importer e do background)
   WEAPON_CATEGORIES = ['Armas', 'weapon', 'weapons'].freeze
   ARMOR_CATEGORIES  = ['Armaduras & Escudos', 'armor', 'armors'].freeze
@@ -58,6 +68,16 @@ class ItemResolver
   def resolve(name:, category: nil)
     nm = name.to_s.strip
     return nil if nm.blank? || nm =~ /\A\d+(\.\d+)?\z/
+
+    slug0 = slugify(nm)
+    if (canon_index = AMBIGUOUS_WEAPON_SLUG_TO_CANON[slug0])
+      canon_item = Item.find_by(api_index: canon_index)
+      return canon_item if canon_item
+
+      row = EquipmentCatalog.data['weapons']&.dig(canon_index)
+      label = row.is_a?(Hash) ? row['name'].to_s.strip.presence : nil
+      return resolve(name: label, category: 'Armas') if label.present?
+    end
 
     # 1. Existing Item match
     item = lookup_existing(nm)
