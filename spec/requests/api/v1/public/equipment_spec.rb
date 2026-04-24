@@ -76,6 +76,30 @@ RSpec.describe "Api::V1::Public::Equipment", type: :request do
     end
   end
 
+  describe "GET /api/v1/public/equipment_catalog_snapshot" do
+    before do
+      Item.find_or_initialize_by(api_index: 'spec-snapshot-pack').tap do |it|
+        it.assign_attributes(
+          name: 'Pacote Spec',
+          kind: :gear,
+          category: 'pack',
+          props: { 'contents' => ['Tocha'] }
+        )
+        it.save!
+      end
+    end
+
+    it "returns by_category including packs (gear+category pack, not kind pack)" do
+      get "/api/v1/public/equipment_catalog_snapshot"
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      packs = Array(json.dig('by_category', 'packs'))
+      idxs = packs.map { |e| e['index'] }
+      expect(idxs).to include('spec-snapshot-pack')
+      expect(packs.first.dig('equipment_category', 'index')).to eq('equipment-packs')
+    end
+  end
+
   describe "GET /api/v1/public/equipment_list/:category" do
     before do
       Item.find_or_initialize_by(api_index: 'arco-longo-spec').tap do |it|
@@ -98,6 +122,18 @@ RSpec.describe "Api::V1::Public::Equipment", type: :request do
       idxs = rows.map { |e| e['index'] }
       expect(idxs).to include('arco-longo-spec')
       expect(rows.first['name']).to be_present
+    end
+
+    it "lists packs under equipment_list/packs (kind gear + category pack)" do
+      Item.find_or_initialize_by(api_index: 'spec-equipment-list-pack').tap do |it|
+        it.assign_attributes(name: 'Pacote List Spec', kind: :gear, category: 'pack', props: {})
+        it.save!
+      end
+      get "/api/v1/public/equipment_list/packs"
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      idxs = Array(json['equipment']).map { |e| e['index'] }
+      expect(idxs).to include('spec-equipment-list-pack')
     end
   end
 end

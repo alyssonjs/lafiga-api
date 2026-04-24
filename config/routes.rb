@@ -115,6 +115,7 @@ Rails.application.routes.draw do
               post :finish
               post :advance_turn
               post :set_round
+              put :update_movement_ledger
             end
 
             resources :combat_combatants, only: [:index, :create, :update, :destroy] do
@@ -250,6 +251,7 @@ Rails.application.routes.draw do
         get 'equipment_categories/:id', to: 'equipment#categories'
         get 'equipment/:id', to: 'equipment#show'
         get 'weapon_properties/:id', to: 'equipment#weapon_properties'
+        get 'equipment_catalog_snapshot', to: 'equipment#equipment_catalog_snapshot'
         get 'equipment_list/:category', to: 'equipment#equipment_list'
         get 'equipment_profile', to: 'equipment#profile'
         get 'starting_equipment', to: 'equipment#starting_equipment'

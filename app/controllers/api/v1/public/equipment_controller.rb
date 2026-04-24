@@ -125,6 +125,24 @@ class Api::V1::Public::EquipmentController < ApplicationController
     }, status: :ok
   end
 
+  # GET /api/v1/public/equipment_catalog_snapshot
+  # Uma ida ao servidor com todo o equipamento mundano (por categoria), para
+  # evitar dezenas de round-trips no modal "Adicionar item" / buscas na bolsa.
+  def equipment_catalog_snapshot
+    categories = %w[
+      simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
+      gear packs tools consumables ammunition
+    ]
+    by_category = {}
+    categories.each do |cat|
+      rows = items_for_category_from_db(cat)
+      next if rows.empty?
+
+      by_category[cat] = rows.map { |it| build_equipment_from_item(it) }.compact
+    end
+    render json: { by_category: by_category }, status: :ok
+  end
+
   private
   # Lista itens (records) para a categoria solicitada, vindos do banco
   def items_for_category_from_db(idx)
@@ -147,10 +165,11 @@ class Api::V1::Public::EquipmentController < ApplicationController
       Item.where(kind: 'shield').order(:api_index).to_a
     when :ammunition
       Item.where(kind: 'ammunition').order(:api_index).to_a
+    # Pacotes vivem como `kind: :gear` + `category: pack` (enum Item nao tem `pack`).
     when :gear
-      Item.where(kind: 'gear').order(:api_index).to_a
+      Item.where(kind: 'gear').where.not(category: 'pack').order(:api_index).to_a
     when :packs
-      Item.where(kind: 'pack').order(:api_index).to_a
+      Item.where(kind: 'gear', category: 'pack').order(:api_index).to_a
     when :tools
       Item.where(kind: 'tool').order(:api_index).to_a
     when :consumables
@@ -259,7 +278,12 @@ class Api::V1::Public::EquipmentController < ApplicationController
       when 'ammunition'
         ['ammunition', 'Ammunition']
       else
-        ['adventuring-gear', 'Adventuring Gear']
+        # Pacotes importados como `kind: :gear` + `category: pack` (ver equipment:import_items).
+        if it.kind == 'gear' && it.category.to_s == 'pack'
+          ['equipment-packs', 'Equipment Pack']
+        else
+          ['adventuring-gear', 'Adventuring Gear']
+        end
       end
       {
         index: it.api_index,
