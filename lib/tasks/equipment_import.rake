@@ -52,34 +52,68 @@ namespace :equipment do
 
     count = Hash.new(0)
 
+    # Índice canónico de munição em `items.api_index` (consumo na ficha / weapon_props).
+    # YAML pode definir `ammunition_index` ou `ammo_index`; senão inferimos por slug/tipo.
+    infer_ammunition_index = lambda do |slug, row, props_tokens|
+      raw = row['ammunition_index'].presence || row['ammo_index'].presence
+      if raw.present?
+        return begin
+          EquipmentCatalog.normalize_index(raw.to_s)
+        rescue StandardError
+          raw.to_s.downcase.strip.tr(' ', '-')
+        end
+      end
+
+      slug_s = slug.to_s.downcase
+      ranged = row['type'].to_s == 'ranged'
+      uses_ammo = ranged && !props_tokens.include?('thrown') && !props_tokens.include?('arremesso')
+      uses_ammo ||= props_tokens.include?('ammunition')
+      return nil unless uses_ammo
+
+      return 'virote' if slug_s.match?(/besta|crossbow/)
+      return 'pedra-de-funda' if slug_s.match?(/funda|(^|-)sling$/)
+      return 'agulha-de-zarabatana' if slug_s.match?(/zarabatana|blowgun/)
+      return 'dardo' if slug_s.match?(/\A(dardo|dart)\z/)
+
+      'flecha' if ranged
+    end
+
     if catalog.present?
       WeaponSections.each do |section|
         (catalog[section] || {}).each do |slug, row|
           next unless row.is_a?(Hash)
           props = Array(row['properties']).map { |p| p.to_s.downcase }
+          ammo_idx = infer_ammunition_index.call(slug, row, props)
+          ammo_bool = (row['type'] == 'ranged' && !props.include?('thrown') && !props.include?('arremesso')) || props.include?('ammunition')
+
+          weapon_props = {
+            'type' => row['type'],
+            'hands' => (row['hands'] || (props.include?('two-handed') ? 2 : 1)).to_i,
+            'damage_die' => row['damage_die'],
+            'versatile_die' => row['versatile_die'],
+            'range' => row['range'],
+            'light' => props.include?('light'),
+            'finesse' => props.include?('finesse'),
+            'heavy' => props.include?('heavy'),
+            'thrown' => props.include?('thrown') || props.include?('arremesso'),
+            'loading' => props.include?('loading'),
+            'reach' => props.include?('reach') || props.include?('alcance'),
+            'special' => props.include?('special'),
+            'versatile' => props.include?('versatile') || props.include?('versatil'),
+            'ammunition' => ammo_bool,
+            'cost_cp' => row['cost_cp'],
+            # Paridade com catálogos / ItemWeaponPropsMapper (lista + índice de pilha).
+            'properties' => Array(row['properties']).map { |p| p.to_s }
+          }
+          weapon_props['ammunition_index'] = ammo_idx if ammo_idx.present?
+
           upsert.call(slug, {
             name: row['name'],
             aliases: row['aliases'], # Pass aliases to upsert
             kind: 'weapon',
             category: row['category'],
             weight_kg: row['weight_kg'],
-            props: {
-              'type' => row['type'],
-              'hands' => (row['hands'] || (props.include?('two-handed') ? 2 : 1)).to_i,
-              'damage_die' => row['damage_die'],
-              'versatile_die' => row['versatile_die'],
-              'range' => row['range'],
-              'light' => props.include?('light'),
-              'finesse' => props.include?('finesse'),
-              'heavy' => props.include?('heavy'),
-              'thrown' => props.include?('thrown') || props.include?('arremesso'),
-              'loading' => props.include?('loading'),
-              'reach' => props.include?('reach') || props.include?('alcance'),
-              'special' => props.include?('special'),
-              'versatile' => props.include?('versatile') || props.include?('versatil'),
-              'ammunition' => (row['type'] == 'ranged' && !props.include?('thrown') && !props.include?('arremesso')),
-              'cost_cp' => row['cost_cp']
-            }
+            props: weapon_props
           })
           count[:weapon] += 1
         end

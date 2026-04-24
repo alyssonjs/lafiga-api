@@ -4,12 +4,14 @@ class EquipmentProfileService
   end
 
   def call
-    items = SheetItem.where(sheet_id: @sheet.id)
+    # Eager-load `items` to avoid N+1 em `EquipmentRules.weapon_props` / custo-peso
+    # quando cada `SheetItem` resolve o catálogo por `api_index`.
+    items = SheetItem.where(sheet_id: @sheet.id).includes(:item)
     equipped = items.select { |it| it.equipped }
     armor = equipped.find { |it| (it.slot == 'armor') || armor_like?(it) }
     shield = equipped.find { |it| (it.slot == 'shield') || EquipmentRules.is_shield?(it) }
     # Heurística de mãos: prioriza slots explícitos; caso contrário, escolhe a melhor opção
-    weapon_items = equipped.select { |it| it.category.to_s.downcase.include?('weapon') }
+    weapon_items = equipped.select { |it| EquipmentRules.sheet_item_weapon_category?(it.category) }
     main_hand = equipped.find { |it| it.slot == 'main_hand' }
     off_hand  = equipped.find { |it| it.slot == 'off_hand' }
     unless main_hand
@@ -34,7 +36,7 @@ class EquipmentProfileService
     # ── Accessories (Fase 2.1) ───────────────────────────────────────
     # Mapa slot → SheetItem para todos os accessory slots equipados.
     # Inclui ring_left/ring_right (até 2 anéis), amulet, cloak, boots,
-    # helmet, gloves, belt. Usado por MagicItemRules para varrer efeitos.
+    # helmet, gloves, belt, circlet, earrings, braceletes. Usado por MagicItemRules para varrer efeitos.
     accessory_slots = SheetItem::ACCESSORY_SLOTS
     accessories = accessory_slots.each_with_object({}) do |slot_name, acc|
       it = equipped.find { |e| e.slot.to_s == slot_name }

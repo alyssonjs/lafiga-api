@@ -6,6 +6,10 @@ meta:
     pl: 1000     # platina
   weight_unit: kg
   notes: "Custo normalizado em cp (cost_cp) + forma humana (cost). Use aliases para aceitar nomes PT/EN."
+  # Armas com propriedade ammunition (5e): o rake `equipment:import_items` grava
+  # `props.ammunition_index` alinhado a `items.api_index` da munição (flecha,
+  # virote, …). Opcional no YAML por arma: chave `ammunition_index` (slug) para
+  # override; senão o rake infere (besta→virote, funda→pedra-de-funda, etc.).
 
 weapons:
   adaga:
@@ -653,6 +657,23 @@ gear:
     category: ammunition
     weight_kg: 0.04
     cost_cp: 5
+
+  # Munição SRD usada por funda / zarabatana (slugs referenciados em props.ammunition_index do rake).
+  pedra-de-funda:
+    name: Pedra de Funda
+    aliases: [sling-bullet, sling-bullets, sling-stone]
+    kind: ammunition
+    category: ammunition
+    weight_kg: 0.02
+    cost_cp: 4
+
+  agulha-de-zarabatana:
+    name: Agulha de Zarabatana
+    aliases: [blowgun-needle, blowgun-needles]
+    kind: ammunition
+    category: ammunition
+    weight_kg: 0.02
+    cost_cp: 2
 
   foco-arcano:
     name: Foco Arcano

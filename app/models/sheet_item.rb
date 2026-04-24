@@ -8,7 +8,10 @@ class SheetItem < ApplicationRecord
   # Slots de acessório (Fase 2.1) — desbloqueiam itens como anel da
   # vontade, manopla da força, manto de resistência, botas aladas, etc.
   # ring_left/ring_right permitem ATÉ 2 anéis equipados simultaneamente.
-  ACCESSORY_SLOTS = %w[ring_left ring_right amulet cloak boots helmet gloves belt].freeze
+  ACCESSORY_SLOTS = %w[
+    ring_left ring_right amulet cloak boots helmet gloves belt
+    circlet earrings bracelet_left bracelet_right
+  ].freeze
   ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS).freeze
 
   validates :sheet_id, presence: true

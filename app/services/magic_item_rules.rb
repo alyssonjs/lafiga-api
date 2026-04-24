@@ -118,7 +118,7 @@ class MagicItemRules
     b = (mi.bonuses || {})
     legacy = (b['ac'] || b[:ac] || 0).to_i
     if legacy != 0
-      default_type = mi.category.to_s.downcase.include?('shield') ? 'escudo' : 'magico'
+      default_type = EquipmentRules.magic_item_shield_category?(mi.category) ? 'escudo' : 'magico'
       res[default_type] = [res[default_type].to_i, legacy].max
     end
 
@@ -129,7 +129,7 @@ class MagicItemRules
       case kind
       when 'ac_bonus'
         val = (eff['value'] || eff[:value]).to_i
-        t   = (eff['type']  || eff[:type]).to_s.presence || (mi.category.to_s.downcase.include?('shield') ? 'escudo' : 'magico')
+        t   = (eff['type']  || eff[:type]).to_s.presence || (EquipmentRules.magic_item_shield_category?(mi.category) ? 'escudo' : 'magico')
         res[t] = [res[t].to_i, val].max
       when 'set_ac_base'
         # Not applied here; would require overriding base AC formula upstream.

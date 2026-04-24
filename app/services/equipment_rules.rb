@@ -8,6 +8,9 @@ class EquipmentRules
   }.freeze
 
   # ===== ARSENAL =====
+  # @deprecated_request_time_source Em runtime, preferir `Item` + `props`
+  # (ver `ItemWeaponPropsMapper` / `EquipmentRules.weapon_props`). Esta tabela
+  # permanece só como fallback até cobertura DB = 100% e remoção planejada.
   # Adicionados: cost_cp (inteiro, em cp) e weight_kg (Float, em kg)
   WEAPON_TABLE = {
     # Simples Corpo-a-Corpo
@@ -88,6 +91,8 @@ class EquipmentRules
     'rede'              => { type: 'ranged', hands: 1, special: true,                            category: 'martial', damage_die: '',     range: '5/15',   cost_cp: 100,  weight_kg: 1.5 }
   }.freeze
 
+  # @deprecated_request_time_source Preferir `Item` + `ItemArmorPropsMapper` em
+  # `EquipmentRules.ac_for`; manter esta tabela só como fallback até remoção.
   ARMOR_TABLE = {
     # (mantida como estava; se quiser adiciono custo/peso da armadura também)
     'padded'           => { cat: 'light',  base: 11, dex_cap: nil, stealth_dis: true,  str_req: nil },
@@ -135,6 +140,18 @@ class EquipmentRules
         return item.weight_kg.to_f
       end
       key = normalize_index(item)
+      db_item = item.respond_to?(:item) && item.item ? item.item : nil
+      if !db_item && defined?(Item)
+        cand = Item.find_by(api_index: key)
+        db_item = cand if cand
+      end
+      if db_item&.respond_to?(:weight_kg) && !db_item.weight_kg.nil?
+        return db_item.weight_kg.to_f
+      end
+      if db_item&.weapon?
+        mapped = ItemWeaponPropsMapper.from_item(db_item)
+        return mapped[:weight_kg].to_f if mapped&.dig(:weight_kg)
+      end
       if WEAPON_TABLE[key] && WEAPON_TABLE[key][:weight_kg]
         return WEAPON_TABLE[key][:weight_kg].to_f
       end
@@ -152,6 +169,18 @@ class EquipmentRules
         return (item.value_gp.to_f * 100).to_i
       end
       key = normalize_index(item)
+      db_item = item.respond_to?(:item) && item.item ? item.item : nil
+      if !db_item && defined?(Item)
+        cand = Item.find_by(api_index: key)
+        db_item = cand if cand
+      end
+      if db_item&.respond_to?(:value_gp) && !db_item.value_gp.nil?
+        return (db_item.value_gp.to_f * 100).to_i
+      end
+      if db_item&.weapon?
+        mapped = ItemWeaponPropsMapper.from_item(db_item)
+        return mapped[:cost_cp].to_i if mapped&.dig(:cost_cp)
+      end
       if WEAPON_TABLE[key] && WEAPON_TABLE[key][:cost_cp]
         return WEAPON_TABLE[key][:cost_cp].to_i
       end
@@ -233,6 +262,14 @@ class EquipmentRules
       if armor_item
         key = normalize_index(armor_item)
         armor_data = ARMOR_TABLE[key]
+        unless armor_data
+          db_armor = armor_item.respond_to?(:item) && armor_item.item&.armor? ? armor_item.item : nil
+          if !db_armor && defined?(Item)
+            cand = Item.find_by(api_index: key)
+            db_armor = cand if cand&.armor?
+          end
+          armor_data = ItemArmorPropsMapper.from_item(db_armor) if db_armor
+        end
         if armor_data
           base = armor_data[:base]
           cap = armor_data[:dex_cap]
@@ -256,7 +293,15 @@ class EquipmentRules
       end
 
       if shield_item
-        ac += 2
+        shield_bonus = 2
+        if shield_item.respond_to?(:item) && shield_item.item&.shield?
+          shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(shield_item.item)
+        elsif defined?(Item)
+          sk = normalize_index(shield_item)
+          si = Item.find_by(api_index: sk)
+          shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(si) if si&.shield?
+        end
+        ac += shield_bonus
         source = "#{source} + Escudo"
       end
 
@@ -271,11 +316,26 @@ class EquipmentRules
       }
     end
 
+    # SheetItem.category pode vir em EN (`weapon`) ou PT-BR (`Armas`) quando a bolsa grava a categoria de UI.
+    def sheet_item_weapon_category?(category)
+      c = category.to_s.downcase.strip
+      return true if c.include?('weapon')
+      return true if c == 'armas' || c == 'arma'
+
+      false
+    end
+
+    # MagicItem#category — escudo para empilhamento de bônus de CA tipado (escudo vs mágico).
+    def magic_item_shield_category?(category)
+      c = category.to_s.downcase
+      c.include?('shield') || c.include?('escudo')
+    end
+
     def is_weapon?(item)
       return false unless item
       key = normalize_index(item)
       return true if WEAPON_TABLE.key?(key)
-      (item.category || '').to_s.downcase.include?('weapon')
+      sheet_item_weapon_category?(item.category)
     end
 
     def normalize_index(item)
@@ -290,6 +350,17 @@ class EquipmentRules
     def weapon_props(item)
       return nil unless item
       key = normalize_index(item)
+
+      db_item = item.respond_to?(:item) && item.item&.weapon? ? item.item : nil
+      if !db_item && defined?(Item)
+        cand = Item.find_by(api_index: key)
+        db_item = cand if cand&.weapon?
+      end
+      if db_item
+        mapped = ItemWeaponPropsMapper.from_item(db_item)
+        return mapped if mapped.present?
+      end
+
       row = WEAPON_TABLE[key]
       unless row
         props = safe_props(item)

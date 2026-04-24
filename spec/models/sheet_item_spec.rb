@@ -45,7 +45,8 @@ RSpec.describe SheetItem, type: :model do
       expect(SheetItem::ALL_SLOTS).to eq(SheetItem::COMBAT_SLOTS + SheetItem::ACCESSORY_SLOTS)
       expect(SheetItem::ALL_SLOTS).to include('main_hand', 'off_hand', 'armor', 'shield')
       expect(SheetItem::ALL_SLOTS).to include('ring_left', 'ring_right', 'amulet', 'cloak',
-                                              'boots', 'helmet', 'gloves', 'belt')
+                                              'boots', 'helmet', 'gloves', 'belt',
+                                              'circlet', 'earrings', 'bracelet_left', 'bracelet_right')
     end
   end
 end
