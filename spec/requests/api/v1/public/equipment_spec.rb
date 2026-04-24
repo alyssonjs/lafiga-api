@@ -75,5 +75,30 @@ RSpec.describe "Api::V1::Public::Equipment", type: :request do
       expect(idxs).to include('adaga')
     end
   end
+
+  describe "GET /api/v1/public/equipment_list/:category" do
+    before do
+      Item.find_or_initialize_by(api_index: 'arco-longo-spec').tap do |it|
+        it.assign_attributes(
+          name: 'Arco Longo',
+          kind: :weapon,
+          category: 'martial',
+          props: { 'properties' => %w[ammunition heavy two-handed], 'type' => 'ranged', 'hands' => 2, 'damage_die' => '1d8' }
+        )
+        it.save!
+      end
+    end
+
+    it "returns non-empty equipment payloads for paginated list (Item records, not index strings)" do
+      get "/api/v1/public/equipment_list/martial-weapons", params: { page: 1 }
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      rows = Array(json['equipment'])
+      expect(rows).not_to be_empty
+      idxs = rows.map { |e| e['index'] }
+      expect(idxs).to include('arco-longo-spec')
+      expect(rows.first['name']).to be_present
+    end
+  end
 end
 

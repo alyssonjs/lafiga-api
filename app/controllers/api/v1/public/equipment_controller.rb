@@ -101,17 +101,16 @@ class Api::V1::Public::EquipmentController < ApplicationController
     per_page = 20
     offset = (page - 1) * per_page
 
-    # Buscar equipamentos da categoria (apenas DB)
-    equipment_indexes = items_for_category_from_db(category)
-    return render json: { error: 'Category not found' }, status: :not_found if equipment_indexes.empty?
+    # Buscar equipamentos da categoria (apenas DB) — records `Item`, não strings.
+    items_in_category = items_for_category_from_db(category)
+    return render json: { error: 'Category not found' }, status: :not_found if items_in_category.empty?
 
-    # Paginar os índices
-    paginated_indexes = equipment_indexes[offset, per_page]
-    total_count = equipment_indexes.length
+    paginated_items = items_in_category[offset, per_page]
+    total_count = items_in_category.length
     total_pages = (total_count.to_f / per_page).ceil
 
-    # Buscar detalhes de todos os equipamentos da página atual
-    equipment_details = paginated_indexes.map { |index| db_equipment(index) }.compact
+    # Serializar cada record (db_equipment espera api_index string; aqui já temos o Item)
+    equipment_details = paginated_items.map { |it| build_equipment_from_item(it) }.compact
 
     render json: {
       equipment: equipment_details,
