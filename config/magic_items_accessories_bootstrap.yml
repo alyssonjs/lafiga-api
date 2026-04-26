@@ -1,0 +1,470 @@
+# Seed variado: 15 common + 15 com efeitos (anéis, equipamento, varinhas, bastões, cajados).
+# `category` segue a API (MagicItemCatalog::CATEGORIES); itens maravilhosos (DMG) usam
+# `category: gear` + `is_wondrous: true` (trouxas comuns podem ter `is_wondrous: false`).
+# O compêndio no front: anéis + gear/tool com flag na aba Acessórios; varinha/bastão/cajado na aba Armas.
+# Sub-categorias: `magicItemSubCategories.ts`.
+# Importar: bin/rails magic_items:import_accessories_bootstrap
+---
+magic_items:
+  # ——— 15 Common ———
+  acc-anel-fio-entalhado:
+    name: "Anel de fio entalhado"
+    rarity: common
+    category: ring
+    sub_category: band
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Argola fina de liga, gravada com um padrão geométrico. Sem efeito mecânico além de ser um foco de costume."
+    weight: "0.01 lb"
+    value_gp: 5
+    tags: [ "acessório", "traje" ]
+    props: { }
+
+  acc-anel-sinete-ornamental:
+    name: "Anel sinete ornamental"
+    rarity: common
+    category: ring
+    sub_category: signet
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Sinete forjado a partir de liga; adequado a lacrar cartas, não concede bônus de jogo em si."
+    weight: "0.02 lb"
+    value_gp: 8
+    tags: [ "acessório" ]
+    props: { }
+
+  acc-anel-alianas-gemeas:
+    name: "Alianças gêmeas (par)"
+    rarity: common
+    category: ring
+    sub_category: twinned
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Dois aros simples, um ponto cada de identificação. Uso narrativo (casamento, voto, irmandade)."
+    weight: "0.02 lb"
+    value_gp: 10
+    tags: [ "acessório" ]
+    props: { }
+
+  acc-varinha-de-cerejeira:
+    name: "Varinha de madeira de cerejeira"
+    rarity: common
+    category: wand
+    sub_category: utility
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Varinha lisa, polida, ideal como foco. Sem efeito mecânico automático; serve como aparato arcano básico."
+    weight: "0.1 lb"
+    value_gp: 15
+    tags: [ "foco" ]
+    props: { }
+
+  acc-varinha-de-alecrim:
+    name: "Varinha de ramo de alecrim"
+    rarity: common
+    category: wand
+    sub_category: nature
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Condensou-se em nó natural; a fragrância de alecrim persiste. Foco de costume para druidas."
+    weight: "0.1 lb"
+    value_gp: 12
+    tags: [ "foco" ]
+    props: { }
+
+  acc-bastao-curto-aviso:
+    name: "Bastão curto de aviso"
+    rarity: common
+    category: rod
+    sub_category: security
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Haste de bronze de 1 ft; sino interior solta leve toque (sem magia, só ruído)."
+    weight: "0.3 lb"
+    value_gp: 20
+    tags: [ "foco", "bastão" ]
+    props: { }
+
+  acc-bastao-de-ordem-liso:
+    name: "Bastão de ordem (haste cívica)"
+    rarity: common
+    category: rod
+    sub_category: rulership
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Bastão esculpido com a sigla de uma guilda. Uso de autoridade, não gera bônus de jogo."
+    weight: "0.4 lb"
+    value_gp: 18
+    tags: [ "foco", "bastão" ]
+    props: { }
+
+  acc-cajado-raiz-viva:
+    name: "Cajado de raiz viva (curvo)"
+    rarity: common
+    category: staff
+    sub_category: wood
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Madeira ainda húmida; textura áspera, ideal como bastão de caminhada e foco de natureza básica."
+    weight: "1.5 lb"
+    value_gp: 25
+    tags: [ "cajado" ]
+    props: { }
+
+  acc-cajado-viajante:
+    name: "Cajado de viajante (simples)"
+    rarity: common
+    category: staff
+    sub_category: power
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Cajado duro, com tiras de couro. Sem carga; ornamento, não bônus de conjuração."
+    weight: "1.2 lb"
+    value_gp: 20
+    tags: [ "cajado" ]
+    props: { }
+
+  acc-brincos-vidro-colorido:
+    name: "Brincos de vidro colorido"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: earrings
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Par de vidraria simples, preso a ganchos de cobre. Só efeito estético."
+    weight: "0.01 lb"
+    value_gp: 3
+    tags: [ "acessório" ]
+    props: { }
+
+  acc-colar-de-corda-e-vime:
+    name: "Colar de corda e vime"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: amulet
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Trança simples com um cascalho liso. Sem proteção mística; talismã de costume."
+    weight: "0.05 lb"
+    value_gp: 2
+    tags: [ "acessório" ]
+    props: { }
+
+  acc-tiara-de-lata-dourada:
+    name: "Tiara de lata dourada"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: circlet
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Peça de teatro, leve, que verdeia ao sabor do tempo. Sem bônus de CA ou conjuração."
+    weight: "0.1 lb"
+    value_gp: 4
+    tags: [ "acessório" ]
+    props: { }
+
+  acc-mascara-de-festim:
+    name: "Máscara de festim (madeira)"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: mask
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Máscara veneziana básica, pintada à mão. Disfarce, não invisibilidade."
+    weight: "0.1 lb"
+    value_gp: 5
+    tags: [ "acessório" ]
+    props: { }
+
+  acc-oculos-sem-lentes:
+    name: "Óculos sem lentes (armação)"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: goggles
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Armação de metal; serve de imagem, não de visão atípica."
+    weight: "0.02 lb"
+    value_gp: 3
+    tags: [ "acessório" ]
+    props: { }
+
+  acc-broche-de-cristal-opaco:
+    name: "Broche de cristal opaco"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: brooch
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Prende o manto, sem cristalismo mágico real."
+    weight: "0.05 lb"
+    value_gp: 6
+    tags: [ "acessório" ]
+    props: { }
+
+  # ——— 15 Itens com raridade maior (efeitos canónicos) ———
+  acc-anel-do-primeiro-escudo:
+    name: "Anel do Primeiro Escudo"
+    rarity: uncommon
+    category: ring
+    sub_category: band
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Enquanto sintonizado, você recebe +1 de bônus à Classe de Armadura. O aro aquece ligeiramente em combate."
+    weight: "0.01 lb"
+    value_gp: 500
+    tags: [ "proteção" ]
+    props:
+      effects:
+        - kind: ac_bonus
+          value: 1
+          type: magico
+
+  acc-anel-pressagio-azul:
+    name: "Anel de Presságio Azul"
+    rarity: uncommon
+    category: ring
+    sub_category: signet
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Sintonização: vantagem em testes de Sabedoria (Intuição) enquanto usado. A pedra cintila com rumores de ruína."
+    weight: "0.02 lb"
+    value_gp: 600
+    tags: [ "anel", "intuição" ]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: [ "intuição" ]
+
+  acc-varinha-dardo-de-gelo:
+    name: "Varinha de Dardos de Gelo (cargas 7)"
+    rarity: rare
+    category: wand
+    sub_category: arcane
+    requires_attunement: false
+    source: "Lafiga / seed"
+    description: "Comandos avaros de frio. Trate como itens de conjurador: descreva a magia no grupo; carga 7, recarrega ao amanhecer (DM)."
+    weight: "0.1 lb"
+    value_gp: 4000
+    tags: [ "frio", "varinha" ]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Frio residual"
+          desc: "7 cargas (recarrega ao amanhecer). Gaste 1: lance mísseis de gelo como varinha; DC e bônus de ataque conforme a magia padrão (DM)."
+
+  acc-cajado-da-aurora:
+    name: "Cajado da Aurora"
+    rarity: very-rare
+    category: staff
+    sub_category: healing
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Luz dócil. 1x por descanso longo, cura 2d4+2 PV a uma criatura a 1,5m (narrado como magia 2º, não soma a spell list)."
+    weight: "1.8 lb"
+    value_gp: 20000
+    tags: [ "luz" ]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Toque da aurora"
+          desc: "1/descanso longo: 2d4+2 cura; ou luz 6m como luz (cantrip) à vontade."
+
+  acc-cajado-tenebroso:
+    name: "Cajado Sombrio do Penhasco"
+    rarity: rare
+    category: staff
+    sub_category: arcane
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Resistência a dano de concussão enquanto empunhado. Uma carga: escuridão 4,5m, 1 min (concentração narrativa, DM confirma)."
+    weight: "1.6 lb"
+    value_gp: 8000
+    tags: [ "sombra" ]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: [ "concussao" ]
+        - kind: passive_feature
+          name: "Névoa ofuscante (1 carga / descanso curto)"
+          desc: "Usar carga: escuridão mágica leve, 1 minuto."
+
+  acc-brincos-da-vespera:
+    name: "Brincos da Véspera"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: earrings
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Vantagem em testes de Carisma (Intimidação) se for noite. Brilho tênue ao luar."
+    weight: "0.01 lb"
+    value_gp: 500
+    tags: [ "lunar" ]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: [ "intimidação" ]
+
+  acc-colar-escudo-ferreo:
+    name: "Colar de Escudo Férreo"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: amulet
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Resistência a dano de lâmina (cortante) enquanto sintonizado."
+    weight: "0.1 lb"
+    value_gp: 1200
+    tags: [ "amuleto" ]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: [ "cortante" ]
+
+  acc-tiara-dos-versos:
+    name: "Tiara dos Versos"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: circlet
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Vantagem em testes de Inteligência (Arcanismo) e (História) enquanto sintonizado."
+    weight: "0.2 lb"
+    value_gp: 5000
+    tags: [ "saber" ]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: [ "arcanismo", "história" ]
+
+  acc-mascara-de-nocturno:
+    name: "Máscara de Nocturno"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: mask
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Vantagem em Furtividade à nove ou em penumbra (DM: condição de pouca luz)."
+    weight: "0.1 lb"
+    value_gp: 4000
+    tags: [ "furtivo" ]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: [ "furtividade" ]
+
+  acc-oculos-de-analise:
+    name: "Óculos de Análise"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: goggles
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Uma vez por curto, pode rerrolar 1 dado de Investigação (narrar como 1/ descanso curto)."
+    weight: "0.05 lb"
+    value_gp: 400
+    tags: [ "perícia" ]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: [ "investigação" ]
+
+  acc-broche-guarda-real:
+    name: "Broche da Guarda Real"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: brooch
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "+1 em testes de Carisma (Persuasão) ao negociar com autoridade reconhecida."
+    weight: "0.04 lb"
+    value_gp: 3000
+    tags: [ "autoridade" ]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: [ "persuasão" ]
+
+  acc-relicario-sagrado:
+    name: "Relicário Sagrado"
+    rarity: legendary
+    category: gear
+    is_wondrous: true
+    sub_category: locket
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Uma vez por dia, reação após ser reduzido a 0 PV: fica 1 PV. Uso único; restaura após 7 dias."
+    weight: "0.05 lb"
+    value_gp: 50000
+    tags: [ "lenda" ]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Fio dourado (1/dia)"
+          desc: "Efeito de renascitação: 0→1 PV 1/ dia; 7 dias recarga (DM ajusta)."
+
+  acc-cinto-do-andarilho:
+    name: "Cinto do Andarilho"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: belt
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Enquanto sintonizado, +5 ft de deslocamento terrestre."
+    weight: "0.3 lb"
+    value_gp: 6000
+    tags: [ "cinto" ]
+    props:
+      effects:
+        - kind: speed_bonus
+          value: 5
+
+  acc-anel-ancestral-volcanico:
+    name: "Anel Ancestral Vulcânico"
+    rarity: legendary
+    category: ring
+    sub_category: seal
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Enquanto sintonizado, resistência a dano de fogo. A pedra púlora como magma ao detectar fogo aberto."
+    weight: "0.02 lb"
+    value_gp: 40000
+    tags: [ "fogo" ]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: [ "fogo" ]
+        - kind: passive_feature
+          name: "Vínculo de forja"
+          desc: "Narrativamente, ignora calor de fogueiras/brasas (não imunidade a dano de magia de fogo)."
+
+  acc-anel-veneno-estavel:
+    name: "Anel de Veneno Estável"
+    rarity: very-rare
+    category: ring
+    sub_category: ornamental
+    requires_attunement: true
+    source: "Lafiga / seed"
+    description: "Resistência a veneno; vantagem em testes de resistência à morte se o dano tiver o tipo veneno (DM)."
+    weight: "0.01 lb"
+    value_gp: 15000
+    tags: [ "veneno" ]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: [ "veneno" ]
+        - kind: save_advantage
+          abilities: [ "con" ]

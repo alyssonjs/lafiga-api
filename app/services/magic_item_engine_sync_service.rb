@@ -19,6 +19,27 @@ class MagicItemEngineSyncService
     new(payload, dry_run: dry_run).call
   end
 
+  # Categoria canónica + flag `is_wondrous` a partir de uma linha YAML (também usado
+  # em `magic_items:import` para a tabela `items`).
+  #
+  # @return [Array(String, Boolean)] [category, is_wondrous]
+  def self.category_and_wondrous_for_yaml_row(row)
+    raw_cat = row['category']&.to_s&.strip
+    is_w = row['is_wondrous']
+    is_w = ActiveModel::Type::Boolean.new.cast(is_w) unless is_w.nil?
+
+    if MagicItemCategoryMigration.legacy_wondrous_value?(raw_cat)
+      is_w = true if is_w.nil?
+      new_cat, = MagicItemCategoryMigration.from_legacy_wondrous_item(row['sub_category'])
+    else
+      new_cat = MagicItemCatalog.normalize_category(raw_cat)
+    end
+
+    is_w = false if new_cat && %w[weapon ammunition armor shield ring wand rod staff potion scroll].include?(new_cat.to_s)
+    is_w = false if is_w.nil?
+    [new_cat, is_w]
+  end
+
   # @param payload [String, Hash] YAML string ou Hash já parseada (com chave 'magic_items')
   # @param dry_run [Boolean] se true, não persiste alterações (apenas valida)
   def initialize(payload, dry_run: false)
@@ -36,11 +57,14 @@ class MagicItemEngineSyncService
       slug = key.to_s
       begin
         props = row['props'] || {}
+        new_cat, is_w = self.class.category_and_wondrous_for_yaml_row(row)
+
         attrs = {
           name:                row['name'] || slug.tr('-', ' '),
           rarity:              row['rarity'],
-          category:            row['category'],
+          category:            new_cat,
           sub_category:        row['sub_category'],
+          is_wondrous:         is_w,
           requires_attunement: !!row['requires_attunement'],
           attunement_note:     row['attunement_note'],
           weight_kg:           self.class.to_kg(row['weight']),

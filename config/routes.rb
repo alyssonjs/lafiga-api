@@ -47,6 +47,9 @@ Rails.application.routes.draw do
             post :bulk_import
           end
         end
+        get    'catalog_items/:api_index', to: 'catalog_items#show',    constraints: { api_index: %r{[^/]+} }
+        match  'catalog_items/:api_index', to: 'catalog_items#update',  via: %i[put patch], constraints: { api_index: %r{[^/]+} }
+        delete 'catalog_items/:api_index', to: 'catalog_items#destroy', constraints: { api_index: %r{[^/]+} }
         resources :monsters, only: [:index, :show, :create, :update, :destroy] do
           collection do
             post :bulk_import

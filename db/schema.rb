@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_24_160000) do
+ActiveRecord::Schema.define(version: 2026_04_25_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -353,6 +353,7 @@ ActiveRecord::Schema.define(version: 2026_04_24_160000) do
     t.jsonb "props", default: {}
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "is_wondrous", default: false, null: false
     t.index ["api_index"], name: "index_items_on_api_index", unique: true
     t.index ["category"], name: "index_items_on_category"
     t.index ["kind"], name: "index_items_on_kind"
@@ -392,6 +393,7 @@ ActiveRecord::Schema.define(version: 2026_04_24_160000) do
     t.jsonb "effects", default: []
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "is_wondrous", default: false, null: false
     t.index ["category"], name: "index_magic_items_on_category"
     t.index ["name"], name: "index_magic_items_on_name"
     t.index ["rarity"], name: "index_magic_items_on_rarity"

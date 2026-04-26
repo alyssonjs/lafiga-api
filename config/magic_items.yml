@@ -33,7 +33,8 @@ magic_items:
   saco-de-contencao:
     name: Saco de Contenção (Bag of Holding)
     rarity: uncommon
-    category: wondrous item
+    category: gear
+    is_wondrous: true
     requires_attunement: false
     description: |
       Este saco tem uma abertura de 2 pés de diâmetro e 4 pés de profundidade. O saco pode conter até 500 lb (≈227 kg), não excedendo um volume de 64 pés cúbicos (≈120 L). O peso do saco é sempre 15 lb (≈6,8 kg), independentemente do conteúdo. Recuperar um item do saco requer uma ação.
@@ -75,7 +76,8 @@ magic_items:
   manto-da-resistencia-ao-fogo:
     name: Manto da Resistência ao Fogo
     rarity: uncommon
-    category: wondrous item
+    category: gear
+    is_wondrous: true
     sub_category: cloak
     requires_attunement: true
     description: |
@@ -109,7 +111,8 @@ magic_items:
   manopla-da-forca-do-gigante-da-colina:
     name: Manopla da Força do Gigante da Colina
     rarity: rare
-    category: wondrous item
+    category: gear
+    is_wondrous: true
     sub_category: gauntlets
     requires_attunement: true
     description: |
@@ -128,7 +131,8 @@ magic_items:
   botas-aladas:
     name: Botas Aladas
     rarity: uncommon
-    category: wondrous item
+    category: gear
+    is_wondrous: true
     sub_category: boots
     requires_attunement: true
     description: |
@@ -149,7 +153,8 @@ magic_items:
   amuleto-de-saude:
     name: Amuleto de Saúde
     rarity: rare
-    category: wondrous item
+    category: gear
+    is_wondrous: true
     sub_category: amulet
     requires_attunement: true
     description: |

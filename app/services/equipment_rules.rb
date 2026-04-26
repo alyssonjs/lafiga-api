@@ -141,7 +141,10 @@ class EquipmentRules
       end
       key = normalize_index(item)
       db_item = item.respond_to?(:item) && item.item ? item.item : nil
-      if !db_item && defined?(Item)
+      # Evita N+1: serialização de `Item` já passa o record — não refazer find_by no mesmo id.
+      if !db_item && defined?(Item) && item.is_a?(Item)
+        db_item = item
+      elsif !db_item && defined?(Item)
         cand = Item.find_by(api_index: key)
         db_item = cand if cand
       end
@@ -170,7 +173,9 @@ class EquipmentRules
       end
       key = normalize_index(item)
       db_item = item.respond_to?(:item) && item.item ? item.item : nil
-      if !db_item && defined?(Item)
+      if !db_item && defined?(Item) && item.is_a?(Item)
+        db_item = item
+      elsif !db_item && defined?(Item)
         cand = Item.find_by(api_index: key)
         db_item = cand if cand
       end

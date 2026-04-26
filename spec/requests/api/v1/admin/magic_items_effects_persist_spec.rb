@@ -24,6 +24,8 @@ RSpec.describe 'Api::V1::Admin::MagicItemsController effects JSON persistence', 
     expect(response).to have_http_status(:created)
     body = response.parsed_body['magic_item']
     expect(body['effects']).to eq([{ 'kind' => 'speed_bonus', 'value' => 12 }])
+    expect(body['category']).to eq('gear')
+    expect(body['is_wondrous']).to be true
 
     mi = MagicItem.find_by(slug: slug)
     expect(mi).to be_present

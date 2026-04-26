@@ -107,7 +107,7 @@ class Api::V1::Admin::MagicItemsController < ApplicationController
 
   def permitted
     params.require(:magic_item).permit(
-      :name, :slug, :rarity, :category, :sub_category,
+      :name, :slug, :rarity, :category, :sub_category, :is_wondrous,
       :requires_attunement, :attunement_note,
       :weight_kg, :value_gp, :source,
       :cursed, :curse_text, :charges, :recharge,

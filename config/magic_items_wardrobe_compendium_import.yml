@@ -1,0 +1,1117 @@
+# Pack de import para produção — Compêndio Vestuário (Lafiga)
+# Cobre: anéis (categoria `ring`) + 3 itens para cada `sub_category` de peça (inglês, canónico no front).
+#
+# Importar:
+#   • Admin UI: POST /api/v1/admin/magic_items/bulk_import  body: { yaml: "<conteúdo>", dry_run: true }
+#   • Rake:      bin/rails runner "puts MagicItemEngineSyncService.call(File.read('config/magic_items_wardrobe_compendium_import.yml'), dry_run: true).inspect"
+#
+# Depois de validar, repetir com dry_run: false. Slugs têm prefixo `lf-prod-ward-` para não colidir com `acc-*` e seeds existentes.
+---
+magic_items:
+  # ——— Anéis (4) — categoria API `ring` — sub-aba "Anéis" no Vestuário
+  lf-prod-ward-ring-passo-leve-01:
+    name: "Anel do passo leve (forjada I)"
+    rarity: uncommon
+    category: ring
+    sub_category: band
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: |
+      Enquanto sintonizado, seu deslocamento a pé aumenta em 1,5 m. O aro vibra ao correr.
+    weight: "0.01 lb"
+    value_gp: 800
+    tags: ["vestuário", "anel", "movimento"]
+    props:
+      effects:
+        - kind: speed_bonus
+          value: 5
+
+  lf-prod-ward-ring-escudo-mentis-01:
+    name: "Anel do escudo mentis (forjada I)"
+    rarity: rare
+    category: ring
+    sub_category: signet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: |
+      Sintonizado: vantagem em testes de resistência de Sabedoria contra efeitos que deixam amedrontado.
+    weight: "0.02 lb"
+    value_gp: 4000
+    tags: ["vestuário", "anel", "mental"]
+    props:
+      effects:
+        - kind: save_advantage
+          abilities: ["wis"]
+
+  lf-prod-ward-ring-pressagio-crepusculo-01:
+    name: "Anel de presságio crepuscular (forjada I)"
+    rarity: common
+    category: ring
+    sub_category: seal
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: |
+      Pedra que escurece ao entardecer. Sem bônus mecânico; foco de conjuração e narrativa.
+    weight: "0.01 lb"
+    value_gp: 25
+    tags: ["vestuário", "anel", "traje"]
+    props: {}
+
+  lf-prod-ward-ring-ultimo-voto-01:
+    name: "Anel do último voto (forjada I)"
+    rarity: very-rare
+    category: ring
+    sub_category: twinned
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: |
+      1 x por descanso longo, quando cair a 0 PV, estabiliza automaticamente (como o talento) se não estiver bloqueado por outro efeito.
+    weight: "0.02 lb"
+    value_gp: 12000
+    tags: ["vestuário", "anel", "sobrevivência"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Vínculo de bastião (1/ descanso longo)"
+          desc: "Estabilização automática ao 0 PV, se aplicável; DM arbitra conflito com regras de campanha."
+
+  # ——— Brincos (earrings) — 3
+  lf-prod-ward-ear-aurora-01:
+    name: "Brincos de aurora cristalina I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: earrings
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Carisma (Performance) sob luz natural direta."
+    weight: "0.02 lb"
+    value_gp: 600
+    tags: ["vestuário", "brincos"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["atuação"]
+
+  lf-prod-ward-ear-sussurro-01:
+    name: "Brincos do sussurro distante I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: earrings
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Vidro fumè; efeito puramente estético com leve ressonância ao vento."
+    weight: "0.01 lb"
+    value_gp: 8
+    tags: ["vestuário", "brincos", "traje"]
+    props: {}
+
+  lf-prod-ward-ear-vespera-ferrea-01:
+    name: "Brincos da véspera férrea I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: earrings
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Resistência a dano de concussão enquanto sintonizados; tilintam levemente ao sofrer impacto."
+    weight: "0.01 lb"
+    value_gp: 3500
+    tags: ["vestuário", "brincos"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["concussao"]
+
+  # ——— Colar (necklace) — 3
+  lf-prod-ward-nec-fio-aurora-01:
+    name: "Colar fio de aurora (corrente longa) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: necklace
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Prata rebatida, pingente de vidro. Sem bônus; adorno de gala."
+    weight: "0.08 lb"
+    value_gp: 12
+    tags: ["vestuário", "colar", "traje"]
+    props: {}
+
+  lf-prod-ward-nec-shard-01:
+    name: "Colar nó de shard azul I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: necklace
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Inteligência (Religião) ao manipular objectos de fé de qualquer panteão."
+    weight: "0.06 lb"
+    value_gp: 900
+    tags: ["vestuário", "colar", "fé"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["religião"]
+
+  lf-prod-ward-nec-escama-01:
+    name: "Colar de escama polida (dracônico) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: necklace
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Resistência a dano de fogo. A escama aquece de leve perante chamas abertas."
+    weight: "0.1 lb"
+    value_gp: 5000
+    tags: ["vestuário", "colar", "fogo"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["fogo"]
+
+  # ——— Gargantilha (choker) — 3
+  lf-prod-ward-cho-veludo-01:
+    name: "Gargantilha de veludo encerado I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: choker
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Fecho de latão. Moda urbana, sem proteção mística."
+    weight: "0.05 lb"
+    value_gp: 4
+    tags: ["vestuário", "gargantilha", "traje"]
+    props: {}
+
+  lf-prod-ward-cho-sombra-01:
+    name: "Gargantilha de sombra tênue I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: choker
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Furtividade se estiver em luz muito fraca (DM: penumbra ou luz de velas)."
+    weight: "0.04 lb"
+    value_gp: 700
+    tags: ["vestuário", "gargantilha", "sombra"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["furtividade"]
+
+  lf-prod-ward-cho-prata-viva-01:
+    name: "Gargantilha de prata viva (forjada) I"
+    rarity: very-rare
+    category: gear
+    is_wondrous: true
+    sub_category: choker
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Como reação, quando for alvo de ataque de magia, +1 de bônus à CA contra essa rolagem 1/ turno (DM: não empilha com outras reações de CA)."
+    weight: "0.05 lb"
+    value_gp: 15000
+    tags: ["vestuário", "gargantilha", "defesa"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Dobra prateada (1/ turno)"
+          desc: "+1 CA vs um ataque de magia, como reação, 1/ turno; DM ajusta stack."
+
+  # ——— Amuleto (amulet) — 3
+  lf-prod-ward-amu-selos-01:
+    name: "Amuleto de selos cívicos (réplica) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: amulet
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Bronze; selos gastos, sem carga divina comprovada."
+    weight: "0.1 lb"
+    value_gp: 5
+    tags: ["vestuário", "amuleto", "traje"]
+    props: {}
+
+  lf-prod-ward-amu-sopro-01:
+    name: "Amuleto do sopro estável I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: amulet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Constituição para resistir a doenças inoculadas por inimigos."
+    weight: "0.12 lb"
+    value_gp: 1000
+    tags: ["vestuário", "amuleto", "saúde"]
+    props:
+      effects:
+        - kind: save_advantage
+          abilities: ["con"]
+
+  lf-prod-ward-amu-ancora-01:
+    name: "Amuleto ancora de marés I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: amulet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Resistência a dano de frio. Pingente frio ao toque, mesmo ao sol."
+    weight: "0.1 lb"
+    value_gp: 4500
+    tags: ["vestuário", "amuleto", "frio"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["frio"]
+
+  # ——— Tiara / circlet (circlet) — 3
+  lf-prod-ward-cir-lata-01:
+    name: "Tiara de lata dourada (revestida) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: circlet
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Peça de teatro, verdejante. Sem bônus de conjuração."
+    weight: "0.1 lb"
+    value_gp: 4
+    tags: ["vestuário", "tiara", "traje"]
+    props: {}
+
+  lf-prod-ward-cir-versos-01:
+    name: "Tiara dos versos ligeiros I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: circlet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Inteligência (Arcanismo) e (História)."
+    weight: "0.2 lb"
+    value_gp: 4800
+    tags: ["vestuário", "tiara", "saber"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["arcanismo", "história"]
+
+  lf-prod-ward-cir-orvalho-01:
+    name: "Circlet do orvalho lógico I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: circlet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Sabedoria (Intuição) contra enganos óbvios (DM: não revela magias)."
+    weight: "0.15 lb"
+    value_gp: 750
+    tags: ["vestuário", "circlet", "lógica"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["intuição"]
+
+  # ——— Bracelete esquerdo (bracelet_left) — 3
+  lf-prod-ward-brl-torcido-01:
+    name: "Bracelete (esq.) de cobre torcido I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: bracelet_left
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Ajustável; pátina verde, sem carga mística."
+    weight: "0.08 lb"
+    value_gp: 6
+    tags: ["vestuário", "bracelete", "traje"]
+    props: {}
+
+  lf-prod-ward-brl-escudo-01:
+    name: "Bracelete (esq.) de escudo fantasma I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: bracelet_left
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "+1 à CA se estiver com mão esquerda livre (não segura objecto, escudo, arma, foco) — ajuste fino de mesa a critério do DM."
+    weight: "0.1 lb"
+    value_gp: 2000
+    tags: ["vestuário", "bracelete", "defesa"]
+    props:
+      effects:
+        - kind: ac_bonus
+          value: 1
+          type: magico
+
+  lf-prod-ward-brl-pacto-01:
+    name: "Bracelete (esq.) do pacto lento I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: bracelet_left
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Uma vez por descanso curto, gaste reação: resistência a dano de energia (raio) até fim do turno. DM confirma duração."
+    weight: "0.1 lb"
+    value_gp: 6500
+    tags: ["vestuário", "bracelete", "energia"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Aro voltaico (1/ descanso curto)"
+          desc: "Reação: resistência a dano de raio até fim do turno (DM ajusta)."
+
+  # ——— Bracelete direito (bracelet_right) — 3
+  lf-prod-ward-brr-liso-01:
+    name: "Bracelete (dir.) liso I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: bracelet_right
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Prateado, gravação comemorativa, sem bônus mecânicos."
+    weight: "0.07 lb"
+    value_gp: 9
+    tags: ["vestuário", "bracelete", "traje"]
+    props: {}
+
+  lf-prod-ward-brr-diplomata-01:
+    name: "Bracelete (dir.) do diplomata I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: bracelet_right
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Carisma (Persuasão) em conversa formal (1 tentativa, 1/ encontro; DM arbitra)."
+    weight: "0.08 lb"
+    value_gp: 500
+    tags: ["vestuário", "bracelete", "social"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["persuasão"]
+
+  lf-prod-ward-brr-linha-01:
+    name: "Bracelete (dir.) de linha dourada I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: bracelet_right
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Resistência a dano de ácido. O metal repela gotas corrosivas (efeito visível)."
+    weight: "0.09 lb"
+    value_gp: 4200
+    tags: ["vestuário", "bracelete", "ácido"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["acido"]
+
+  # ——— Cinto (belt) — 3
+  lf-prod-ward-bel-couro-01:
+    name: "Cinto de couro reforçado (simples) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: belt
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Fivela de ferro; carga, sem magia."
+    weight: "0.4 lb"
+    value_gp: 3
+    tags: ["vestuário", "cinto", "traje"]
+    props: {}
+
+  lf-prod-ward-bel-andarilho-01:
+    name: "Cinto do andarilho lento (réplica) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: belt
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Enquanto sintonizado, +5 pés (1,5 m) de deslocamento terrestre (stack conforme tabela, DM aplica teto de mesa)."
+    weight: "0.3 lb"
+    value_gp: 6500
+    tags: ["vestuário", "cinto", "movimento"]
+    props:
+      effects:
+        - kind: speed_bonus
+          value: 5
+
+  lf-prod-ward-bel-peso-01:
+    name: "Cinto de peso equilibrado I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: belt
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Força (Atletismo) para manter o equilíbrio, escalar e resistir a empurrões."
+    weight: "0.35 lb"
+    value_gp: 800
+    tags: ["vestuário", "cinto", "física"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["atletismo"]
+
+  # ——— Luvas (gloves) — 3
+  lf-prod-ward-glv-cetim-01:
+    name: "Luvas de cetim (par) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: gloves
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Brancas, para cerimônia; nenhum bônus de prestidigitação inato."
+    weight: "0.1 lb"
+    value_gp: 4
+    tags: ["vestuário", "luvas", "traje"]
+    props: {}
+
+  lf-prod-ward-glv-ladrao-01:
+    name: "Luvas de ladrão inquieto (réplica) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: gloves
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Destreza (Prestidigitação) com as mãos (roubar, truques de mão) — 1/ turno se DM usar granularidade de turno."
+    weight: "0.1 lb"
+    value_gp: 5000
+    tags: ["vestuário", "luvas", "ladino"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["prestidigitação"]
+
+  lf-prod-ward-glv-arsenal-01:
+    name: "Luvas do arsenal férreo I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: gloves
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Punhos acolchoados: +1 em testes de Força (Atletismo) para desarmar (DM: não substitui ação padrão)."
+    weight: "0.2 lb"
+    value_gp: 600
+    tags: ["vestuário", "luvas", "combate"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["atletismo"]
+
+  # ——— Manoplas (gauntlets) — 3
+  lf-prod-ward-gnt-aço-01:
+    name: "Manoplas de aço polido (vazias) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: gauntlets
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Treino, sem reforço mágico."
+    weight: "0.5 lb"
+    value_gp: 20
+    tags: ["vestuário", "manoplas", "traje"]
+    props: {}
+
+  lf-prod-ward-gnt-colina-01:
+    name: "Manopla da força de colina (mini) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: gauntlets
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Sintonizado: sua Força é 19, a menos que seja maior sem o item (efeito de mesa, DM aplica cap)."
+    weight: "0.6 lb"
+    value_gp: 8000
+    tags: ["vestuário", "manoplas", "força"]
+    props:
+      effects:
+        - kind: ability_set
+          ability: str
+          value: 19
+
+  lf-prod-ward-gnt-torre-01:
+    name: "Manoplas de torre negra (forjada) I"
+    rarity: very-rare
+    category: gear
+    is_wondrous: true
+    sub_category: gauntlets
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "1 x por curto, como bônus, empurre uma criatura Média ou menor 1,5 m se acertar corpo a corpo (narrar como empurrão, DM ajusta vs tamanho)."
+    weight: "0.7 lb"
+    value_gp: 12000
+    tags: ["vestuário", "manoplas", "empurão"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Onda de aço (1/ descanso curto)"
+          desc: "Bônus: empurão curto 1,5 m no acerto, Mediano ou menor; DM arbitra vs Colossal."
+
+  # ——— Botas (boots) — 3
+  lf-prod-ward-boo-couro-01:
+    name: "Botas de couro cônsul I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: boots
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Sem sola mágica; ruído normal ao correr."
+    weight: "0.8 lb"
+    value_gp: 6
+    tags: ["vestuário", "botas", "traje"]
+    props: {}
+
+  lf-prod-ward-boo-queda-01:
+    name: "Botas da queda suave (réplica) I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: boots
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Reduz o primeiro 6 m de dano de queda por turno a 0 (como o item clássico em versão de mesa, DM aplica teto de altura)."
+    weight: "0.9 lb"
+    value_gp: 1200
+    tags: ["vestuário", "botas", "queda"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Aterrizagem (20 pés/6 m)"
+          desc: "Primeiros 6 m de queda no turno sem dano, enquanto calçadas; ajuste mesa de altura (DM arbitra)."
+
+  lf-prod-ward-boo-lodo-01:
+    name: "Botas do lodo firme I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: boots
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Terrenos difíceis (lama, enterramento raso) não custam o dobro (efeito de movimento, DM: não substitui terreno de magia densa)."
+    weight: "0.85 lb"
+    value_gp: 4000
+    tags: ["vestuário", "botas", "terreno"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Pisada estável"
+          desc: "Ignora movimento dificultado de lama rasa / terrenos de baixa profundidade (DM aplica cena)."
+
+  # ——— Tornozeleira (anklet) — 3
+  lf-prod-ward-ank-sino-01:
+    name: "Tornozeleira de sino mudo I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: anklet
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Latão; tilintar quase inaudível. Sem furtividade bônus mecânica."
+    weight: "0.05 lb"
+    value_gp: 2
+    tags: ["vestuário", "tornozeleira", "traje"]
+    props: {}
+
+  lf-prod-ward-ank-barreira-01:
+    name: "Tornozeleira de barreira leve I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: anklet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Constituição para resistir a dano de concussão de quedas rasteiras (DM: não aplica a magias)."
+    weight: "0.06 lb"
+    value_gp: 550
+    tags: ["vestuário", "tornozeleira", "queda"]
+    props:
+      effects:
+        - kind: save_advantage
+          abilities: ["con"]
+
+  lf-prod-ward-ank-mares-01:
+    name: "Tornozeleira de marés presas I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: anklet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Resistência a dano de corrosão e ácido leve; salpicos não mancham a pele."
+    weight: "0.05 lb"
+    value_gp: 3800
+    tags: ["vestuário", "tornozeleira", "ácido"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["acido"]
+
+  # ——— Manto (cloak) — 3
+  lf-prod-ward-clk-lan-01:
+    name: "Manto de lã ribeirinha (simples) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: cloak
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Impermeável a geada leve, não a magia."
+    weight: "0.5 lb"
+    value_gp: 3
+    tags: ["vestuário", "manto", "traje"]
+    props: {}
+
+  lf-prod-ward-clk-res-01:
+    name: "Manto de resistência ao fogo (mini) I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: cloak
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Resistência a dano de fogo. Tecido tênue, mas tecido ainda treme perto de chama."
+    weight: "0.4 lb"
+    value_gp: 4500
+    tags: ["vestuário", "manto", "fogo"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["fogo"]
+
+  lf-prod-ward-clk-penum-01:
+    name: "Manto da penumbra crescente I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: cloak
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Furtividade se estiver a pelo menos levemente encapuzado (DM: cena de pouca luz ou cauda de capa levantada)."
+    weight: "0.5 lb"
+    value_gp: 5000
+    tags: ["vestuário", "manto", "sombra"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["furtividade"]
+
+  # ——— Elmo (helmet) — 3
+  lf-prod-ward-hel-couro-01:
+    name: "Elmo aberto de couro (treino) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: helmet
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Bojo frágil, não concede +CA."
+    weight: "0.6 lb"
+    value_gp: 7
+    tags: ["vestuário", "elmo", "traje"]
+    props: {}
+
+  lf-prod-ward-hel-vigil-01:
+    name: "Elmo de vigília baixa I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: helmet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Sabedoria (Percepção) de audição se estiver de vigília ininterrupta 10+ min."
+    weight: "0.7 lb"
+    value_gp: 800
+    tags: ["vestuário", "elmo", "vigia"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["percepção"]
+
+  lf-prod-ward-hel-torre-01:
+    name: "Elmo de torre estreita (forjada) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: helmet
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Resistência a dano de concussão. Campainha ressonante toca de leve a cada impacto violento (efeito de mesa, DM aplica). "
+    weight: "1.1 lb"
+    value_gp: 6000
+    tags: ["vestuário", "elmo", "impacto"]
+    props:
+      effects:
+        - kind: resistance
+          damage_types: ["concussao"]
+
+  # ——— Máscara (mask) — 3
+  lf-prod-ward-mas-festim-01:
+    name: "Máscara de festim (madeira) (réplica) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: mask
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Veneza de cartão; não concede furtividade mágica."
+    weight: "0.1 lb"
+    value_gp: 2
+    tags: ["vestuário", "máscara", "traje"]
+    props: {}
+
+  lf-prod-ward-mas-noct-01:
+    name: "Máscara de nocturno sutil I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: mask
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Furtividade se estiver a sombra ou luz tênue, conforme DM descreve a cena."
+    weight: "0.1 lb"
+    value_gp: 4000
+    tags: ["vestuário", "máscara", "sombra"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["furtividade"]
+
+  lf-prod-ward-mas-teatro-01:
+    name: "Máscara de teatro cínico I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: mask
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Carisma (Enganação) se estiver a representar fielmente o papel (DM: 1 cena, 1/ descanso curto — mesa afinada)."
+    weight: "0.08 lb"
+    value_gp: 450
+    tags: ["vestuário", "máscara", "drama"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["enganação"]
+
+  # ——— Óculos (goggles) — 3
+  lf-prod-ward-gog-arma-01:
+    name: "Óculos sem lentes (armação) (réplica) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: goggles
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Estética de estudante, sem visão mística."
+    weight: "0.02 lb"
+    value_gp: 3
+    tags: ["vestuário", "óculos", "traje"]
+    props: {}
+
+  lf-prod-ward-gog-anal-01:
+    name: "Óculos de análise fina (réplica) I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: goggles
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Investigação para seguir pistas minúsculas (1 examinação minuciosa, 1/ cena, DM aplica escopo)."
+    weight: "0.05 lb"
+    value_gp: 400
+    tags: ["vestuário", "óculos", "dedução"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["investigação"]
+
+  lf-prod-ward-gog-nevoeiro-01:
+    name: "Óculos do nevoeiro adelgaçado I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: goggles
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Percepção (visão) contra ilusões frágeis; não substitui Ver Verdade (DM: camadas, DC)."
+    weight: "0.05 lb"
+    value_gp: 5500
+    tags: ["vestuário", "óculos", "ilusão"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["percepção"]
+
+  # ——— Broche (brooch) — 3
+  lf-prod-ward-bro-cristall-01:
+    name: "Broche de cristal opaco (simples) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: brooch
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Encaixa no manto; prende tecido, sem runas."
+    weight: "0.04 lb"
+    value_gp: 5
+    tags: ["vestuário", "broche", "traje"]
+    props: {}
+
+  lf-prod-ward-bro-guarda-01:
+    name: "Broche da guarda real (cópia) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: brooch
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Persuasão ao falar com autoridade reconhecida (DM: precisa farda/selo/placa)."
+    weight: "0.04 lb"
+    value_gp: 3000
+    tags: ["vestuário", "broche", "autoridade"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["persuasão"]
+
+  lf-prod-ward-bro-escudo-01:
+    name: "Broche de escudo fendido (forjada) I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: brooch
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "+0,5 tônus: +1 a CA (arredondado a critério do DM) ou bônus de moral narrativo. Use como bônus mínimo de +1 a CA a critério de mesa, ou ignore se preferir sabor."
+    weight: "0.05 lb"
+    value_gp: 1100
+    tags: ["vestuário", "broche", "defesa"]
+    props:
+      effects:
+        - kind: ac_bonus
+          value: 1
+          type: magico
+
+  # ——— Relicário (locket) — 3
+  lf-prod-ward-lok-retr-01:
+    name: "Relicário vazio (retrato) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: locket
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Lugar para miniatura, sem carga santa."
+    weight: "0.04 lb"
+    value_gp: 6
+    tags: ["vestuário", "relicário", "traje"]
+    props: {}
+
+  lf-prod-ward-lok-sagr-01:
+    name: "Relicário sagrado (cópia) I"
+    rarity: legendary
+    category: gear
+    is_wondrous: true
+    sub_category: locket
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "1 x por dia, após 0 PV, reação: fica 1 PV (narrar como sopro final; 7 dia recarga, DM ajusta carga e cooldown)."
+    weight: "0.05 lb"
+    value_gp: 50000
+    tags: ["vestuário", "relicário", "lenda"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Fio dourado (1/dia)"
+          desc: "0→1 PV, reação, 1/dia, recarga 7d (DM ajusta)."
+
+  lf-prod-ward-lok-lagrima-01:
+    name: "Relicário da lágrima de lua I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: locket
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Uma magia 1 de lista de clérigo, escolhida no sintonizar (cure leves ou detectar bo/mal) 1/ descanso longo (narrar slot, DM aplica regra)."
+    weight: "0.05 lb"
+    value_gp: 8000
+    tags: ["vestuário", "relicário", "cura"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Bênção selada (1/ descanso longo)"
+          desc: "Escolhe uma magia 1 de clérigo (ex. cura / detectar) ao sintonizar; 1 lançamento/descanso longo, DM aplica carga."
+
+  # ——— Tomo (tome) — 3
+  lf-prod-ward-tom-couro-01:
+    name: "Tomo de capa de couro (vazio) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: tome
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "80 páginas, sem fórmulas. Peso de livro de bolso."
+    weight: "0.3 lb"
+    value_gp: 4
+    tags: ["vestuário", "tomo", "traje"]
+    props: {}
+
+  lf-prod-ward-tom-notas-01:
+    name: "Tomo de notas cifradas I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: tome
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Investigação para decifrar códigos simples (não substitui magias de cifra, DM: DC 15 ou menos a critério)."
+    weight: "0.4 lb"
+    value_gp: 500
+    tags: ["vestuário", "tomo", "códigos"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["investigação"]
+
+  lf-prod-ward-tom-arvore-01:
+    name: "Tomo da árvore viva (forjada) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: tome
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Como 1x por dia, lê-se uma página que concede bônus de narrativa a rituais de druida (DM: reduz consome material em 1 passo, se DM aceitar, 1/ dia)."
+    weight: "0.5 lb"
+    value_gp: 7000
+    tags: ["vestuário", "tomo", "druida"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Cortejo silvestre (1/dia)"
+          desc: "Ajusta um ritual (DM) material ou tempo em metade, 1/dia, narrativo."
+
+  # ——— Estatueta (figurine) — 3
+  lf-prod-ward-fig-bronze-01:
+    name: "Estatueta de bronze (mini) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: figurine
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Animal fiel ao molde, sem animação."
+    weight: "0.1 lb"
+    value_gp: 2
+    tags: ["vestuário", "estatueta", "traje"]
+    props: {}
+
+  lf-prod-ward-fig-miopia-01:
+    name: "Estatueta de sapos miopes (cômica) I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: figurine
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Carisma (Intimidação) em emboscadas ridículas: se a ameaça envolver a estatueta como peça, DM concede a vantagem."
+    weight: "0.1 lb"
+    value_gp: 200
+    tags: ["vestuário", "estatueta", "humor"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["intimidação"]
+
+  lf-prod-ward-fig-sombra-01:
+    name: "Estatueta de herói sombrio (forjada) I"
+    rarity: rare
+    category: gear
+    is_wondrous: true
+    sub_category: figurine
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "1/ descanso longo, segura a estatueta: 10 min de meditação, ganha 1d4 PV temporário (DM: não acumulativo)."
+    weight: "0.12 lb"
+    value_gp: 5000
+    tags: ["vestuário", "estatueta", "tempo"]
+    props:
+      effects:
+        - kind: passive_feature
+          name: "Bênção de mesa (1/ descanso longo)"
+          desc: "Medita 10 min: 1d4 PV temp; não acumula, DM aplica teto de mesa."
+
+  # ——— Instrumento (instrument) — 2x gear, 1x tool
+  lf-prod-ward-ins-lira-01:
+    name: "Instrumento: lira de viagem (simples) I"
+    rarity: common
+    category: gear
+    is_wondrous: false
+    sub_category: instrument
+    requires_attunement: false
+    source: "Lafiga / import vestuário"
+    description: "Cordas justas, afinação dura. Sem bônus a Performance além de qualidade mínima."
+    weight: "0.4 lb"
+    value_gp: 8
+    tags: ["vestuário", "instrumento", "traje"]
+    props: {}
+
+  lf-prod-ward-ins-eco-01:
+    name: "Instrumento: flauta do eco tímido I"
+    rarity: uncommon
+    category: gear
+    is_wondrous: true
+    sub_category: instrument
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em Atuação (música) se houver teto ou caverna com eco natural."
+    weight: "0.2 lb"
+    value_gp: 400
+    tags: ["vestuário", "instrumento", "bardo"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["atuação"]
+
+  lf-prod-ward-ins-engrenagem-01:
+    name: "Instrumento: kit de afinador de gnomo (ferramenta) I"
+    rarity: rare
+    category: tool
+    is_wondrous: true
+    sub_category: instrument
+    requires_attunement: true
+    source: "Lafiga / import vestuário"
+    description: "Vantagem em testes de Destreza (Ferramentas) para afinar instrumento sob pressão (combate, tempestade); não substitui reparo de itens de metal."
+    weight: "0.15 lb"
+    value_gp: 3000
+    tags: ["vestuário", "instrumento", "gnomo"]
+    props:
+      effects:
+        - kind: skill_advantage
+          skills: ["atuação"]
