@@ -37,17 +37,13 @@ class FightingStyleRules
     top_style = choices['fighting_style'] || choices.dig('fighting_style')
     # per-level picks may include fighting_style at required level (Champion 10, etc.)
     per_level = choices['per_level'] || {}
-    per_styles = per_level.values.map { |row| row['fighting_style'] || row[:fighting_style] }.compact
-    # Collect all styles (avoid duplicates)
+    per_styles = per_level.values.filter_map { |row| row&.dig('fighting_style') || row&.dig(:fighting_style) }.compact
+    # Collect all styles (avoid duplicates). Wizard/API gravam fighting_style como Array
+    # e.g. ["fs-archery"] — Array#to_s vira "[\"fs-archery\"]" e quebrava o case /regex/.
     raw_styles = []
-    raw_styles << top_style if top_style.present?
-    per_styles.each { |s| raw_styles << s if s.present? }
-    style_names = raw_styles.map do |style|
-      case style
-      when Hash then (style['name'] || style[:name] || style['id'] || style[:id]).to_s
-      else style.to_s
-      end
-    end.compact.reject(&:empty?)
+    raw_styles.concat(flatten_fighting_style_pick(top_style)) if top_style.present?
+    per_styles.each { |s| raw_styles.concat(flatten_fighting_style_pick(s)) if s.present? }
+    style_names = raw_styles.map(&:strip).reject(&:empty?).uniq
 
     result = { ac_bonus: 0, weapon_mods: { main_hand: base_mods, off_hand: base_mods }, notes: [], active_styles: [] }
     return result if style_names.empty?
@@ -69,8 +65,9 @@ class FightingStyleRules
           result[:ac_bonus] = (result[:ac_bonus].to_i + 1)
           result[:active_styles] << 'Defesa'
         end
-      when /arquearia|archery/
+      when /arquearia|arqueria|archery|tiro\s+com\s+arco|fs[-_]archery/
         # +2 to attack rolls with ranged weapons (main hand)
+        # Wizard PT grava "Tiro com Arco" / fs-archery; antes só casava "Arquearia".
         if mhp && mhp[:type] == 'ranged'
           cur = result[:weapon_mods][:main_hand]
           result[:weapon_mods][:main_hand] = cur.merge(attack: (cur[:attack] || 0) + 2)
@@ -112,6 +109,20 @@ class FightingStyleRules
   end
 
   private
+
+  def flatten_fighting_style_pick(pick)
+    case pick
+    when nil, '' then []
+    when Hash
+      v = (pick['name'] || pick[:name] || pick['id'] || pick[:id]).to_s.strip
+      v.present? ? [v] : []
+    when Array
+      pick.flat_map { |x| flatten_fighting_style_pick(x) }
+    else
+      s = pick.to_s.strip
+      s.present? ? [s] : []
+    end
+  end
 
   def base_mods
     { attack: 0, damage: 0, offhand_add_ability: false }

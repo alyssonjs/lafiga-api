@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_25_120000) do
+ActiveRecord::Schema.define(version: 2026_04_26_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -80,8 +80,8 @@ ActiveRecord::Schema.define(version: 2026_04_25_120000) do
     t.float "background_image_offset_y", default: 0.0, null: false
     t.string "distance_display_unit", default: "m", null: false
     t.decimal "cell_world_ft", precision: 6, scale: 2, default: "5.0", null: false
-    t.jsonb "aoe_placements", default: [], null: false
     t.string "fog_mode", default: "hidden_cells", null: false
+    t.jsonb "aoe_placements", default: [], null: false
     t.integer "background_image_pixel_width"
     t.integer "background_image_pixel_height"
     t.index ["group_id", "updated_at"], name: "index_battle_maps_on_group_id_and_updated_at"
@@ -329,7 +329,6 @@ ActiveRecord::Schema.define(version: 2026_04_25_120000) do
     t.string "cover_image_url"
     t.bigint "dm_user_id"
     t.index ["dm_user_id"], name: "index_groups_on_dm_user_id"
-    t.index ["dm_user_id"], name: "index_groups_on_dm_user_id_not_null", where: "(dm_user_id IS NOT NULL)"
   end
 
   create_table "items", force: :cascade do |t|
@@ -368,6 +367,7 @@ ActiveRecord::Schema.define(version: 2026_04_25_120000) do
     t.integer "hit_die"
     t.string "spellcasting_ability"
     t.integer "subclass_level"
+    t.jsonb "rules"
     t.index ["api_index"], name: "index_klasses_on_api_index", unique: true
   end
 
@@ -551,8 +551,6 @@ ActiveRecord::Schema.define(version: 2026_04_25_120000) do
     t.bigint "klass_id", null: false
     t.bigint "sub_klass_id"
     t.integer "level", limit: 2
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
     t.index ["klass_id"], name: "index_sheet_klasses_on_klass_id"
     t.index ["sheet_id", "klass_id"], name: "idx_sheet_klasses_unique_sheet_klass", unique: true
     t.index ["sheet_id"], name: "index_sheet_klasses_on_sheet_id"
@@ -596,7 +594,6 @@ ActiveRecord::Schema.define(version: 2026_04_25_120000) do
     t.datetime "last_long_rest_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.jsonb "active_effects", default: [], null: false
     t.index ["sheet_id"], name: "index_sheet_runtime_states_on_sheet_id", unique: true
   end
 
@@ -628,8 +625,6 @@ ActiveRecord::Schema.define(version: 2026_04_25_120000) do
     t.jsonb "avatar_customization", default: {}, null: false
     t.integer "experience_points", default: 0, null: false
     t.jsonb "coins", default: {"cp"=>0, "ep"=>0, "gp"=>0, "pp"=>0, "sp"=>0}, null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
     t.jsonb "coin_pouches", default: [], null: false
     t.index ["alignment_id"], name: "index_sheets_on_alignment_id"
     t.index ["background_id"], name: "index_sheets_on_background_id"

@@ -8,130 +8,151 @@ module SubclassRulesExtended
     'fighter' => {
       'atirador_inigualavel' => {
         name: 'Atirador Inigualável',
-        description: 'Guerreiros especializados em combate à distância com armas de fogo e arco.',
+        description: 'Maestria com bestas, arcos e armas de munição (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização em Tiro' => 'Você se torna um especialista em combate à distância.' },
-          7 => { 'Tiro Preciso' => 'Você pode fazer tiros extremamente precisos.' },
-          10 => { 'Tiro Múltiplo' => 'Você pode atirar múltiplos projéteis simultaneamente.' },
-          15 => { 'Tiro Supremo' => 'Você pode fazer tiros impossíveis.' },
-          18 => { 'Mestre do Tiro' => 'Você domina completamente o combate à distância.' }
+          3 => { 'Tiro Rápido' => 'Ação bônus: ataque à distância com arma de munição com desvantagem.' },
+          7 => { 'Melhor Posição de Tiro' => 'Acrobacia; vantagem em escalar; +2 dano tiro de cima de alvo abaixo.' },
+          10 => { 'Tiro Certeiro' => 'Ação, vantagem, +5d10 e efeito debilitante; recarga em descanso.' },
+          15 => { 'Pontaria Aguçada' => 'Remove desvantagem do Tiro Rápido; vantagem no primeiro tiro de arco por turno.' },
+          18 => { 'Um Tiro, Uma Morte' => 'Contra alvos de PV baixos, TS Con ou 0 PV; crítico amplia o limiar.' }
         }
       },
       'cavaleiro_implacavel' => {
         name: 'Cavaleiro Implacável',
-        description: 'Guerreiros montados que dominam o combate equestre.',
+        description: 'Combate montado, montaria fiel, investida e atropelamento (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização Montada' => 'Você se torna um especialista em combate montado.' },
-          7 => { 'Carga Devastadora' => 'Você pode realizar cargas devastadoras montado.' },
-          10 => { 'Domínio do Campo' => 'Você domina o campo de batalha montado.' },
-          15 => { 'Cavaleiro Supremo' => 'Você se torna um cavaleiro supremo.' },
-          18 => { 'Mestre Montado' => 'Você domina completamente o combate montado.' }
+          3 => { 'Montaria Fiel' => 'Obtém e comanda uma montaria com PV reforçados; ação bônus para ordens de combate.' },
+          7 => { 'Montaria Incansável' => 'Jornadas longas sem exaustão pelo ritmo descrito no livro.' },
+          10 => { 'Investida Implacável' => 'Carga com vantagem e dano extra montado; escala com arma de haste e nível 20.' },
+          12 => { 'Montaria dos Céus' => 'Pode adotar besta voadora (ND 1) como montaria a partir do 12º.' },
+          15 => { 'Cavaleiro Protetor' => 'Bônus de proficiência em CA e TRs da montaria; reação para reduzir dano a ela.' },
+          18 => { 'Atropelar' => 'Movimento em linha; TS Des em criaturas no caminho; usos limitados.' },
+          20 => { 'Investida Suprema' => 'Ajuste de dado extra no ápice da investida, conforme o texto.' }
         }
       },
       'defensor_dedicado' => {
         name: 'Defensor Dedicado',
-        description: 'Guerreiros especializados em proteção e defesa de aliados.',
+        description: 'Foco defensivo com escudo, proteção a aliados e controle de ameaças (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização Defensiva' => 'Você se torna um especialista em defesa.' },
-          7 => { 'Proteção Ativa' => 'Você pode proteger ativamente seus aliados.' },
-          10 => { 'Bastião' => 'Você se torna um bastião de proteção.' },
-          15 => { 'Defensor Supremo' => 'Você se torna um defensor supremo.' },
-          18 => { 'Mestre Defensivo' => 'Você domina completamente a defesa.' }
+          3 => { 'Postura Defensiva' => 'Resistência B/P/S, reação +3 CA, vantagem em TRs, deslocamento reduzido; recarga em descanso.' },
+          7 => { 'Proteger Aliado' => 'Ação bônus: empresta bônus de escudo à CA de aliado adjacente.' },
+          10 => { 'Provocar' => 'TS Sab ou inimigo deve priorizar aproximação a você; extensão com ação.' },
+          15 => { 'Surto Defensivo' => 'Reação com vantagem em TR contra efeito nocivo (cargas limitadas).' },
+          18 => { 'Baluarte Protetor' => 'Ignora ou força sucesso em efeitos persistentes de TR conforme o texto.' }
         }
       },
       'kensai' => {
         name: 'Kensai',
-        description: 'Guerreiros que dominam uma única arma com perfeição absoluta.',
+        description: 'Iaijutsu, perícias e meditação da lâmina (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Arma Escolhida' => 'Você escolhe uma arma e a domina completamente.' },
-          7 => { 'Perfeição da Arma' => 'Você alcança perfeição com sua arma escolhida.' },
-          10 => { 'Mestre da Arma' => 'Você se torna um mestre absoluto de sua arma.' },
-          15 => { 'Kensai Supremo' => 'Você se torna um kensai supremo.' },
-          18 => { 'Mestre da Perfeição' => 'Você domina completamente a perfeição marcial.' }
+          3 => { 'Mestre do Iaijutsu' => 'Primeiro ataque de embainhado na 1ª rodada com vantagem e dano extra ligado à iniciativa.' },
+          7 => { 'Busca da Autoperfeição' => 'Duas ferramentas de artesão; meia prof em ferramenta não proficiente.' },
+          10 => { 'Meditação da Lâmina' => 'Após descanso curto, benefício temático (vantagens, reações, dano) até nova meditação.' },
+          15 => { 'Movimento Antes do Pensamento' => 'Iniciativa, surpresa parcial, reação de iaijutsu em aproximação.' },
+          18 => { 'Meditação Perfeita' => 'Dois efeitos de meditação ativos; dois benefícios após descanso curto.' }
         }
       },
       'mestre_correntes' => {
         name: 'Mestre das Correntes',
-        description: 'Guerreiros que dominam armas de corrente e fléchete.',
+        description: 'Armas de corrente e corda; agarrar e manobras especiais (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização em Correntes' => 'Você se torna um especialista em armas de corrente.' },
-          7 => { 'Controle de Correntes' => 'Você pode controlar correntes mágicamente.' },
-          10 => { 'Rede de Correntes' => 'Você pode criar redes de correntes.' },
-          15 => { 'Mestre Supremo das Correntes' => 'Você se torna um mestre supremo das correntes.' },
-          18 => { 'Mestre das Correntes' => 'Você domina completamente as correntes.' }
+          3 => { 'Estilo de Combate Exótico' => 'Troca dano por agarrar; manobras Enrolar, Puxão, Rasteira, Desarme com ação bônus.' },
+          7 => { 'Movimento da Corrente' => 'Bônus a movimentação com a arma; escalar corda/corrente sem custo extra.' },
+          10 => { 'Maestria da Corrente' => 'Ferreiro, corrente forjada, vantagem e dano em agarras com corrente farpada.' },
+          15 => { 'Alcance Estendido' => 'Ataque a distância estendida com armas de corrente indicadas.' },
+          18 => { 'Ataque Giratório' => 'Ação: um ataque por inimigo no alcance; usos limitados.' }
         }
       },
       'mestre_arremesso' => {
         name: 'Mestre do Arremesso',
-        description: 'Guerreiros especializados em arremesso de armas e objetos.',
+        description: 'Toda arma corpo a corpo vira arremesso; retorno, tensão e ricochete (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização em Arremesso' => 'Você se torna um especialista em arremesso.' },
-          7 => { 'Arremesso Preciso' => 'Você pode arremessar com extrema precisão.' },
-          10 => { 'Arremesso Múltiplo' => 'Você pode arremessar múltiplos objetos simultaneamente.' },
-          15 => { 'Mestre Supremo do Arremesso' => 'Você se torna um mestre supremo do arremesso.' },
-          18 => { 'Mestre do Arremesso' => 'Você domina completamente o arremesso.' }
+          3 => { 'Arremesso Versátil' => 'Propriedade arremesso 6/18 em armas corpo a corpo proficientes.' },
+          7 => { 'Ataque de Retorno' => 'Ação bônus para recuperar arma; a partir do 11º, sem ação bônus.' },
+          10 => { 'Arremesso Estremecedor' => 'Trata arremessos como corpo a corpo (oportunidade, sem desvantagem em corpo a corpo); recarga em descanso.' },
+          11 => { 'Retorno Instintivo' => 'Arma retorna após o ataque sem ação bônus.' },
+          15 => { 'Ricochete Relâmpago' => 'Reação para segundo alvo após acerto a curta distância.' },
+          18 => { 'Lâmina Giratória' => 'Ação: um tiro de cortante de arremesso em cada inimigo próximo; usos limitados.' }
         }
       }
     },
     'rogue' => {
       'cacador_tesouros' => {
         name: 'Caçador de Tesouros',
-        description: 'Ladinos especializados em encontrar e recuperar tesouros.',
+        description: 'Especialista em invadir e saquear locais perigosos; rastreia armadilhas, tesouros e rotas de fuga (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização em Tesouros' => 'Você se torna um especialista em encontrar tesouros.' },
-          9 => { 'Detecção de Tesouros' => 'Você pode detectar tesouros mágicos.' },
-          13 => { 'Recuperação de Tesouros' => 'Você pode recuperar tesouros de locais perigosos.' },
-          17 => { 'Mestre dos Tesouros' => 'Você se torna um mestre dos tesouros.' }
+          3 => {
+            'Invasor Profissional' => 'Vantagem para achar e desarmar fechaduras e armadilhas.',
+            'Sentir Armadilha' => 'Resistência a dano de armadilha e vantagem em testes de resistência contra armadilhas.'
+          },
+          9 => { 'Evitar o Perigo' => 'Escalada ampliada, furtividade com cobertura, não rastreável sem magia.' },
+          13 => { 'Encontrar Tesouro' => 'Percepção/Investigação passivas para tesouros; percebe magicidade ao tocar; pressente tesouro escondido a 6 m.' },
+          17 => { 'Fuga Sobrenatural' => 'Atravessa barreira fina; vantagem vs agarrado, impedido, paralisado.' }
         }
       },
       'dancarino_sombras' => {
         name: 'Dançarino das Sombras',
-        description: 'Ladinos que usam dança e movimento para combater nas sombras.',
+        description: 'Poderes da Umbra: camuflagem, visão no escuro, projeção, viagem e forma sombria (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Dança das Sombras' => 'Você pode usar dança para se mover nas sombras.' },
-          9 => { 'Movimento das Sombras' => 'Você pode se teletransportar através das sombras.' },
-          13 => { 'Performance das Sombras' => 'Você pode usar dança para confundir inimigos.' },
-          17 => { 'Mestre das Sombras' => 'Você se torna um mestre das sombras.' }
+          3 => {
+            'Camuflagem Sombria' => 'Vantagem em Furtividade em trevas/penumbra; inimigos têm desvantagem para acertar você.',
+            'Ver nas Trevas' => 'Enxerga na penumbra a 18 m como luz plena; no escuro como penumbra.'
+          },
+          9 => { 'Projeção Sombria' => 'Ação: ataque a até 15 m a partir de sombra sem revelar posição.' },
+          13 => { 'Viagem Umbral' => 'Ação: curto viagem pelo Plano das Sombras; 2 usos por descanso.' },
+          17 => { 'Forma de Sombra' => '1 minuto: resistência a armas não mágicas; Viagem Umbral 1× por rodada.' }
         }
       },
       'face_fantasmagorica' => {
         name: 'Face Fantasmagórica',
-        description: 'Ladinos especializados em disfarce e ilusão.',
+        description: 'Clã de máscara apavorante: medo, ataque em surpresa, pesadelo e pavor (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Disfarce Fantasmagórico' => 'Você pode criar disfarces ilusórios perfeitos.' },
-          9 => { 'Ilusão Avançada' => 'Você pode criar ilusões complexas.' },
-          13 => { 'Transformação Fantasmagórica' => 'Você pode se transformar em outras criaturas.' },
-          17 => { 'Mestre Fantasmagórico' => 'Você se torna um mestre das ilusões.' }
+          3 => {
+            'Presença Intimidante' => 'Proficiência e vantagem em Intimidação; desvantagem em Persuasão; intimidar amedronta brevemente.',
+            'Ataque Apavorante' => 'Contra surpresa, com máscara, ataque corpo a corpo e amedronta (TS Sab).'
+          },
+          9 => { 'Pesadelo Furtivo' => 'Ação bônus: quase invisível para o amedrontado (Furtividade CD 15).' },
+          13 => { 'Inversão do Medo' => 'Vantagem em TR contra medo; reação para devolver medo a quem falhou em te amedrontar.' },
+          17 => { 'Pavor Atormentador' => '4d10 psíquico a amedrontados; pode afetar imunes a medo (com vantagem no teste).' }
         }
       },
       'lamina_invisivel' => {
         name: 'Lâmina Invisível',
-        description: 'Ladinos que dominam a invisibilidade e ataques furtivos.',
+        description: 'Adagas: ataque tão rápido que o alvo demora a sentir, lâmina veloz e multidão (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Invisibilidade' => 'Você pode se tornar invisível por curtos períodos.' },
-          9 => { 'Invisibilidade Avançada' => 'Você pode se tornar invisível por períodos mais longos.' },
-          13 => { 'Ataque Invisível' => 'Você pode atacar enquanto invisível sem revelar sua posição.' },
-          17 => { 'Mestre da Invisibilidade' => 'Você se torna um mestre da invisibilidade.' }
+          3 => {
+            'Mão Invisível' => 'Ataque surpresa atrasado; vantagem em Prestidigitação com lâminas leves.',
+            'Lâmina Veloz' => 'Ação bônus: saca arma leve e ataca com vantagem (Ataque Furtivo extra); recarga em descanso.'
+          },
+          9 => { 'Ataque Extra' => 'Dois ataques com a ação Ataque no turno.' },
+          13 => { 'Desaparecer na Multidão' => 'Ação bônus, após passar atrás de aliado ou barreira: invisibilidade seletiva a inimigos.' },
+          17 => { 'Técnica da Lâmina Furtiva' => '1 min: CA por Prestidigitação; riposta com furtivo se errarem; recarga em descanso longo.' }
         }
       },
       'larapio_almas' => {
         name: 'Larápio de Almas',
-        description: 'Ladinos que podem roubar almas e poderes de outras criaturas.',
+        description: 'Drena vitalidade, sente vida, rouba magia e pode arrancar almas (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Roubo de Alma' => 'Você pode roubar fragmentos de alma de criaturas.' },
-          9 => { 'Absorção de Poder' => 'Você pode absorver poderes de criaturas derrotadas.' },
-          13 => { 'Domínio de Almas' => 'Você pode controlar almas roubadas.' },
-          17 => { 'Mestre das Almas' => 'Você se torna um mestre das almas.' }
+          3 => {
+            'Furto de Vida' => 'Troca furtivo por necrótico (TS Con), cura e reduz PV máx.; precisa drenar humanoide inconsciente 1/dia.',
+            'Dependência de Vida' => 'Não come nem dorme; exige drenar ou sofre desvantagem.'
+          },
+          9 => { 'Sentir Vida' => 'Ação: detecta vidas a 18 m e depois o estado aproximado de um alvo escolhido.' },
+          13 => { 'Drenar Energia Mística' => 'Rouba carga de magia (TS Car); arma fica mágica e bônus = nível do espaço; recarga em descanso.' },
+          17 => { 'Usurpar a Alma' => 'Furtivo corpo a corpo vs alvo com menos de 40 PV: TS Con ou morte; vantagem após abate qualificado.' }
         }
       },
       'mimetizador' => {
         name: 'Mimetizador',
-        description: 'Ladinos que podem imitar perfeitamente outras criaturas.',
+        description: 'Copia traços, habilidades e até magias que observa; pode usurpar do alvo (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Mimetismo' => 'Você pode imitar perfeitamente outras criaturas.' },
-          9 => { 'Mimetismo Avançado' => 'Você pode imitar habilidades de outras criaturas.' },
-          13 => { 'Mimetismo Perfeito' => 'Você pode imitar qualquer criatura perfeitamente.' },
-          17 => { 'Mestre Mimetizador' => 'Você se torna um mestre da imitação.' }
+          3 => {
+            'Proficiência Adicional' => 'Enganação e Intuição.',
+            'Copiar Habilidade' => 'Intuição CD 10: copia ação/traço ativo 1 h (passivos a partir do 11°).'
+          },
+          9 => { 'Simulação Avançada' => 'Intuição CD 15: copia 1× um traço de uso limitado; não Conjuração.' },
+          13 => { 'Simular Conjuração' => 'Compreende magia (CD 15 + nível) e a conjura 1× em 1 h.' },
+          17 => { 'Usurpar Característica' => 'Toca alvo: nega a habilidade copiada nele 1 h (TS Car); 2 usos, recarga longa.' }
         }
       }
     },
@@ -200,62 +221,63 @@ module SubclassRulesExtended
     'monk' => {
       'caminho_aco' => {
         name: 'Caminho do Aço',
-        description: 'Monges que dominam armas de aço e combate armado.',
+        description: 'Monge de ferro: armadura, Punho de Ferro e técnicas de força (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Caminho do Aço' => 'Você pode usar armas de aço como extensões de seu corpo.' },
-          6 => { 'Mestre do Aço' => 'Você domina completamente armas de aço.' },
-          11 => { 'Aço Perfeito' => 'Você alcança perfeição com armas de aço.' },
-          17 => { 'Avatar do Aço' => 'Você se torna um avatar do aço.' }
+          3 => { 'Proficiência e Técnicas do Monge de Ferro' => 'Armadura leve/média; trocas de Rajada/Defesa/Passo por Punho de Ferro, Defesa Blindada, Posição da Montanha.' },
+          6 => { 'Golpe de Brutalidade Absoluta' => 'Gasto extra de ki: ataque com vantagem e crítico 18–20 com Punho de Ferro.' },
+          11 => { 'Desarme Feroz' => 'Ataque desarmado para arrebatar arma ou impor desvantagem.' },
+          17 => { 'Contra-ataque Devastador' => 'Reação com Punho de Ferro para crítico forçado com penalidade no ataque.' }
         }
       },
       'caminho_mestre_bebado' => {
         name: 'Caminho do Mestre Bêbado',
-        description: 'Monges que usam embriaguez e movimento errático como técnica de combate.',
+        description: 'Improviso, bebida e estilo bêbado (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Caminho do Mestre Bêbado' => 'Você usa embriaguez para combater de forma imprevisível.' },
-          6 => { 'Movimento Bêbado' => 'Você pode se mover de forma errática e imprevisível.' },
-          11 => { 'Mestre Bêbado' => 'Você domina completamente o estilo bêbado.' },
-          17 => { 'Avatar Bêbado' => 'Você se torna um avatar do mestre bêbado.' }
+          3 => { 'Mestre do Improviso e Estilo do Mestre Bêbado' => 'Armas improvisadas; ações exóticas enquanto bêbado.' },
+          6 => { 'Recuperação Ébria' => 'Teste de Con para recuperar ki ao beber.' },
+          11 => { 'Hálito Flamejante' => 'Sopro em cone, dano de fogo em área.' },
+          17 => { 'Sempre Bêbado' => 'Ativa estilo com bônus; ativa duas técnicas por ação bônus com ki.' }
         }
       },
       'caminho_monge_tatuado' => {
         name: 'Caminho do Monge Tatuado',
-        description: 'Monges que canalizam poder através de tatuagens mágicas.',
+        description: 'Tatuagens místicas com animais e efeitos de ki (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Caminho do Monge Tatuado' => 'Você pode canalizar poder através de tatuagens.' },
-          6 => { 'Tatuagens Mágicas' => 'Você pode criar tatuagens mágicas.' },
-          11 => { 'Monge Tatuado' => 'Você domina completamente tatuagens mágicas.' },
-          17 => { 'Avatar Tatuado' => 'Você se torna um avatar do monge tatuado.' }
+          3 => { 'Tatuador Experiente e Tatuagem Mística' => 'Ferramentas; despertar tatuagens com efeitos animais.' },
+          6 => { 'Tatuagem de Poder' => 'Benefícios passivos por tatuagem possuída.' },
+          11 => { 'Despertar adicional' => 'Terceira tatuagem ativa.' },
+          17 => { 'Desencarnar Tatuagem' => 'Explosão de energia gasta a tatuagem.' },
+          18 => { 'Quarta tatuagem' => 'Mais um despertar, opção ainda não usada.' }
         }
       },
       'caminho_ninjuts' => {
         name: 'Caminho do Ninjútsu',
-        description: 'Monges que dominam técnicas ninja e furtividade.',
+        description: 'Ninja: armas de clã, Golpe Súbito, fumaça e etéreo (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Caminho do Ninjútsu' => 'Você domina técnicas ninja básicas.' },
-          6 => { 'Ninjútsu Avançado' => 'Você domina técnicas ninja avançadas.' },
-          11 => { 'Mestre Ninja' => 'Você se torna um mestre ninja.' },
-          17 => { 'Avatar Ninja' => 'Você se torna um avatar ninja.' }
+          3 => { 'Arte do Ninjútsu e Golpe Súbito' => 'Proficiências; dano furtivo escalonado.' },
+          6 => { 'Técnicas de Ninjútsu' => 'Escalada veloz, bomba de fumaça, percepção às cegas.' },
+          11 => { 'Mestre do Ocultismo' => 'Furtividade e fumaça aprimorada.' },
+          17 => { 'Passo Fantasma' => 'Forma etérea com ki alto.' }
         }
       },
       'caminho_punho_sagrado' => {
         name: 'Caminho do Punho Sagrado',
-        description: 'Monges que canalizam poder divino através de seus punhos.',
+        description: 'Conjuração de clérigo, domínios, punhos de chamas e armadura interior (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Caminho do Punho Sagrado' => 'Você pode canalizar poder divino através de seus punhos.' },
-          6 => { 'Punho Sagrado' => 'Você pode abençoar seus punhos com poder divino.' },
-          11 => { 'Mestre do Punho Sagrado' => 'Você domina completamente o punho sagrado.' },
-          17 => { 'Avatar do Punho Sagrado' => 'Você se torna um avatar do punho sagrado.' }
+          3 => { 'Conjuração, Domínios Sagrados e Energia Divina Interior' => 'Magias e empoderar com ki.' },
+          6 => { 'Punho de Chamas Divinas' => 'Chamas sagradas no acerto com ki.' },
+          11 => { 'Rajada de Chamas Divinas' => 'Rajada com truque em ambos os golpes.' },
+          17 => { 'Armadura Interior' => 'CA e resistência com ki e espaço de magia.' }
         }
       },
       'caminho_sadhaka' => {
         name: 'Caminho do Sadhaka',
-        description: 'Monges que seguem o caminho da meditação e iluminação espiritual.',
+        description: 'Mantras, Akasha e nirvana (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Caminho do Sadhaka' => 'Você segue o caminho da meditação e iluminação.' },
-          6 => { 'Meditação Profunda' => 'Você pode entrar em meditação profunda.' },
-          11 => { 'Iluminação' => 'Você alcança um estado de iluminação.' },
-          17 => { 'Avatar Iluminado' => 'Você se torna um avatar iluminado.' }
+          3 => { 'Mantra de Poder' => 'Troca teto de ki por bônus 1d4 a testes, dano, TR, etc.' },
+          6 => { 'Akasha Interior' => 'Aumenta teto de ki com dado após descanso longo.' },
+          11 => { 'Concentração Inabalável' => 'Cura em descanso curto; dois mantras.' },
+          17 => { 'Alcançar o Nirvana' => 'Sexto sentido e limpar a mente com muito ki.' }
         }
       }
     },
@@ -324,42 +346,47 @@ module SubclassRulesExtended
     'ranger' => {
       'arqueiro_floresta_alta' => {
         name: 'Arqueiro da Floresta Alta',
-        description: 'Patrulheiros especializados em combate à distância em florestas altas.',
+        description: 'Entalhador, alcance com arco e floresta; emboscada nas copas (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização Florestal' => 'Você se torna um especialista em florestas altas.' },
-          7 => { 'Tiro Florestal' => 'Você pode atirar através de vegetação densa.' },
-          11 => { 'Mestre Florestal' => 'Você domina completamente florestas altas.' },
-          15 => { 'Avatar Florestal' => 'Você se torna um avatar da floresta alta.' }
+          3 => { 'Arqueiro Bem-Suprido e Visão Aguçada' => 'Cria flechas; Percepção e alcance de arco dobrado.' },
+          7 => { 'Atirar e Esconder' => 'Após tiro, esconder-se; escalar com facilidade no terreno favorito.' },
+          15 => { 'Tiro de Misericórdia e Flechas Perfeitas' => 'Execução em alvo fraco; flechas crítico 19–20 após ofício longo.' }
         }
       },
       'batedor' => {
         name: 'Batedor',
-        description: 'Patrulheiros especializados em reconhecimento e exploração.',
+        description: 'Reconhece trilhas, luta em movimento, acelera e antecipa perigos (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização em Batedor' => 'Você se torna um especialista em reconhecimento.' },
-          7 => { 'Reconhecimento Avançado' => 'Você pode obter informações detalhadas sobre áreas.' },
-          11 => { 'Mestre Batedor' => 'Você domina completamente o reconhecimento.' },
-          15 => { 'Avatar Batedor' => 'Você se torna um avatar do batedor.' }
+          3 => {
+            'Tática de Batedor' => 'Trilha rastreável; reação: alerta sonoro para aliados a 120 m.',
+            'Escaramuça' => 'Após 6 m de movimento: +2d6 no primeiro ataque; reação: desvantagem no ataque de quem o atingiu se você já se moveu 6 m.'
+          },
+          7 => { 'Movimento de Batedor' => '+3 m se leve ou sem armadura; ação bônus: Disparada ou Desengajar; reação: faz errar ataque de oportunidade.' },
+          11 => { 'Percepção Instintiva' => 'Vantagem em Percepção, Investigação e iniciativa.' },
+          15 => { 'Liberdade de Movimentos' => 'Como movimentação livre contra efeitos que impedem o movimento.' }
         }
       },
       'flagelo_inimigos' => {
         name: 'Flagelo dos Inimigos',
-        description: 'Patrulheiros especializados em caçar e eliminar inimigos específicos.',
+        description: 'Inimigos favoritos extra, esquiva predileta, estudo tático e inimizade imediata (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização em Flagelo' => 'Você se torna um especialista em caçar inimigos.' },
-          7 => { 'Caça de Inimigos' => 'Você pode rastrear e caçar inimigos específicos.' },
-          11 => { 'Mestre Flagelo' => 'Você domina completamente a caça de inimigos.' },
-          15 => { 'Avatar Flagelo' => 'Você se torna um avatar do flagelo.' }
+          3 => {
+            'Inimigo Favorito Adicional' => 'Mais um tipo e idioma; outro no 10°.',
+            'Esquiva Predileta' => 'Reação: desvantagem no ataque de inimigo favorito; a partir do 13°, vantagem em TR (For/Des/Sab) contra eles.'
+          },
+          7 => { 'Caçador de Inimigos' => 'Vantagem no primeiro ataque/turno vs favorito; +1d8 (2d8 se surpreso).' },
+          11 => { 'Estudar Inimigo' => 'Ação: Percepção CD 5 + ND para dado de informação; recarga em descanso.' },
+          15 => { 'Inimizade Imediata' => 'Gasta 4° ou 5° para tratar um tipo como favorito 1 h ou 8 h; recarga longa.' }
         }
       },
       'guardiao_selvagem' => {
         name: 'Guardião Selvagem',
-        description: 'Patrulheiros que protegem áreas selvagens e criaturas da natureza.',
+        description: 'Linguagem bestial, grito primitivo e instinto de caçador feral (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização em Guardião' => 'Você se torna um especialista em proteger áreas selvagens.' },
-          7 => { 'Proteção Selvagem' => 'Você pode proteger áreas selvagens de intrusos.' },
-          11 => { 'Mestre Guardião' => 'Você domina completamente a proteção selvagem.' },
-          15 => { 'Avatar Guardião' => 'Você se torna um avatar do guardião selvagem.' }
+          3 => { 'Linguagem Bestial e Grito Primitivo' => 'Fala com bestas; forma com garras e mordida.' },
+          7 => { 'Instinto Animal' => 'Rastreio, iniciativa e percepção passiva aprimorados.' },
+          11 => { 'Bote Dilacerador' => 'Carga e ataques múltiplos dilacerando com força.' },
+          15 => { 'Território de Caça' => 'Bônus de combate e furtividade no terreno favorito.' }
         }
       },
       'mestre_bestas' => {
@@ -374,12 +401,12 @@ module SubclassRulesExtended
       },
       'rastreador_urbano' => {
         name: 'Rastreador Urbano',
-        description: 'Patrulheiros especializados em operações urbanas e rastreamento em cidades.',
+        description: 'Explorador urbano, abate com magia e percepção em masmorras (Livro de Novos Arquétipos).',
         features: {
-          3 => { 'Especialização Urbana' => 'Você se torna um especialista em operações urbanas.' },
-          7 => { 'Rastreamento Urbano' => 'Você pode rastrear criaturas em ambientes urbanos.' },
-          11 => { 'Mestre Urbano' => 'Você domina completamente operações urbanas.' },
-          15 => { 'Avatar Urbano' => 'Você se torna um avatar do rastreador urbano.' }
+          3 => { 'Explorador Urbano' => 'Explorador natural em cidades; Persuasão para informação.' },
+          7 => { 'Buscar e Abater' => 'Dano e bônus de ataque com gasto de espaço vs surpreso.' },
+          11 => { 'Percepção do Antinatural' => 'Achados, ferramentas de ladrão, opção de exaustão em ataque bônus.' },
+          15 => { 'Líder de Caçada' => 'Vantagem aliada vs alvo de Buscar e Abater.' }
         }
       }
     }

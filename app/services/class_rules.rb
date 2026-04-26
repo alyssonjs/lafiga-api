@@ -61,6 +61,26 @@ class ClassRules
     translated_rules
   end
 
+  # SRD (`CLASS_RULES` + tradução) fundido com `klasses.rules` (JSONB). Sobrescreve
+  # a mesma chave `api_index` e acrescenta classes só no DB (homebrew) — alinhado a
+  # `ClassRules.find` (prioridade DB).
+  def self.rules_with_klass_table
+    base = rules.deep_dup
+    merge_klass_table_rules!(base)
+    base
+  end
+
+  def self.merge_klass_table_rules!(base)
+    Klass.find_each do |k|
+      next if k.read_attribute(:rules).blank?
+
+      r = KlassClassRulesProvider.call(k.api_index)
+      next unless r
+
+      base[k.api_index.to_sym] = r
+    end
+  end
+
   def self.dictionaries
     {
       instruments: INSTRUMENTS,
@@ -139,16 +159,25 @@ class ClassRules
     }
   end
 
+  # Regras por `api_index`: DB (`klasses.rules`) tem prioridade sobre o hash em código
+  # (`CLASS_RULES`). Isto permite migrar gradualmente sem remover o legado de uma vez.
   def self.find(id)
+    from_db = KlassClassRulesProvider.call(id)
+    return from_db if from_db
+
+    find_from_rules_constant(id)
+  end
+
+  # Apenas o hash `ClassRules.rules` + tradução de saving_throws (comportamento pré-DB).
+  def self.find_from_rules_constant(id)
     rule = rules[id.to_s]
     return nil unless rule
-    
-    # Traduzir saving_throws para português
+
     rule = rule.deep_dup
     if rule[:saving_throws].present?
       rule[:saving_throws] = SavingThrowsCatalog.translate_array(rule[:saving_throws])
     end
-    
+
     rule
   end
 
@@ -850,7 +879,19 @@ class ClassRules
       tool_proficiencies: [],
       skill_proficiencies: { choose: 2, options: ['Lidar com Animais','Atletismo','Intimidação','Natureza','Percepção','Sobrevivência'] },
       features_level1: ['Fúria','Defesa sem Armadura'],
-      subclass: { choose_level: 3, options: { berserker: { id: 'berserker', name: 'Caminho do Berserker' }, totem: { id: 'totem', name: 'Caminho do Totem' } } },
+      subclass: {
+        choose_level: 3,
+        options: {
+          berserker: { id: 'berserker', name: 'Caminho do Furioso' },
+          totem: { id: 'totem', name: 'Caminho do Guerreiro Totêmico' },
+          :'barbaro-cicatrizes-runicas' => { id: 'barbaro-cicatrizes-runicas', name: 'Caminho do Bárbaro das Cicatrizes Rúnicas' },
+          :'desistente' => { id: 'desistente', name: 'Caminho do Desistente' },
+          :'furioso-imortal' => { id: 'furioso-imortal', name: 'Caminho do Furioso Imortal' },
+          :'guerreiro-urso' => { id: 'guerreiro-urso', name: 'Caminho do Guerreiro Urso' },
+          :'protetor-tribal' => { id: 'protetor-tribal', name: 'Caminho do Protetor Tribal' },
+          :'raivoso-elemental' => { id: 'raivoso-elemental', name: 'Caminho do Raivoso Elemental' },
+        },
+      },
       resources: { rage: { uses_by_level: {1=>2, 3=>3, 6=>4, 12=>5, 17=>6}, recharge: 'LR' } },
       required_choices_at_level: {},
       starting_gold: '2d4x10',
@@ -880,7 +921,19 @@ class ClassRules
       tool_proficiencies: { instruments: { choose: 3, choices: INSTRUMENTS } },
       skill_proficiencies: { choose: 3, options: :any },
       features_level1: ['Inspiração Bárdica (d6)','Conjuração'],
-      subclass: { choose_level: 3, options: { lore: { id: 'lore', name: 'Colégio do Conhecimento' }, valor: { id: 'valor', name: 'Colégio do Valor' } } },
+      subclass: {
+        choose_level: 3,
+        options: {
+          lore: { id: 'lore', name: 'Colégio do Conhecimento' },
+          valor: { id: 'valor', name: 'Colégio da Bravura' },
+          :'colegio-busca-cancao' => { id: 'colegio-busca-cancao', name: 'Colégio da Busca da Canção' },
+          :'colegio-comedia' => { id: 'colegio-comedia', name: 'Colégio da Comédia' },
+          :'colegio-fortuna' => { id: 'colegio-fortuna', name: 'Colégio da Fortuna' },
+          :'colegio-quietude' => { id: 'colegio-quietude', name: 'Colégio da Quietude' },
+          :'colegio-pavor' => { id: 'colegio-pavor', name: 'Colégio do Pavor' },
+          :'colegio-virtuosismo' => { id: 'colegio-virtuosismo', name: 'Colégio do Virtuosismo' },
+        },
+      },
       starting_gold: '5d4x10',
       starting_equipment: {
         choices: [
@@ -923,9 +976,20 @@ class ClassRules
       subclass: {
         choose_level: 1,
         options: {
-          life: { id: 'life', name: 'Vida' }, light: { id: 'light', name: 'Luz' }, knowledge: { id: 'knowledge', name: 'Conhecimento' },
-          nature: { id: 'nature', name: 'Natureza' }, tempest: { id: 'tempest', name: 'Tempestade' }, trickery: { id: 'trickery', name: 'Trapaça' }, war: { id: 'war', name: 'Guerra' }
-        }
+          :'dominio-agua' => { id: 'dominio-agua', name: 'Domínio da Água' },
+          :'dominio-criacao' => { id: 'dominio-criacao', name: 'Domínio da Criação' },
+          :'dominio-mente' => { id: 'dominio-mente', name: 'Domínio da Mente' },
+          :'dominio-terra' => { id: 'dominio-terra', name: 'Domínio da Terra' },
+          :'dominio-ar' => { id: 'dominio-ar', name: 'Domínio do Ar' },
+          :'dominio-tempo' => { id: 'dominio-tempo', name: 'Domínio do Tempo' },
+          :'dominio-do-conhecimento' => { id: 'dominio-do-conhecimento', name: 'Domínio do Conhecimento' },
+          :'dominio-da-vida' => { id: 'dominio-da-vida', name: 'Domínio da Vida' },
+          :'dominio-da-luz' => { id: 'dominio-da-luz', name: 'Domínio da Luz' },
+          :'dominio-da-natureza' => { id: 'dominio-da-natureza', name: 'Domínio da Natureza' },
+          :'dominio-da-tempestade' => { id: 'dominio-da-tempestade', name: 'Domínio da Tempestade' },
+          :'dominio-da-trapaca' => { id: 'dominio-da-trapaca', name: 'Domínio da Enganação' },
+          :'dominio-da-guerra' => { id: 'dominio-da-guerra', name: 'Domínio da Guerra' },
+        },
       },
       spellcasting: {
         type: 'full', casting_ability: 'WIS', preparation: 'prepared',
@@ -960,7 +1024,18 @@ class ClassRules
       tool_proficiencies: ['Kit de Herbalismo'],
       skill_proficiencies: { choose: 2, options: ['Arcanismo','Lidar com Animais','Intuição','Medicina','Natureza','Percepção','Religião','Sobrevivência'] },
       features_level1: ['Conjuração','Druídico'],
-      subclass: { choose_level: 2, options: { land: { id: 'land', name: 'Círculo da Terra' }, moon: { id: 'moon', name: 'Círculo da Lua' } } },
+      subclass: {
+        choose_level: 2,
+        options: {
+          circulo_da_terra: { id: 'circulo-da-terra', name: 'Círculo da Terra' },
+          circulo_da_lua: { id: 'circulo-da-lua', name: 'Círculo da Lua' },
+          circulo_infestacao: { id: 'circulo-infestacao', name: 'Círculo da Infestação' },
+          circulo_vida: { id: 'circulo-vida', name: 'Círculo da Vida' },
+          circulo_fadas: { id: 'circulo-fadas', name: 'Círculo das Fadas' },
+          circulo_feras: { id: 'circulo-feras', name: 'Círculo das Feras' },
+          circulo_mundos: { id: 'circulo-mundos', name: 'Círculo dos Mundos' },
+        },
+      },
       spellcasting: {
         type: 'full', casting_ability: 'WIS', preparation: 'prepared',
         cantrips_known_at_1: 2, spells_known_at_1: nil,
@@ -998,7 +1073,13 @@ class ClassRules
         options: {
           champion: { id: 'champion', name: 'Campeão' },
           battlemaster: { id: 'battlemaster', name: 'Mestre de Batalha' },
-          eldritch_knight: { id: 'eldritch_knight', name: 'Cavaleiro Arcano', grants: { spellcasting: { type: 'third', casting_ability: 'INT', preparation: 'known', cantrips_known_at_1: 0, spells_known_at_1: 0, ritual: false, focus: 'arcane_focus', list: 'wizard', school_bias: %w[Abjuração Evocação] } } }
+          eldritch_knight: { id: 'eldritch_knight', name: 'Cavaleiro Arcano', grants: { spellcasting: { type: 'third', casting_ability: 'INT', preparation: 'known', cantrips_known_at_1: 0, spells_known_at_1: 0, ritual: false, focus: 'arcane_focus', list: 'wizard', school_bias: %w[Abjuração Evocação] } } },
+          atirador_inigualavel: { id: 'atirador_inigualavel', name: 'Atirador Inigualável' },
+          cavaleiro_implacavel: { id: 'cavaleiro_implacavel', name: 'Cavaleiro Implacável' },
+          defensor_dedicado: { id: 'defensor_dedicado', name: 'Defensor Dedicado' },
+          kensai: { id: 'kensai', name: 'Kensai' },
+          mestre_correntes: { id: 'mestre_correntes', name: 'Mestre das Correntes' },
+          mestre_arremesso: { id: 'mestre_arremesso', name: 'Mestre do Arremesso' }
         }
       },
       required_choices_at_level: { 1 => { fighting_style: { choose: 1, options: FIGHTING_STYLES } } },
@@ -1029,7 +1110,17 @@ class ClassRules
       tool_proficiencies: { choose: 1, options: [:artisan_tools_any, :instrument_any] },
       skill_proficiencies: { choose: 2, options: ['Acrobacia','Atletismo','História','Intuição','Religião','Furtividade'] },
       features_level1: ['Defesa sem Armadura','Artes Marciais'],
-      subclass: { choose_level: 3, options: { open_hand: { id: 'open_hand', name: 'Caminho da Mão Aberta' }, shadow: { id: 'shadow', name: 'Caminho da Sombra' }, four_elements: { id: 'four_elements', name: 'Caminho dos Quatro Elementos' } } },
+      subclass: { choose_level: 3, options: {
+        open_hand: { id: 'open_hand', name: 'Caminho da Mão Aberta' },
+        shadow: { id: 'shadow', name: 'Caminho da Sombra' },
+        four_elements: { id: 'four_elements', name: 'Caminho dos Quatro Elementos' },
+        caminho_aco: { id: 'caminho_aco', name: 'Caminho do Aço' },
+        caminho_mestre_bebado: { id: 'caminho_mestre_bebado', name: 'Caminho do Mestre Bêbado' },
+        caminho_monge_tatuado: { id: 'caminho_monge_tatuado', name: 'Caminho do Monge Tatuado' },
+        caminho_ninjuts: { id: 'caminho_ninjuts', name: 'Caminho do Ninjútsu' },
+        caminho_punho_sagrado: { id: 'caminho_punho_sagrado', name: 'Caminho do Punho Sagrado' },
+        caminho_sadhaka: { id: 'caminho_sadhaka', name: 'Caminho do Sadhaka' },
+      } },
       required_choices_at_level: {},
       starting_gold: '5d4',
       feature_rules: {
@@ -1051,7 +1142,20 @@ class ClassRules
       tool_proficiencies: [],
       skill_proficiencies: { choose: 2, options: ['Atletismo','Intuição','Intimidação','Medicina','Persuasão','Religião'] },
       features_level1: ['Sentido Divino','Imposição das Mãos'],
-      subclass: { choose_level: 3, options: { devotion: { id: 'devotion', name: 'Juramento da Devoção' }, ancients: { id: 'ancients', name: 'Juramento dos Anciões' }, vengeance: { id: 'vengeance', name: 'Juramento da Vingança' } } },
+      subclass: {
+        choose_level: 3,
+        options: {
+          devotion: { id: 'devotion', name: 'Juramento de Devoção' },
+          ancients: { id: 'ancients', name: 'Juramento dos Anciões' },
+          vengeance: { id: 'vengeance', name: 'Juramento de Vingança' },
+          :'juramento-danacao' => { id: 'juramento-danacao', name: 'Juramento de Danação' },
+          :'juramento-equilibrio' => { id: 'juramento-equilibrio', name: 'Juramento de Equilíbrio' },
+          :'juramento-liberdade' => { id: 'juramento-liberdade', name: 'Juramento de Liberdade' },
+          :'juramento-misericordia' => { id: 'juramento-misericordia', name: 'Juramento de Misericórdia' },
+          :'juramento-ordenacao' => { id: 'juramento-ordenacao', name: 'Juramento de Ordenação' },
+          :'juramento-pureza' => { id: 'juramento-pureza', name: 'Juramento de Pureza' },
+        },
+      },
       spellcasting: { type: 'half', casting_ability: 'CHA', preparation: 'prepared', cantrips_known_at_1: 0, spells_known_at_1: nil, ritual: 'if_prepared', focus: 'holy_symbol', list: 'paladin' },
       required_choices_at_level: { 2 => { fighting_style: { choose: 1, options: ['Defesa','Duelos','Proteção','Grande Arma'] } } },
       feature_rules: {
@@ -1085,7 +1189,18 @@ class ClassRules
       tool_proficiencies: [],
       skill_proficiencies: { choose: 3, options: ['Lidar com Animais','Atletismo','Intuição','Investigação','Natureza','Percepção','Furtividade','Sobrevivência'] },
       features_level1: ['Inimigo Favorito','Explorador Nato'],
-      subclass: { choose_level: 3, options: { hunter: { id: 'hunter', name: 'Caçador' }, beast_master: { id: 'beast_master', name: 'Mestre das Feras' } } },
+      subclass: {
+        choose_level: 3,
+        options: {
+          hunter: { id: 'hunter', name: 'Caçador' },
+          beast_master: { id: 'beast_master', name: 'Mestre das Bestas' },
+          :'batedor' => { id: 'batedor', name: 'Batedor' },
+          :'flagelo-dos-inimigos' => { id: 'flagelo-dos-inimigos', name: 'Flagelo dos Inimigos' },
+          arqueiro_floresta_alta: { id: 'arqueiro_floresta_alta', name: 'Arqueiro da Floresta Alta' },
+          guardiao_selvagem: { id: 'guardiao_selvagem', name: 'Guardião Selvagem' },
+          rastreador_urbano: { id: 'rastreador_urbano', name: 'Rastreador Urbano' },
+        },
+      },
       spellcasting: { type: 'half', casting_ability: 'WIS', preparation: 'known', cantrips_known_at_1: 0, spells_known_at_1: 0, ritual: false, focus: nil, list: 'ranger' },
       required_choices_at_level: {
         1 => {
@@ -1125,7 +1240,36 @@ class ClassRules
       tool_proficiencies: ['Ferramentas de Ladrão'],
       skill_proficiencies: { choose: 4, options: ['Acrobacia','Atletismo','Enganação','Intuição','Intimidação','Investigação','Percepção','Atuação','Persuasão','Prestidigitação','Furtividade'] },
       features_level1: ['Perícia (escolha 2)','Ataque Furtivo','Gíria de Ladrão'],
-      subclass: { choose_level: 3, options: { thief: { id: 'thief', name: 'Ladrão' }, assassin: { id: 'assassin', name: 'Assassino' }, arcane_trickster: { id: 'arcane_trickster', name: 'Trapaceiro Arcano', grants: { spellcasting: { type: 'third', casting_ability: 'INT', preparation: 'known', cantrips_known_at_1: 0, spells_known_at_1: 0, ritual: false, focus: 'arcane_focus', list: 'wizard', school_bias: %w[Ilusão Encantamento] } } } } },
+      subclass: {
+        choose_level: 3,
+        options: {
+          :'ladrao' => { id: 'ladrao', name: 'Ladrão' },
+          :'assassino' => { id: 'assassino', name: 'Assassino' },
+          :'trapaceiro-arcano' => {
+            id: 'trapaceiro-arcano',
+            name: 'Trapaceiro Arcano',
+            grants: {
+              spellcasting: {
+                type: 'third',
+                casting_ability: 'INT',
+                preparation: 'known',
+                cantrips_known_at_1: 0,
+                spells_known_at_1: 0,
+                ritual: false,
+                focus: 'arcane_focus',
+                list: 'wizard',
+                school_bias: %w[Ilusão Encantamento],
+              },
+            },
+          },
+          :'cacador-de-tesouros' => { id: 'cacador-de-tesouros', name: 'Caçador de Tesouros' },
+          :'dancarino-das-sombras' => { id: 'dancarino-das-sombras', name: 'Dançarino das Sombras' },
+          :'face-fantasmagorica' => { id: 'face-fantasmagorica', name: 'Face Fantasmagórica' },
+          :'lamina-invisivel' => { id: 'lamina-invisivel', name: 'Lâmina Invisível' },
+          :'larapio-de-almas' => { id: 'larapio-de-almas', name: 'Larápio de Almas' },
+          :'mimetizador' => { id: 'mimetizador', name: 'Mimetizador' },
+        },
+      },
       required_choices_at_level: {
         1 => { expertise_skills: { choose: 2, options: :selected_from_class_skills } },
         6 => { expertise_skills: { choose: 2, options: :selected_from_class_skills } }
@@ -1157,7 +1301,20 @@ class ClassRules
       tool_proficiencies: [],
       skill_proficiencies: { choose: 2, options: ['Arcanismo','Enganação','Intuição','Intimidação','Persuasão','Religião'] },
       features_level1: ['Conjuração','Origem Feiticeira'],
-      subclass: { choose_level: 1, options: { draconic: { id: 'draconic', name: 'Linhagem Dracônica' }, wild: { id: 'wild', name: 'Magia Selvagem' } } },
+      # SRD: draconic / wild. Expandido: subclass_overrides.yml (ids = api_index pós-apply, exceto SRD mapeado em SUBCLASS_ALIASES).
+      subclass: {
+        choose_level: 1,
+        options: {
+          draconic: { id: 'draconic', name: 'Linhagem Dracônica' },
+          wild: { id: 'wild', name: 'Magia Selvagem' },
+          :'feiticaria-da-espada' => { id: 'feiticaria-da-espada', name: 'Feitiçaria da Espada' },
+          :'feiticaria-do-sangue' => { id: 'feiticaria-do-sangue', name: 'Feitiçaria do Sangue' },
+          :'linhagem-elemental' => { id: 'linhagem-elemental', name: 'Linhagem Elemental' },
+          :'origem-aberrante' => { id: 'origem-aberrante', name: 'Origem Aberrante' },
+          :'origem-abissal' => { id: 'origem-abissal', name: 'Origem Abissal' },
+          :'origem-mutavel' => { id: 'origem-mutavel', name: 'Origem Mutável' }
+        }
+      },
       spellcasting: { type: 'full', casting_ability: 'CHA', preparation: 'known', cantrips_known_at_1: 4, spells_known_at_1: 2, ritual: false, focus: 'arcane_focus', list: 'sorcerer' },
       # Kit 1.PoC + Kit 3: options agora resolvem via :metamagic (catálogo canônico).
       # validate_subset: true ativa o subset validator opt-in.
@@ -1186,7 +1343,21 @@ class ClassRules
       armor_proficiencies: %w[leve], weapon_proficiencies: ['armas','simples'], tool_proficiencies: [],
       skill_proficiencies: { choose: 2, options: ['Arcanismo','Enganação','História','Intimidação','Investigação','Natureza','Religião'] },
       features_level1: ['Patrono Sobrenatural','Magia de Pacto'],
-      subclass: { choose_level: 1, options: { fiend: { id: 'fiend', name: 'O Ínfero' }, archfey: { id: 'archfey', name: 'A Rainha/Príncipe das Fadas' }, great_old_one: { id: 'great_old_one', name: 'O Grande Antigo' } } },
+      # SRD: fiend/archfey/great_old_one. Extras: subclass_overrides.yml (patron-*).
+      subclass: {
+        choose_level: 1,
+        options: {
+          fiend: { id: 'fiend', name: 'O Ínfero' },
+          archfey: { id: 'archfey', name: 'A Rainha/Príncipe das Fadas' },
+          great_old_one: { id: 'great_old_one', name: 'O Grande Antigo' },
+          'patrono-morte': { id: 'patrono-morte', name: 'A Morte' },
+          'patrono-arcanjo-vingador': { id: 'patrono-arcanjo-vingador', name: 'O Arcanjo Vingador' },
+          'patrono-espirito-heroico': { id: 'patrono-espirito-heroico', name: 'O Espírito Heroico' },
+          'patrono-supragenio': { id: 'patrono-supragenio', name: 'O Supragênio' },
+          'patrono-tita-caido': { id: 'patrono-tita-caido', name: 'O Titã Caído' },
+          'patrono-vazio': { id: 'patrono-vazio', name: 'O Vazio' }
+        }
+      },
       spellcasting: { type: 'pact', casting_ability: 'CHA', preparation: 'known', cantrips_known_at_1: 2, spells_known_at_1: 2, ritual: false, focus: 'arcane_focus', list: 'warlock' },
       required_choices_at_level: {
         2 => { invocations: { choose: 2, options: :eldritch_invocations, validate_subset: true } },
@@ -1217,7 +1388,25 @@ class ClassRules
       armor_proficiencies: [], weapon_proficiencies: ['adagas','dardos','fundas','bordões','bestas leves'], tool_proficiencies: [],
       skill_proficiencies: { choose: 2, options: ['Arcanismo','História','Intuição','Investigação','Medicina','Religião'] },
       features_level1: ['Conjuração','Recuperação Arcana'],
-      subclass: { choose_level: 2, options: { abjuration: { id: 'abjuration', name: 'Abjuração' }, conjuration: { id: 'conjuration', name: 'Conjuração' }, divination: { id: 'divination', name: 'Adivinhação' }, enchantment: { id: 'enchantment', name: 'Encantamento' }, evocation: { id: 'evocation', name: 'Evocação' }, illusion: { id: 'illusion', name: 'Ilusão' }, necromancy: { id: 'necromancy', name: 'Necromancia' }, transmutation: { id: 'transmutation', name: 'Transmutação' } } },
+      subclass: {
+        choose_level: 2,
+        options: {
+          :'escola-de-abjuracao' => { id: 'escola-de-abjuracao', name: 'Escola de Abjuração' },
+          :'escola-de-adivinhacao' => { id: 'escola-de-adivinhacao', name: 'Escola de Adivinhação' },
+          :'escola-de-conjuracao' => { id: 'escola-de-conjuracao', name: 'Escola de Conjuração' },
+          :'escola-de-encantamento' => { id: 'escola-de-encantamento', name: 'Escola de Encantamento' },
+          :'escola-de-evocacao' => { id: 'escola-de-evocacao', name: 'Escola de Evocação' },
+          :'escola-de-ilusao' => { id: 'escola-de-ilusao', name: 'Escola de Ilusão' },
+          :'escola-de-necromancia' => { id: 'escola-de-necromancia', name: 'Escola de Necromancia' },
+          :'escola-de-transmutacao' => { id: 'escola-de-transmutacao', name: 'Escola de Transmutação' },
+          :'arquearia-arcana' => { id: 'arquearia-arcana', name: 'Arquearia Arcana' },
+          :'iniciacao-demonologia' => { id: 'iniciacao-demonologia', name: 'Iniciação em Demonologia' },
+          :'maestria-alquimica' => { id: 'maestria-alquimica', name: 'Maestria Alquímica' },
+          :'maestria-dos-automatos' => { id: 'maestria-dos-automatos', name: 'Maestria dos Autômatos' },
+          :'navegacao-planar' => { id: 'navegacao-planar', name: 'Navegação Planar' },
+          :'teurgia-mistica' => { id: 'teurgia-mistica', name: 'Teurgia Mística' },
+        },
+      },
       spellcasting: { type: 'full', casting_ability: 'INT', preparation: 'prepared', cantrips_known_at_1: 3, spells_known_at_1: 6, ritual: 'spellbook', focus: 'arcane_focus', list: 'wizard' },
       required_choices_at_level: {},
       feature_rules: {

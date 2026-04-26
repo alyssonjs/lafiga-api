@@ -1938,15 +1938,18 @@ ranger:
   batedor:
     name: "Batedor"
     flavor: "Arquétipo do Patrulheiro"
-    description: "Avança e escaramuça, sempre em movimento."
+    description: |
+      O arquétipo de Batedor é um perito em se deslocar pelos terrenos mais difíceis sem se preocupar com quaisquer impedimentos. Seu treinamento em terrenos naturais faz com que ele tire proveito do terreno e do seu movimento para atacar seus adversários rapidamente, se afastando deles para um lugar seguro em seguida. Sua percepção do ambiente faz dele o personagem ideal para avançar nas trilhas mantendo seu grupo informado do que está por vir.
     choose_level: 3
     levels:
       - level: 3
         features:
           - name: "Tática de Batedor"
-            description: "Trilhas seguras; alertas à distância."
+            description: |
+              No 3° nível, você aprende a se manter na dianteira do seu grupo de forma vantajosa. Você pode deixar uma trilha que o seu grupo pode localizar com um teste de Sabedoria (Percepção) CD 10. Qualquer criatura que não conheça sua trilha deve ser bem sucedida num teste de Sabedoria (Percepção) CD 15 para encontrá-la. Se você for alvo de uma emboscada, cair em uma armadilha ou quiser avisar seus companheiros de algo, você pode usar sua reação para emitir um silvo ou dar algum sinal sonoro similar. Todos os seus companheiros a até 120 metros de você ouvirão seu alerta e poderão seguir até a localização em que você o emitiu com um sucesso num teste de Sabedoria (Sobrevivência) CD 10.
           - name: "Escaramuça"
-            description: "+2d6 no primeiro ataque do turno se você se mover 6 m antes de atacar (9 m em grids de 1,5 m = 4 casas)."
+            description: |
+              Também no 3° nível, você desenvolve um estilo de caça que se baseia em se manter em movimento todo o tempo. Se você se mover pelo menos 6 metros, você causa 2d6 de dano extra no primeiro ataque que você fizer logo após ter se movido. Além disso, se uma criatura realizar um ataque numa rodada em que você tenha se movido pelo menos 6 metros, você pode usar sua reação para impor desvantagem na jogada de ataque dessa criatura.
             rules:
               once_per_turn: true
               move_before_attack_m: 6
@@ -1966,7 +1969,8 @@ ranger:
       - level: 7
         features:
           - name: "Movimento de Batedor"
-            description: "+3 m de deslocamento; pode Desengajar ou Disparada como Ação Bônus."
+            description: |
+              A partir do 7° nível, você se desloca com mais velocidade se estiver usando uma armadura leve ou nenhuma armadura. Seu deslocamento terrestre aumenta em 3 metros e você pode usar uma ação bônus para realizar as ações de Disparada ou Desengajar. Além disso, se uma criatura realizar um ataque de oportunidade contra você, você pode usar sua reação para fazer o ataque errar.
             grants:
               movement:
                 walk_bonus_ft: 10
@@ -1975,7 +1979,8 @@ ranger:
       - level: 11
         features:
           - name: "Percepção Instintiva"
-            description: "Vantagem em Percepção, Investigação e na Iniciativa."
+            description: |
+              No 11° nível, você amplia seus sentidos, se tornando capaz de prever o que está para acontecer e o que encontrará pelo caminho. Você recebe vantagem em testes de Sabedoria (Percepção), Inteligência (Investigação) e nas suas jogadas de iniciativa.
             grants:
               advantages:
                 skills: ["Percepção","Investigação"]
@@ -1983,7 +1988,8 @@ ranger:
       - level: 15
         features:
           - name: "Liberdade de Movimentos"
-            description: "Imune a efeitos que reduzam seu deslocamento ou imponham impedido/contido por terreno difícil."
+            description: |
+              A partir do 15° nível, você se torna imune a efeitos que possam impedir seu movimento, como se tivesse sob efeito da magia movimentação livre.
             rules:
               ignores_difficult_terrain: true
               conditions_immunity: ["redução de deslocamento por terreno","impedido/contido por terreno"]
@@ -1991,13 +1997,15 @@ ranger:
   flagelo-dos-inimigos:
     name: "Flagelo dos Inimigos"
     flavor: "Arquétipo do Patrulheiro"
-    description: "Especialista em caçar tipos de inimigos favoritos."
+    description: |
+      O arquétipo de Flagelo dos Inimigos simula um patrulheiro que se especializou em caçar e abater seus inimigos favoritos. Você se focou em estudar profundamente as criaturas que você encontra pelo seu caminho, se tornando um caçador implacável quando aprende os pontos fracos e peculiaridades dessas criaturas. Não importa o tipo de monstro que você encontre, sua tenacidade e foco permitem que você os abate com uma maestria incomparável.
     choose_level: 3
     levels:
       - level: 3
         features:
           - name: "Inimigo Favorito Adicional"
-            description: "Escolhe um tipo adicional de inimigo favorito e um idioma associado."
+            description: |
+              No 3° nível, você amplia seu estudo aprofundado sobre as criaturas que você encontra em suas aventuras. Você pode escolher um inimigo favorito adicional, assim como um idioma associado. No 10° nível, você pode escolher outro inimigo favorito adicional e um idioma associado. Suas escolhas devem refletir os tipos de monstros que você encontrou nas suas aventuras.
             choices:
               favored_enemy:
                 choose: 1
@@ -2021,7 +2029,8 @@ ranger:
                 choose: 1
                 options: ["Anão","Élfico","Orc","Gnômico","Goblinóide","Infernal","Abissal","Celestial","Dracônico","Silvestre"]
           - name: "Esquiva Predileta"
-            description: "Reação: impõe desvantagem a um ataque de seus inimigos favoritos contra você."
+            description: |
+              No 3° nível também, você sabe como evitar os ataques dos seus inimigos favoritos. Quando um inimigo favorito seu que você possa ver realizar uma jogada de ataque contra você, você pode usar sua reação para dar desvantagem nessa jogada de ataque. A partir do 13° nível, quando você for alvo de uma magia ou efeito de um inimigo favorito seu que você possa ver, que exija um teste de resistência de Força, Destreza ou Sabedoria, você pode usar sua reação para ganhar vantagem no seu teste de resistência.
             rules:
               reaction: true
               trigger: "ser alvo de ataque de um inimigo favorito"
@@ -2029,7 +2038,8 @@ ranger:
       - level: 7
         features:
           - name: "Caçador de Inimigos"
-            description: "Vantagem no primeiro ataque por turno contra inimigo favorito; +1d8 de dano nesse acerto."
+            description: |
+              A partir do 7° nível, você se torna mais eficiente em combater seus inimigos favoritos. Você recebe vantagem na primeira jogada de ataque que fizer contra um inimigo favorito seu em cada um dos seus turnos. Se você atingir esse ataque, você causa 1d8 de dano extra. Se você atacar um inimigo favorito enquanto ele estiver surpreso, seu ataque causa 2d8 de dano extra.
             rules:
               once_per_turn: true
               advantage_first_attack_vs_favored: true
@@ -2037,14 +2047,16 @@ ranger:
       - level: 11
         features:
           - name: "Estudar Inimigo"
-            description: "Ação para analisar um alvo (CA, PV, atributos, resistências). Recarrega em descanso."
+            description: |
+              No 11° nível, sua análise e estudo das habilidades e poderes dos seus inimigos favoritos tornam você um oponente difícil de confrontar. Quando você encontrar um inimigo favorito seu, você pode usar sua ação para realizar um teste de Sabedoria (Percepção) CD 5 + nível de desafio da criatura, para analisar esse inimigo. Se você for bem sucedido, o Mestre revela a você uma das informações sobre as estatísticas da criatura, à sua escolha: Classe de Armadura; Pontos de vida atuais; Tipos de deslocamento e valor em metros; Valores de Habilidades Físicas; Resistências e Imunidades; Sentidos; Um traço especial; Uma ação de combate. Se o resultado do seu teste superar a CD em 5 ou mais, você descobrirá uma informação adicional, à sua escolha, dentre as informações disponíveis. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
             uses:
               per: "descanso curto ou longo"
               value: 1
       - level: 15
         features:
           - name: "Inimizade Imediata"
-            description: "Gasta espaço 4º/5º para tratar um tipo como inimigo favorito por 1h/8h."
+            description: |
+              A partir do 15° nível, você consegue magicamente se especializar instantaneamente na caça e combate contra um tipo de criatura que não é um inimigo favorito seu. Com sua ação, você pode gastar um espaço de magia de 4° nível ou superior e escolher um tipo de criatura dentre aberrações, bestas, celestiais, constructos, corruptores, dragões, elementais, fadas, gigantes, limos, monstruosidades, mortos-vivos, plantas ou um tipo de raça humanoide. Durante 1 hora, esse tipo de criatura é considerado um inimigo favorito para você. Você pode gastar um espaço de magia de 5° nível com essa característica, aumentando a duração para 8 horas. Após usar essa característica, você precisa terminar um descanso longo para usá-la novamente.
             rules:
               spell_slot_required: [4,5]
               duration_by_slot:
@@ -2194,6 +2206,105 @@ ranger:
             description: "Magias que tenham você como alvo também afetam o companheiro a até 9 m."
             rules:
               share_target_self_spells_with_companion_within_m: 9
+
+  # Novos arquétipos (Livro de Novos Arquétipos) — chaves alinhadas a characterCreationData / canonical_indexes
+  arqueiro_floresta_alta:
+    name: "Arqueiro da Floresta Alta"
+    flavor: "Arquétipo do Patrulheiro"
+    description: |
+      O arquétipo de Arqueiro da Floresta Alta geralmente é seguido por elfos da floresta que usam a cobertura e proteção das copas das altas árvores em seu favor. Eles espreitam no alto das árvores enquanto buscam invasores em seu território. Raramente uma criatura hostil consegue avistar esses arqueiros, e nas raras ocasiões em que os encontram escondidos nas árvores, já é tarde demais.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Arqueiro Bem-Suprido"
+            description: |
+              No 3° nível, você aprende a entalhar suas próprias flechas, prevenindo você de ficar sem munição. Você adquire proficiência em ferramentas de entalhador. Além disso, durante um descanso curto, você pode usar galhos e varetas coletadas na floresta para criar suas próprias flechas. Realize um teste de Destreza CD 15 usando suas ferramentas de entalhador. Se você for bem sucedido, criará 2d10 flechas para o arco escolhido por você.
+          - name: "Visão Aguçada"
+            description: |
+              Também no 3° nível, você aprimora sua visão e se torna um especialista em localizar e abater seus inimigos de longas distâncias. Você recebe vantagem em testes de Sabedoria (Percepção) relacionados à visão. Além disso, quando você realiza um ataque à distância com arco, a distância dele é dobrada.
+      - level: 7
+        features:
+          - name: "Atirar e Esconder"
+            description: |
+              A partir do 7° nível, você aprende uma tática de combate que visa minar seus oponentes sem que eles consigam perceber você. Enquanto estiver em um dos seus terrenos favoritos, você pode usar uma ação bônus para usar a ação de Esconder sempre que realizar um ataque à distância com arco contra um inimigo a mais de 18 metros de você. O alvo sofre desvantagem em testes de Sabedoria (Percepção) para definir onde você se escondeu enquanto você estiver a mais de 18 metros dele.
+              Você pode escalar árvores e outras superfícies íngremes em seu terreno favorito como se fossem terreno difícil. Você não precisa realizar um teste de Força (Atletismo) para isso.
+      - level: 15
+        features:
+          - name: "Tiro de Misericórdia"
+            description: |
+              No 15° nível, você pode desferir um tiro devastador contra uma presa ferida. Com sua ação, realize um único ataque à distância com arco contra uma criatura no alcance. Se o alvo estiver com menos da metade do seu máximo de pontos de vida, ele deve ser bem sucedido num teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Sabedoria) ou sofrerá 10d8 de dano extra. Um sucesso na resistência reduz o dano extra à metade. Um alvo que caia para 0 pontos de vida por causa desse dano, morre instantaneamente. Após usar essa característica, você precisa terminar um descanso longo para usá-la novamente.
+          - name: "Flechas Perfeitas"
+            description: |
+              A partir do 15° nível, você consegue fabricar flechas impressionantes para seu arco. Você pode passar 8 horas num processo de fabricação tentando usar suas ferramentas de entalhador para fazer flechas obra-prima. Realize um teste de Destreza CD 20 usando suas ferramentas de entalhador. Se você for bem sucedido, você cria 2d10 flechas obra-prima. Essas flechas causam 1d10 de dano, se forem feitas para arcos longos, ou 1d8 de dano, se forem feitas para arcos curtos. Além disso, essas flechas atingem um acerto crítico numa rolagem 19 ou 20 no d20. Após usar essa característica, você precisa terminar um descanso longo para usá-la novamente.
+
+  guardiao_selvagem:
+    name: "Guardião Selvagem"
+    flavor: "Arquétipo do Patrulheiro"
+    description: |
+      O arquétipo de Guardião Selvagem emula um patrulheiro que nasceu e passou a maior parte da sua vida vivendo em territórios selvagens acompanhado exclusivamente por animais silvestres e bestas perigosas. Graças à sua vida isolada em terrenos naturais, você aprendeu a se comunicar com os seres das florestas e a usar sua intuição e instinto muito mais que seu raciocínio. Você se torna um exímio caçador em seus territórios nativos e pode se transformar em um animal feroz em batalha.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Linguagem Bestial"
+            description: |
+              No 3° nível, seu convívio com bestas e outras criaturas selvagens permite que você se comunique e interaja de forma mais efetiva com elas. Você pode falar com bestas como se compartilhasse um idioma com elas e a reação inicial de uma besta em relação a você é mais favorável. Uma besta será indiferente a você se ela seria hostil e será amigável se ela seria indiferente.
+          - name: "Grito Primitivo"
+            description: |
+              Também no 3° nível, você é capaz de trazer à tona o poder inerente em você através de um poderoso grito bestial. Com uma ação bônus, você emite um grito selvagem que aflora um frenesi feral em você. Você assume uma aparência ferina fazendo garras afiadas brotarem de seus dedos e seus caninos crescerem na sua boca. Durante 1 minuto, você recebe os seguintes benefícios:
+              • Você ganha a ação Ataques Múltiplos. Você pode realizar um ataque de mordida e dois ataques de garra, ou um ataque de mordida e um ataque com uma arma com essa ação. Você é proficiente com suas armas naturais e suas jogadas de ataque e dano com elas são baseadas em Força ou Destreza, à sua escolha. Seu ataque de mordida causa 1d6 de dano perfurante e cada ataque de garra seu causa 1d4 de dano cortante.
+              • Você ganha vantagem em testes de resistência para não ser amedrontado.
+              • Você ganha vantagem em testes de Carisma (Intimidação).
+              • Você pode usar a ação de Disparada com uma ação bônus.
+              Enquanto estiver nesse estado, você não pode conjurar magias que não estejam na sua lista de magias de patrulheiro nem pode realizar ações que exijam concentração. A partir do 5° nível, quando você usar a ação de Ataques Múltiplos você pode realizar um ataque de mordida e três ataques com garra ou um ataque de mordida e dois ataques com arma. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+      - level: 7
+        features:
+          - name: "Instinto Animal"
+            description: |
+              No 7° nível, seu instinto animal se aflora quando você está caçando, rastreando ou em perigo. Você recebe vantagem em testes de Sabedoria (Sobrevivência) para rastrear e em jogadas de iniciativa. Além disso, você ganha +5 de bônus na sua Sabedoria (Percepção) passiva.
+      - level: 11
+        features:
+          - name: "Bote Dilacerador"
+            description: |
+              A partir do 11° nível, você é capaz de saltar sobre seus inimigos com suas garras, dilacerando-os. Enquanto você estiver sob efeito do seu grito primitivo, se você usar a ação de Disparada com uma ação bônus para correr, pelo menos 6 metros em linha reta, e logo em seguida usar a ação de Ataques Múltiplos para atacar uma criatura com suas garras e mordida, você pode dilacerá-la. Você causa 1d8 de dano extra para cada ataque que você atingir. Além disso, o alvo deve ser bem sucedido em um teste de resistência de Força (CD 8 + seu bônus de proficiência + seu modificador de Força) ou cairá no chão.
+      - level: 15
+        features:
+          - name: "Território de Caça"
+            description: |
+              A partir do 15° nível, você se transforma numa besta incansável no seu território de caça. Enquanto você estiver em um terreno favorito seu, você ganha os seguintes benefícios adicionais:
+              • Você ganha vantagem na sua primeira jogada de ataque a cada turno seu.
+              • Você ganha +1 de bônus na sua CA.
+              • Você ganha vantagem em testes de Destreza (Furtividade).
+              • Você ganha vantagem em testes de resistência de Força e Destreza.
+
+  rastreador_urbano:
+    name: "Rastreador Urbano"
+    flavor: "Arquétipo do Patrulheiro"
+    description: |
+      O arquétipo Rastreador Urbano se foca em sobreviver e se adaptar aos ambientes urbanos com maestria. O patrulheiro que segue esse caminho consegue perceber as nuances no ambiente das grandes cidades e localiza um indivíduo em particular no meio de uma multidão de forma quase sobrenatural. Sua percepção ao território moldado pelos humanoides é perfeita e ele consegue caçar e abater criaturas como um verdadeiro caçador.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Explorador Urbano"
+            description: |
+              No 3° nível, você terá os benefícios da característica Explorador Natural em qualquer território urbano. Um território urbano, com esse propósito, é qualquer local que, segundo o Mestre, se encaixe como uma vila, cidade ou metrópole. Além disso, você adquire proficiência na perícia Persuasão e tem vantagem em testes de Carisma (Persuasão) com os propósitos de obter informações sobre uma criatura, item ou local que você deseja encontrar.
+      - level: 7
+        features:
+          - name: "Buscar e Abater"
+            description: |
+              A partir do 7° nível, você aprende a rastrear e abater seus inimigos de forma extremamente eficaz. Sempre que atacar uma criatura surpresa, você pode gastar um espaço de magia de 1° nível para causar dano adicional nesse ataque. Você causa 1d10 de dano adicional e esse dano aumenta em 1d10 para cada nível do espaço de magia acima do 1°. Além disso, se o ataque atingir, você receberá um bônus nas suas jogadas de ataque contra essa criatura igual ao seu modificador de Sabedoria (mínimo +1) por 1 minuto.
+      - level: 11
+        features:
+          - name: "Percepção do Antinatural"
+            description: |
+              No 11° nível, você se torna extremamente familiarizado com um ambiente que não seja natural. Em qualquer ambiente urbano ou masmorra que não seja natural, você recebe vantagem em testes de Sabedoria (Percepção) ou Inteligência (Investigação) realizados para encontrar rastros, portas secretas, armadilhas, passagens escondidas ou qualquer outra característica no terreno que não tenha sido feita naturalmente. Além disso, você adquire proficiência com ferramentas de ladrão e tem vantagem em qualquer teste que fizer com elas num território urbano ou masmorra que não seja natural. Alternativamente, se preferir, ao invés de dar vantagem nas jogadas de ataque de seus companheiros, você pode usar sua ação bônus para realizar um ataque que, ao invés de causar dano, cansa seu oponente. O alvo deve realizar um teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Destreza) ou receberá 1 nível de exaustão.
+      - level: 15
+        features:
+          - name: "Líder de Caçada"
+            description: |
+              A partir do 15° nível, você se torna especialista em enfrentar qualquer inimigo que você pegue em desvantagem. Sempre que atacar uma criatura afetada por Buscar e Abater, você pode usar sua ação bônus para dar vantagem nas jogadas de ataque que seus aliados fizerem contra essa criatura até o início do seu próximo turno.
 
 sorcerer:
   linhagem-draconica:
@@ -2670,6 +2781,257 @@ fighter:
             rules:
               improved_war_magic_enabled: true
 
+  # Novos arquétipos (Livro de Novos Arquétipos) — api_index alinhado a canonical_indexes / import
+  atirador_inigualavel:
+    name: "Atirador Inigualável"
+    flavor: "Arquétipo Marcial"
+    description: |
+      O arquétipo Atirador Inigualável é escolhido por guerreiros que procuram a maestria com bestas, arcos e outras armas de disparo. Geralmente, elfos costumam trilhar o caminho desse arquétipo para dominar a arte do arco, mas ele é bastante comum entre todas as raças, já que é perceptível a vantagem de atacar seus inimigos e derrubá-los antes que eles tenham a chance de revidar.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Tiro Rápido"
+            description: |
+              A partir do 3° nível, você aprende a disparar tiros com sua arma com uma velocidade surpreendente. Você pode, com uma ação bônus, realizar um ataque à distância com arma de munição. Você sofre desvantagem nessa jogada de ataque.
+      - level: 7
+        features:
+          - name: "Melhor Posição de Tiro"
+            description: |
+              No 7° nível, você se torna especialista em localizar a melhor posição para atacar seus inimigos. Você ganha proficiência em Acrobacia, se já não tiver. Além disso, você pode realizar testes de Destreza (Acrobacia) para escalar e recebe vantagem nesses testes. Você recebe +2 de bônus nas jogadas de dano com armas de munição, se atingir uma criatura que esteja numa posição inferior à sua.
+      - level: 10
+        features:
+          - name: "Tiro Certeiro"
+            description: |
+              No 10° nível, você pode mirar em uma criatura e realizar um tiro no ponto exato para exaurir a energia do seu alvo. Com sua ação, você realiza um único ataque à distância com uma arma de munição e você recebe vantagem nessa jogada de ataque. Se você atingir, o alvo sofre 5d10 de dano extra e deve realizar um teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Destreza) ou ficará debilitado, sofrendo desvantagem nas jogadas de ataque e testes de Força e Destreza por 1 minuto. O alvo pode repetir o teste de resistência no final de cada turno dele, terminando o efeito de debilitação em si com um sucesso. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente. A partir do 16° nível, você pode usar essa característica duas vezes antes de precisar terminar um descanso.
+      - level: 15
+        features:
+          - name: "Pontaria Aguçada"
+            description: |
+              Ao atingir o 15° nível, você aprimora sua velocidade e precisão ao atacar com sua arma escolhida. Você não sofre mais desvantagem na sua jogada de ataque quando usar uma ação bônus para realizar um ataque à distância com uma arma de munição. Além disso, você recebe vantagem na primeira jogada de ataque à distância com arco que fizer em cada turno seu.
+      - level: 18
+        features:
+          - name: "Um Tiro, Uma Morte"
+            description: |
+              No 18° nível, você se torna especialista em atirar no ponto letal de criaturas mais frágeis. Sempre que você atingir um ataque à distância com uma arma de munição em uma criatura com 20 pontos de vida ou menos, o alvo deve realizar um teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Destreza) ou cairá para 0 pontos de vida. Um alvo bem sucedido no teste ainda sofre o dano normal do seu ataque. Se você atingir um acerto crítico com um ataque à distância com uma arma de munição em uma criatura com 40 pontos de vida ou menos, ela deve realizar o mesmo teste de resistência para não cair a 0 pontos de vida.
+
+  cavaleiro_implacavel:
+    name: "Cavaleiro Implacável"
+    flavor: "Arquétipo Marcial"
+    description: |
+      O arquétipo Cavaleiro Implacável reflete um guerreiro especializado em combater montado. Ele cria um forte elo com uma montaria que o serve lealmente enquanto ele a tratar com respeito. Enquanto está montado, um cavaleiro implacável é o oponente mais temível num campo de batalha, sendo capaz de dizimar toda uma linha de frente em uma única investida feroz sobre sua montaria.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Montaria Fiel"
+            description: |
+              A partir do 3° nível, você adquire os serviços de uma leal montaria. Sua montaria normalmente será um cavalo de guerra, se você for Médio ou um pônei, se você for Pequeno ou um anão. Você pode adquirir uma besta diferente como montaria, com nível de desafio igual ou inferior a 1/2 e sem deslocamento de voo, com a permissão do Mestre. O máximo de pontos de vida dela será igual ao seu total normal ou a cinco vezes seu nível de guerreiro, o que for maior. Como qualquer criatura, sua montaria pode gastar Dados de Vida durante um descanso curto e recupera todos os seus pontos de vida ao terminar um descanso longo.
+               Sua montaria realiza o turno dela na sua iniciativa e obedece seus direcionamentos enquanto você estiver montando-a. No seu turno, você pode coordenar sua montaria para guiar seu movimento (sem ação necessária). Você pode usar uma ação bônus para direcionar sua montaria a realizar as ações de Ataque, Disparada ou Desengajar. Ela age por contra própria se você estiver incapacitado ou ausente, focando-se em defender você.
+               Se a montaria morrer, você pode obter outra montaria de formas tradicionais ou tentando adestrar uma nova besta selvagem apropriada que você encontrar, através de um teste de Carisma (Adestrar Animais) CD 15 que requer 8 horas para ser concluído.
+      - level: 7
+        features:
+          - name: "Montaria Incansável"
+            description: |
+              A partir do 7° nível, sua montaria se torna extremamente eficiente em realizar longas jornadas. Sua montaria pode percorrer uma quantidade de quilômetros num dia de viagem igual ao dez vezes seu deslocamento de caminhada, sem precisar descansar. Uma montaria voadora pode percorrer uma quantidade de quilômetros por dia igual a quinze vezes seu deslocamento de voo. Para percorrer toda essa distância num dia de viagem, é necessário viajar por pelo menos 12 horas. Nem você nem sua montaria precisam realizar testes de resistência de Constituição para não sofrerem um nível de exaustão ao viajarem dessa forma, mas viajar além desse tempo num dia exigirá um teste de resistência de Constituição CD 15 + 1 para cada hora acima das 12 horas.
+      - level: 10
+        features:
+          - name: "Investida Implacável"
+            description: |
+              No 10° nível, você ensina sua montaria a realizar um ataque de carga devastador. Com sua ação, enquanto estiver montado, você pode se mover 6 metros em linha reta e realizar um único ataque corpo-a-corpo com arma contra uma criatura logo após terminar seu movimento. Você recebe vantagem nesse ataque e, se atingir, você causa 4d8 de dano extra. Se você estiver usando uma arma de haste perfurante, como uma lança, o dano extra causado será de 6d8, ao invés. A partir do 20° nível, o dano extra será de 6d8, ou 8d8 com uma arma de haste perfurante.
+      - level: 12
+        features:
+          - name: "Montaria dos Céus"
+            description: |
+              A partir do 12° nível, você pode escolher uma besta com nível de desafio 1 ou inferior capaz de voar, como sua montaria fiel.
+      - level: 15
+        features:
+          - name: "Cavaleiro Protetor"
+            description: |
+              A partir do 15° nível, enquanto estiver montado, você pode adicionar seu bônus de proficiência na CA e nos testes de resistência da sua montaria. Além disso, quando sua montaria for atingida por um ataque ou fracassar em um teste de resistência para reduzir o dano de um efeito à metade, você pode usar sua reação para reduzir o dano sofrido por ela à metade.
+      - level: 18
+        features:
+          - name: "Atropelar"
+            description: |
+              No 18° nível, você pode atravessar o campo de batalha com sua montaria, atropelando seus inimigos em uma investida devastadora. Com sua ação, enquanto estiver montado, você pode guiar sua montaria a se mover em linha reta todo o deslocamento dela. Todas as criaturas de tamanho igual ou inferior ao da sua montaria, que estiverem ocupando um quadrado por onde ela passou, devem ser bem sucedidos num teste de resistência de Destreza (CD 8 + seu bônus de proficiência + o modificador de Força da sua montaria) ou sofrerão dano de concussão igual a 2d6 + modificador de Força da sua montaria e serão derrubados no chão. Uma criatura bem sucedida reduz o dano à metade e não cairá no chão. Uma criatura de tamanho superior a sua montaria, ou qualquer outra barreira ocupando um espaço na linha de movimento, impede que esse ataque progrida. Sua montaria causa ataques de oportunidade ao se mover dessa forma, mas as criaturas sofrem desvantagem nessas jogadas de ataque.
+              Você pode usar essa característica duas vezes. Após isso, você precisa terminar um descanso curto ou longo para poder usá-la novamente.
+      - level: 20
+        features:
+          - name: "Investida Suprema"
+            description: |
+              No 20° nível, o dano extra da investida ajusta-se: 6d8 (8d8 com arma de haste perfurante).
+
+  defensor_dedicado:
+    name: "Defensor Dedicado"
+    flavor: "Arquétipo Marcial"
+    description: |
+      O arquétipo Defensor Dedicado é a pura demonstração do potencial defensivo e resistente do guerreiro. Seus adeptos sempre estão bem armadurados e portando grandes escudos com os quais defendem a si próprios e aos seus aliados. Esses bravos guerreiros chamam a atenção dos mais poderosos oponentes para si, permitindo que seus aliados se foquem em derrotar outros adversários enquanto ele distrai a verdadeira ameaça.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Postura Defensiva"
+            description: |
+              A partir do 3° nível, você pode assumir uma posição de combate focada totalmente na sua proteção.
+              Enquanto estiver na postura defensiva, você recebe os seguintes benefícios caso esteja utilizando uma armadura e usando um escudo:
+              • Você possui resistência contra dano de concussão, cortante e perfurante.
+              • Quando você for atacado por um oponente que você possa ver e não estiver surpreso, você pode usar sua reação para erguer seu escudo e receber +3 de bônus na sua CA contra esse ataque. Você deve decidir usar essa habilidade antes de saber o resultado do ataque.
+              • Você tem vantagem em testes de resistência de Força e Destreza.
+              Você pode sustentar sua postura defensiva por até 1 minuto e, enquanto estiver nessa posição, seu deslocamento é reduzido à metade (arredondado para baixo, mínimo de 1,5 metro). Ela termina caso você use a ação de Disparada ou Desengajar. Você também pode terminá-la prematuramente com uma ação bônus no seu turno.
+              Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+      - level: 7
+        features:
+          - name: "Proteger Aliado"
+            description: |
+              A partir do 7° nível, você pode aprimorar a defesa de um aliado que esteja adjacente a você. Usando sua ação bônus, você pode aumentar a CA desse aliado num valor igual ao bônus fornecido pelo seu escudo. Você perde seu bônus de escudo na sua CA enquanto protege seu aliado dessa maneira. Esse efeito dura até o início do seu próximo turno. Você ainda pode usar sua reação para receber o benefício descrito na sua Postura Defensiva enquanto estiver protegendo um aliado. Seu aliado perde esse bônus na CA caso se afaste a mais de 1,5 metro de você.
+      - level: 10
+        features:
+          - name: "Provocar"
+            description: |
+              No 10° nível, você pode incitar um inimigo a focar apenas você como seu adversário. Quando o fizer, escolha uma criatura que você possa ver a 9 metros. Se a criatura puder ver ou ouvir você, ela deve ser bem sucedida num teste de resistência de Sabedoria (CD igual a 8 + seu bônus de proficiência + seu modificador de Carisma) ou ficará provocada até o final do seu próximo turno. Enquanto estiver provocada, essa criatura deve usar todo seu deslocamento para se aproximar de você e não poderá atacar ou usar magias ou habilidades ofensivas contra nenhum dos seus aliados enquanto estiver sob esse efeito. Nos turnos seguintes, você pode usar sua ação para estender a duração desse efeito na criatura provocada até o início do seu próximo turno. Num turno em que provocar uma criatura, você pode usar uma ação bônus para realizar um ataque contra ela. Esse efeito termina se algum aliado seu atacar ou usar alguma magia ou habilidade nociva contra a criatura provocada. Se a criatura for bem sucedida no teste de resistência, você não poderá usar essa característica nessa criatura novamente por 24 horas.
+      - level: 15
+        features:
+          - name: "Surto Defensivo"
+            description: |
+              A partir do 15° nível, você pode fortalecer seu corpo e mente contra um efeito nocivo que seja usado contra você. Quando for obrigado a realizar um teste de resistência contra um efeito nocivo, você pode usar sua reação para receber vantagem nesse teste de resistência.
+              Você pode usar essa característica duas vezes. Após isso, você precisa terminar um descanso longo para usá-la novamente.
+      - level: 18
+        features:
+          - name: "Baluarte Protetor"
+            description: |
+              No 18° nível, você se torna um baluarte de resistência no seu grupo, sendo praticamente impossível manter você sob um efeito nocivo por mais tempo que um breve momento. Quando você for alvo de algum efeito que exija um teste de resistência e você fracassar, mas o efeito persistir por mais tempo, você pode simplesmente ignorar esse efeito ao focar sua mente e corpo por um instante. Se o efeito nocivo persistente permitir um novo teste de resistência, no seu turno, para ser anulado, você pode usar sua ação para passar automaticamente no seu teste de resistência contra esse efeito.
+
+  kensai:
+    name: "Kensai"
+    flavor: "Arquétipo Marcial"
+    description: |
+      O arquétipo Kensai representa um guerreiro que passou sua vida focando seu treinamento e meditação em uma lâmina de sua escolha dentre as possíveis de serem usadas com o iaijutsu. Conforme progride em seu caminho de meditação e autocontrole, o kensai desenvolve técnicas que prezam pela velocidade de raciocínio e amplitude dos sentidos de uma forma praticamente sobrenatural. É quase impossível pegar um kensai desprevenido, mas quando o inverso acontece, geralmente os oponentes não têm chance de revidar.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Mestre do Iaijutsu"
+            description: |
+              A partir do 3° nível, você adquire a habilidade de surpreender seus inimigos com um ataque mortal com uma arma de sua escolha dentre adaga, cimitarra, espada curta, espada longa ou rapieira. Na primeira rodada de um combate, com sua arma ainda embainhada, você pode sacá-la e subitamente realizar a ação de Ataque com essa arma corpo-a-corpo contra um oponente que ainda não tenha agido. Você recebe vantagem na primeira jogada de ataque e, se atingir esse ataque, o alvo sofre dano extra igual à sua rolagem de iniciativa. Em um acerto crítico, adicione um d20 extra no dano desse ataque. Você não recebe os benefícios do Iaijutsu nos ataques realizados após o primeiro, independentemente de ter atingido ou não.
+            choices:
+              kensai_blade:
+                choose: 1
+                options:
+                  - { id: "adaga", name: "Adaga" }
+                  - { id: "cimitarra", name: "Cimitarra" }
+                  - { id: "espada-curta", name: "Espada curta" }
+                  - { id: "espada-longa", name: "Espada longa" }
+                  - { id: "rapieira", name: "Rapieira" }
+      - level: 7
+        features:
+          - name: "Busca da Autoperfeição"
+            description: |
+              No 7° nível, sua busca pelo constante aperfeiçoamento pessoal torna você um artesão capaz em todas as áreas possíveis. Você se torna proficiente em duas ferramentas de artesão, à sua escolha. Além disso, você adiciona metade do seu bônus de proficiência, arredondado para baixo, em qualquer teste de habilidade usando uma ferramenta de artesão, com a qual você não seja proficiente.
+        grants:
+          proficiencies:
+            tools:
+              choose: 2
+              options: ["Ferramentas de artesão"]
+      - level: 10
+        features:
+          - name: "Meditação da Lâmina"
+            description: |
+              No 10° nível, você pode realizar uma meditação logo após terminar um descanso curto, com sua espada em mãos, que fortalece seu elo com ela. Você pode escolher um dos benefícios a seguir que dura enquanto você empunhar sua arma ou até você realizar uma nova meditação:
+              Força de Espírito. Você ganha vantagem em testes de resistência para não ser amedrontado.
+              Intuição Extraordinária. Você ganha vantagem em jogadas de iniciativa.
+              Mente Intocável. Você ganha vantagem em testes de resistência para não ser enfeitiçado.
+              Percepção da Matéria. Você adquire percepção às cegas com 3 metros de alcance.
+              Proteção Sobrenatural. Quando uma criatura atingir você com um ataque, você pode usar sua reação para adicionar +3 de bônus a sua CA contra esse ataque, possivelmente fazendo-o errar. Você não precisa ver a criatura atacante.
+              Sexto Sentido. Quando sofrer um ataque corpo-a-corpo durante uma rodada surpresa, você pode usar sua reação para atacar a criatura que atacou você.
+              Uno com a Espada. Você adiciona 1d8 de dano extra ao primeiro ataque corpo a corpo que você atingir a cada rodada.
+              Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+      - level: 15
+        features:
+          - name: "Movimento Antes do Pensamento"
+            description: |
+              A partir do 15° nível, você desenvolve uma técnica que aprimora seu raciocínio, antecipando sua ação momentos antes de um combate. Você pode aplicar seu bônus de proficiência em suas rolagens de iniciativa. Além disso, você pode rolar sua iniciativa mesmo em uma rodada que você estaria surpreso, mas você não age nesse turno. Se um inimigo com uma contagem de iniciativa inferior a sua se aproximar a 1,5 metro de você, você pode usar sua reação para sacar sua arma e realizar um ataque de Iaijutsu contra esse oponente.
+      - level: 18
+        features:
+          - name: "Meditação Perfeita"
+            description: |
+              No 18° nível, você adquire a perfeição do foco da sua meditação, podendo manter dois efeitos de sua Meditação da Lâmina simultaneamente. Quando você realizar a meditação durante um descanso curto, você pode escolher dois benefícios descritos na sua Meditação da Lâmina que duram até você realizar uma nova meditação. Você deve escolher dois benefícios diferentes ao usar essa característica.
+
+  mestre_correntes:
+    name: "Mestre das Correntes"
+    flavor: "Arquétipo Marcial"
+    description: |
+      O arquétipo Mestre das Correntes simula o estilo de combate exótico de um ser das profundezas: o diabo das correntes. Desarmar, enrolar e derrubar seus oponentes são manobras de combate eficientes, evitando que os adversários tenham sequer a chance de contra-atacar.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Estilo de Combate Exótico"
+            description: |
+              A partir do 3° nível, você adquire perícia em combate usando armas maleáveis incomuns. Suas armas de mestre das correntes são a corda com gancho, a corrente, a corrente farpada, o chicote e o mangual. Quando você atingir uma criatura com um ataque corpo-a-corpo usando uma dessas armas, você pode abdicar de causar o dano normal e realizar uma tentativa de agarrar. Se você for bem sucedido em agarrar a criatura, ela permanecerá agarrada até você usar uma ação bônus para desencadear uma das manobras especiais a seguir.
+              Enrolar. A criatura agarrada fica impedida e você não pode realizar ataques com sua arma, até o início do seu próximo turno.
+              Puxão. Você pode realocar a criatura agarrada em qualquer espaço desocupado, no seu alcance, a até 3 metros do espaço que ela ocupava, liberando sua arma em seguida.
+              Rasteira. A criatura agarrada fica caída, liberando sua arma em seguida.
+              Desarme. Escolha um item que a criatura agarrada esteja empunhando. Você tira o item escolhido da criatura e pode colocá-lo em qualquer ponto dentro do seu alcance, liberando sua arma em seguida. Se você tiver uma mão livre, você pode segurar o item retirado da criatura.
+              Como um mestre das correntes, você pode usar uma corda com gancho e uma corrente como arma e é proficiente com elas. A partir do 10° nível, você se torna proficiente com a corrente farpada. Corda com gancho: arma corpo-a-corpo marcial, 1d6 perfurante, propriedade alcance. Corrente: 1d10 concussão, pesada, alcance, duas mãos. Corrente farpada: 1d10 cortante, pesada, alcance, duas mãos.
+      - level: 7
+        features:
+          - name: "Movimento da Corrente"
+            description: |
+              No 7° nível, você adquire um domínio tão extremo com correntes e cordas que pode usá-las para se balançar, escalar rapidamente ou até mesmo andar sobre ela, quando conveniente. Sua arma funciona como se fosse uma corda com arpéu de mesmo comprimento. Quando você fizer um teste de habilidade usando uma de suas armas de mestre das correntes para se movimentar, você ganha um bônus nesse teste igual ao dobro do seu bônus de proficiência. Além disso, escalar usando uma corda ou corrente não lhe custa movimento extra.
+      - level: 10
+        features:
+          - name: "Maestria da Corrente"
+            description: |
+              No 10° nível, você aprimora suas técnicas e até suas armas de escolha. Você ganha proficiência em ferramentas de ferreiro, se ainda não tiver. Você pode forjar uma corrente farpada, com a qual você é proficiente, e pode usá-la para executar suas manobras de mestre das correntes. Além disso, você recebe vantagem nos testes de Força (Atletismo) feitos em testes resistidos de agarrar ao utilizar uma de suas armas de mestre das correntes para realizar as manobras especiais do seu estilo de combate exótico. Se você usar uma corrente farpada para usar as manobras especiais enrolar, puxão ou rasteira contra uma criatura que você está agarrando com ela, você causa 1d10 de dano perfurante à criatura agarrada.
+      - level: 15
+        features:
+          - name: "Alcance Estendido"
+            description: |
+              A partir do 15° nível, você pode estender o alcance dos seus ataques com suas armas de escolha. Você pode realizar um ataque corpo-a-corpo contra uma criatura a até 4,5 metros de você com um chicote, corrente, corrente farpada ou corda com gancho.
+      - level: 18
+        features:
+          - name: "Ataque Giratório"
+            description: |
+              No 18° nível, você é capaz de executar uma dança de aço contra todos os seus inimigos. Com sua ação, você pode realizar um ataque corpo-a-corpo com uma arma de mestre das correntes que você esteja empunhando, contra cada inimigo dentro do seu alcance. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+
+  mestre_arremesso:
+    name: "Mestre do Arremesso"
+    flavor: "Arquétipo Marcial"
+    description: |
+      O arquétipo Mestre do Arremesso simula um guerreiro focado em arremessar todo tipo de arma, enfraquecendo seus inimigos antes de se engajar em um combate corporal com eles. Esses guerreiros são devastadores com todo tipo de arma corpo-a-corpo, sendo capazes de arremessá-las com a mesma facilidade que arremessam uma adaga. Um guerreiro que adquira a maestria em arremessar todo tipo de arma torna-se um pesadelo numa batalha contra inimigos que tentem se engajar com eles para ter alguma chance de derrotá-los.
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Arremesso Versátil"
+            description: |
+              A partir do 3° nível, você pode usar qualquer arma que você seja proficiente como uma arma de arremesso. Todas as armas corpo-a-corpo em que você tiver proficiência ganham a propriedade arremesso (distância 6/18). Se a arma possuir a propriedade versátil, ela pode ser arremessada com as duas mãos, causando o dano indicado quando for usada para realizar um ataque corpo-a-corpo com as duas mãos.
+      - level: 7
+        features:
+          - name: "Ataque de Retorno"
+            description: |
+              Ao atingir o 7° nível, você pode fazer com que armas arremessadas por você retornem para sua mão logo após o ataque ser definido. Quando você realizar um ataque com uma arma de arremesso, você pode usar uma ação bônus para fazer a arma arremessada voltar magicamente para sua mão logo após o ataque ser resolvido. A partir do 11° nível, você pode fazer com que uma arma arremessada por você volte para a sua mão após um ataque, sem precisar usar uma ação para tal.
+      - level: 10
+        features:
+          - name: "Arremesso Estremecedor"
+            description: |
+              No 10° nível, você pode criar tensões inacreditáveis quando se prepara para arremessar sua arma, que fica visível ao seu redor como ondas de calor. Quando você libera sua arma, esse poder segue com sua arma. Como uma ação bônus, você pode escolher tratar suas jogadas de ataque à distância com armas com a propriedade arremesso como ataques corpo-a-corpo, até o início do seu próximo turno. Isso permite que você realize ataques de oportunidade com essas armas como se você tivesse alcance de 6 metros e impede que você sofra desvantagem por ter um inimigo adjacente a você enquanto realiza ataques à distância. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+      - level: 11
+        features:
+          - name: "Retorno Instintivo"
+            description: |
+              No 11° nível, a arma de arremesso retorna à mão após o ataque sem ação bônus (conforme Ataque de Retorno).
+      - level: 15
+        features:
+          - name: "Ricochete Relâmpago"
+            description: |
+              A partir do 15° nível, você pode fazer sua arma ricochetear em um inimigo, potencialmente atingindo outra criatura próxima. Se você atingir uma criatura a até 6 metros de você com um ataque à distância com uma arma de arremesso, você pode usar sua reação para realizar um ataque à distância com a mesma arma contra um alvo que esteja a até 3 metros do alvo atingido.
+      - level: 18
+        features:
+          - name: "Lâmina Giratória"
+            description: |
+              No 18° nível, você pode atirar sua arma fazendo parecer que você está atacando uma dezena de inimigos ao mesmo tempo. Você se torna o centro de uma tempestade de aço e sua arma de arremesso voa para golpear um inimigo, retorna e ricocheteia inofensiva em você, para então voar e atacar outro inimigo. Com sua ação, você pode fazer um ataque à distância com uma arma cortante com a propriedade arremesso contra cada inimigo a até 6 metros de você. Você pode atacar cada alvo só uma vez com este ataque. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+
 monk:
   mao-aberta:
     name: "Caminho da Mão Aberta"
@@ -2889,6 +3251,217 @@ monk:
         features:
           - name: "Sintonia Elemental (sempre conhecida)"
             description: "Gestos/efeitos elementais simples: acender/apagar chamas, pequenas brisas, aquecer/esfriar e afins."
+
+  # Tradições do Livro de Novos Arquétipos (chaves = ruleSlug do wizard / front)
+  caminho_aco:
+    name: "Caminho do Aço"
+    flavor: "Tradição Monástica"
+    description: |
+      Diferente de qualquer outro monge, um artista marcial que trilhe o Caminho do Aço não usa a agilidade e velocidade no combate. Ao invés disso, ele aprende a se proteger como guerreiros tradicionais e usar a força bruta para derrubar seus oponentes. Você passa a ser conhecido como um monge de ferro e desenvolve técnicas e trilha um caminho totalmente diferente do que seguia no início da sua carreira.
+    choose_level: 3
+    rules:
+      ki_save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
+    levels:
+      - level: 3
+        features:
+          - name: "Proficiência Adicional (Aço)"
+            description: |
+              A partir do 3° nível, você segue um rumo totalmente diferente das outras tradições monásticas. Você adquire proficiência com armaduras leves e médias.
+          - name: "Técnicas do Monge de Ferro"
+            description: |
+              A partir do 3° nível, você desenvolve técnicas diferentes das do monge tradicional ao usar seu chi em um combate. Enquanto estiver vestindo uma armadura, você pode adicionar seu modificador de Sabedoria ou de Destreza (o que for maior) à CA base fornecida pela armadura (máximo de +2 para armaduras médias). Além disso, você pode usar todas as suas características de classe mesmo usando armadura, exceto a Rajada de Golpes, Defesa Paciente e Passo do Vento. Você pode usar as características a seguir, no lugar dessas características.
+              Punho de Ferro. Você pode gastar 1 ponto de chi, com uma ação bônus, para focar sua energia em um único poderoso golpe. Quando você usar a ação de Ataque, você abdica de quaisquer ataques extras para realizar um único golpe desarmado ou com uma arma de monge. Você rola três dados de dano de arma adicionais, se atingir esse ataque. No 5° nível, você rola quatro dados de dano de arma adicionais, se atingir esse ataque.
+              Defesa Blindada. Você pode gastar 1 ponto de chi, com uma ação bônus, para ganhar resistência a dano de concussão, cortante e perfurante até o início do seu próximo turno.
+              Posição da Montanha. Você pode gastar 1 ponto de chi, com uma ação bônus, para receber vantagem em testes de Força e testes de resistência de Força até o início do seu próximo turno. Além disso, quando realizar um Encontrão, você pode empurrar uma criatura até 3 metros, se você vencer o teste resistido.
+      - level: 6
+        features:
+          - name: "Golpe de Brutalidade Absoluta"
+            description: |
+              No 6° nível, quando você usar seu Punho de Ferro, você pode gastar 2 pontos de chi adicionais para realizar um poderoso golpe que tem uma grande chance de ser letal. Você realiza esse ataque com vantagem e ele possui uma margem de acerto crítico de 18 a 20.
+      - level: 11
+        features:
+          - name: "Desarme Feroz"
+            description: |
+              Ao chegar no 11° nível, você aprende uma técnica de combate que surpreende seus inimigos. Ao realizar a ação de Ataque, você pode gastar 2 pontos de chi para realizar um ataque desarmado que não causa dano. Se você atingir, seu alvo deve realizar um teste de resistência de Força ou Destreza, à escolha dele (CD 8 + seu bônus de proficiência + seu modificador de Sabedoria). Se ele fracassar, você toma a arma da mão dele. Se ele obtiver sucesso, sofrerá desvantagem nas jogadas de ataque com essa arma até o início do seu próximo turno.
+      - level: 17
+        features:
+          - name: "Contra-ataque Devastador"
+            description: |
+              No 17° nível, você aprende a contra-atacar com um vigor absurdo, usando toda a sua força sem se importar com precisão. Quando uma criatura atingir você com um ataque corpo-a-corpo, você pode gastar 3 pontos de chi, com sua reação, para usar seu Punho de Ferro contra ela. Você sofre –5 de penalidade nessa jogada de ataque, mas se atingir, será um ataque crítico.
+
+  caminho_mestre_bebado:
+    name: "Caminho do Mestre Bêbado"
+    flavor: "Tradição Monástica"
+    description: |
+      Alguns monges menos convencionais aprendem um estilo de luta que se foca em estar aparentemente constantemente embriagado. Os mestres bêbados, também conhecidos como pugilistas embriagados, são monges que aprendem um estilo de luta nada ortodoxo, usando o estado cambaleante provocado pela embriaguez para obter vantagem. Os movimentos de um mestre bêbado são imprevisíveis, tornando muito difícil saber como atingi-lo e ainda mais difícil saber como se defender dos golpes aparentemente aleatórios desferidos por esse monge ébrio.
+    choose_level: 3
+    rules:
+      ki_save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
+    levels:
+      - level: 3
+        features:
+          - name: "Mestre do Improviso"
+            description: |
+              No 3° nível, quando você escolhe essa tradição, você adquire proficiência com armas improvisadas. Essas armas são consideradas armas de monge para você.
+          - name: "Estilo do Mestre Bêbado"
+            description: |
+              Também no 3° nível, você pode realizar novas ações usando seu chi quando estiver embriagado. Você deve usar sua ação para ingerir, pelo menos, um litro de bebida alcoólica forte, como rum, saquê ou vinho, permanecendo bêbado enquanto possuir pontos de chi restantes. Enquanto estiver bêbado, você recebe vantagem em testes de Destreza (Acrobacia), mas sofre desvantagem em testes de Sabedoria (Percepção). Além disso, você pode usar as seguintes características enquanto estiver bêbado:
+              Contra-Rasteira. Se uma criatura tentar derrubar você e falhar, você pode gastar 1 ponto de chi com sua reação para realizar um ataque desarmado contra ela. Se você atingir, além de causar o dano, a criatura deve ser bem sucedida num teste de Força (Atletismo) ou Destreza (Acrobacia), à escolha dela, resistido por um teste de Destreza (Acrobacia) seu, ou cairá no chão.
+              Escorrer feito Água. Se uma criatura estiver agarrando você, você pode usar uma ação bônus para gastar 1 ponto de chi e realizar um teste de Destreza (Acrobacia) para escapar do agarrão. Se for bem sucedido, você pode realizar um ataque desarmado contra o alvo como parte dessa ação.
+              Arremesso Atordoante. Você pode, com uma ação bônus, gastar 1 ponto de chi para arremessar uma arma de monge que cause dano de concussão em uma criatura a até 6 metros de você. Se você atingir, ela será afetada pelo seu Ataque Atordoante.
+      - level: 6
+        features:
+          - name: "Recuperação Ébria"
+            description: |
+              No 6° nível, você pode usar bebidas alcoólicas para reabastecer seu poço de chi. Com sua ação, você deve beber, pelo menos, meio litro de bebida alcoólica forte e realiza um teste de resistência de Constituição CD 15. Se você for bem sucedido, recuperará uma quantidade de pontos de chi igual ao seu modificador de Sabedoria (mínimo 1). Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+      - level: 11
+        features:
+          - name: "Hálito Flamejante"
+            description: |
+              Ao chegar no 11° nível, você consegue liberar um arroto extremamente inflamável. Com sua ação, você pode gastar 5 pontos de chi para expelir gás num cone de 9 metros e incendiá-lo com uma fonte de fogo em sua mão, como uma tocha ou isqueiro. Todas as criaturas na área, devem ser bem sucedidas num teste de resistência de Destreza (CD 8 + seu bônus de proficiência + seu modificador de Constituição) ou sofrerão 12d6 de dano de fogo. Um sucesso na resistência reduz esse dano à metade.
+      - level: 17
+        features:
+          - name: "Sempre Bêbado"
+            description: |
+              No 17° nível, você está constantemente bêbado, não precisando ingerir álcool. Você pode ativar seu Estilo do Mestre Bêbado com uma ação bônus, sem precisar beber. Além disso, enquanto estiver sob efeito do seu Estilo do Mestre Bêbado, você pode gastar 2 pontos de chi para ativar, com uma única ação bônus, duas de suas características de monge, dentre as seguintes: Rajada de Golpes, Defesa Paciente, Passo do Vento, Escorrer feito Água ou Arremesso Atordoante. Você não pode usar a mesma característica duas vezes com uma única ação bônus dessa maneira.
+
+  caminho_monge_tatuado:
+    name: "Caminho do Monge Tatuado"
+    flavor: "Tradição Monástica"
+    description: |
+      Um monge que segue o Caminho do Monge Tatuado descobre como encantar tatuagens feitas por ele com poder místico. Essas tatuagens não são meras pinturas para os monges que as ostentam. Elas são carregadas de significado e misticismo. Um monge tatuado costuma venerar a natureza, além das exuberantes criaturas naturais e sobrenaturais que existem nela.
+    choose_level: 3
+    rules:
+      ki_save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
+    levels:
+      - level: 3
+        features:
+          - name: "Tatuador Experiente"
+            description: |
+              No 3° nível, quando você escolhe essa tradição, você consegue fazer tatuagens com grande perícia. Você adquire proficiência com ferramentas de pintor e suprimentos de caligrafia. Com essas ferramentas, você pode criar tatuagens apropriadas para armazenar poder místico. Cada tatuagem requer uma sessão de 8 horas para ser feita, além do gasto de 100 po em tintas e materiais místicos.
+          - name: "Tatuagem Mística"
+            description: |
+              Também no 3° nível, você pode despertar o poder místico em tatuagens que você possuir. Despertar uma tatuagem requer 1 hora de meditação e você não pode despertar outra tatuagem até terminar um descanso longo. Você pode ter duas tatuagens despertas, inicialmente. Cada tatuagem permite que você use seu chi de uma nova forma (Carvalho, Dragão, Fênix, Garça, Macaco, Serpente, Tigre — efeitos detalhados no livro). Ativar essas características não requer uma ação, mas só pode ser feito no seu turno.
+      - level: 6
+        features:
+          - name: "Tatuagem de Poder"
+            description: |
+              No 6° nível, suas tatuagens passam a conceder a você benefícios permanentes. Você adquire os benefícios relacionados a cada tatuagem mística que você possuir (por exemplo, Carvalho: vantagem em Força (Atletismo) para não ser empurrado ou derrubado; Dragão: vantagem em testes de resistência de Sabedoria para não ser amedrontado; demais no livro).
+      - level: 11
+        features:
+          - name: "Despertar Adicional (3ª)"
+            description: |
+              Ao chegar no 11° nível, você pode despertar o poder latente de uma terceira tatuagem que você possua. Escolha uma das opções de tatuagem, diferente das que você já despertou, descritas na sua Tatuagem Mística.
+      - level: 17
+        features:
+          - name: "Desencarnar Tatuagem"
+            description: |
+              No 17° nível, você pode usar sua energia interior para desencarnar o poder contido em uma tatuagem mística sua, numa explosão de energia. Com sua ação, você pode escolher uma de suas tatuagens e desencarná-la, gastando 5 pontos de chi. Todas as criaturas inimigas a até 9 metros de você, devem realizar um teste de resistência de Destreza. Se fracassar, uma criatura sofrerá 10d8 de dano de energia e será empurrada 3 metros para longe de você. Os poderes da tatuagem escolhida adormecem e você perde todos os benefícios dela, até despertar a mesma ou outra conforme a Tatuagem Mística. Após usar essa característica, você precisa terminar um descanso curto ou longo para poder usá-la novamente.
+      - level: 18
+        features:
+          - name: "Despertar Adicional (4ª)"
+            description: |
+              No 18° nível, você pode despertar uma quarta tatuagem diferente, dentre as opções disponíveis na sua Tatuagem Mística.
+
+  caminho_ninjuts:
+    name: "Caminho do Ninjútsu"
+    flavor: "Tradição Monástica"
+    description: |
+      Os monges que enveredam pelo Caminho do Ninjútsu aprendem as técnicas secretas dos ninjas. Para se tornar um ninja, primeiramente o monge deve ser aceito em um clã secreto de ninjas. Após ser aceito, ele aprende técnicas que aperfeiçoam sua furtividade, além de técnicas de assassinato. Isso faz do ninja um matador extremamente eficiente, capaz de entrar em qualquer local sem ser percebido e eliminar seu alvo de forma rápida e limpa, estando bem longe antes que alguém perceba o que aconteceu.
+    choose_level: 3
+    rules:
+      ki_save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
+    levels:
+      - level: 3
+        features:
+          - name: "Arte do Ninjútsu"
+            description: |
+              No 3° nível, quando você adentra um clã secreto de ninjas, você adiciona as seguintes armas à sua lista de armas de monge: katana (espada longa), kodachi (cimitarra), fukiya (zarabatana) e naginata (glaive). Você adquire proficiência com essas armas e com kit de venenos.
+          - name: "Golpe Súbito"
+            description: |
+              A partir do 3° nível, você se torna capaz de desferir um golpe letal ao pegar seu oponente desprevenido. Quando você usar uma arma de monge para atacar um oponente que não possa ver você ou que esteja surpreso, você adiciona 1d8 de dano extra ao primeiro ataque que você atingir no seu turno. O dano extra do seu Golpe Súbito aumenta em 1d8 para cada três níveis de monge que você possuir (2d8 no 6°, 3d8 no 9°, 4d8 no 12°, 5d8 no 15° e 6d8 no 18° nível).
+      - level: 6
+        features:
+          - name: "Técnicas de Ninjútsu"
+            description: |
+              No 6° nível, você aprende técnicas que facilitam sua infiltração e evasão, gastando pontos de chi. Escalada Veloz. Com sua ação, você pode gastar 1 ponto de chi para adquirir deslocamento de escalada igual ao seu deslocamento de caminhada até o final do seu turno. Bomba de Fumaça. Com uma ação bônus, você pode gastar 2 pontos de chi e arremessar uma bomba de fumaça aos seus pés, criando uma nuvem de fumaça no espaço ocupado por você e em todos os espaços adjacentes, até o final do seu turno. Durante esse período, você adquire os benefícios da magia invisibilidade. Percepção Sobrenatural. Com uma ação bônus, você pode gastar 3 pontos de chi para adquirir percepção às cegas com um alcance de 3 metros por 1 minuto.
+      - level: 11
+        features:
+          - name: "Mestre do Ocultismo"
+            description: |
+              Ao chegar no 11° nível, você se torna um mestre nas artes do oculto. Você recebe vantagem em testes de Destreza (Furtividade) e não pode ser rastreado por meios não-mágicos. A partir de agora, quando usar sua Bomba de Fumaça, você pode gastar 2 pontos de chi adicionais para fazê-la durar até o final do seu próximo turno. Durante esse período, você recebe os benefícios da magia invisibilidade maior enquanto permanecer na área ocupada pela fumaça.
+      - level: 17
+        features:
+          - name: "Passo Fantasma"
+            description: |
+              No 17° nível, você se torna capaz de usar sua energia interior para adentrar o Plano Etéreo por um curto período. Com sua ação, você pode gastar 5 pontos de chi para adquirir uma forma incorpórea por 1 minuto. Enquanto estiver nessa forma, é difícil enxergar você; você ganha resistência a dano de concussão, perfurante e cortante de ataques não-mágicos e dano de veneno; não pode ser agarrado, derrubado, impedido, paralisado ou petrificado; pode se mover através de criaturas e objetos como se fossem terreno difícil (sofre 1d10 de dano de energia se terminar o turno dentro de um objeto); só pode realizar ataques com armas mágicas em criaturas no Plano Material, atacando no Etéreo normalmente. Após usar essa característica, você precisa terminar um descanso longo para poder usá-la novamente.
+
+  caminho_punho_sagrado:
+    name: "Caminho do Punho Sagrado"
+    flavor: "Tradição Monástica"
+    description: |
+      O Caminho do Punho Sagrado é composto por monges doutrinados em alguma seita religiosa. Eles cultuam algum deus em particular, ou até um grupo de deuses com orientação similar. Durante suas meditações e orações, eles adquirem a capacidade de canalizar energia divina através dos seus corpos, usando sua energia mística interior como ferramenta para acessar sua fé. Assim como um clérigo ou paladino, um punho sagrado pode perder sua capacidade de conjuração caso age de forma contrária aos dogmas dos deuses que seu monastério cultua, apesar de ser muito mais difícil isso acontecer, já que ele costuma ter um panorama muito mais amplo de culto que as duas classes citadas.
+    choose_level: 3
+    rules:
+      ki_save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
+      spell_save_dc_cleric: "8 + bônus de proficiência + modificador de Sabedoria"
+    levels:
+      - level: 3
+        features:
+          - name: "Conjuração (Punho Sagrado)"
+            description: |
+              Quando você alcançar o 3° nível, você amplia sua versatilidade e autossuficiência com a capacidade de conjurar magias divinas. Truques: você aprende um truque, à sua escolha, da lista de magias de clérigo, além do truque chamas sagradas. Espaços de magia, magias conhecidas e progressão seguem a tabela “Conjuração de Punho Sagrado” do livro. Habilidade de conjuração: Sabedoria. CD = 8 + bônus de proficiência + modificador de Sabedoria; ataque de magia = bônus de proficiência + modificador de Sabedoria.
+          - name: "Domínios Sagrados"
+            description: |
+              No 3° nível, você deve escolher dois dentre os Domínios Divinos disponíveis para o clérigo. Você deve escolher as magias da tabela de magias desses domínios como suas magias conhecidas, conforme as regras do capítulo do Punho Sagrado no livro.
+          - name: "Energia Divina Interior"
+            description: |
+              Também no 3° nível, você adquire a capacidade de usar sua energia mística interior em conjunto com sua energia divina. Com uma ação bônus, você pode gastar pontos de chi para conjurar uma magia num espaço de magia superior. Para cada 2 pontos de chi gastos, o nível da magia é elevado em 1, até o máximo de 4° nível. Uma vez que tenha usado essa característica, você não poderá fazê-lo novamente até ter terminado um descanso curto ou longo.
+      - level: 6
+        features:
+          - name: "Punho de Chamas Divinas"
+            description: |
+              A partir do 6° nível, você pode gastar 1 ponto de chi para canalizar sua energia divina através dos seus punhos. Quando você usar a ação de Ataque para realizar um ataque desarmado e atingir, você pode conjurar o truque chamas sagradas como parte do ataque no inimigo que você atingiu. O alvo tem desvantagem no seu teste de resistência contra o efeito dessa magia quando ela é conjurada dessa forma.
+      - level: 11
+        features:
+          - name: "Rajada de Chamas Divinas"
+            description: |
+              No 11° nível, você aprimora a técnica dos punhos de chamas divinas. Quando você gastar pontos de chi para usar a característica Rajada de Golpes, você pode gastar 2 pontos de chi adicionais para conjurar o truque chamas sagradas em ambos os ataques desarmados realizados com sua ação bônus. Cada ataque que atingir o inimigo libera o efeito da magia nele e ele tem desvantagem nos seus testes de resistência contra os efeitos de ambas as magias quando elas são conjuradas dessa forma.
+      - level: 17
+        features:
+          - name: "Armadura Interior"
+            description: |
+              A partir do 17° nível, você adquire a habilidade de usar seu chi em conjunto com sua energia divina para criar uma proteção intangível em volta de você. Se você não estiver vestindo nenhum tipo de armadura ou usando um escudo, você pode, com uma ação, gastar 3 pontos de chi e um espaço de magia, à sua escolha. Durante 1 minuto, você adquire um bônus na sua CA igual ao nível do espaço de magia gasto. Além disso, você adquire resistência a dano de concussão, cortante e perfurante de ataques não-mágicos pela duração. Uma vez que tenha usado essa característica, você não poderá fazê-lo novamente até ter terminado um descanso longo.
+
+  caminho_sadhaka:
+    name: "Caminho do Sadhaka"
+    flavor: "Tradição Monástica"
+    description: |
+      Alguns monges conseguem atingir a evolução espiritual através de meditação e foco constante. Os monges que seguem o Caminho do Sadhaka trilham um caminho de paz interior e meditação constante. Eles conseguem realizar façanhas impressionantes ao concluir mantras espirituais ou se concentrar totalmente em seu espírito. Ao alcançar a evolução espiritual plena, um sadhaka consegue atingir o nirvana, adquirindo uma noção completa do mundo à sua volta e de todos os mundos que existem no multiverso. Apesar desses monges serem devotos religiosos, eles não seguem um deus em particular, mas sim uma doutrina espiritual.
+    choose_level: 3
+    rules:
+      ki_save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
+    levels:
+      - level: 3
+        features:
+          - name: "Mantra de Poder"
+            description: |
+              No 3° nível, quando você escolhe essa tradição, você aprende a realizar mantras. Durante um descanso, você pode se concentrar e realizar mantras que permitem que você acesse novos níveis espirituais. Ao terminar um descanso curto ou longo, você pode realocar uma porção de sua energia interior para ganhar um dos benefícios do livro: por exemplo, rolar 1d4 e adicionar a qualquer teste de habilidade (reduz teto de chi em 3); +1d4 de dano com armas de monge e desarmados (teto –4); +1d4 a testes de resistência (teto –5); +1d4 a jogadas de ataque (teto –5); resistência a B/P/S não mágico (teto –6); resistência a dano de magias (teto –6). Você mantém o benefício contanto que não esteja usando armadura ou escudo, até realizar um novo descanso.
+      - level: 6
+        features:
+          - name: "Akasha Interior"
+            description: |
+              Ao chegar no 6° nível, você consegue ampliar sua força interior através da energia da quintessência universal. Assim que você terminar um descanso longo, role 1d6. Você adiciona o valor rolado ao máximo de pontos de chi que seu poço de chi pode comportar, até terminar um descanso longo. Ao atingir certos níveis, você pode rolar um dado superior: 1d8 no 10° nível, 1d10 no 14° nível e 1d12 no 18° nível.
+      - level: 11
+        features:
+          - name: "Concentração Inabalável"
+            description: |
+              No 11° nível, você consegue focar seu espírito e corpo de uma forma excepcional. Quando você rolar um Dado de Vida para recuperar pontos de vida durante um descanso curto, você recupera uma quantidade de pontos de vida adicionais igual à metade do seu nível de monge. A partir de agora, você pode ativar e manter dois efeitos diferentes do seu mantra de poder simultaneamente.
+      - level: 17
+        features:
+          - name: "Alcançar o Nirvana"
+            description: |
+              No 17° nível, você alcança o estado de libertação total na sua busca espiritual. Você pode gastar 8 pontos de chi para conjurar a magia sexto sentido, ou 6 pontos de chi para conjurar a magia limpar a mente, sem precisar de componentes materiais. Você só pode conjurar essas magias em si mesmo e cada uma dura 1 hora.
 
 paladin:
   juramento-de-devocao:
@@ -3310,116 +3883,191 @@ rogue:
   cacador-de-tesouros:
     name: "Caçador de Tesouros"
     flavor: "Arquétipo do Ladino"
-    description: "Explorador de masmorras e especialista em armadilhas."
+    description: |
+      Você se especializou em invadir e saquear locais perigosos. Esse arquétipo é seguido por diversos aventureiros em busca de tesouros antigos e que desejam evitar os habitantes e perigos existentes na maioria dos hostis ambientes subterrâneos e selvagens. Conforme progride, você desenvolve técnicas que permitem que você tome o caminho mais fácil e seguro para os grandes prêmios existentes em quase todas as masmorras e covis de criaturas poderosas que habitam no mundo.
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Intuição do Saque", description: "Vantagens em localizar e desarmar armadilhas/tesouros." }
+          - name: "Invasor Profissional"
+            description: |
+              A partir do 3° nível, você aprimora sua perícia em abrir fechaduras e desarmar armadilhas em masmorras. Você adquire vantagem em testes de Inteligência (Investigação) feitos para encontrar armadilhas e em testes feitos com ferramentas de ladrão para abrir fechaduras e desarmar armadilhas.
+          - name: "Sentir Armadilha"
+            description: |
+              No 3° nível, você se torna perito em evitar os perigos mais comuns elaborados pelos habitantes de masmorras contra invasores. Você adquire resistência a dano de armadilhas e tem vantagem em testes de resistência contra armadilhas.
       - level: 9
         features:
-          - { name: "Oportunismo", description: "Aproveita aberturas para dano extra." }
+          - name: "Evitar o Perigo"
+            description: |
+              No 9° nível, você consegue passar despercebido por áreas em que existam inimigos, mas que não tenham notado sua presença, silenciosamente escalando as paredes ou até passando pelo teto. Você adquire deslocamento de escalada 6 metros e pode escalar qualquer superfície não-mágica e até andar de cabeça para baixo no teto sem precisar realizar um teste de Força (Atletismo). Você recebe vantagem em testes de Destreza (Furtividade) se usar seu movimento ou a ação de Disparada e terminar seu turno atrás de uma barreira que possa dar cobertura a você. Além disso, é impossível rastrear você por meios não-mágicos.
       - level: 13
         features:
-          - { name: "Olho de Joalheiro", description: "Avalia/identifica itens rapidamente." }
+          - name: "Encontrar Tesouro"
+            description: |
+              No 13° nível, você sabe exatamente onde procurar por itens valiosos quando está explorando e nada passa despercebido ao seu olhar ganancioso e ávido por riquezas. Você recebe +5 de bônus nos seus valores de Sabedoria (Percepção) e Inteligência (Investigação) passivos para encontrar tesouros e saberá que um objeto é mágico assim que tocar nele. Além disso, sempre que você passar a menos de 6 metros de um item mágico, obra de arte, gema ou item de valor que esteja escondido, você saberá que existe algo valioso escondido nas proximidades e poderá realizar um teste de Inteligência (Investigação) com vantagem para procurar esse tesouro.
       - level: 17
         features:
-          - { name: "Golpe Preciso", description: "Crítico facilitado contra alvos estudados." }
+          - name: "Fuga Sobrenatural"
+            description: |
+              Ao atingir o 17° nível, mesmo nos raros momentos em que você é descoberto por seus inimigos, você consegue criar uma rota de fuga totalmente inesperada. Você pode usar sua ação para magicamente atravessar uma barreira não-mágica de até 1,5 metro de espessura, aparecendo no espaço desocupado mais próximo dessa barreira do outro lado dela. Se a barreira tiver mais de 1,5 metro de espessura, sua tentativa fracassa e você permanece no espaço atual. Além disso, você ganha vantagem em testes de habilidade e testes de resistência contra efeitos que lhe imponham as condições agarrado, impedido ou paralisado.
 
   dancarino-das-sombras:
     name: "Dançarino das Sombras"
     flavor: "Arquétipo do Ladino"
-    description: "Mestre em furtividade, escuridão e mobilidade."
+    description: |
+      Você enveredou por um caminho sombrio e sobrenatural, adquirindo poderes direto da Umbra. Ao se tornar um dançarino das sombras você aprende a manipular a energia das trevas com uma maestria sem igual. Você pode praticamente sumir na escuridão e até mesmo usar o Plano das Sombras para surpreender seus inimigos.
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Passo nas Sombras", description: "Teleporta entre sombras curtas." }
+          - name: "Camuflagem Sombria"
+            description: |
+              A partir do 3° nível, você aprende a usar as trevas para se camuflar. Você recebe vantagem em testes de Destreza (Furtividade) enquanto estiver em áreas de escuridão ou penumbra. Além disso, uma criatura sofre desvantagem nas jogadas de ataque contra você enquanto permanecer nessa área, mesmo que possa ver no escuro.
+          - name: "Ver nas Trevas"
+            description: |
+              A partir do 3° nível, sua visão se adapta às trevas, o ambiente em que você se sente mais confortável. Você enxerga na penumbra a até 18 metros como se fosse luz plena, e no escuro como se fosse na penumbra.
       - level: 9
         features:
-          - { name: "Sombra Enganosa", description: "Cria distrações sombrias para vantagem." }
+          - name: "Projeção Sombria"
+            description: |
+              No 9° nível, você desenvolve uma técnica letal quando surpreende um inimigo com um ataque vindo das trevas. Usando sua ação, enquanto estiver escondido em uma área de escuridão ou penumbra, você pode fazer com que sua mão entre na sombra que você ocupa e apareça em outra, que você possa ver, a até 15 metros de você. Você pode realizar um ataque corpo-a-corpo como parte dessa ação e isso não denunciará sua localização.
       - level: 13
         features:
-          - { name: "Véu de Trevas", description: "Camuflagem avançada e silêncio leve." }
+          - name: "Viagem Umbral"
+            description: |
+              No 13° nível, você pode viajar através do Plano das Sombras. Com sua ação, você pode entrar na Umbra e sair dela no início do seu próximo turno. No Plano das Sombras, você se move até o dobro do seu deslocamento de caminhada e pode se mover através de criaturas e objetos do Plano Material como se eles fossem terreno difícil, mas você não pode terminar seu turno em um espaço ocupado. Enquanto estiver lá, você não pode atacar nem ser atacado por ninguém no Plano Material, exceto por uma criatura que possa acessar o Plano das Sombras.
+              Você pode usar essa característica duas vezes. Após isso, você precisa terminar um descanso curto ou longo para usá-la novamente.
       - level: 17
         features:
-          - { name: "Morte Silenciosa", description: "Execuções rápidas em penumbra." }
+          - name: "Forma de Sombra"
+            description: |
+              Ao atingir o 17° nível, você consegue se mesclar às trevas a um ponto em que é impossível distinguir o que é você e o que é escuridão. Com sua ação, você pode assumir uma forma sombria por 1 minuto que tem as seguintes características:
+              • Você tem resistência a dano de concussão, cortante e perfurante de ataques não-mágicos.
+              • Você pode usar a característica Viagem Umbral, uma vez por rodada, enquanto permanecer nessa forma.
 
   face-fantasmagorica:
     name: "Face Fantasmagórica"
     flavor: "Arquétipo do Ladino"
-    description: "Ilusão e disfarce para manipular e enganar."
+    description: |
+      Você ingressou no clã recluso de assassinos mascarados conhecido como Face Fantasmagórica. Esse clã secreto surgiu quando seu fundador fez uma barganha com seres das trevas para conseguir vingança contra seus inimigos. Desde então, ele recrutou um exército de assassinos de elite especializados em matar seus oponentes usando o medo. Ao ingressar nesse clã, você passa a usar uma máscara apavorante que permite que você penetre na mente dos seus inimigos, alcançando seus mais profundos medos e despertando seus pesadelos adormecidos.
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Persona Mutável", description: "Disfarces e identidades rápidas." }
+          - name: "Presença Intimidante"
+            description: |
+              A partir do 3° nível, sua mera presença já se torna desconfortável para outras criaturas. Você se torna proficiente em Intimidação, se ainda não for. Além disso, você tem vantagem em testes de Carisma (Intimidação), porém você sofre desvantagem em testes de Carisma (Persuasão). Quando você for bem sucedido em intimidar uma criatura, ela ficará amedrontada em relação a você até o início do seu próximo turno.
+          - name: "Ataque Apavorante"
+            description: |
+              No 3° nível, quando você atacar uma criatura surpresa, você consegue gelar o coração dela de medo. Se você estiver com sua máscara apavorante e realizar um ataque corpo-a-corpo contra uma criatura que não possa ver você, além de causar o dano normal, você pode deixar o alvo amedrontado. Você aparece na frente da criatura atingida e, se ela puder ver você, ela deve ser bem sucedida num teste de resistência de Sabedoria (CD 8 + seu bônus de proficiência + seu modificador de Carisma) ou ficará amedrontada em relação a você por 1 minuto. O alvo pode realizar um novo teste de resistência no final de cada turno dele, terminando o efeito com um sucesso. Se uma criatura for bem sucedida no teste de resistência, você não poderá usar essa característica nessa criatura novamente por 24 horas.
       - level: 9
         features:
-          - { name: "Máscara Fantasma", description: "Assusta/ilude inimigos com aparições." }
+          - name: "Pesadelo Furtivo"
+            description: |
+              No 9° nível, você consegue desaparecer da mente de uma criatura que esteja com medo de você, apavorando-a através de sons fantasmagóricos ou sopros gélidos. Enquanto uma criatura estiver amedrontada em relação a você, você pode, com uma ação bônus, realizar um teste de Destreza (Furtividade) CD 15, para ficar invisível para essa criatura. A criatura sofre desvantagem em testes de habilidade e jogadas de ataque mesmo que não possa ver você, mas ela pode se mover voluntariamente para uma posição que a faça terminar o turno mais próximo de você, já que não consegue te ver. Você aparece para a criatura se atacá-la ou conjurar uma magia nela.
       - level: 13
         features:
-          - { name: "Dublê Perfeito", description: "Imita voz e trejeitos com precisão." }
+          - name: "Inversão do Medo"
+            description: |
+              No 13° nível, você se torna uma cria dos pesadelos. Você tem vantagem em testes de resistência para não ser amedrontado. Além disso, quando uma criatura que você possa ver conjurar uma magia ou usar uma habilidade que possa amedrontar você e você for bem sucedido no teste de resistência contra o efeito, se você estiver com sua máscara apavorante, você pode usar sua reação para amedrontar essa criatura. Ela deve ser bem sucedida num teste de resistência de Sabedoria (CD 8 + seu bônus de proficiência + seu modificador de Carisma) ou ficará amedrontada em relação a você por 1 minuto. O alvo pode realizar um novo teste de resistência no final de cada turno dele, terminando o efeito com um sucesso.
       - level: 17
         features:
-          - { name: "Sumiço Etéreo", description: "Breve intangibilidade para escapar." }
+          - name: "Pavor Atormentador"
+            description: |
+              Ao atingir o 17° nível, quando você amedronta uma criatura, o alvo pode literalmente morrer de medo devido aos pesadelos que tumultuam sua mente. Sempre que uma criatura terminar o turno dela amedrontada em relação a você por qualquer motivo, você pode usar sua reação para causar 4d10 de dano psíquico nela. A partir de agora, seus efeitos de medo são tão poderosos que até mesmo criaturas imunes à condição amedrontado podem ser afetadas por suas características de medo. Essas criaturas recebem vantagem nos testes de resistência para não serem amedrontadas.
 
   lamina-invisivel:
     name: "Lâmina Invisível"
     flavor: "Arquétipo do Ladino"
-    description: "Ataques imperceptíveis, precisão letal."
+    description: |
+      Você focou todo o seu treinamento em técnicas de combate utilizando facas, adagas e armas similares. Armado com suas adagas, você é mais letal que a maioria dos combatentes treinados. Usando movimentos rápidos com suas mãos enquanto brande suas adagas, você ludibria os sentidos dos seus adversários, deixando-os aturdidos conforme você desfere golpes precisos em sequência. Além de adquirir uma maestria incomparável no uso de lâminas leves, você aprende a enganar a visão dos seus inimigos enquanto dança no campo de batalha.
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Golpe Oculto", description: "Ataques furtivos facilitados quando oculto." }
+          - name: "Mão Invisível"
+            description: |
+              A partir do 3° nível, você desenvolve uma técnica que permite desferir um ataque tão rápido que o alvo se quer percebe que foi atingido. Com sua ação, realize um único ataque com uma arma leve perfurante contra uma criatura surpresa. Se você atingir, role o dano normalmente, porém, o alvo não saberá que sofreu esse dano até o final do seu próximo turno. Se você atacou o alvo enquanto estava escondido, esse ataque não revelará sua localização. Além disso, você recebe vantagem em todos os testes de Destreza (Prestidigitação) que fizer usando armas leves perfurantes.
+          - name: "Lâmina Veloz"
+            description: |
+              Também a partir do 3° nível, você pode realizar um ataque repentino com uma arma escondida. Com uma ação bônus, você pode sacar uma arma leve perfurante escondida e realizar um ataque com ela. Você recebe vantagem nesse ataque e, se atingir, ele será considerado um Ataque Furtivo mesmo que você já tenha realizado seu Ataque Furtivo nessa rodada. Se a arma tiver a propriedade arremesso, você pode arremessá-la com esse ataque. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente. No 13° nível, você pode usar essa característica duas vezes antes de precisar terminar um descanso, mas não mais de uma vez por turno.
       - level: 9
         features:
-          - { name: "Caminho Invisível", description: "Breve invisibilidade ao mover." }
+          - name: "Ataque Extra"
+            description: |
+              No 9° nível, você pode atacar duas vezes, ao invés de uma, quando usar a ação de Ataque durante seu turno.
       - level: 13
         features:
-          - { name: "Perfuração Fantasma", description: "Ignora parte da armadura do alvo." }
+          - name: "Desaparecer na Multidão"
+            description: |
+              No 13° nível, você consegue sumir em meio ao combate ao provocar uma distração. Se você usar seu movimento para passar por trás de uma criatura amigável ou um barreira que seja maior que você, você pode usar uma ação bônus para ser afetado pela magia invisibilidade por até 1 minuto. Diferente dos efeitos normais de invisibilidade, apenas as criaturas inimigas cuja barreira estava entre você e elas quando você usou essa característica não poderão ver você. Você aparece para essas criaturas se realizar um ataque, conjurar uma magia ou fizer qualquer barulho, como falar ou quebrar um frasco. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
       - level: 17
         features:
-          - { name: "Fim Repentino", description: "Dano massivo contra alvo marcado." }
+          - name: "Técnica da Lâmina Furtiva"
+            description: |
+              Ao atingir o 17° nível, você desenvolve uma técnica de combate que usa uma troca de mão incrivelmente rápida para ludibriar seus adversários. Durante um combate, você pode usar uma ação bônus para ativar a técnica da mão invisível por 1 minuto. Quando uma criatura realizar uma jogada de ataque corpo-a-corpo contra você a até 1,5 metro de você, você pode usar sua reação para realizar um teste de Destreza (Prestidigitação). Sua CA contra o ataque dessa criatura será igual ao resultado do seu teste de Destreza (Prestidigitação) ou sua CA normal, o que for maior. Se a criatura errar esse ataque, você pode imediatamente realizar um ataque corpo-a-corpo com uma arma leve perfurante que você estiver empunhando. Você recebe vantagem nesse ataque e, se atingir, ele será considerado um Ataque Furtivo. Esse ataque não conta na quantidade de Ataques Furtivos que você pode realizar numa rodada. Após usar essa característica, você precisa terminar um descanso longo para usá-la novamente.
 
   larapio-de-almas:
     name: "Larápio de Almas"
     flavor: "Arquétipo do Ladino"
-    description: "Rouba energia vital e capacidades."
+    description: |
+      Em algumas ocasiões, ladinos se aliam a necromantes e outros manipuladores da morte, até mesmo com mortos-vivos, quando veem vantagem nisso. Alguns desses ladinos se aprofundam ainda mais nessas alianças, ingressando no arquétipo Larápio de Almas. Esses ladinos aprendem a drenar a energia vital das criaturas e manipular essa energia em seu próprio benefício. No momento em que se torna um larápio de almas, o ladino deixa de se interessar pelas frivolidades mundanas e passa a querer apenas se apossar da vida dos outros.
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Tocar a Alma", description: "Dreno leve de vida ao acertar." }
+          - name: "Furto de Vida"
+            description: |
+              A partir do 3° nível, você se torna capaz de drenar a energia vital das criaturas. Quando você atingir uma criatura viva com um ataque corpo-a-corpo que se qualifique para um ataque furtivo, você pode decidir não causar o dano extra do seu ataque furtivo. Ao invés de sofrer o dano extra, o alvo do seu ataque deve ser bem sucedido num teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Carisma) ou sofrerá dano necrótico igual ao dano extra do seu ataque furtivo. Além disso, o máximo de pontos de vida do alvo é reduzido numa quantidade igual ao dano necrótico sofrido e você recupera uma quantidade de pontos de vida igual a esse dano. Um sucesso na resistência reduz o dano necrótico à metade e ignora a redução no máximo de pontos de vida do alvo. Você não recupera pontos de vida se o alvo obtiver um sucesso na resistência. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+          - name: "Dependência de Vida"
+            description: |
+              Também no 3° nível, você não sente mais necessidade de se alimentar ou descansar como um ser vivo normal. Você não precisa mais comer, beber ou dormir. Você ainda precisa realizar um descanso (mas não precisa dormir) para recuperar pontos de vida ou características de classe que exijam terminar um descanso longo. Uma vez por dia, você precisa drenar a energia vital de uma criatura humanoide que esteja inconsciente, porém viva, através do seu Furto de Vida. Se não fizer isso, você sofrerá desvantagem nas suas jogadas de ataque e testes de habilidade até sugar a energia de uma criatura viva dessa forma.
       - level: 9
         features:
-          - { name: "Espólio Espiritual", description: "Copia pequenos talentos temporariamente." }
+          - name: "Sentir Vida"
+            description: |
+              No 9° nível, você consegue sentir a presença de criaturas vivas e pode definir o estado físico delas. Com sua ação, você pode realizar um teste de Sabedoria (Percepção) CD 15, para descobrir quantas criaturas vivas existem a até 18 metros de você. Se você se concentrar em uma criatura específica no alcance, no seu turno subsequente, você saberá se a criatura está com mais ou menos da metade do seu máximo de pontos de vida.
       - level: 13
         features:
-          - { name: "Despojamento", description: "Enfraquece habilidades do alvo." }
+          - name: "Drenar Energia Mística"
+            description: |
+              No 13° nível, você aprimora sua habilidade de furtar a energia vital de um ser vivo e passa a ser capaz de drenar sua energia mística também. Quando você atingir uma criatura viva com um ataque corpo a corpo que se qualifique para um ataque furtivo, você pode decidir não causar o dano extra do seu ataque furtivo. Ao invés de sofrer o dano extra, o alvo do seu ataque deve ser bem sucedido num teste de resistência de Carisma (CD 8 + seu bônus de proficiência + seu modificador de Carisma) ou perderá um espaço de magia disponível de nível mais alto, até o máximo de 5° nível. Você armazena a energia drenada na arma que atingiu a criatura. Durante 1 minuto, seus ataques com essa arma são considerados mágicos com o propósito de ultrapassar resistência ou imunidade a ataques e danos não-mágicos. Além disso, você recebe um bônus nas suas jogadas de dano com essa arma igual ao nível do espaço de magia drenado. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
       - level: 17
         features:
-          - { name: "Ladrão de Vida", description: "Grandes drenagens em críticos." }
+          - name: "Usurpar a Alma"
+            description: |
+              Ao atingir o 17° nível, você se torna capaz de drenar a alma das criaturas que tenham uma centelha de vida fraca. Quando você atinge uma criatura viva que esteja com menos de 40 pontos de vida, com um ataque furtivo com uma arma corpo a corpo, você pode drenar a alma dessa criatura, se fortalecendo no processo. O alvo deve ser bem sucedido num teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Carisma) ou morrerá instantaneamente. Mesmo que passe na resistência, o alvo ainda sofrerá o dano do seu ataque furtivo normalmente. Após matar uma criatura dessa forma, você recebe vantagem nos seus testes de resistência e testes de habilidade até o final do seu próximo turno.
 
   mimetizador:
     name: "Mimetizador"
     flavor: "Arquétipo do Ladino"
-    description: "Observa e replica técnicas alheias."
+    description: |
+      Um ladino que segue o arquétipo Mimetizador não rouba ou furta bens, ele copia as habilidades possuídas por outras criaturas. Com uma compreensão além do normal sobre treinamento e estudo, um mimetizador consegue entender a forma como uma criatura acessa e adquire uma determinada habilidade apenas observando. Com uma capacidade sobrenatural, ele simula com perfeição a ação que acabou de ver e pode, inclusive, privar a criatura de usar sua própria habilidade por um período ao atingir um nível de compreensão muito elevado.
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Imitação", description: "Aprende truques ao observar." }
+          - name: "Proficiência Adicional (Mimetizador)"
+            description: |
+              No 3° nível, quando você escolhe esse arquétipo, você adquire proficiência em Enganação e Intuição, se ainda não tiver.
+          - name: "Copiar Habilidade"
+            description: |
+              A partir do 3° nível, você adquire a capacidade de simular uma habilidade que você vê em ação. Quando você vir uma criatura de nível de desafio igual ou inferior à metade do seu nível de ladino usando uma característica ou traço, você pode realizar um teste de Sabedoria (Intuição) CD 10 para copiá-lo. Se for bem sucedido, você copia a habilidade e pode usá-la por 1 hora. Você não pode copiar traços de uso limitado (que possuam usos diários ou recarregáveis) com essa característica. Apenas características que usem ações, reações ou ações bônus podem ser copiadas. Você também não pode copiar tipos de deslocamento como voo ou escavar, ou traços passivos como visão no escuro, imunidades ou resistências. A partir do 11° nível, você pode copiar traços passivos como imunidades, sentidos ou qualquer outro traço que não exija algum tipo de ação para funcionar. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
       - level: 9
         features:
-          - { name: "Reflexo Treinado", description: "Reações copiadas de oponentes." }
+          - name: "Simulação Avançada"
+            description: |
+              No 9° nível, você consegue simular características mais exclusivas de outras criaturas. Quando você vir uma criatura de nível de desafio igual ou inferior à metade do seu nível de ladino usando uma característica ou traço de uso limitado, você pode realizar um teste de Sabedoria (Intuição) CD 15 para tentar compreender como essa habilidade funciona. Se for bem sucedido, você poderá ativar a habilidade copiada uma vez a qualquer momento, num período de 1 hora. Não é possível simular a característica Conjuração através dessa característica. Após usá-la, você precisa terminar um descanso curto ou longo para usar Simulação Avançada novamente.
       - level: 13
         features:
-          - { name: "Estilo Espelhado", description: "Espelha posturas para defesa/ofensa." }
+          - name: "Simular Conjuração"
+            description: |
+              No 13° nível, ao observar atentamente uma criatura conjurando uma magia, você consegue compreender os gestos e verbalizações da magia. Quando você vir uma criatura conjurando uma magia que pertença a um nível igual ou inferior ao seu nível de ladino dividido por quatro, você pode realizar um teste de Sabedoria (Intuição) CD 15 + nível da magia para compreendê-la. Se você for bem sucedido, poderá conjurar a magia, uma vez, a qualquer momento, num período de 1 hora. Você precisa fornecer os componentes materiais para essa magia, se ela possuir algum. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
       - level: 17
         features:
-          - { name: "Mestre do Espelho", description: "Replica movimentos complexos." }
+          - name: "Usurpar Característica"
+            description: |
+              Ao atingir o 17° nível, você pode privar uma criatura de uma característica que ela possua, quando você simulá-la. Quando você vir uma criatura usando uma característica que você possa copiar com uma de suas características de mimetizador, você pode, no seu turno, usar sua ação para tocar essa criatura e realizar o teste de Sabedoria (Intuição) com a CD apropriada. Se você obtiver sucesso, o alvo deve realizar um teste de resistência de Carisma (CD 8 + seu bônus de proficiência + seu modificador de Carisma). Se fracassar, ela não poderá usar a característica que você copiou por 1 hora. Copiar uma magia impede a criatura alvo de conjurar essa magia específica por 1 hora. Você pode usar essa característica duas vezes. Após isso, você precisa terminar um descanso longo para usá-la novamente.
 
 wizard:
   # ——— ESCOLAS (PHB) ———

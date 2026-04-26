@@ -1,6 +1,6 @@
 class Api::V1::Public::ClassRulesController < ApplicationController
   def index
-    render json: { class_rules: ClassRules.rules, dictionaries: ClassRules.dictionaries }, status: :ok
+    render json: { class_rules: ClassRules.rules_with_klass_table, dictionaries: ClassRules.dictionaries }, status: :ok
   end
 
   def show

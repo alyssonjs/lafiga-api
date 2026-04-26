@@ -235,7 +235,7 @@ namespace :dnd do
 
     # NOTE: subclass overrides (SUBCLASS_OVERRIDES, load_yaml_overrides, merged_overrides,
     # apply_subclass_overrides!, apply_subclass_grants!) e a task `dnd:apply_subclass_overrides`
-    # vivem em api/lib/tasks/apply_subclass_overrides.rake (modulo DndImportHelpers).
+    # vivem em app/services/dnd_import_helpers.rb (Rake: apply_subclass_overrides.rake).
     # Esta task chama `DndImportHelpers.apply_subclass_overrides!(klass)` mais abaixo.
 
     def fetch(path, limit = 5)
