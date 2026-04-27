@@ -705,6 +705,10 @@ class CharacterSheetSummaryService
 
     begin
       # Merge subclass proficiency grants up to current level
+      # (yaml `subclass_overrides` → dnd import → SubKlass#levels_json).
+      # Armor/weapons: sempre mergeados. Tools: ex. Maestria dos Autômatos nv2
+      # (várias Ferramentas de * artesão no grants) — antes nem tools mergeava.
+      # ficavam só no JSON e não apareciam em proficiencies.tools na ficha.
       sk = primary_sheet_klass
       if sk&.sub_klass && sk.sub_klass.levels_json.present?
         rows = JSON.parse(sk.sub_klass.levels_json) rescue []
@@ -716,8 +720,10 @@ class CharacterSheetSummaryService
           prof = (grants['proficiencies'] || {})
           a = prof['armor'] || prof[:armor] || []
           w = prof['weapons'] || prof[:weapons] || []
+          tlist = prof['tools'] || prof[:tools] || []
           armor |= Array(a).map(&:to_s)
           weapons |= Array(w).map(&:to_s)
+          Array(tlist).each { |t| tools << t.to_s if t.to_s.strip != '' }
         end
       end
     rescue => _e

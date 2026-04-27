@@ -29,7 +29,7 @@ class ClassRules
   ARTISAN_TOOLS = [
     'Ferramentas de Alquimista','Ferramentas de Ferreiro','Ferramentas de Carpinteiro','Ferramentas de Cartógrafo',
     'Ferramentas de Sapateiro','Ferramentas de Artesão (Cozinheiro)','Utensílios de Cozinheiro','Ferramentas de Calígrafo','Ferramentas de Vidraceiro',
-    'Ferramentas de Joalheiro','Ferramentas de Coureiro','Ferramentas de Pedreiro','Ferramentas de Pintor',
+    'Ferramentas de Joalheiro','Ferramentas de Coureiro','Ferramentas de Entalhador','Ferramentas de Funileiro','Ferramentas de Pedreiro','Ferramentas de Pintor',
     'Ferramentas de Oleiro','Ferramentas de Ferreiro de Armaduras','Ferramentas de Tecelão','Ferramentas de Marceneiro',
     'Ferramentas de Cervejeiro','Kit de Disfarce','Kit de Falsificação','Kit de Herbalismo',
     'Ferramentas de Ladrão'

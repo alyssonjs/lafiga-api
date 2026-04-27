@@ -132,3 +132,68 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges race p
     expect(race_skills).to include('História')
   end
 end
+
+# SubKlass#levels_json (subclass_overrides import) — grants.proficiencies.tools
+RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges subclass tool grants' do
+  let!(:role) { Role.find_or_create_by!(name: 'player') }
+  let(:user) do
+    User.create!(
+      email: "css_subtool_#{SecureRandom.hex(4)}@example.com",
+      username: "csstool#{SecureRandom.hex(4)}",
+      password: 'password1',
+      password_confirmation: 'password1',
+      role_id: role.id
+    )
+  end
+
+  let!(:human_race) { Race.find_or_create_by!(api_index: 'human') { |r| r.name = 'Humano' } }
+  let!(:wizard) do
+    Klass.find_or_create_by!(api_index: 'wizard') do |k|
+      k.name = 'Mago'
+      k.hit_die = 6
+      k.subclass_level = 2
+    end
+  end
+
+  it 'inclui tools concedidas pela subclasse (ex.: Maestria dos Autômatos) em proficiencies.tools' do
+    sub = SubKlass.create!(
+      klass: wizard,
+      api_index: 'maestria-dos-automatos-spec',
+      name: 'Maestria dos Autômatos (spec)',
+      levels_json: [
+        {
+          'level' => 2,
+          'grants' => {
+            'proficiencies' => {
+              'tools' => [
+                'Ferramentas de Coureiro',
+                'Ferramentas de Entalhador',
+                'Ferramentas de Ferreiro',
+                'Ferramentas de Funileiro',
+              ],
+            },
+          },
+        }
+      ].to_json
+    )
+    character = Character.create!(user: user, name: 'Wiz PC', background: 'Test')
+    sheet = Sheet.create!(
+      character: character,
+      race_id: human_race.id,
+      str: 8, dex: 14, con: 14, int: 16, wis: 12, cha: 8,
+      hp_max: 8, hp_current: 8,
+      class_summary: { 'tools' => [] },
+      metadata: { 'class_choices' => {} }
+    )
+    SheetKlass.create!(sheet: sheet, klass: wizard, sub_klass: sub, level: 2)
+    cmd = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+    expect(cmd.success?).to be(true), -> { cmd.errors.full_messages.join('; ') rescue cmd.inspect }
+    tools = Array(cmd.result.dig(:proficiencies, :tools)).map(&:to_s)
+    expect(tools).to include(
+      'Ferramentas de Coureiro',
+      'Ferramentas de Entalhador',
+      'Ferramentas de Ferreiro',
+      'Ferramentas de Funileiro',
+    )
+  end
+end

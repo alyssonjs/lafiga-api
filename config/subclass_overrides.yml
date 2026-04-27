@@ -4386,11 +4386,17 @@ wizard:
       levels:
         - level: 2
           features:
-            - name: "Constructo Assistente"
-              description: "Cria ajudante mecânico (familiar/servo) com funções utilitárias e simples de combate."
+            - name: "Engenheiro perspicaz"
+              description: "No 2º nível, adiciona o truque consertar (não conta no limite de truques) e adquire proficiência em Ferramentas de coureiro, entalhador, ferreiro e funileiro (Livro de Novos Arquétipos)."
+            - name: "Construir autômato"
+              description: "No 2º nível, fabrica autômato (ver ND, custo, espaço de magia e tabela de fabricação no material de campanha)."
           grants:
             proficiencies:
-              tools: ["Ferramentas de Artífice"]
+              tools:
+                - "Ferramentas de Coureiro"
+                - "Ferramentas de Entalhador"
+                - "Ferramentas de Ferreiro"
+                - "Ferramentas de Funileiro"
         - level: 6
           features:
             - name: "Engenharia Arcana"

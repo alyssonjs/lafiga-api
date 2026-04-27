@@ -11,8 +11,9 @@ module Modifiers
     #   nv 7 "Movimento de Batedor" → +10 ft).
     #
     # NÃO cobre ainda (deixar explicito para futura extensão):
-    # - `grants.proficiencies.armor/weapons/skills` (ja merge-ados em
-    #   `CharacterSheetSummaryService#build_proficiencies`).
+    # - `grants.proficiencies.*` fora de movement (armor/weapons/tools ja em
+    #   `CharacterSheetSummaryService#build_proficiencies`; skills de subclasse
+    #   ainda nao leem `levels_json` aqui).
     # - `grants.advantages.*`, `grants.languages.*`, etc.
     # - Recursos de subclasse (rage variants, ki extras, channel divinity).
     #
