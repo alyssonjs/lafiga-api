@@ -764,6 +764,27 @@ class CharacterSheetSummaryService
       class_cs_skills = to_arr.call(r1['skills'] || r1[:skills]) if r1.is_a?(Hash)
     end
 
+    # Perícias escolhidas no passo de raça (wizard) — ex.: Versatilidade do Meio-Elfo,
+    # perícia extra do Humano Variante. Gravadas em metadata.race_choices.chosenSkills
+    # (camelCase) ou chosen_skills; sem isto skills.race ficava só com fixas do summary.
+    race_choice_skills = begin
+      rc = meta['race_choices'] || meta[:race_choices] || {}
+      rc = rc.deep_stringify_keys if rc.is_a?(Hash)
+      rc ||= {}
+      picks = []
+      %w[chosenSkills chosen_skills].each do |key|
+        Array(rc[key]).each do |item|
+          next if item.nil?
+          name = item.is_a?(Hash) ? (item['name'] || item['id']) : item
+          s = name.to_s.strip
+          picks << s unless s.empty?
+        end
+      end
+      picks.uniq
+    rescue StandardError
+      []
+    end
+
     {
       armor: armor,
       weapons: weapons,
@@ -772,7 +793,7 @@ class CharacterSheetSummaryService
       skills: {
         class: class_cs_skills,
         background: to_arr.call(bg['skills']),
-        race: (race_skills + to_arr.call(vh_skill)).uniq
+        race: (race_skills + to_arr.call(vh_skill) + race_choice_skills).uniq
       }
     }
   end

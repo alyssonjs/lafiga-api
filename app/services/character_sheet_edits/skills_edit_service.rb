@@ -18,7 +18,12 @@ module CharacterSheetEdits
 
       pl = meta.dig('class_choices', 'per_level', '1') || {}
       skills    = Array(pl['skills']).map(&:to_s)
-      expertise = Array(pl['expertise']).map(&:to_s)
+      # Provision / LevelUpGuard gravam `expertise_skills`; o PATCH do wizard grava `expertise`.
+      # Sem unir as duas chaves, o read devolvia [] e o hidrato de edição apagava o que
+      # `characterToDraft` já tinha inferido de `expertise_skills` (pruneEmpty omitia o campo).
+      expertise = (
+        Array(pl['expertise']).map(&:to_s) + Array(pl['expertise_skills']).map(&:to_s)
+      ).uniq.reject(&:empty?)
 
       if skills.empty?
         cs_meta = meta['class_summary'].is_a?(Hash) ? meta['class_summary'] : {}
@@ -56,6 +61,8 @@ module CharacterSheetEdits
         skills_for_check = (row1['skills'] || []) | Array(data['selectedSkills']).map(&:to_s)
         validate_expertise!(exp, skills_for_check)
         row1['expertise'] = exp
+        # Mantém paridade com provision/auto_choice (canonical `expertise_skills`).
+        row1['expertise_skills'] = exp
       end
 
       meta['class_choices']['per_level']['1'] = row1

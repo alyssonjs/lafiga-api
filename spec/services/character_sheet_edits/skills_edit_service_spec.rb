@@ -41,6 +41,39 @@ RSpec.describe CharacterSheetEdits::SkillsEditService do
     end
   end
 
+  describe '#read' do
+    it 'expõe expertise a partir de per_level[1].expertise_skills (provision / ladino)' do
+      sheet.update!(metadata: {
+        'class_choices' => {
+          'per_level' => {
+            '1' => {
+              'skills' => %w[Furtividade Percepção],
+              'expertise_skills' => %w[Furtividade Percepção]
+            }
+          }
+        }
+      })
+      out = described_class.new(character: character.reload, data: {}).read
+      expect(out['expertise']).to eq(%w[Furtividade Percepção])
+    end
+
+    it 'une expertise e expertise_skills quando ambos existem' do
+      sheet.update!(metadata: {
+        'class_choices' => {
+          'per_level' => {
+            '1' => {
+              'skills' => %w[Atletismo Intimidação],
+              'expertise' => ['Atletismo'],
+              'expertise_skills' => ['Intimidação']
+            }
+          }
+        }
+      })
+      out = described_class.new(character: character.reload, data: {}).read
+      expect(out['expertise']).to contain_exactly('Atletismo', 'Intimidação')
+    end
+  end
+
   describe 'G6.2 — expertise so em skills com proficiencia' do
     it 'warn quando expertise contem skill ausente em selectedSkills' do
       sheet.update!(metadata: {
@@ -60,6 +93,21 @@ RSpec.describe CharacterSheetEdits::SkillsEditService do
       })
       result = svc.call
       expect(result.warnings).to be_empty
+    end
+
+    it 'persiste expertise_skills junto com expertise no metadata' do
+      sheet.update!(metadata: {
+        'class_choices' => { 'per_level' => { '1' => { 'skills' => %w[A B] } } }
+      })
+      svc = described_class.new(character: character.reload, data: {
+        'selectedSkills' => %w[Atletismo Intimidação],
+        'expertise' => %w[Atletismo Intimidação]
+      })
+      expect(svc.call.warnings).to be_empty
+      sheet.reload
+      row = sheet.metadata.dig('class_choices', 'per_level', '1')
+      expect(row['expertise']).to eq(%w[Atletismo Intimidação])
+      expect(row['expertise_skills']).to eq(%w[Atletismo Intimidação])
     end
   end
 end

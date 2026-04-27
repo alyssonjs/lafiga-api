@@ -104,4 +104,31 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges race p
     tools = Array(cmd.result.dig(:proficiencies, :tools)).map(&:to_s)
     expect(tools).to include('Suprimentos de cervejeiro')
   end
+
+  it 'inclui race_choices.chosenSkills em proficiencies.skills.race (Meio-Elfo / Humano Variante)' do
+    sheet = build_sheet(meta_overrides: {
+      'race_choices' => {
+        'chosenTools' => [],
+        'chosenLanguages' => [],
+        'chosenSkills' => %w[Enganação Sobrevivência]
+      }
+    })
+    cmd = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+    expect(cmd.success?).to be(true), -> { cmd.errors.full_messages.join('; ') rescue cmd.inspect }
+    race_skills = Array(cmd.result.dig(:proficiencies, :skills, :race)).map(&:to_s)
+    expect(race_skills).to include('Enganação', 'Sobrevivência')
+  end
+
+  it 'aceita race_choices.chosen_skills (snake_case) para proficiencies.skills.race' do
+    sheet = build_sheet(meta_overrides: {
+      'race_choices' => {
+        'chosenTools' => [],
+        'chosen_skills' => ['História']
+      }
+    })
+    cmd = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+    expect(cmd.success?).to be(true), -> { cmd.errors.full_messages.join('; ') rescue cmd.inspect }
+    race_skills = Array(cmd.result.dig(:proficiencies, :skills, :race)).map(&:to_s)
+    expect(race_skills).to include('História')
+  end
 end
