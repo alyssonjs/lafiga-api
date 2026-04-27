@@ -2,21 +2,11 @@ class Api::V1::Player::GroupsController < ApplicationController
   before_action :authorize_request
   before_action :set_group, only: [:show, :update, :destroy, :timeline, :last_session, :add_character, :remove_character]
 
-  # Jogadores: apenas grupos em que possuem ao menos um personagem.
-  # Mestre (papel site-wide DM/Admin): todos os grupos — o mestre gerencia a
-  # plataforma e precisa ver mesas criadas por outros DMs/admins e campanhas
-  # onde ainda nao e `dm_user_id` nem tem PC proprio.
+  # Catálogo de campanhas para descoberta: qualquer utilizador autenticado (player
+  # ou mestre) vê todos os grupos. Criar/editar/apagar continua reservado ao
+  # mestre nas actions abaixo.
   def index
-    groups =
-      if Group.user_is_dm?(@current_user)
-        Group.all
-      else
-        group_ids = Character.where(user_id: @current_user.id).where.not(group_id: nil).distinct.pluck(:group_id)
-        owned_ids = @current_user.owned_groups.distinct.pluck(:id)
-        Group.where(id: (group_ids + owned_ids).uniq)
-      end
-
-    groups = groups
+    groups = Group
       .includes(:schedules, characters: { sheet: [:race, { sheet_klasses: %i[klass sub_klass] }] })
       .order(:name)
 
@@ -145,24 +135,14 @@ class Api::V1::Player::GroupsController < ApplicationController
 
   private
 
-  # Localiza o grupo e valida autorização de leitura / ações de membro.
-  #
-  # - Mestre site-wide (DM/Admin): acesso a qualquer grupo (painel do mestre).
-  # - Jogador: somente se possuir ao menos um personagem naquele grupo.
-  #   Não basta ser `dm_user_id` legado sem PC — evita campanha "fantasma"
-  #   visível só por ter sido criador sem personagem vinculado.
+  # Localiza o grupo. Leitura (show, timeline, last_session) e vincular personagem
+  # próprio (add/remove_character) estão abertos a qualquer utilizador
+  # autenticado; create/update/destroy validam mestre na própria action.
   def set_group
     @group = Group
       .includes(characters: { sheet: [:race, { sheet_klasses: %i[klass sub_klass] }] })
       .find_by(id: params[:id])
     return render(json: { error: 'Grupo não encontrado' }, status: :not_found) unless @group
-
-    authorized = if Group.user_is_dm?(@current_user)
-                   true
-                 else
-                   @group.characters.exists?(user_id: @current_user.id)
-                 end
-    return render(json: { error: 'Grupo não encontrado' }, status: :not_found) unless authorized
   end
 
   def group_params

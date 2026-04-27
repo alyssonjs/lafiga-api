@@ -72,7 +72,7 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
   end
 
   describe 'GET /api/v1/player/groups' do
-    it 'jogador ve grupos em que tem personagem ou é mestre da mesa (dm_user_id)' do
+    it 'jogador ve o catálogo completo de grupos (descoberta de campanhas)' do
       via_chr = create(:group, name: 'ViaChr')
       create(:character, user: user, group: via_chr)
       owned_no_char = create(:group, name: 'OwnedNoChar', dm_user_id: user.id)
@@ -82,8 +82,7 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
 
       expect(response).to have_http_status(:ok)
       ids = response.parsed_body['groups'].map { |g| g['id'] }
-      expect(ids).to include(via_chr.id, owned_no_char.id)
-      expect(ids).not_to include(foreign.id)
+      expect(ids).to include(via_chr.id, owned_no_char.id, foreign.id)
     end
 
     it 'mestre site-wide ve todos os grupos (dono, via personagem e de terceiros)' do
@@ -168,20 +167,22 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    it 'nao autoriza dono legado sem personagem se nao for site-DM' do
+    it 'autoriza dono legado (dm_user_id) mesmo sem personagem no grupo' do
       group = create(:group, name: 'OwnedLegacy', dm_user_id: user.id)
 
       get "/api/v1/player/groups/#{group.id}", headers: headers
 
-      expect(response).to have_http_status(:not_found)
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['group']['id']).to eq(group.id)
     end
 
-    it 'retorna 404 para grupo de outro usuario sem character vinculado' do
+    it 'autoriza jogador a ver grupo de outro dono sem personagem vinculado' do
       foreign = create(:group, name: 'Foreign', dm_user_id: other_user.id)
 
       get "/api/v1/player/groups/#{foreign.id}", headers: headers
 
-      expect(response).to have_http_status(:not_found)
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['group']['id']).to eq(foreign.id)
     end
 
     it 'retorna 404 para grupo inexistente' do
@@ -216,7 +217,7 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
       expect(group.reload.name).to eq('Renomeado')
     end
 
-    it 'bloqueia update por jogador em grupo alheio (404 — set_group antes do check de mestre)' do
+    it 'bloqueia update por jogador em grupo alheio (403 — só o mestre edita)' do
       foreign = create(:group, name: 'Foreign', dm_user_id: other_user.id)
 
       patch "/api/v1/player/groups/#{foreign.id}",
@@ -224,7 +225,7 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
             headers: headers,
             as: :json
 
-      expect(response).to have_http_status(:not_found)
+      expect(response).to have_http_status(:forbidden)
       expect(foreign.reload.name).to eq('Foreign')
     end
   end
