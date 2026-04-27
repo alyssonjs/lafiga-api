@@ -6,6 +6,8 @@ class Api::V1::Public::DateDimensionsController < ApplicationController
     year  = params.require(:year).to_i
     month = params.require(:month).to_i
 
+    @calendar_group_payload_cache = {}
+
     prev_month_date = Date.new(year, month, 1).prev_month
     next_month_date = Date.new(year, month, 1).next_month
 
@@ -21,7 +23,9 @@ class Api::V1::Public::DateDimensionsController < ApplicationController
                         .order(:date)
 
     rows = date_dimensions.map { |dd| build_calendar_row_json(dd) }
-    render json: rows, status: :ok
+    # Hash[] + top-level Array: não usar `render json:` puro — o AMS 0.10 tenta
+    # `CollectionSerializer` e loga "No serializer found" para cada Hash, além de custo extra.
+    render body: rows.to_json, content_type: 'application/json; charset=utf-8', status: :ok
   end
 
   private
@@ -59,7 +63,12 @@ class Api::V1::Public::DateDimensionsController < ApplicationController
     include_dm_notes = false
     base = ScheduleSerializer.serialize(schedule, include_dm_notes: include_dm_notes)
     g = schedule.group
-    group_payload = g ? GroupSerializer.serialize(g) : nil
+    group_payload =
+      if g
+        @calendar_group_payload_cache[g.id] ||= GroupSerializer.serialize(g)
+      else
+        nil
+      end
     base.merge(group: group_payload)
   end
 end

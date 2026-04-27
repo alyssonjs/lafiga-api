@@ -12,7 +12,11 @@ class CharacterRules
 
   # Soma os níveis de todas as classes da sheet
   def self.total_level(sheet)
-    (sheet.sheet_klasses.sum(:level) || 0).to_i
+    if sheet.association(:sheet_klasses).loaded?
+      sheet.sheet_klasses.sum { |sk| sk.level.to_i }
+    else
+      (sheet.sheet_klasses.sum(:level) || 0).to_i
+    end
   end
 
   # Modificador de habilidade

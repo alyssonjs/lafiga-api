@@ -76,7 +76,7 @@ class GroupSerializer
       h[:subclass_name] = pk.sub_klass.name
     elsif pk&.klass_id.present?
       # Fallback: outra linha da mesma classe com subclasse (import / dados parciais).
-      sk = sheet.sheet_klasses.where(klass_id: pk.klass_id).order(level: :desc, id: :asc).detect { |row| row.sub_klass.present? }
+      sk = roster_first_sheet_klass_with_subclass(sheet, pk.klass_id)
       h[:subclass_name] = sk.sub_klass.name if sk&.sub_klass
     end
 
@@ -86,10 +86,30 @@ class GroupSerializer
     h
   end
 
+  # Fallback de subclasse: equivalente a `order(level: :desc, id: :asc).detect { sub_klass }`,
+  # sem SQL quando `sheet_klasses` já veio no preload (ex.: calendário público).
+  def self.roster_first_sheet_klass_with_subclass(sheet, klass_id)
+    if sheet.association(:sheet_klasses).loaded?
+      sub = sheet.sheet_klasses.select { |r| r.klass_id == klass_id && r.sub_klass.present? }
+      return nil if sub.empty?
+
+      sub.min_by { |r| [-r.level, r.id] }
+    else
+      sheet.sheet_klasses
+        .where(klass_id: klass_id)
+        .order(level: :desc, id: :asc)
+        .detect { |row| row.sub_klass.present? }
+    end
+  end
+
   # Mesmo critério geral que a summary (nível desc); reforça subclasse quando a
   # linha "principal" veio sem `sub_klass_id` mas existe outra linha da classe.
   def self.roster_primary_sheet_klass(sheet)
-    rows = sheet.sheet_klasses.includes(:klass, :sub_klass).order(level: :desc, id: :asc).to_a
+    rows = if sheet.association(:sheet_klasses).loaded?
+      sheet.sheet_klasses.to_a.sort_by { |r| [-r.level, r.id] }
+    else
+      sheet.sheet_klasses.includes(:klass, :sub_klass).order(level: :desc, id: :asc).to_a
+    end
     return nil if rows.empty?
 
     pk = rows.first
