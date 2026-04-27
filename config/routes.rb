@@ -88,6 +88,7 @@ Rails.application.routes.draw do
       end
 
       namespace :player do
+        patch 'password', to: 'passwords#update'
         resources :characters, only: [:index, :show, :create, :update, :destroy] do
           collection do
             post :provision

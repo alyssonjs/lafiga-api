@@ -1,6 +1,7 @@
 class User < ApplicationRecord
     has_secure_password
 
+    validates :password, length: { minimum: 6 }, allow_nil: true
     validates :email, presence: true, uniqueness: true
     validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
     validates :username, presence: true, uniqueness: true
@@ -20,7 +21,15 @@ class User < ApplicationRecord
 
     belongs_to :role
 
+    before_save :mark_password_changed_at, if: :will_save_change_to_password_digest?
+
     # DM: custom XP thresholds (levels 2–20) for progression UI; see DmProgressionSettingsMerge.
     # JSON shape: { "xp_thresholds" => { "2" => 300, "3" => 900, ... } }
     # Column added in db/migrate/20260422140000_add_progression_settings_to_users.rb
+
+    private
+
+    def mark_password_changed_at
+      self.password_changed_at = Time.current
+    end
 end
