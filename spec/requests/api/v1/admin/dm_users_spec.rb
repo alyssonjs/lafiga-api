@@ -44,6 +44,60 @@ RSpec.describe 'Api::V1::Admin::DmUsersController', type: :request do
     end
   end
 
+  describe 'POST /api/v1/admin/dm_users' do
+    it 'bloqueia jogador comum (403)' do
+      post '/api/v1/admin/dm_users',
+           params: { user: { email: 'x@test.com', username: 'xuser' } }.to_json,
+           headers: player_headers
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it 'cria utilizador com senha password' do
+      email = "created_#{SecureRandom.hex(4)}@lafiga.test"
+      username = "createduser_#{SecureRandom.hex(4)}"
+      post '/api/v1/admin/dm_users',
+           params: { user: { name: 'Novo Jogador', email: email, username: username } }.to_json,
+           headers: dm_headers
+      expect(response).to have_http_status(:created)
+      u = response.parsed_body['user']
+      expect(u['email']).to eq(email)
+      expect(u['name']).to eq('Novo Jogador')
+      expect(u['username']).to eq(username)
+      expect(u['role']['name']).to be_in(%w[Player User])
+      created = User.find_by(email: email)
+      expect(created).to be_present
+      expect(created.authenticate('password')).to eq(created)
+    end
+
+    it 'ignora DM_PASSWORD_RESET_DEFAULT: senha continua password' do
+      prev = ENV['DM_PASSWORD_RESET_DEFAULT']
+      ENV['DM_PASSWORD_RESET_DEFAULT'] = 'ShouldNotBeUsed'
+      email = "envpwd_#{SecureRandom.hex(4)}@lafiga.test"
+      post '/api/v1/admin/dm_users',
+           params: { user: { email: email, username: "u_#{SecureRandom.hex(4)}" } }.to_json,
+           headers: dm_headers
+      expect(response).to have_http_status(:created)
+      expect(User.find_by!(email: email).authenticate('password')).to be_truthy
+      expect(User.find_by!(email: email).authenticate('ShouldNotBeUsed')).to be_falsy
+    ensure
+      if prev
+        ENV['DM_PASSWORD_RESET_DEFAULT'] = prev
+      else
+        ENV.delete('DM_PASSWORD_RESET_DEFAULT')
+      end
+    end
+
+    it 'normaliza @ no início do username' do
+      email = "at_#{SecureRandom.hex(4)}@lafiga.test"
+      raw = "u_#{SecureRandom.hex(3)}"
+      post '/api/v1/admin/dm_users',
+           params: { user: { email: email, username: "@#{raw}" } }.to_json,
+           headers: dm_headers
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body['user']['username']).to eq(raw)
+    end
+  end
+
   describe 'PATCH /api/v1/admin/dm_users/:id' do
     it 'atualiza nome e email' do
       new_email = "patched_#{SecureRandom.hex(4)}@lafiga.test"
@@ -59,21 +113,20 @@ RSpec.describe 'Api::V1::Admin::DmUsersController', type: :request do
   end
 
   describe 'POST /api/v1/admin/dm_users/:id/reset_password' do
-    it '422 quando ENV não definido' do
-      prev = ENV['DM_PASSWORD_RESET_DEFAULT']
-      ENV.delete('DM_PASSWORD_RESET_DEFAULT')
-      post "/api/v1/admin/dm_users/#{player.id}/reset_password", headers: dm_headers
-      expect(response).to have_http_status(:unprocessable_entity)
-    ensure
-      ENV['DM_PASSWORD_RESET_DEFAULT'] = prev if prev
-    end
-
-    it 'define senha quando ENV presente' do
-      prev = ENV['DM_PASSWORD_RESET_DEFAULT']
-      ENV['DM_PASSWORD_RESET_DEFAULT'] = 'NewDefaultPwd99'
+    it 'redefine a senha para password (sempre)' do
       post "/api/v1/admin/dm_users/#{player.id}/reset_password", headers: dm_headers
       expect(response).to have_http_status(:no_content)
-      expect(player.reload.authenticate('NewDefaultPwd99')).to eq(player)
+      expect(player.reload.authenticate('password')).to eq(player)
+    end
+
+    it 'ignora DM_PASSWORD_RESET_DEFAULT: fica password' do
+      prev = ENV['DM_PASSWORD_RESET_DEFAULT']
+      ENV['DM_PASSWORD_RESET_DEFAULT'] = 'NotUsedByReset'
+      post "/api/v1/admin/dm_users/#{player.id}/reset_password", headers: dm_headers
+      expect(response).to have_http_status(:no_content)
+      reloaded = player.reload
+      expect(reloaded.authenticate('password')).to eq(reloaded)
+      expect(reloaded.authenticate('NotUsedByReset')).to be_falsy
     ensure
       if prev
         ENV['DM_PASSWORD_RESET_DEFAULT'] = prev

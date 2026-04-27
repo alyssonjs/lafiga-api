@@ -4,13 +4,34 @@ module Api
   module V1
     module Admin
       # Gestão de utilizadores pelo mestre (papel DM/Admin site-wide).
-      # Listagem, edição de nome/email, reset de senha para valor configurado em
-      # ENV["DM_PASSWORD_RESET_DEFAULT"] (obrigatório em produção para usar o reset).
+      # Criação e «resetar senha» usam sempre a palavra em texto
+      # `DEFAULT_END_USER_PLAINTEXT` (literal "password" — o jogador deve alterar
+      # após o primeiro acesso; não há override por variável de ambiente).
       class DmUsersController < ApplicationController
+        DEFAULT_END_USER_PLAINTEXT = 'password'
+
         before_action :authorize_site_wide_dm
         before_action :set_user, only: %i[show update reset_password]
 
         MAX_PER_PAGE = 100
+
+        def create
+          pwd = DEFAULT_END_USER_PLAINTEXT
+          role = default_player_role
+          return unless role
+
+          attrs = build_new_dm_user_attributes.merge(
+            role: role,
+            password: pwd,
+            password_confirmation: pwd
+          )
+          @user = User.new(attrs)
+          if @user.save
+            render json: { user: user_payload(@user.reload, include_characters: true) }, status: :created
+          else
+            render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+          end
+        end
 
         def index
           scope = User.includes(:role, :characters).order(
@@ -49,13 +70,7 @@ module Api
 
         # POST /api/v1/admin/dm_users/:id/reset_password
         def reset_password
-          pwd = ENV['DM_PASSWORD_RESET_DEFAULT'].to_s.strip
-          if pwd.blank?
-            render json: {
-              errors: ['DM_PASSWORD_RESET_DEFAULT não está definido no servidor. Configure a variável de ambiente.']
-            }, status: :unprocessable_entity
-            return
-          end
+          pwd = DEFAULT_END_USER_PLAINTEXT
 
           @user.password = pwd
           @user.password_confirmation = pwd
@@ -68,6 +83,26 @@ module Api
 
         private
 
+        # Bases reais: seeds usam "Player" e, às vezes, "User" (legado). Evita 500
+        # se o passo de roles não corres ao nome canónico; último recurso cria "Player".
+        def default_player_role
+          r = Role.find_by(name: 'Player') ||
+              Role.find_by(name: 'User') ||
+              Role.where('LOWER(roles.name) = ?', 'player').first
+          return r if r
+
+          role = Role.create_with(
+            permissions: %w[view_groups view_characters create_character join_session]
+          ).find_or_create_by!(name: 'Player')
+          role
+        rescue StandardError => e
+          Rails.logger.error("[dm_users] default_player_role: #{e.class}: #{e.message}")
+          render json: {
+            errors: ['Não foi possível resolver o papel de jogador. Verifique as roles (Player/User) no banco.']
+          }, status: :internal_server_error
+          nil
+        end
+
         def set_user
           @user = User.includes(:role, { characters: :sheet }).find_by(id: params[:id])
           return if @user
@@ -78,6 +113,21 @@ module Api
 
         def dm_user_params
           params.require(:user).permit(:name, :email)
+        end
+
+        def dm_create_params
+          p = params.require(:user).permit(:name, :email, :username)
+          p[:name] = p[:name].to_s.strip.presence
+          p[:email] = p[:email].to_s.strip.downcase
+          u = p[:username].to_s.strip
+          u = u.delete_prefix('@') if u.start_with?('@')
+          p[:username] = u.presence
+          p
+        end
+
+        def build_new_dm_user_attributes
+          h = dm_create_params.to_h.symbolize_keys
+          { name: h[:name], email: h[:email], username: h[:username] }
         end
 
         def user_list_payload(user)

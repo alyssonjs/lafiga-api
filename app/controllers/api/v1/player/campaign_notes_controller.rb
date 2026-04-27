@@ -2,6 +2,7 @@ class Api::V1::Player::CampaignNotesController < ApplicationController
   before_action :authorize_request
   before_action :set_group,           only: [:index, :create]
   before_action :set_note,            only: [:show, :update, :destroy]
+  before_action :require_group_player!, only: [:create, :update, :destroy]
 
   # Lista as notas do grupo. Player só vê as visíveis a ele (group + suas
   # próprias). DM/Admin vê tudo via Admin::CampaignNotesController.
@@ -28,20 +29,8 @@ class Api::V1::Player::CampaignNotesController < ApplicationController
   end
 
   def update
-    is_owner = @note.user_id == @current_user.id
-    is_dm = Group.user_is_dm?(@current_user)
-
-    unless is_owner
-      return render json: { error: 'Você só pode editar suas próprias notas.' }, status: :forbidden unless is_dm
-
-      # Mestre: ajustar fixar / visibilidade em notas de outros jogadores (ex.: pin na lista).
-      meta = params.require(:campaign_note).permit(:pinned, :visibility)
-      if @note.update(meta)
-        render json: { note: @note.as_journal_json }, status: 200
-      else
-        render json: { errors: @note.errors.full_messages }, status: :unprocessable_entity
-      end
-      return
+    unless @note.user_id == @current_user.id
+      return render json: { error: 'Você só pode editar suas próprias notas.' }, status: :forbidden
     end
 
     if @note.update(filtered_campaign_note_params)
@@ -61,6 +50,18 @@ class Api::V1::Player::CampaignNotesController < ApplicationController
   end
 
   private
+
+  # Diário: criar / editar / apagar — só quem tem personagem (PC) vinculado ao grupo
+  # (não basta ser mestre site-wide ou dono do grupo sem ficha no elenco).
+  def require_group_player!
+    g = @group || @note&.group
+    return if g && g.characters.exists?(user_id: @current_user.id)
+
+    render json: {
+      error: 'Apenas jogadores com personagem neste grupo podem criar ou editar o diário da campanha.'
+    }, status: :forbidden
+    return
+  end
 
   def set_group
     @group = @current_user.groups.distinct.find_by(id: params[:group_id])
