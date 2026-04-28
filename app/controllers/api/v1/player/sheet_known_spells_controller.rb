@@ -64,7 +64,7 @@ class Api::V1::Player::SheetKnownSpellsController < ApplicationController
     sheet_klass_id = params[:sheet_klass_id] || params.dig(:sheet_known_spell, :sheet_klass_id)
     if sheet_klass_id.present?
       sk = SheetKlass.find(sheet_klass_id)
-      raise StandardError, 'Forbidden' unless sk.sheet.character.user_id == @current_user.id
+      raise StandardError, 'Forbidden' unless current_user_may_access_sheet?(sk.sheet)
       return sk
     end
 
@@ -72,7 +72,7 @@ class Api::V1::Player::SheetKnownSpellsController < ApplicationController
     klass_api = params[:klass_api_index] || params.dig(:sheet_known_spell, :klass_api_index)
     if sheet_id.present? && klass_api.present?
       sheet = Sheet.find(sheet_id)
-      raise StandardError, 'Forbidden' unless sheet.character.user_id == @current_user.id
+      raise StandardError, 'Forbidden' unless current_user_may_access_sheet?(sheet)
       return sheet.sheet_klasses.joins(:klass).find_by!(klasses: { api_index: klass_api.to_s })
     end
 

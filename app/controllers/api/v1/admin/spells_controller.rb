@@ -74,20 +74,32 @@ class Api::V1::Admin::SpellsController < ApplicationController
 
   # DELETE /api/v1/admin/spells/:id
   #
-  # Bloqueia se houver SpellSource referenciando (classes/subclasses/etc).
-  # Devolve 422 com a lista de fontes para o front exibir o motivo.
+  # Remove todas as SpellSource (classes/subclasses, etc.) — sao apenas ligacoes
+  # de catalogo; "Remover" no grimorio do DM deve apagar a magia de facto.
+  #
+  # Continua bloqueando se a magia ainda existir em fichas (known/prepared),
+  # onde apagar seria destrutivo para personagens.
   def destroy
-    sources = SpellSource.where(spell_id: @spell.id).to_a
-    if sources.any?
+    known_n = SheetKnownSpell.where(spell_id: @spell.id).count
+    prep_n = SheetPreparedSpell.where(spell_id: @spell.id).count
+    if known_n.positive? || prep_n.positive?
       render json: {
-        error: 'spell_in_use',
-        message: 'Magia esta vinculada a outras entidades; remova as fontes antes de apagar.',
-        sources: sources.map { |s| { source_type: s.source_type, source_id: s.source_id } }
+        error: 'spell_on_sheets',
+        message: 'Magia ainda esta em uma ou mais fichas (conhecidas ou preparadas). Remova ou substitua nas fichas antes de apagar.',
+        sheet_known_spells: known_n,
+        sheet_prepared_spells: prep_n
       }, status: :unprocessable_entity
       return
     end
-    @spell.destroy
+
+    ActiveRecord::Base.transaction do
+      SpellSource.where(spell_id: @spell.id).delete_all
+      @spell.destroy!
+    end
     head :no_content
+  rescue ActiveRecord::RecordNotDestroyed
+    render json: { errors: @spell.errors.full_messages.presence || ['nao foi possivel apagar a magia'] },
+           status: :unprocessable_entity
   end
 
   private

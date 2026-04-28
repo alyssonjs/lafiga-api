@@ -170,7 +170,7 @@ class Api::V1::Player::SheetPreparedSpellsController < ApplicationController
     # Accept both query param (?sheet_id=) and nested body { sheet_prepared_spell: { sheet_id: ... } }
     sheet_id = params[:sheet_id] || params.dig(:sheet_prepared_spell, :sheet_id) || (params.dig(:params, :sheet_id) rescue nil)
     sheet = Sheet.find(sheet_id)
-    raise StandardError, 'Forbidden' unless sheet.character.user_id == @current_user.id
+    raise StandardError, 'Forbidden' unless current_user_may_access_sheet?(sheet)
     sheet
   end
 end

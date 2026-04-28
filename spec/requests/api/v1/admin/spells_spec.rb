@@ -130,14 +130,25 @@ RSpec.describe 'Api::V1::Admin::Spells', type: :request do
       expect(response).to have_http_status(:no_content)
     end
 
-    it 'returns 422 with sources when SpellSource exists' do
+    it 'deletes spell after removing SpellSource (klass links are catalog only)' do
       klass = Klass.first || Klass.create!(name: 'Mago', api_index: 'wizard')
       SpellSource.create!(source_type: 'Klass', source_id: klass.id, spell_id: spell.id, always_prepared: false)
-      delete "/api/v1/admin/spells/#{spell.api_index}", headers: headers
+      expect {
+        delete "/api/v1/admin/spells/#{spell.api_index}", headers: headers
+      }.to change(Spell, :count).by(-1)
+        .and change(SpellSource.where(spell_id: spell.id), :count).by(-1)
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it 'returns 422 when spell is still on character sheets' do
+      create(:sheet_known_spell, spell: spell)
+      expect {
+        delete "/api/v1/admin/spells/#{spell.api_index}", headers: headers
+      }.not_to change(Spell, :count)
       expect(response).to have_http_status(:unprocessable_entity)
       body = JSON.parse(response.body)
-      expect(body['error']).to eq('spell_in_use')
-      expect(body['sources'].first['source_type']).to eq('Klass')
+      expect(body['error']).to eq('spell_on_sheets')
+      expect(body['sheet_known_spells'].to_i).to be >= 1
     end
 
     it 'rejects player with 403' do

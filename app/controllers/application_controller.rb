@@ -46,5 +46,12 @@ class ApplicationController < ActionController::API
 
       render json: { error: 'Access denied. DM or Admin only.' }, status: 403
     end
+
+    # Dono do personagem da ficha ou Mestre (DM/Admin do site) — mesmo critério de
+    # SheetsController#sheets_scope_for_current_user e GET/PATCH em sheets alheias.
+    def current_user_may_access_sheet?(sheet)
+      return false if sheet.nil? || @current_user.nil?
+
+      sheet.character.user_id == @current_user.id || Group.user_is_dm?(@current_user)
+    end
 end
-  

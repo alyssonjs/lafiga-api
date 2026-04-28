@@ -33,5 +33,35 @@ RSpec.describe 'Api::V1::Player::SheetKnownSpellsController', type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
       expect(SheetKnownSpell.find_by(id: ks.id)).to be_present
     end
+
+    context 'when accessed by DM (not the sheet owner)' do
+      let(:dm_role) { Role.find_by(name: 'DM') || create(:role, name: 'DM') }
+      let(:dm_user) { create(:user, role: dm_role) }
+      let(:dm_headers) { bearer_headers_for(dm_user).merge('Content-Type' => 'application/json') }
+
+      it 'permite remover magia grimoire' do
+        ks = create(:sheet_known_spell, sheet_klass: sk, spell: spell, source: 'grimoire')
+
+        delete "/api/v1/player/sheet_known_spells/#{ks.id}?sheet_id=#{sheet.id}&klass_api_index=wizard",
+               headers: dm_headers
+
+        expect(response).to have_http_status(:no_content)
+        expect(SheetKnownSpell.find_by(id: ks.id)).to be_nil
+      end
+
+      it 'permite expandir grimório (POST grimoire)' do
+        post '/api/v1/player/sheet_known_spells',
+             params: {
+               sheet_id: sheet.id,
+               klass_api_index: 'wizard',
+               spell_id: spell.id,
+               grimoire_expansion: true,
+             }.to_json,
+             headers: dm_headers
+
+        expect(response).to have_http_status(:created), -> { response.body }
+        expect(SheetKnownSpell.exists?(sheet_klass_id: sk.id, spell_id: spell.id, source: 'grimoire')).to be(true)
+      end
+    end
   end
 end
