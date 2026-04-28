@@ -52,7 +52,7 @@ class Api::V1::Public::SpellsController < ApplicationController
 
         spell_ids = src_scope.distinct.pluck(:spell_id)
         min_map = src_scope.group(:spell_id).minimum(:min_class_level)
-        idx_map = klass_api_indexes_by_spell_id(spell_ids)
+        idx_map = Spell.klass_api_indexes_by_spell_id(spell_ids)
         list = Spell.where(id: spell_ids).map do |s|
           spell_payload(s).merge(
             'min_class_level' => (min_map[s.id] || 1),
@@ -74,7 +74,7 @@ class Api::V1::Public::SpellsController < ApplicationController
       # Build map spell_id -> min_class_level (nil => 1)
       min_map = scope.group(:spell_id).minimum(:min_class_level)
       ids = scope.pluck(:spell_id)
-      idx_map = klass_api_indexes_by_spell_id(ids)
+      idx_map = Spell.klass_api_indexes_by_spell_id(ids)
       list = Spell.where(id: ids).map do |s|
         spell_payload(s).merge(
           'min_class_level' => (min_map[s.id] || 1),
@@ -85,7 +85,7 @@ class Api::V1::Public::SpellsController < ApplicationController
     end
 
     spell_records = spells.to_a
-    idx_map = klass_api_indexes_by_spell_id(spell_records.map(&:id))
+    idx_map = Spell.klass_api_indexes_by_spell_id(spell_records.map(&:id))
     list = spell_records.map do |s|
       spell_payload(s).merge('klass_api_indexes' => idx_map[s.id] || [])
     end
@@ -95,7 +95,9 @@ class Api::V1::Public::SpellsController < ApplicationController
   def show
     spell = Spell.find(params[:id])
     # Detail endpoint sempre devolve `desc` integral (forca view=full).
-    render json: { spell: spell_payload(spell, view: 'full') }, status: :ok
+    payload = spell_payload(spell, view: 'full')
+    idx = Spell.klass_api_indexes_by_spell_id([spell.id])[spell.id] || []
+    render json: { spell: payload.merge('klass_api_indexes' => idx) }, status: :ok
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Spell not found' }, status: :not_found
   end
@@ -127,14 +129,4 @@ class Api::V1::Public::SpellsController < ApplicationController
     )
   end
 
-  # spell_id => distinct klass api_index list (e.g. bard, wizard) for wizard filtering
-  def klass_api_indexes_by_spell_id(spell_ids)
-    return {} if spell_ids.blank?
-    pairs = SpellSource.where(source_type: 'Klass', spell_id: spell_ids)
-      .joins("INNER JOIN klasses ON klasses.id = spell_sources.source_id")
-      .pluck(:spell_id, 'klasses.api_index')
-    pairs.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(sid, api), memo|
-      memo[sid] << api if api.present?
-    end.transform_values(&:uniq)
-  end
 end

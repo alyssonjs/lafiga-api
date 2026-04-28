@@ -2,10 +2,13 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Admin::Spells', type: :request do
   let(:admin_role)  { Role.find_or_create_by!(name: 'Admin') }
+  let(:dm_role)     { Role.find_or_create_by!(name: 'DM') }
   let(:player_role) { Role.find_or_create_by!(name: 'Player') }
   let(:admin)       { create(:user, role: admin_role) }
+  let(:dm)          { create(:user, role: dm_role) }
   let(:player)      { create(:user, role: player_role) }
   let(:headers)     { bearer_headers_for(admin).merge('Content-Type' => 'application/json') }
+  let(:dm_headers)  { bearer_headers_for(dm).merge('Content-Type' => 'application/json') }
 
   let!(:spell) do
     Spell.create!(
@@ -26,9 +29,14 @@ RSpec.describe 'Api::V1::Admin::Spells', type: :request do
   end
 
   describe 'GET /api/v1/admin/spells' do
-    it 'requires admin' do
+    it 'rejects player with 403' do
       get '/api/v1/admin/spells', headers: bearer_headers_for(player)
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it 'allows site-wide DM' do
+      get '/api/v1/admin/spells', headers: dm_headers
+      expect(response).to have_http_status(:ok)
     end
 
     it 'lists spells with filters' do
@@ -36,6 +44,12 @@ RSpec.describe 'Api::V1::Admin::Spells', type: :request do
       expect(response).to have_http_status(:ok)
       body = JSON.parse(response.body)
       expect(body['spells'].map { |s| s['api_index'] }).to include('test-fireball')
+    end
+
+    it 'includes klass_api_indexes per row' do
+      get '/api/v1/admin/spells', headers: headers
+      row = JSON.parse(response.body)['spells'].find { |s| s['api_index'] == 'test-fireball' }
+      expect(row['klass_api_indexes']).to eq([])
     end
   end
 
@@ -72,13 +86,39 @@ RSpec.describe 'Api::V1::Admin::Spells', type: :request do
       expect(spell.reload.range).to eq('60 metros')
     end
 
-    it 'rejects non-admin (player) with 401' do
+    it 'rejects player with 403' do
       payload = { spell: { desc: 'tentativa de hijack' } }
       patch "/api/v1/admin/spells/#{spell.api_index}",
             params: payload.to_json,
             headers: bearer_headers_for(player).merge('Content-Type' => 'application/json')
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:forbidden)
       expect(spell.reload.desc).not_to eq('tentativa de hijack')
+    end
+
+    it 'allows DM to update' do
+      patch "/api/v1/admin/spells/#{spell.api_index}",
+            params: { spell: { desc: 'editado pelo DM' } }.to_json,
+            headers: dm_headers
+      expect(response).to have_http_status(:ok)
+      expect(spell.reload.desc).to eq('editado pelo DM')
+    end
+
+    it 'syncs klass_api_indexes (Klass SpellSource only)' do
+      klass = Klass.find_by(api_index: 'ranger') || Klass.create!(name: 'Patrulheiro', api_index: 'ranger', hit_die: 10)
+      payload = { spell: { desc: spell.desc, klass_api_indexes: ['ranger'] } }
+      patch "/api/v1/admin/spells/#{spell.api_index}", params: payload.to_json, headers: headers
+      expect(response).to have_http_status(:ok)
+      expect(
+        SpellSource.exists?(source_type: 'Klass', source_id: klass.id, spell_id: spell.id),
+      ).to be true
+    end
+
+    it 'returns 422 for unknown klass slug in klass_api_indexes' do
+      payload = { spell: { desc: spell.desc, klass_api_indexes: ['not-a-real-class-slug'] } }
+      patch "/api/v1/admin/spells/#{spell.api_index}", params: payload.to_json, headers: headers
+      expect(response).to have_http_status(:unprocessable_entity)
+      body = JSON.parse(response.body)
+      expect(body['errors'].join).to include('Classes desconhecidas')
     end
   end
 
@@ -100,10 +140,10 @@ RSpec.describe 'Api::V1::Admin::Spells', type: :request do
       expect(body['sources'].first['source_type']).to eq('Klass')
     end
 
-    it 'rejects non-admin (player) with 401' do
+    it 'rejects player with 403' do
       delete "/api/v1/admin/spells/#{spell.api_index}",
              headers: bearer_headers_for(player)
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:forbidden)
       expect(Spell.exists?(spell.id)).to be true
     end
   end

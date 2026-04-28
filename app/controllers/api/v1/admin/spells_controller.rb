@@ -1,5 +1,7 @@
 class Api::V1::Admin::SpellsController < ApplicationController
-  before_action :authorize_admin_request
+  # Compendio / editor de magias: mesmos mestres que itens magicos (DM site-wide + Admin).
+  # `authorize_admin_request` barrava DM e o front recebia 401 (apiClient limpava sessao).
+  before_action :authorize_site_wide_dm
   before_action :set_spell, only: [:show, :update, :destroy]
 
   def index
@@ -11,11 +13,17 @@ class Api::V1::Admin::SpellsController < ApplicationController
       scope = scope.where('LOWER(name) LIKE :q OR LOWER(api_index) LIKE :q', q: q)
     end
     scope = scope.order(:level, :name).limit(1000)
-    render json: { spells: scope.as_json(except: [:created_at, :updated_at]) }, status: :ok
+    rows = scope.to_a
+    idx_map = Spell.klass_api_indexes_by_spell_id(rows.map(&:id))
+    spells_json = rows.map do |s|
+      s.as_json(except: [:created_at, :updated_at]).merge('klass_api_indexes' => idx_map[s.id] || [])
+    end
+    render json: { spells: spells_json }, status: :ok
   end
 
   def show
-    render json: { spell: @spell.as_json(except: [:created_at, :updated_at]) }, status: :ok
+    idx = Spell.klass_api_indexes_by_spell_id([@spell.id])[@spell.id] || []
+    render json: { spell: @spell.as_json(except: [:created_at, :updated_at]).merge('klass_api_indexes' => idx) }, status: :ok
   end
 
   def create
@@ -26,19 +34,42 @@ class Api::V1::Admin::SpellsController < ApplicationController
       render json: { errors: ['name e obrigatorio para gerar o api_index'] }, status: :unprocessable_entity
       return
     end
-    if @spell.save
-      render json: { spell: @spell }, status: :created
-    else
+    unless @spell.save
       render json: { errors: @spell.errors.full_messages }, status: :unprocessable_entity
+      return
     end
+
+    indexes_param = spell_klass_api_indexes_param
+    if indexes_param != :missing
+      begin
+        sync_klass_spell_sources!(@spell, indexes_param)
+      rescue ArgumentError => e
+        @spell.destroy
+        render json: { errors: [e.message] }, status: :unprocessable_entity
+        return
+      end
+    end
+
+    render json: { spell: admin_spell_json(@spell) }, status: :created
   end
 
   def update
-    if @spell.update(permitted)
-      render json: { spell: @spell }, status: :ok
-    else
+    indexes_param = spell_klass_api_indexes_param
+    unless @spell.update(permitted)
       render json: { errors: @spell.errors.full_messages }, status: :unprocessable_entity
+      return
     end
+
+    if indexes_param != :missing
+      begin
+        sync_klass_spell_sources!(@spell, indexes_param)
+      rescue ArgumentError => e
+        render json: { errors: [e.message] }, status: :unprocessable_entity
+        return
+      end
+    end
+
+    render json: { spell: admin_spell_json(@spell) }, status: :ok
   end
 
   # DELETE /api/v1/admin/spells/:id
@@ -73,6 +104,40 @@ class Api::V1::Admin::SpellsController < ApplicationController
       :components, :material, :ritual, :duration,
       :concentration, :casting_time, :desc, :higher_level
     )
+  end
+
+  # :missing = cliente nao enviou campo (nao altera SpellSource Klass)
+  def spell_klass_api_indexes_param
+    raw_spell = params[:spell]
+    return :missing if raw_spell.blank?
+
+    h = raw_spell.respond_to?(:to_unsafe_h) ? raw_spell.to_unsafe_h : raw_spell
+    key_present = h.key?('klass_api_indexes') || h.key?(:klass_api_indexes)
+    return :missing unless key_present
+
+    raw = h['klass_api_indexes'] || h[:klass_api_indexes]
+    Array(raw).map { |x| x.to_s.downcase.strip }.reject(&:blank?).uniq
+  end
+
+  def sync_klass_spell_sources!(spell, api_indexes)
+    wanted = Array(api_indexes).map { |x| x.to_s.downcase.strip }.reject(&:blank?).uniq
+    rows = Klass.where(api_index: wanted).to_a
+    found = rows.map(&:api_index)
+    unknown = wanted - found
+    raise ArgumentError, "Classes desconhecidas: #{unknown.join(', ')}" if unknown.any?
+
+    klass_ids = rows.map(&:id)
+    SpellSource.where(source_type: 'Klass', spell_id: spell.id).where.not(source_id: klass_ids).delete_all
+    klass_ids.each do |kid|
+      SpellSource.find_or_create_by!(source_type: 'Klass', source_id: kid, spell_id: spell.id) do |ss|
+        ss.always_prepared = false
+      end
+    end
+  end
+
+  def admin_spell_json(spell)
+    idx = Spell.klass_api_indexes_by_spell_id([spell.id])[spell.id] || []
+    spell.as_json(except: [:created_at, :updated_at]).merge('klass_api_indexes' => idx)
   end
 
   def derive_api_index(spell)
