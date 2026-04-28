@@ -125,6 +125,24 @@
   classes:
     - warlock
 
+- slug: ei-gaze-of-two-minds
+  name_pt: Olhar de Duas Mentes
+  name_en: Gaze of Two Minds
+  description: |
+    Você pode usar sua ação para tocar um humanoide voluntário enfeitiçado por você e perceber através dos sentidos dele até o fim do seu próximo turno. Enquanto isso, você fica surdo e cego em relação aos seus próprios sentidos.
+  mechanical_summary: Ação tocar aliado enfeitiçado; sentidos dele 1 turno (você cego/surdo)
+  classes:
+    - warlock
+
+- slug: ei-misty-visions
+  name_pt: Visões Nebulosas
+  name_en: Misty Visions
+  description: |
+    Você pode conjurar Imagem Silenciosa à vontade, sem gastar um espaço de magia ou componentes materiais.
+  mechanical_summary: Imagem Silenciosa à vontade
+  classes:
+    - warlock
+
 # === REQUER PACTO DA CORRENTE ===
 
 - slug: ei-voice-of-chain-master
@@ -267,6 +285,41 @@
     - warlock
   prereqs:
     level: 9
+
+- slug: ei-minions-of-chaos
+  name_pt: Lacaios do Caos
+  name_en: Minions of Chaos
+  description: |
+    Você pode conjurar Conjurar Elemental uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
+  mechanical_summary: Conjurar Elemental 1x por descanso longo (slot de bruxo)
+  classes:
+    - warlock
+  prereqs:
+    level: 9
+
+- slug: ei-whispers-of-the-grave
+  name_pt: Sussurros da Sepultura
+  name_en: Whispers of the Grave
+  description: |
+    Você pode conjurar Falar Com Os Mortos à vontade, sem gastar um espaço de magia.
+  mechanical_summary: Falar Com Os Mortos à vontade
+  classes:
+    - warlock
+  prereqs:
+    level: 9
+
+- slug: ei-master-of-myriad-forms
+  name_pt: Mestre das Inúmeras Formas
+  name_en: Master of Myriad Forms
+  aliases:
+    - Mestre das Miríades de Formas
+  description: |
+    Você pode conjurar Alterar-Se à vontade, sem gastar um espaço de magia.
+  mechanical_summary: Alterar-Se à vontade
+  classes:
+    - warlock
+  prereqs:
+    level: 15
 
 - slug: ei-witch-sight
   name_pt: Visão da Bruxa

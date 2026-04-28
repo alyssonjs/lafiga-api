@@ -70,6 +70,7 @@ Rails.application.routes.draw do
         resources :sub_races, only: [:index, :show, :create, :update, :destroy]
         resources :klasses, only: [:index, :show, :create, :update, :destroy]
         resources :sub_klasses, only: [:index, :show, :create, :update, :destroy]
+        resources :backgrounds, only: [:index, :show, :create, :update, :destroy]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
           member do
             get :summary

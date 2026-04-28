@@ -57,6 +57,44 @@ class BackgroundRules
         desc: 'Você sempre encontra um lugar para atuar, geralmente em tavernas ou estalagens mas, possivelmente em circos, teatros ou até em cortes nobres. Em tais lugares, você recebe alojamento e comida modesta ou de patrões confortáveis, de graça.'
       }
     },
+    :'folk-hero' => {
+      id: 'folk-hero',
+      name: 'Herói do Povo',
+      skills: ['Lidar com Animais', 'Sobrevivência'],
+      tools: [
+        { artisan_tools: { choose: 1, choices: ClassRules::ARTISAN_TOOLS } },
+        'Veículos Terrestres'
+      ],
+      languages: { choose: 0 },
+      equipment: [
+        'Ferramentas de artesão (à escolha)',
+        'Uma pá',
+        'Uma panela de ferro',
+        'Um conjunto de roupas comuns',
+        'Uma algibeira contendo 10 po'
+      ],
+      feature: {
+        name: 'HOSPITALIDADE RÚSTICA',
+        desc: 'Camponeses oferecem abrigo e ajuda, contanto que não se coloquem em risco direto. Você se mistura facilmente entre o povo.'
+      }
+    },
+    :'guild-artisan' => {
+      id: 'guild-artisan',
+      name: 'Artesão da Guilda',
+      skills: ['Intuição', 'Persuasão'],
+      tools: [{ artisan_tools: { choose: 1, choices: ClassRules::ARTISAN_TOOLS } }],
+      languages: { choose: 1, choices: ['Anão', 'Élfico', 'Halfling', 'Dracônico', 'Gnômico', 'Orc', 'Infernal', 'Anão das Profundezas', 'Silvestre'] },
+      equipment: [
+        'Ferramentas de artesão (à escolha)',
+        'Uma carta de apresentação da guilda',
+        'Um conjunto de roupas de viajante',
+        'Uma algibeira contendo 15 po'
+      ],
+      feature: {
+        name: 'ASSOCIADOS DA GUILDA',
+        desc: 'A guilda fornece contatos, oportunidades e, em necessidade, comida e hospedagem. Você deve pagar 5 po/mês em cotas para manter os benefícios.'
+      }
+    },
     hermit: {
       id: 'hermit', name: 'Eremita',
       skills: ['Medicina','Religião'],
@@ -139,16 +177,129 @@ class BackgroundRules
     }
   }.with_indifferent_access.freeze
 
+  CACHE_KEY = 'background_rules_merged_v1'
+
+  def self.clear_cache!
+    Rails.cache.delete(CACHE_KEY)
+  end
+
   def self.all
-    RULES
+    Rails.cache.fetch(CACHE_KEY) { build_merged_hash }
   end
 
   def self.find(key)
-    RULES[key.to_s.to_sym]
+    all[key.to_s]
+  end
+
+  def self.build_merged_hash
+    out = {}.with_indifferent_access
+    RULES.each { |sym, rule| out[sym.to_s] = rule.deep_dup.with_indifferent_access }
+
+    if defined?(Background) && Background.connection.data_source_exists?('backgrounds')
+      published = Background.published.order(:id).to_a
+      parents = published.reject { |b| b.parent_api_index.present? }
+      variants = published.select { |b| b.parent_api_index.present? }
+
+      parents.each do |b|
+        r = rule_row_from_record(b)
+        out[b.api_index.to_s] = r.with_indifferent_access if r
+      end
+
+      # Variantes: várias passagens para suportar variante-de-variante (ordem de id irrelevante).
+      pending = variants.dup
+      max_passes = variants.size + 8
+      max_passes.times do
+        break if pending.empty?
+
+        size_before = pending.size
+        progress = false
+        pending.reject! do |b|
+          parent_key = b.parent_api_index.to_s
+          base = out[parent_key].presence || fallback_rule_for_slug(parent_key)
+          next false unless base
+
+          delta = b.rules.is_a?(Hash) ? b.rules.deep_dup : {}
+          merged = deep_merge_rules(base.deep_dup, delta)
+          merged[:id] = b.api_index
+          merged[:name] = b.name.to_s if b.name.present?
+          attach_variant_lineage!(merged, parent_key, base)
+          out[b.api_index.to_s] = merged.with_indifferent_access
+          progress = true
+          true
+        end
+
+        break unless progress
+
+        if pending.size == size_before
+          Rails.logger.warn(
+            "BackgroundRules: variantes com pai ausente ou ciclo — ignoradas: #{pending.map(&:api_index).join(', ')}"
+          )
+          break
+        end
+      end
+    end
+
+    out
+  end
+
+  def self.attach_variant_lineage!(merged, parent_key, base)
+    merged[:parent_background_index] = parent_key
+    merged[:parent_background_name] = (base[:name] || base['name'] || parent_key).to_s
+    merged[:is_variant] = true
+  end
+
+  def self.slug_known?(slug)
+    s = slug.to_s
+    return true if fallback_rule_for_slug(s).present?
+    return false unless defined?(Background) && Background.connection.data_source_exists?('backgrounds')
+
+    Background.where(api_index: s).exists?
+  end
+
+  def self.fallback_rule_for_slug(slug)
+    s = slug.to_s
+    RULES[s.to_sym] || RULES[s.tr('-', '_').to_sym]
+  end
+
+  def self.rule_row_from_record(b)
+    if b.rules.is_a?(Hash) && b.rules.keys.size.positive?
+      h = b.rules.deep_dup.deep_symbolize_keys
+      h[:id] ||= b.api_index
+      h[:name] ||= b.name
+      if b.feature_name.present? && h[:feature].blank?
+        h[:feature] = { name: b.feature_name, desc: (b.feature_desc || '').to_s }
+      end
+      h
+    elsif (fb = fallback_rule_for_slug(b.api_index))
+      fb.deep_dup
+    else
+      legacy_fallback_rule(b)
+    end
+  end
+
+  def self.legacy_fallback_rule(bg)
+    {
+      id: bg.api_index,
+      name: bg.name,
+      skills: [],
+      tools: [],
+      languages: { choose: 0 },
+      equipment: [],
+      feature: {
+        name: (bg.feature_name.presence || 'CARACTERÍSTICA').to_s,
+        desc: (bg.feature_desc.presence || '').to_s
+      }
+    }
+  end
+
+  def self.deep_merge_rules(base, delta)
+    b = (base.is_a?(Hash) ? base : {}).deep_stringify_keys
+    d = (delta.is_a?(Hash) ? delta : {}).deep_stringify_keys
+    b.deep_merge(d).deep_symbolize_keys
   end
 
   # Applies a selection (hash) and returns a normalized summary
-  # selection: { key:, choices: { languages: [], tools: [], gaming_set: [] (legado) } }
+  # selection: { key:, choices: { languages: [], tools: [], gaming_set: [], instrument: [], artisan_tools: [] } }
   def self.apply(selection)
     bg = find(selection[:key])
     raise ArgumentError, 'background não encontrado' unless bg
@@ -180,6 +331,13 @@ class BackgroundRules
         picked = from_ins.any? ? from_ins.first(n) : tool_queue.shift(n)
         label = Array(picked).flatten.compact.first
         tools << (label.presence || 'Instrumento musical (escolher)')
+      elsif t.is_a?(Hash) && t[:artisan_tools]
+        opts = t[:artisan_tools]
+        n = opts[:choose].to_i.nonzero? || 1
+        from_at = Array(ch[:artisan_tools]).map { |x| (x.is_a?(Hash) ? x['name'] || x[:name] : x).to_s }.reject(&:blank?)
+        picked = from_at.any? ? from_at.first(n) : tool_queue.shift(n)
+        label = Array(picked).flatten.compact.first
+        tools << (label.presence || 'Ferramentas de artesão (escolher)')
       else
         tools << t
       end

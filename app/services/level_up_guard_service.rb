@@ -201,7 +201,8 @@ class LevelUpGuardService
         chosen_inv = []
         (1..current_level).each do |lvl|
           row = per[lvl.to_s] || {}
-          invs = row['invocations'] || row[:invocations]
+          invs = row['invocations'] || row[:invocations] || row['invocation'] || row[:invocation] ||
+                 row['eldritch_invocations'] || row[:eldritch_invocations]
           Array(invs).each { |x| chosen_inv << (x.is_a?(Hash) ? (x['name'] || x[:name] || x['id'] || x[:id]) : x) }
         end
         chosen_inv = chosen_inv.compact.map(&:to_s).map(&:strip).uniq

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_27_120000) do
+ActiveRecord::Schema.define(version: 2026_04_28_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -54,7 +54,12 @@ ActiveRecord::Schema.define(version: 2026_04_27_120000) do
     t.text "data_json"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "rules", default: {}, null: false
+    t.string "parent_api_index"
+    t.boolean "published", default: true, null: false
     t.index ["api_index"], name: "index_backgrounds_on_api_index", unique: true
+    t.index ["parent_api_index"], name: "index_backgrounds_on_parent_api_index"
+    t.index ["published"], name: "index_backgrounds_on_published"
   end
 
   create_table "battle_maps", force: :cascade do |t|

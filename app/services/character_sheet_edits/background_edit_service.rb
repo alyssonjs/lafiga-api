@@ -216,6 +216,7 @@ module CharacterSheetEdits
           tools: tool_choices,
           gaming_set: tool_choices,
           instrument: tool_choices,
+          artisan_tools: tool_choices,
           personalityTraits: Array(bc['traits']),
           ideals: Array(bc['ideals']),
           bonds: Array(bc['bonds']),

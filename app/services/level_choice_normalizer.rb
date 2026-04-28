@@ -37,11 +37,41 @@ module LevelChoiceNormalizer
     return row unless row.is_a?(Hash)
     out = row.deep_stringify_keys
 
-    asi_choice = out.delete('asiChoice')
-    return out if asi_choice.blank?
-    return out if out['asi'].is_a?(Hash) # already normalized
+    # Wizard PATCH (ProgressionEditService) envia escolhas em `featureChoices` aninhado;
+    # a ficha / summary esperam chaves planas (ex.: `invocations`). Sem achatar, o merge
+    # deixava `featureChoices.invocation` e `invocations` divergentes na mesma linha.
+    fc = out.delete('featureChoices')
+    if fc.is_a?(Hash)
+      fc.each do |k, v|
+        next if v.nil?
 
-    out['asi'] = build_asi(asi_choice)
+        out[k.to_s] = v
+      end
+    end
+
+    inv_tokens = []
+    %w[invocation invocations eldritch_invocations].each do |k|
+      v = out.delete(k)
+      next if v.nil?
+
+      Array(v).each do |x|
+        tok =
+          if x.is_a?(Hash)
+            xs = x.stringify_keys
+            xs['name'].presence || xs['id'].presence || xs['slug'].presence
+          else
+            x
+          end
+        inv_tokens << tok if tok.present?
+      end
+    end
+    inv_tokens = inv_tokens.map { |t| t.to_s.strip }.reject(&:empty?).uniq
+    out['invocations'] = inv_tokens if inv_tokens.any?
+
+    asi_choice = out.delete('asiChoice')
+    if asi_choice.present? && !out['asi'].is_a?(Hash)
+      out['asi'] = build_asi(asi_choice)
+    end
     out
   end
 

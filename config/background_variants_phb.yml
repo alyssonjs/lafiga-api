@@ -1,0 +1,78 @@
+# Variações oficiais (PHB cap. 4) — mesmos blocos mecânicos do pai, trocando nome/característica/texto.
+# Import: bundle exec rails backgrounds:seed_phb_variants
+#
+# Cada chave é o api_index do registro (slug único). parent_api_index aponta para o antecedente base
+# já existente em BackgroundRules::RULES / backgrounds.rules.
+
+variants:
+  sailor-pirate:
+    parent_api_index: sailor
+    name: Pirata
+    published: true
+    rules:
+      feature:
+        name: MÁ REPUTAÇÃO
+        desc: >
+          Onde quer que vá, as pessoas temem você por causa da sua reputação violenta
+          e caráter sem escrúpulos. Em assentamentos costeiros, pode ser preso por
+          pequenos crimes (brigas, ameaças…), mas costuma se safar pagando multas ou
+          intimidando quem acusa. Em portos amigáveis, pode conseguir apoio discreto
+          de facções corsárias ou mercenárias.
+
+  criminal-spy:
+    parent_api_index: criminal
+    name: Espião
+    published: true
+    rules:
+      feature:
+        name: CONTATO CRIMINOSO
+        desc: >
+          Você é um especialista em infiltração e inteligência; sua rede de contatos
+          opera com discrição, mensagens em código e intermediários dispostos a aceitar
+          riscos para entregar informações mesmo através de território hostil.
+
+  entertainer-gladiator:
+    parent_api_index: entertainer
+    name: Gladiador
+    published: true
+    rules:
+      feature:
+        name: PELA DEMANDA POPULAR
+        desc: >
+          Você sempre encontra um lugar para se apresentar em arenas, coliseus e
+          duelos públicos — geralmente em troca de comida, alojamento modesto e fama.
+          Em cidades onde há arena, reconhecem seu nome e há expectativa de shows.
+
+  guild-artisan-merchant:
+    parent_api_index: guild-artisan
+    name: Mercador da Guilda
+    published: true
+    rules:
+      tools:
+        - Ferramentas de navegador
+        - Veículos Terrestres
+      feature:
+        name: ASSOCIADOS DA GUILDA
+        desc: >
+          Como mercador afiliado, sua guilda ajuda com alfândega, rotas e contatos
+          comerciais; em necessidade pode oferecer hospedagem comum. Mantenha as cotas
+          mensais (veja regras da guilda no livro do Mestre) ou perca benefícios.
+
+  noble-knight:
+    parent_api_index: noble
+    name: Cavaleiro
+    published: true
+    rules:
+      equipment:
+        - Um jogo de dados ou baralho
+        - Um selo de família
+        - Um pergaminho de linhagem
+        - Um conjunto de roupas finas
+        - Uma algibeira contendo 25 po
+      feature:
+        name: RETENTORES
+        desc: >
+          Você tem o serviço de três retainers leais a expensas da sua família ou ordem
+          (plebeus com status, não combatentes). Um pode ser mensageiro, outro valete,
+          outro guia local, etc. Cada retainer morre se for alvo de um ataque direto ou
+          efeito letal (combine com o Mestre para o prestígio real da sua casa).
