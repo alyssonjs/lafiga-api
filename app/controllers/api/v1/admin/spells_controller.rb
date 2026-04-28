@@ -74,25 +74,31 @@ class Api::V1::Admin::SpellsController < ApplicationController
 
   # DELETE /api/v1/admin/spells/:id
   #
-  # Remove todas as SpellSource (classes/subclasses, etc.) — sao apenas ligacoes
-  # de catalogo; "Remover" no grimorio do DM deve apagar a magia de facto.
-  #
-  # Continua bloqueando se a magia ainda existir em fichas (known/prepared),
-  # onde apagar seria destrutivo para personagens.
+  # Query `force=true`: remove SheetKnownSpell / SheetPreparedSpell, limpa tokens em
+  # metadata (spell_selections + class_choices.per_level), apaga SpellSource e a Spell.
+  # Sem `force`, 422 se ainda houver linhas em fichas.
   def destroy
+    force = ActiveModel::Type::Boolean.new.cast(params[:force])
     known_n = SheetKnownSpell.where(spell_id: @spell.id).count
     prep_n = SheetPreparedSpell.where(spell_id: @spell.id).count
-    if known_n.positive? || prep_n.positive?
+
+    if !force && (known_n.positive? || prep_n.positive?)
       render json: {
         error: 'spell_on_sheets',
-        message: 'Magia ainda esta em uma ou mais fichas (conhecidas ou preparadas). Remova ou substitua nas fichas antes de apagar.',
+        message: 'Magia ainda esta em uma ou mais fichas (conhecidas ou preparadas). Marque a opção para remover das fichas no grimório ou limpe manualmente.',
         sheet_known_spells: known_n,
-        sheet_prepared_spells: prep_n
+        sheet_prepared_spells: prep_n,
+        force_param: 'force=true'
       }, status: :unprocessable_entity
       return
     end
 
     ActiveRecord::Base.transaction do
+      if force && (known_n.positive? || prep_n.positive?)
+        Admin::SpellForceDeletePurgeService.new(@spell).call
+      end
+      SheetKnownSpell.where(spell_id: @spell.id).delete_all
+      SheetPreparedSpell.where(spell_id: @spell.id).delete_all
       SpellSource.where(spell_id: @spell.id).delete_all
       @spell.destroy!
     end

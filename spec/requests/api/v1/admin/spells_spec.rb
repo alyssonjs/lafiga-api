@@ -149,6 +149,33 @@ RSpec.describe 'Api::V1::Admin::Spells', type: :request do
       body = JSON.parse(response.body)
       expect(body['error']).to eq('spell_on_sheets')
       expect(body['sheet_known_spells'].to_i).to be >= 1
+      expect(body['force_param']).to eq('force=true')
+    end
+
+    it 'deletes spell when force=true (known/prepared rows + metadata cleanup)' do
+      sheet = create(:sheet, metadata: {
+        'spell_selections' => {
+          'cantrips' => [],
+          'known' => [spell.id.to_s],
+          'spellbook' => [],
+          'prepared' => [spell.api_index]
+        }
+      })
+      sk = create(:sheet_klass, sheet: sheet)
+      create(:sheet_known_spell, sheet_klass: sk, spell: spell)
+      SheetPreparedSpell.create!(sheet_id: sheet.id, spell_id: spell.id, auto: false)
+
+      expect {
+        delete "/api/v1/admin/spells/#{spell.api_index}?force=true", headers: headers
+      }.to change(Spell, :count).by(-1)
+      expect(response).to have_http_status(:no_content)
+
+      expect(SheetKnownSpell.where(spell_id: spell.id)).to be_empty
+      expect(SheetPreparedSpell.where(spell_id: spell.id)).to be_empty
+
+      meta = sheet.reload.metadata.deep_stringify_keys
+      expect(meta.dig('spell_selections', 'known')).to eq([])
+      expect(meta.dig('spell_selections', 'prepared')).to eq([])
     end
 
     it 'rejects player with 403' do
