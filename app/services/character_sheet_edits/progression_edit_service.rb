@@ -78,7 +78,7 @@ module CharacterSheetEdits
         # previamente. Deep-merge preserva sub-arrays nao mencionados; quando o
         # caller QUER zerar uma sub-aba, basta enviar `[]` explicito.
         existing_sel = (meta['spell_selections'] || {}).deep_dup
-        meta['spell_selections'] = existing_sel.deep_merge(data['spellSelections'])
+        meta['spell_selections'] = existing_sel.deep_merge(normalize_spell_selections(data['spellSelections']))
         sheet.metadata = meta
       end
 
@@ -181,7 +181,10 @@ module CharacterSheetEdits
     #    todas as cantrips/magias preparadas — bug "cantrips não persistem".
     def extract_spell_selections
       meta_sel = (sheet.metadata || {})['spell_selections']
-      return meta_sel if meta_sel.is_a?(Hash) && meta_sel.values.any? { |v| v.is_a?(Array) && v.any? }
+      spell_selection_keys = %w[cantrips known spellbook prepared]
+      if meta_sel.is_a?(Hash) && (meta_sel.keys.map(&:to_s) & spell_selection_keys).any?
+        return normalize_spell_selections(meta_sel)
+      end
       derive_spell_selections_from_db
     rescue StandardError => e
       Rails.logger.warn "[ProgressionEditService] derive spell selections failed: #{e.class}: #{e.message}"
@@ -224,6 +227,29 @@ module CharacterSheetEdits
         'spellbook' => is_wizard ? known.uniq : [],
         'prepared' => prepared_user.uniq
       }
+    end
+
+    def normalize_spell_selections(raw)
+      sel = (raw || {}).deep_dup.stringify_keys
+      %w[cantrips known spellbook prepared].each do |key|
+        sel[key] = Array(sel[key]).map(&:to_s).uniq if sel.key?(key)
+      end
+
+      # No wizard, `spellbook` is the authoritative known-spell set. Older edit
+      # payloads can carry stale `known`, which would re-add removed spells on
+      # save/reprovision.
+      if wizard_spellbook_mode? && sel['spellbook'].is_a?(Array)
+        sel['known'] = sel['spellbook']
+      end
+
+      sel
+    end
+
+    def wizard_spellbook_mode?
+      primary_sk = sheet.sheet_klasses.order(level: :desc).first
+      primary_sk&.klass&.api_index.to_s == 'wizard'
+    rescue StandardError
+      false
     end
   end
 end

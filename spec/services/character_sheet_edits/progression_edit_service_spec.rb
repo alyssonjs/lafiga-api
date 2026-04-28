@@ -93,6 +93,66 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
       expect(sel['cantrips']).to eq(%w[guidance])
       expect(sel['known']).to eq(%w[bless cure_wounds])
     end
+
+    it 'para Mago, spellbook substitui known stale vindo do edit' do
+      klass.update!(api_index: 'wizard')
+
+      svc = described_class.new(character: character, level: 4, data: {
+        'spellSelections' => {
+          'known' => %w[spell_antiga outra_antiga],
+          'spellbook' => %w[nova_1 nova_2],
+          'prepared' => %w[nova_1]
+        }
+      })
+      svc.call
+      sheet.reload
+
+      sel = sheet.metadata['spell_selections']
+      expect(sel['spellbook']).to eq(%w[nova_1 nova_2])
+      expect(sel['known']).to eq(%w[nova_1 nova_2])
+      expect(sel['prepared']).to eq(%w[nova_1])
+    end
+
+    it 'para Mago, spellbook vazio tambem limpa known stale' do
+      klass.update!(api_index: 'wizard')
+
+      svc = described_class.new(character: character, level: 4, data: {
+        'spellSelections' => {
+          'known' => %w[spell_antiga],
+          'spellbook' => [],
+          'prepared' => []
+        }
+      })
+      svc.call
+      sheet.reload
+
+      sel = sheet.metadata['spell_selections']
+      expect(sel['spellbook']).to eq([])
+      expect(sel['known']).to eq([])
+      expect(sel['prepared']).to eq([])
+    end
+
+    it 'read respeita spell_selections explicitamente vazio em vez de reconstruir do banco' do
+      stale_spell = create(:spell, level: 1)
+      create(:sheet_known_spell, sheet_klass: sheet_klass, spell: stale_spell, source: 'class')
+      sheet.update!(metadata: sheet.metadata.deep_merge(
+        'spell_selections' => {
+          'cantrips' => [],
+          'known' => [],
+          'spellbook' => [],
+          'prepared' => []
+        }
+      ))
+
+      out = described_class.new(character: character.reload, data: {}).read
+
+      expect(out['spellSelections']).to eq(
+        'cantrips' => [],
+        'known' => [],
+        'spellbook' => [],
+        'prepared' => []
+      )
+    end
   end
 
   describe 'B7.3 — read.progressionSubLevel reflete current_level' do

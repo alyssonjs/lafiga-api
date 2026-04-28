@@ -393,6 +393,11 @@ class CharacterProvisioningService
           FeatureGrantService.call(sheet: sheet, klass: k, from_level: 0, to_level: 1)
         end
 
+        # Reprovision do mesmo personagem deve refletir o draft atual (replace),
+        # não acumular picks antigos de magia. Limpamos apenas rows de origem de
+        # classe (inclui legado `source=nil`) e preservamos grants externos.
+        reset_current_class_spell_state!(sheet: sheet, klass_id: k.id)
+
         # Backfill defensivo: se o SheetKlass já existia mas está sem subclasse e tanto o nível
         # ATUAL do sk quanto o nível alvo já passaram do threshold, tenta resolver agora a partir
         # do payload (causa principal do bug "Colégio Bárdico vazio" em provisionamentos repetidos).
@@ -635,7 +640,7 @@ class CharacterProvisioningService
               next if sid <= 0
               next if present_known.include?(sid)
               present_known.add(sid)
-              rows << { sheet_klass_id: primary_sk.id, spell_id: sid, source: nil, created_at: Time.current, updated_at: Time.current }
+              rows << { sheet_klass_id: primary_sk.id, spell_id: sid, source: 'class', created_at: Time.current, updated_at: Time.current }
             end
           end
           SheetKnownSpell.insert_all(rows) if rows.any?
@@ -653,7 +658,7 @@ class CharacterProvisioningService
             next if sid <= 0
             next if present_prep.include?(sid)
             present_prep.add(sid)
-            rows << { sheet_id: sheet.id, spell_id: sid, auto: true, created_at: Time.current, updated_at: Time.current }
+            rows << { sheet_id: sheet.id, spell_id: sid, auto: true, source: 'class', created_at: Time.current, updated_at: Time.current }
           end
         end
         SheetPreparedSpell.insert_all(rows) if rows.any?
@@ -1034,10 +1039,25 @@ class CharacterProvisioningService
         next if sid <= 0
         next if present_known.include?(sid)
         present_known.add(sid)
-        rows << { sheet_klass_id: primary_sk.id, spell_id: sid, source: nil, created_at: Time.current, updated_at: Time.current }
+        rows << { sheet_klass_id: primary_sk.id, spell_id: sid, source: 'class', created_at: Time.current, updated_at: Time.current }
       end
     end
     SheetKnownSpell.insert_all(rows) if rows.any?
+  end
+
+  # Replace semantics para magia de classe em reprovision:
+  # remove picks antigos de classe e re-materializa a partir do payload atual.
+  # Mantém intactos grants de feat/race/background.
+  def reset_current_class_spell_state!(sheet:, klass_id:)
+    sk = sheet.sheet_klasses.find_by(klass_id: klass_id)
+    return unless sk
+    # `sheet_prepared_spells` é por sheet (não por klass). Em ficha multiclasse,
+    # limpar "source class" globalmente pode apagar picks válidos de outra classe.
+    return if sheet.sheet_klasses.where.not(klass_id: klass_id).exists?
+
+    class_sources = [nil, 'class', 'subclass']
+    SheetKnownSpell.where(sheet_klass_id: sk.id, source: class_sources).delete_all
+    SheetPreparedSpell.where(sheet_id: sheet.id, source: class_sources).delete_all
   end
 
   # Chaves de metadata ligadas à classe que não devem sobreviver a uma troca de classe.
