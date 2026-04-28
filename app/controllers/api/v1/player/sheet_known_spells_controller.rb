@@ -45,7 +45,14 @@ class Api::V1::Player::SheetKnownSpellsController < ApplicationController
   def destroy
     sk = current_user_sheet_klass
     ks = SheetKnownSpell.find_by!(sheet_klass_id: sk.id, id: params[:id])
-    ks.destroy
+    unless ks.source.to_s == 'grimoire'
+      return render json: { error: 'Só é possível remover magias registradas via expansão do grimório.' },
+                    status: :unprocessable_entity
+    end
+    sheet = sk.sheet
+    spell_id = ks.spell_id
+    ks.destroy!
+    SheetPreparedSpell.where(sheet_id: sheet.id, spell_id: spell_id).delete_all
     head :no_content
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Not found' }, status: :not_found

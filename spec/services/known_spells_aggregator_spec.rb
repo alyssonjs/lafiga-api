@@ -28,6 +28,19 @@ RSpec.describe KnownSpellsAggregator do
       result = described_class.new(sheet).call
       row = result[:known_by_level][0].find { |e| e[:id] == sp0.id }
       expect(row[:known_source]).to eq('race')
+      expect(row[:sheet_known_spell_id]).to eq(SheetKnownSpell.find_by!(spell_id: sp0.id, sheet_klass_id: sk.id).id)
+    end
+
+    it 'expõe sheet_known_spell_id e known_source grimoire para cópias no grimório' do
+      sheet = create(:sheet)
+      sk = create(:sheet_klass, sheet: sheet)
+      sp = create(:spell, level: 2, name: 'Spec Grimo Spell', api_index: "grimo_#{SecureRandom.hex(3)}")
+      ks = create(:sheet_known_spell, sheet_klass: sk, spell: sp, source: 'grimoire')
+
+      result = described_class.new(sheet).call
+      row = result[:known_by_level][2].find { |e| e[:id] == sp.id }
+      expect(row[:known_source]).to eq('grimoire')
+      expect(row[:sheet_known_spell_id]).to eq(ks.id)
     end
 
     it 'em conjurador known (Ranger), metadata spell_selections substitui SheetKnownSpell defasado' do

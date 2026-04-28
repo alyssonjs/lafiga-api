@@ -29,6 +29,7 @@ class KnownSpellsAggregator
       seen_ids.add(sp.id)
       src = self.class.known_source_chip_key(ks.source)
       row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+      row[:sheet_known_spell_id] = ks.id
       row[:known_source] = src if src
       by_level[sp.level.to_i] << row
       catalog[sp.id] ||= { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
@@ -65,6 +66,7 @@ class KnownSpellsAggregator
                   ks_row = SheetKnownSpell.find_by(sheet_klass_id: pk.id, spell_id: sp.id)
                   chip = self.class.known_source_chip_key(ks_row&.source)
                   row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+                  row[:sheet_known_spell_id] = ks_row.id if ks_row
                   row[:known_source] = chip if chip
                   new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
@@ -81,6 +83,7 @@ class KnownSpellsAggregator
                   lvl = sp.level.to_i
                   chip = self.class.known_source_chip_key(ks.source)
                   row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+                  row[:sheet_known_spell_id] = ks.id
                   row[:known_source] = chip if chip
                   new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
