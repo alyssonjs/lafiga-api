@@ -44,10 +44,13 @@ class RacialSpellsService
         spell: spell
       )
 
-      # Se já existe com source diferente, não sobrescrever
+      # Sync de progressão (`sync_sheet_known_spells_from_spell_selections!`) pode gravar a magia
+      # inata como `class` antes deste serviço — promover para `race` para chips (RAÇA) e summary.
       if sheet_known_spell.persisted? && sheet_known_spell.source != 'race'
-        Rails.logger.info "RacialSpellsService: Spell #{spell.name} already known from #{sheet_known_spell.source}"
-        next
+        unless sheet_known_spell.source == 'class'
+          Rails.logger.info "RacialSpellsService: Spell #{spell.name} already known from #{sheet_known_spell.source}"
+          next
+        end
       end
 
       sheet_known_spell.assign_attributes(
@@ -73,10 +76,32 @@ class RacialSpellsService
 
   def collect_innate_spells
     results = []
-    
-    # Race base innate spells
+
+    # Legado: grupos `{ level:, spells: [...] }` (ex.: specs, alguns YAML antigos)
     process_innate_spells_array(@race_rule[:innate_spells], results)
-    
+
+    # RaceRules.apply: `extract_innate_spells_from_traits` devolve entradas flat
+    # `{ name:, unlocked_at_level:, ability:, uses: }` com `spell` do trait como api_index/slug.
+    Array(@race_rule[:innate_spells]).each do |entry|
+      next unless entry.is_a?(Hash)
+
+      legacy_list = entry[:spells] || entry['spells']
+      next if legacy_list.present?
+
+      key = entry[:name] || entry['name']
+      next if key.blank?
+
+      unlocked = (entry[:unlocked_at_level] || entry['unlocked_at_level'] || 1).to_i
+      next if @character_level < unlocked
+
+      results << {
+        name: key,
+        ability: (entry[:ability] || entry['ability'] || 'CHA').to_s,
+        uses: entry[:uses] || entry['uses'],
+        unlocked_at_level: unlocked
+      }
+    end
+
     results
   end
 
@@ -108,17 +133,7 @@ class RacialSpellsService
   end
 
   def find_spell(spell_name)
-    # Tentar busca exata primeiro
-    spell = Spell.find_by(name: spell_name)
-    return spell if spell
-
-    # Tentar busca case-insensitive
-    spell = Spell.find_by('LOWER(name) = ?', spell_name.to_s.downcase)
-    return spell if spell
-
-    # Tentar remover acentos e caracteres especiais (best effort)
-    normalized = spell_name.to_s.downcase.gsub(/[áàâã]/, 'a').gsub(/[éèê]/, 'e').gsub(/[íì]/, 'i').gsub(/[óòôõ]/, 'o').gsub(/[úù]/, 'u').gsub(/[ç]/, 'c')
-    Spell.find_by('LOWER(name) SIMILAR TO ?', "%#{normalized}%")
+    SpellResolver.new.resolve(spell_name)
   end
 
   def calculate_initial_uses(uses_per_rest)

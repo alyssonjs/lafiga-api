@@ -59,6 +59,54 @@ RSpec.describe RacialSpellsService, type: :service do
       end
     end
 
+    context 'quando sync de progressão gravou a magia inata como class primeiro' do
+      let(:race_rule) do
+        {
+          race_id: 'drow',
+          innate_spells: [
+            { level: 1, spells: ['Luz Dançante'], ability: 'CHA', uses: nil }
+          ]
+        }
+      end
+
+      before do
+        SheetKnownSpell.create!(sheet_klass: sheet_klass, spell: dancing_lights, source: 'class')
+      end
+
+      it 'promove para race (chips RAÇA / known_source no summary)' do
+        result = described_class.call(
+          sheet: sheet,
+          race_rule: race_rule,
+          character_level: 1
+        )
+
+        expect(result).to be_success
+        known = SheetKnownSpell.find_by(sheet_klass: sheet_klass, spell: dancing_lights)
+        expect(known.source).to eq('race')
+      end
+    end
+
+    context 'quando já existe como subclass, não sobrescreve com race' do
+      let(:race_rule) do
+        {
+          race_id: 'drow',
+          innate_spells: [
+            { level: 1, spells: ['Luz Dançante'], ability: 'CHA', uses: nil }
+          ]
+        }
+      end
+
+      before do
+        SheetKnownSpell.create!(sheet_klass: sheet_klass, spell: dancing_lights, source: 'subclass')
+      end
+
+      it 'mantém subclass' do
+        described_class.call(sheet: sheet, race_rule: race_rule, character_level: 1)
+        known = SheetKnownSpell.find_by(sheet_klass: sheet_klass, spell: dancing_lights)
+        expect(known.source).to eq('subclass')
+      end
+    end
+
     context 'Drow nível 3' do
       let(:race_rule) do
         {
@@ -166,6 +214,24 @@ RSpec.describe RacialSpellsService, type: :service do
 
         expect(result).to be_success
         expect(SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race').count).to eq(0)
+      end
+    end
+
+    context 'formato RaceRules.apply (tiefling infernal, traits -> innate_spells)' do
+      let(:race) { Race.find_by(api_index: 'tiefling') || create(:race, name: 'Tiefling', api_index: 'tiefling') }
+      let!(:spell_th) { create(:spell, name: 'Taumaturgia', level: 0, api_index: 'thaumaturgy') }
+      let!(:spell_hr) { create(:spell, name: 'Repreensão Infernal', level: 1, api_index: 'hellish-rebuke') }
+      let!(:spell_dk) { create(:spell, name: 'Escuridão', level: 2, api_index: 'darkness') }
+
+      let(:race_rule) do
+        RaceRules.apply(race_id: 'tiefling', subrace_id: 'infernal', choices: {})
+      end
+
+      it 'nível 5 aplica cantrip base + legado infernal variant' do
+        described_class.call(sheet: sheet, race_rule: race_rule, character_level: 5)
+
+        ids = SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race').joins(:spell).pluck('spells.api_index').sort
+        expect(ids).to include('thaumaturgy', 'hellish-rebuke', 'darkness')
       end
     end
 

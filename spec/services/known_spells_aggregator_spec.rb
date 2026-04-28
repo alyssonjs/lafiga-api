@@ -19,6 +19,17 @@ RSpec.describe KnownSpellsAggregator do
       expect(result[:catalog_by_id][sp0.id][:name]).to eq('Zap Cantrip')
     end
 
+    it 'inclui known_source nas entradas quando SheetKnownSpell tem fonte (race)' do
+      sheet = create(:sheet)
+      sk = create(:sheet_klass, sheet: sheet)
+      sp0 = create(:spell, level: 0, name: 'Zap Racial', api_index: "zap_racial_#{SecureRandom.hex(3)}")
+      create(:sheet_known_spell, sheet_klass: sk, spell: sp0, source: 'race')
+
+      result = described_class.new(sheet).call
+      row = result[:known_by_level][0].find { |e| e[:id] == sp0.id }
+      expect(row[:known_source]).to eq('race')
+    end
+
     it 'em conjurador known (Ranger), metadata spell_selections substitui SheetKnownSpell defasado' do
       ranger = create(:klass, api_index: 'ranger', name: 'Ranger Spec')
       sp_old = create(:spell, level: 1, name: 'Old KSA', api_index: "ksa_old_#{SecureRandom.hex(3)}")
@@ -38,6 +49,28 @@ RSpec.describe KnownSpellsAggregator do
       ids = (result[:known_by_level].values.flatten.map { |e| e[:id] }).compact
       expect(ids).to eq([sp_new.id])
       expect(ids).not_to include(sp_old.id)
+    end
+
+    it 'conjurador known com spell_selections mantém SheetKnownSpell de raça (ex.: tiefling + bruxo)' do
+      warlock = create(:klass, api_index: 'warlock', name: 'Bruxo Spec Merge')
+      sp_class = create(:spell, level: 0, name: 'Eldritch Merge Spec', api_index: "kmerge_eld_#{SecureRandom.hex(3)}")
+      sp_race = create(:spell, level: 0, name: 'Taumaturgia Merge Spec', api_index: "kmerge_th_#{SecureRandom.hex(3)}")
+      sheet = create(:sheet, metadata: {
+        'spell_selections' => {
+          'cantrips' => [sp_class.id.to_s],
+          'known' => [],
+          'spellbook' => [],
+          'prepared' => []
+        }
+      })
+      sk = create(:sheet_klass, sheet: sheet, klass: warlock, level: 5)
+      create(:sheet_known_spell, sheet_klass: sk, spell: sp_race, source: 'race')
+
+      result = described_class.new(sheet.reload).call
+      ids = result[:known_by_level].values.flatten.map { |e| e[:id] }.compact.sort
+      expect(ids).to eq([sp_class.id, sp_race.id].sort)
+      race_row = result[:known_by_level].values.flatten.find { |e| e[:id] == sp_race.id }
+      expect(race_row[:known_source]).to eq('race')
     end
 
     it 'com spell_selections vazio, nao reidrata spells de per_level para known caster' do

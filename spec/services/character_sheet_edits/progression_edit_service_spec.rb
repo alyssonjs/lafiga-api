@@ -250,6 +250,37 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
 
       expect(SheetKnownSpell.where(sheet_klass_id: sheet_klass.id, source: [nil, 'class', 'subclass']).count).to eq(0)
     end
+
+    it 'B7.7 — sync não falha quando spell_selections inclui magia já em SheetKnownSpell (race)' do
+      caster = create(:klass, api_index: "b77_warlock_#{SecureRandom.hex(4)}")
+      cl = ClassLevel.create!(klass: caster, level: 4, prof_bonus: 2, ability_score_bonuses: 0)
+      Spellcasting.create!(
+        class_level: cl,
+        level: 1,
+        cantrips_known: 4,
+        spells_known: 5,
+        spell_slots: { '1' => 2 }.to_json
+      )
+      racial_cantrip = create(:spell, name: 'B77 Thaum', level: 0, api_index: "b77_thaum_#{SecureRandom.hex(3)}")
+      sheet_klass.update!(klass: caster)
+      SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).delete_all
+      create(:sheet_known_spell, sheet_klass: sheet_klass, spell: racial_cantrip, source: 'race')
+
+      expect do
+        described_class.new(character: character, level: 4, data: {
+          'spellSelections' => {
+            'cantrips' => [racial_cantrip.id.to_s],
+            'known' => [],
+            'spellbook' => [],
+            'prepared' => []
+          }
+        }).call
+      end.not_to raise_error
+
+      rows = SheetKnownSpell.where(sheet_klass_id: sheet_klass.id, spell_id: racial_cantrip.id)
+      expect(rows.count).to eq(1)
+      expect(rows.first.source).to eq('race')
+    end
   end
 
   describe 'B7.3 — read.progressionSubLevel reflete current_level' do

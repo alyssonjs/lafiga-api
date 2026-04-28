@@ -299,10 +299,13 @@ module CharacterSheetEdits
         end
       end
 
+      # `sheet_known_spells` tem índice único (sheet_klass_id, spell_id) sem incluir `source`.
+      # Magias raciais/feats permanecem após o delete_all acima; tentar create! para a mesma
+      # spell_id aborta a transação PG (RecordNotUnique) e o rescue piora com InFailedSqlTransaction.
       ids.uniq.each do |sid|
+        next if SheetKnownSpell.exists?(sheet_klass_id: sk.id, spell_id: sid)
+
         SheetKnownSpell.create!(sheet_klass_id: sk.id, spell_id: sid, source: 'class')
-      rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
-        SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sid) { |r| r.source = 'class' }
       end
     end
   end

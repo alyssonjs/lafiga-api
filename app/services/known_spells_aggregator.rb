@@ -1,5 +1,18 @@
 require 'set'
 class KnownSpellsAggregator
+  # Ao snapshotar só `metadata.spell_selections` para conjuradores known, preservar
+  # magias materializadas com fonte fora da classe (raça / talento / antecedente).
+  # Inclui `subclass` para magias de patrono/lista extra ainda não espelhadas em `spell_selections`
+  # após override — evita sumir do summary e mantém `known_source` para chips na ficha.
+  NON_CLASS_KNOWN_SOURCES = %w[race feat background subclass].freeze
+
+  # Expõe no summary (`known_by_level`) para a ficha mostrar chip (RAÇA, SUBCLASSE, …).
+  def self.known_source_chip_key(raw)
+    s = raw.to_s.strip.downcase
+    return nil if s.blank? || s == 'class'
+    s
+  end
+
   def initialize(sheet)
     @sheet = sheet
   end
@@ -14,7 +27,10 @@ class KnownSpellsAggregator
       sp = ks.spell
       next if seen_ids.include?(sp.id)
       seen_ids.add(sp.id)
-      by_level[sp.level.to_i] << { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+      src = self.class.known_source_chip_key(ks.source)
+      row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+      row[:known_source] = src if src
+      by_level[sp.level.to_i] << row
       catalog[sp.id] ||= { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
     end
 
@@ -46,10 +62,30 @@ class KnownSpellsAggregator
                   next if new_seen.include?(sp.id)
                   new_seen.add(sp.id)
                   lvl = sp.level.to_i
-                  new_by_level[lvl] << { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+                  ks_row = SheetKnownSpell.find_by(sheet_klass_id: pk.id, spell_id: sp.id)
+                  chip = self.class.known_source_chip_key(ks_row&.source)
+                  row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+                  row[:known_source] = chip if chip
+                  new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
                 end
               end
+
+              SheetKnownSpell.includes(:spell, :sheet_klass).joins(:sheet_klass)
+                .where(sheet_klasses: { sheet_id: @sheet.id }, source: NON_CLASS_KNOWN_SOURCES)
+                .find_each do |ks|
+                  sp = ks.spell
+                  next unless sp
+                  next if new_seen.include?(sp.id)
+                  new_seen.add(sp.id)
+                  lvl = sp.level.to_i
+                  chip = self.class.known_source_chip_key(ks.source)
+                  row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+                  row[:known_source] = chip if chip
+                  new_by_level[lvl] << row
+                  new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
+                end
+
               by_level = new_by_level
               catalog = new_catalog
               seen_ids = new_seen
