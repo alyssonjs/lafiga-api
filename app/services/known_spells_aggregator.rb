@@ -9,6 +9,7 @@ class KnownSpellsAggregator
     by_level = Hash.new { |h,k| h[k] = [] }
     catalog = {}
     seen_ids = Set.new
+    spell_selections_overrode_known = false
     known.each do |ks|
       sp = ks.spell
       next if seen_ids.include?(sp.id)
@@ -17,7 +18,51 @@ class KnownSpellsAggregator
       catalog[sp.id] ||= { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
     end
 
-    if by_level.empty?
+    # Personagens "known" (Ranger, Bruxo, Bardo, etc.): o summary deve refletir
+    # `metadata.spell_selections`, que o wizard de Progressão grava após o PATCH.
+    # `SheetKnownSpell` pode ficar defasado quando `sync_sheet_known_spells_from_spell_selections!`
+    # não rodou (ex.: Spellcasting ausente no ClassLevel antes do fix) ou por corrida.
+    begin
+      pk = @sheet.sheet_klasses.includes(:klass).order(level: :desc).first
+      if pk&.klass
+        k = pk.klass
+        unless k.api_index.to_s == 'wizard'
+          rules = k.api_index.present? ? (ClassRules.find(k.api_index) || {}) : {}
+          prep_mode = rules.dig(:feature_rules, :spellcasting, :mode).to_s
+          prep_legacy = rules.dig(:spellcasting, :preparation).to_s
+          casting_known = prep_mode == 'known' || prep_legacy == 'known'
+          if casting_known
+            meta_sel = (@sheet.metadata || {}).deep_stringify_keys['spell_selections']
+            if meta_sel.is_a?(Hash) && (meta_sel.key?('known') || meta_sel.key?('cantrips'))
+              sel_resolver = SpellResolver.new
+              new_by_level = Hash.new { |h, kk| h[kk] = [] }
+              new_catalog = {}
+              new_seen = Set.new
+              %w[cantrips known].each do |key|
+                next unless meta_sel.key?(key)
+                Array(meta_sel[key]).each do |tok|
+                  sp = sel_resolver.resolve(tok)
+                  next unless sp
+                  next if new_seen.include?(sp.id)
+                  new_seen.add(sp.id)
+                  lvl = sp.level.to_i
+                  new_by_level[lvl] << { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+                  new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
+                end
+              end
+              by_level = new_by_level
+              catalog = new_catalog
+              seen_ids = new_seen
+              spell_selections_overrode_known = true
+            end
+          end
+        end
+      end
+    rescue StandardError
+      # mantém agregação via SheetKnownSpell
+    end
+
+    if by_level.empty? && !spell_selections_overrode_known
       per = (@sheet.metadata || {}).dig('class_choices', 'per_level') || {}
       per.values.each do |row|
         (row['cantrips'] || []).each do |sp|
@@ -97,11 +142,13 @@ class KnownSpellsAggregator
         end
       end
 
-      per.values.each do |row|
-        next unless row.is_a?(Hash)
-        Array(row['cantrips']).each              { |it| insert_entry.call(resolve_meta_entry.call(it)) }
-        Array(row['spells']).each                { |it| insert_entry.call(resolve_meta_entry.call(it)) }
-        Array(row['learn_any_class_spells']).each { |it| insert_entry.call(resolve_meta_entry.call(it)) }
+      unless spell_selections_overrode_known
+        per.values.each do |row|
+          next unless row.is_a?(Hash)
+          Array(row['cantrips']).each              { |it| insert_entry.call(resolve_meta_entry.call(it)) }
+          Array(row['spells']).each                { |it| insert_entry.call(resolve_meta_entry.call(it)) }
+          Array(row['learn_any_class_spells']).each { |it| insert_entry.call(resolve_meta_entry.call(it)) }
+        end
       end
     rescue => _e
       # ignore metadata merge issues; summary will still carry persisted known

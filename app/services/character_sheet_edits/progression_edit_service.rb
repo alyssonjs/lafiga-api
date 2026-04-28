@@ -32,7 +32,19 @@ module CharacterSheetEdits
     protected
 
     def apply!
-      target_level = level || data.dig('levelChoice', 'level')&.to_i
+      # Ordem: param `level` (query/body) > progressionSubLevel (wizard Próximo) >
+      # levelChoice.level (PATCH incremental). Sem isso o CharacterCreation envia só
+      # levelChoices[] + progressionSubLevel + spellSelections — target_level ficava nil,
+      # apply! retornava cedo e spellSelections nunca persistia (GET voltava lista velha).
+      target_level = @level.to_i if @level.present? && @level.to_i >= 2
+      if target_level.blank?
+        ps = data['progressionSubLevel'] || data[:progressionSubLevel]
+        target_level = ps.to_i if ps.present?
+      end
+      if target_level.blank? || target_level < 2
+        lc_lv = data.dig('levelChoice', 'level') || data.dig(:levelChoice, :level)
+        target_level = lc_lv.to_i if lc_lv.present?
+      end
       return warn!('nivel ausente para progression edit') if target_level.nil? || target_level < 2
 
       pre_apply_level = sheet.sheet_klasses.order(level: :desc).first&.level.to_i
@@ -83,6 +95,8 @@ module CharacterSheetEdits
       end
 
       sheet.save!
+
+      sync_sheet_known_spells_from_spell_selections! if data.key?('spellSelections') && data['spellSelections'].is_a?(Hash)
 
       # ASI-as-feat: ProgressionEditService apenas grava `per_level[N].asi`
       # no metadata. Antes desta chamada, escolher Observador na edicao do
@@ -250,6 +264,46 @@ module CharacterSheetEdits
       primary_sk&.klass&.api_index.to_s == 'wizard'
     rescue StandardError
       false
+    end
+
+    # Alinha `SheetKnownSpell` (fonte do summary / catalog_by_id no KnownSpellsAggregator) com
+    # `metadata.spell_selections` após PATCH — antes só o metadata mudava e a ficha continuava
+    # com rows antigas do banco.
+    def sync_sheet_known_spells_from_spell_selections!
+      sheet.reload
+      sk = sheet.sheet_klasses.order(level: :desc).first
+      return unless sk&.klass
+
+      if sheet.sheet_klasses.where.not(klass_id: sk.klass_id).exists?
+        return
+      end
+
+      k = sk.klass
+      rules = k.api_index.present? ? (ClassRules.find(k.api_index) || {}) : {}
+      prep = (rules.dig(:feature_rules, :spellcasting, :mode) ||
+        rules.dig(:spellcasting, :preparation)).to_s
+      return if prep == 'prepared'
+
+      meta = (sheet.metadata || {}).deep_stringify_keys
+      sel = normalize_spell_selections(meta['spell_selections'] || {})
+
+      class_sources = [nil, 'class', 'subclass']
+      SheetKnownSpell.where(sheet_klass_id: sk.id, source: class_sources).delete_all
+
+      resolver = SpellResolver.new
+      ids = []
+      %w[cantrips known].each do |key|
+        Array(sel[key]).each do |tok|
+          sp = resolver.resolve(tok)
+          ids << sp.id.to_i if sp&.id.to_i.positive?
+        end
+      end
+
+      ids.uniq.each do |sid|
+        SheetKnownSpell.create!(sheet_klass_id: sk.id, spell_id: sid, source: 'class')
+      rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
+        SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sid) { |r| r.source = 'class' }
+      end
     end
   end
 end

@@ -153,6 +153,103 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
         'prepared' => []
       )
     end
+
+    it 'B7.4 — PATCH spellSelections regrava SheetKnownSpell (fonte do summary/catalog_by_id)' do
+      caster = create(:klass, api_index: "b74_caster_#{SecureRandom.hex(4)}")
+      cl = ClassLevel.create!(klass: caster, level: 4, prof_bonus: 2, ability_score_bonuses: 0)
+      Spellcasting.create!(
+        class_level: cl,
+        level: 1,
+        cantrips_known: 0,
+        spells_known: 6,
+        spell_slots: { '1' => 3 }.to_json
+      )
+      bless = create(:spell, name: 'Bless', level: 1, api_index: "b74_bless_#{SecureRandom.hex(3)}")
+      stale = create(:spell, name: 'Stale B74', level: 1, api_index: "b74_stale_#{SecureRandom.hex(3)}")
+
+      sheet_klass.update!(klass: caster)
+      SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).delete_all
+      create(:sheet_known_spell, sheet_klass: sheet_klass, spell: stale, source: 'class')
+
+      described_class.new(character: character, level: 4, data: {
+        'spellSelections' => { 'known' => ['Bless'], 'cantrips' => [] }
+      }).call
+
+      ids = SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).where(source: [nil, 'class', 'subclass']).pluck(:spell_id)
+      expect(ids.uniq.sort).to eq([bless.id])
+    end
+
+    it 'B7.5 — sem level no construtor: progressionSubLevel no data aplica spellSelections' do
+      # CharacterCreation persistStepToBackend historically omitía `level` no query;
+      # o wizard envia progressionSubLevel + spellSelections + levelChoices.
+      expect(
+        described_class.new(character: character, data: {
+          'progressionSubLevel' => 4,
+          'spellSelections' => {
+            'cantrips' => [],
+            'known' => [],
+            'spellbook' => [],
+            'prepared' => []
+          }
+        }).call.warnings
+      ).not_to include(/nivel ausente/)
+
+      sheet.reload
+      sel = sheet.metadata['spell_selections']
+      expect(sel['known']).to eq([])
+      expect(sel['prepared']).to eq([])
+      expect(sel['cantrips']).to eq([])
+    end
+
+    it 'B7.6 — sync SheetKnownSpell mesmo quando SpellRules.sc_for retorna nil' do
+      caster = create(:klass, api_index: "b76_caster_#{SecureRandom.hex(4)}")
+      ClassLevel.create!(klass: caster, level: 4, prof_bonus: 2, ability_score_bonuses: 0)
+      expect(SpellRules.sc_for(caster, 4)).to be_nil
+
+      sp = create(:spell, name: 'B76 Mark', level: 1, api_index: "b76_spell_#{SecureRandom.hex(3)}")
+      sheet_klass.update!(klass: caster)
+      SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).delete_all
+
+      allow(ClassRules).to receive(:find).and_call_original
+      allow(ClassRules).to receive(:find).with(caster.api_index).and_return({
+        feature_rules: { spellcasting: { mode: 'known' } },
+        spellcasting: { preparation: 'known' }
+      })
+
+      described_class.new(character: character, level: 4, data: {
+        'spellSelections' => { 'known' => [sp.id.to_s], 'cantrips' => [] }
+      }).call
+
+      expect(SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).pluck(:spell_id)).to eq([sp.id])
+    end
+
+    it 'B7.4b — PATCH com known: [] zera SheetKnownSpell de classe' do
+      caster = create(:klass, api_index: "b74b_caster_#{SecureRandom.hex(4)}")
+      cl = ClassLevel.create!(klass: caster, level: 4, prof_bonus: 2, ability_score_bonuses: 0)
+      Spellcasting.create!(
+        class_level: cl,
+        level: 1,
+        cantrips_known: 0,
+        spells_known: 6,
+        spell_slots: { '1' => 3 }.to_json
+      )
+      bless = create(:spell, name: 'Bless B74b', level: 1, api_index: "b74b_bless_#{SecureRandom.hex(3)}")
+
+      sheet_klass.update!(klass: caster)
+      SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).delete_all
+      create(:sheet_known_spell, sheet_klass: sheet_klass, spell: bless, source: 'class')
+
+      described_class.new(character: character, level: 4, data: {
+        'spellSelections' => {
+          'cantrips' => [],
+          'known' => [],
+          'spellbook' => [],
+          'prepared' => []
+        }
+      }).call
+
+      expect(SheetKnownSpell.where(sheet_klass_id: sheet_klass.id, source: [nil, 'class', 'subclass']).count).to eq(0)
+    end
   end
 
   describe 'B7.3 — read.progressionSubLevel reflete current_level' do
