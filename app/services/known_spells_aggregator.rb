@@ -408,6 +408,55 @@ class KnownSpellsAggregator
       # ignore derivation errors; summary will still include explicit prepared entries
     end
 
+    merge_mystic_arcanum_into_catalog!(@sheet, catalog)
+
     { known_by_level: by_level, prepared_by_level: prepared_by_level, catalog_by_id: catalog }
+  end
+
+  # Arcano místico do bruxo vive em metadata (mystic_arcanum_6…), muitas vezes só como spell_id
+  # numérico — não vira SheetKnownSpell. O front usa spells.catalog_by_id para mostrar o nome.
+  def merge_mystic_arcanum_into_catalog!(sheet, catalog)
+    ids = mystic_arcanum_spell_ids_from_metadata(sheet)
+    return if ids.empty?
+
+    Spell.where(id: ids).find_each do |sp|
+      catalog[sp.id] ||= { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
+    end
+  end
+
+  def mystic_arcanum_spell_ids_from_metadata(sheet)
+    per = (sheet.metadata || {}).dig('class_choices', 'per_level') || {}
+    return [] if per.blank?
+
+    ids = []
+    per.each_value do |row|
+      next unless row.is_a?(Hash)
+
+      [row, row['featureChoices']].compact.each do |h|
+        next unless h.is_a?(Hash)
+
+        h.each do |k, v|
+          next unless k.to_s.match?(/\Amystic_arcanum_\d+\z/i)
+
+          Array(v).each { |tok| ids.concat(spell_token_to_positive_ids(tok)) }
+        end
+      end
+    end
+    ids.map(&:to_i).select(&:positive?).uniq
+  end
+
+  def spell_token_to_positive_ids(tok)
+    case tok
+    when Integer
+      tok.positive? ? [tok] : []
+    when String
+      s = tok.strip
+      s.match?(/\A\d+\z/) ? [s.to_i] : []
+    when Hash
+      sid = tok['id'] || tok[:id]
+      spell_token_to_positive_ids(sid)
+    else
+      []
+    end
   end
 end

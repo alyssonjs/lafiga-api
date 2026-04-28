@@ -91,7 +91,8 @@ class CharacterSheetSummaryService
 
           conj[:mode] = mode if mode.present?
           conj[:list_api] = list_api if list_api.present?
-          if mode == 'prepared'
+          # Limite de preparadas: PHB preparadores (inclui Mago com modo spellbook no YAML).
+          if %w[prepared spellbook].include?(mode.to_s)
             begin
               conj[:prepared_limit] = SpellRules.prepared_limit_for(@sheet, pk.klass).to_i
             rescue

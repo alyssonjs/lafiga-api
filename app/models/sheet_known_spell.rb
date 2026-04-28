@@ -4,7 +4,7 @@ class SheetKnownSpell < ApplicationRecord
   belongs_to :spell
 
   # Validações
-  validates :source, inclusion: { in: %w[class race feat subclass background], allow_nil: true }
+  validates :source, inclusion: { in: %w[class race feat subclass background grimoire], allow_nil: true }
   validates :uses_per_rest, inclusion: { in: %w[LR SR], allow_nil: true }
   validates :uses_remaining, numericality: { greater_than_or_equal_to: 0 }, if: -> { uses_per_rest.present? }
 

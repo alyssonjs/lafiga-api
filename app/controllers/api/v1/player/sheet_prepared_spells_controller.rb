@@ -102,8 +102,14 @@ class Api::V1::Player::SheetPreparedSpellsController < ApplicationController
     sheet = current_user_sheet
     # Normalize common params that may come nested under :sheet_prepared_spell
     spell_id = params[:spell_id] || params.dig(:sheet_prepared_spell, :spell_id)
-    auto     = ActiveModel::Type::Boolean.new.cast(params[:auto] || params.dig(:sheet_prepared_spell, :auto))
-    level_gained = params[:level_gained] || params.dig(:sheet_prepared_spell, :level_gained)
+    # Boolean#cast(nil) => nil; column `auto` is NOT NULL — default user-prepared rows to false.
+    raw_auto = if params.key?(:auto)
+      params[:auto]
+    else
+      nested = params[:sheet_prepared_spell]
+      nested.is_a?(ActionController::Parameters) && nested.key?(:auto) ? nested[:auto] : nil
+    end
+    auto = raw_auto.nil? ? false : ActiveModel::Type::Boolean.new.cast(raw_auto)
 
     # Check if spell is already prepared (idempotent)
     existing_spell = SheetPreparedSpell.find_by(sheet_id: sheet.id, spell_id: spell_id)
@@ -118,8 +124,6 @@ class Api::V1::Player::SheetPreparedSpellsController < ApplicationController
       if prep_klass
         limit = SpellRules.prepared_limit_for(sheet, prep_klass)
         non_auto = SheetPreparedSpell.where(sheet_id: sheet.id, auto: false).count
-        p non_auto, 'non_auto';
-        p limit, 'limit';
         if non_auto >= limit
           return render json: { error: "Limite de magias preparadas alcançado (#{non_auto}/#{limit})" }, status: :unprocessable_entity
         end

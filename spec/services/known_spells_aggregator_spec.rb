@@ -90,5 +90,27 @@ RSpec.describe KnownSpellsAggregator do
       result = described_class.new(sheet.reload).call
       expect(result[:known_by_level].values.flatten).to eq([])
     end
+
+    it 'inclui Arcano Místico (spell id só em metadata) em catalog_by_id sem SheetKnownSpell' do
+      warlock = create(:klass, api_index: 'warlock', name: 'Bruxo Arcanum Spec')
+      sp_ma = create(:spell, level: 6, name: 'Sugestão em Massa Spec', api_index: "ma_#{SecureRandom.hex(3)}")
+      sheet = create(:sheet, metadata: {
+        'spell_selections' => {
+          'cantrips' => [],
+          'known' => [],
+          'spellbook' => [],
+          'prepared' => []
+        },
+        'class_choices' => {
+          'per_level' => {
+            '11' => { 'mystic_arcanum_6' => [sp_ma.id] }
+          }
+        }
+      })
+      create(:sheet_klass, sheet: sheet, klass: warlock, level: 11)
+
+      result = described_class.new(sheet.reload).call
+      expect(result[:catalog_by_id][sp_ma.id]).to include(name: 'Sugestão em Massa Spec', id: sp_ma.id)
+    end
   end
 end
