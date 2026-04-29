@@ -26,15 +26,85 @@ class RaceRules
     data[key.to_sym] || data[key]
   end
 
+  # api_index legado ou SRD que não bate com a chave em `subraces:` do YAML (ex.: hill_dwarf → hill).
+  # Inclui slugs PT-BR vindos de `SubRace#name.parameterize` (ex.: anao_da_colina → hill) — sem
+  # isso `RacialHpBonus.per_level_for_sheet` falha no LevelUpService e só o init_hp soma +1 PV.
+  SUBRACE_KEY_ALIASES = {
+    %w[dwarf hill_dwarf] => 'hill',
+    %w[dwarf mountain_dwarf] => 'mountain',
+    %w[dwarf anao_da_colina] => 'hill',
+    %w[dwarf anao-da-colina] => 'hill',
+    %w[dwarf colina] => 'hill',
+    %w[dwarf anao_da_montanha] => 'mountain',
+    %w[dwarf anao-da-montanha] => 'mountain',
+    %w[dwarf montanha] => 'mountain',
+    %w[elf wood_elf] => 'wood',
+    %w[elf high_elf] => 'high',
+    %w[elf elfo_da_floresta] => 'wood',
+    %w[elf floresta] => 'wood',
+    %w[elf alto_elfo] => 'high',
+    %w[elf alto] => 'high',
+    %w[gnome forest_gnome] => 'forest',
+    %w[gnome rock_gnome] => 'rock',
+    %w[halfling lightfoot_halfling] => 'lightfoot',
+    %w[halfling stout_halfling] => 'stout',
+  }.freeze
+
+  RACE_KEY_ALIASES = {
+    'anao' => 'dwarf',
+    'elfo' => 'elf',
+    'halfling' => 'halfling',
+    'humano' => 'human',
+    'draconato' => 'dragonborn',
+    'gnomo' => 'gnome',
+    'meio_elfo' => 'half_elf',
+    'meio-elfo' => 'half_elf',
+    'meio_orc' => 'half_orc',
+    'meio-orc' => 'half_orc',
+    'tiefling' => 'tiefling',
+    'aarakocra' => 'aarakocra',
+    'centauro' => 'centaur',
+  }.freeze
+
+  def self.normalize_race_key(race_id)
+    rk = race_id.to_s.strip
+    RACE_KEY_ALIASES[rk] || rk
+  end
+
+  # @return [String, nil] chave canónica presente em `race[:subraces]`, ou o valor original se já casar
+  def self.canonical_subrace_key(race_id, sub_key)
+    return nil if sub_key.blank?
+
+    sk = sub_key.to_s.strip
+    nr = normalize_race_key(race_id)
+    race = find(nr)
+    return sk if race.blank?
+
+    subraces = race[:subraces] || {}
+    return sk if subraces[sk.to_sym].present? || subraces[sk].present?
+
+    mapped = SUBRACE_KEY_ALIASES[[nr, sk]]
+    if mapped.present? && (subraces[mapped.to_sym].present? || subraces[mapped].present?)
+      return mapped
+    end
+
+    sk
+  end
+
   # Very light merger of base race + subrace (no full validation here)
   def self.apply(selection)
-    race = find(selection[:race_id])
+    raw_race = selection[:race_id]
+    raise ArgumentError, 'race not found' if raw_race.blank?
+
+    rid = normalize_race_key(raw_race)
+    race = find(rid)
     raise ArgumentError, 'race not found' unless race
 
     subraces = race[:subraces] || {}
     sub_key = selection[:subrace_id]
-    sub = if sub_key.present?
-            subraces[sub_key.to_sym] || subraces[sub_key.to_s]
+    canonical = sub_key.present? ? canonical_subrace_key(rid, sub_key) : nil
+    sub = if canonical.present?
+            subraces[canonical.to_sym] || subraces[canonical.to_s]
           end
 
     merged = deep_merge(race.deep_dup, (sub || {}).deep_dup)

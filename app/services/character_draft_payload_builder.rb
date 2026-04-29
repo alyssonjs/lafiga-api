@@ -166,6 +166,9 @@ class CharacterDraftPayloadBuilder
     out = {}
     out['1'] = (draft['level1Choices'] || {}).deep_dup
     out['1']['skills'] = Array(draft['selectedSkills']) if draft['selectedSkills'].present?
+    if draft['level1HpChoice'].present?
+      out['1']['hp'] = draft['level1HpChoice'].is_a?(Hash) ? draft['level1HpChoice'].deep_dup : draft['level1HpChoice']
+    end
     Array(draft['levelChoices']).each do |row|
       next unless row.is_a?(Hash)
       lv = row['level'].to_i

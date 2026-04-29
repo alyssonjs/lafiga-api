@@ -37,7 +37,7 @@ module CharacterDraftSteps
         merged['levelChoices'] = kept
         clear!('levelChoices')
       end
-      merged['progressionSubLevel'] = [merged['progressionSubLevel'].to_i, [2, new_lv].max].min
+      merged['progressionSubLevel'] = [[merged['progressionSubLevel'].to_i, new_lv].min, 1].max
 
       # ZS2 do segundo audit: a versao antiga so podava `levelChoices` no
       # downgrade, mas spellSelections (cantrips/conhecidos/preparadas) nao era

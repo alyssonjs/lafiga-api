@@ -16,7 +16,7 @@ RSpec.describe CharacterDraftSchema do
       expect(out['raceChoices']).to eq({})
       expect(out['levelChoices']).to eq([])
       expect(out['spellSelections']).to include('cantrips' => [], 'known' => [], 'spellbook' => [], 'prepared' => [])
-      expect(out['progressionSubLevel']).to eq(2)
+      expect(out['progressionSubLevel']).to eq(1)
     end
 
     it 'preserves unknown keys (passthrough)' do

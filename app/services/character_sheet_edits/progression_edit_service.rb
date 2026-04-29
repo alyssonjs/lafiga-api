@@ -24,7 +24,7 @@ module CharacterSheetEdits
         # `clamp(2, current_level)` antes de usar (ver
         # draftStorage.ts:247) entao devolver `current_level` aponta para a tab
         # do nivel mais alto editavel.
-        'progressionSubLevel' => [2, sheet.current_level.to_i].max,
+        'progressionSubLevel' => [1, sheet.current_level.to_i].max,
         'spellSelections'     => extract_spell_selections
       }
     end
@@ -120,13 +120,11 @@ module CharacterSheetEdits
       # "glitch de pontos" na proxima edicao).
       CharacterSheetSummaryService.sync_ability_columns_from_metadata!(sheet.reload)
 
-      # ZE3 do segundo audit: recomputa hp_max sempre que CON real mudar (ASI
-      # mesmo nivel) OU quando subir de nivel (delta de hit-die por nivel).
-      # Antes era so dentro do branch `if sk.level < target_level` e usava
-      # CON pre-sync — bug duplo: ASI mesmo-nivel ignorava, level-up usava
-      # CON antigo. Agora roda APOS sync, com CON real, em ambos cenarios.
-      if sheet.con.to_i != old_con || level_changed
-        recompute_hp_max!(new_con: sheet.con.to_i)
+      # PV: alinhar com `per_level` + racial (como o wizard). Antes só recomputava
+      # quando CON mudava ou o nível subia — editar PV no mesmo nível não atualizava hp_max.
+      hp_patch = normalized_patch.stringify_keys.key?('hp')
+      if hp_patch || sheet.con.to_i != old_con || level_changed
+        apply_progression_hp_to_sheet!
         sheet.save!
       end
 

@@ -95,7 +95,8 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
     end
 
     it 'para Mago, spellbook substitui known stale vindo do edit' do
-      klass.update!(api_index: 'wizard')
+      wizard = Klass.find_by(api_index: 'wizard') || create(:klass, api_index: 'wizard')
+      sheet_klass.update!(klass: wizard)
 
       svc = described_class.new(character: character, level: 4, data: {
         'spellSelections' => {
@@ -114,7 +115,8 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
     end
 
     it 'para Mago, spellbook vazio tambem limpa known stale' do
-      klass.update!(api_index: 'wizard')
+      wizard = Klass.find_by(api_index: 'wizard') || create(:klass, api_index: 'wizard')
+      sheet_klass.update!(klass: wizard)
 
       svc = described_class.new(character: character, level: 4, data: {
         'spellSelections' => {
@@ -289,10 +291,10 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
       expect(out['progressionSubLevel']).to eq(4)
     end
 
-    it 'minimo 2 (current_level=1 nao faz sentido para progression)' do
+    it 'com current_level=1 devolve 1 (aba PV do 1º nível)' do
       sheet.update!(current_level: 1)
       out = described_class.new(character: character.reload, data: {}).read
-      expect(out['progressionSubLevel']).to eq(2)
+      expect(out['progressionSubLevel']).to eq(1)
     end
   end
 

@@ -161,6 +161,13 @@ class LevelUpService
         rescue => _e
           # best-effort; não falhar o level up por isso
         end
+        # Robustez Anã (Anão da Colina) e outros traços com grants.hp_per_level em RaceRules — +PV em todo nível
+        begin
+          rp = RacialHpBonus.per_level_for_sheet(@sheet)
+          step_gain += rp if rp.positive?
+        rescue => _e
+          Rails.logger.warn("LevelUpService: racial HP bonus omitido (#{_e.class})") if defined?(Rails.logger)
+        end
         gained_hp += step_gain
       end
 

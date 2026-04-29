@@ -28,7 +28,7 @@ class CharacterDraftSchema
     selectedAlignment
     equipmentMode equipmentChoices equipmentGenericSelections startingGoldRolled
     avatarCustomization avatarUserEdited
-    level1Choices levelChoices spellSelections progressionSubLevel
+    level1Choices levelChoices spellSelections progressionSubLevel level1HpChoice
     _raceId _classId _bgId _bgName _alignId _featId
   ].freeze
   # ZS11 do segundo audit: `avatarUserEdited` foi adicionado a esta lista junto com
@@ -85,7 +85,7 @@ class CharacterDraftSchema
           'expertise'      => Array(data.dig('level1Choices', 'expertise'))
         }
       when 'progression'
-        data.slice('levelChoices', 'progressionSubLevel', 'spellSelections')
+        data.slice('levelChoices', 'progressionSubLevel', 'spellSelections', 'level1HpChoice')
       when 'equipment'
         data.slice('equipmentMode', 'equipmentChoices', 'equipmentGenericSelections', 'startingGoldRolled')
       when 'alignment'
@@ -138,7 +138,7 @@ class CharacterDraftSchema
       d['backgroundFlaws'] ||= []
       d['avatarCustomization'] ||= {}
 
-      d['progressionSubLevel'] = (d['progressionSubLevel'] || 2).to_i
+      d['progressionSubLevel'] = (d['progressionSubLevel'] || 1).to_i
 
       d
     end

@@ -45,16 +45,12 @@ module CharacterSheetEdits
     protected
 
     def apply!
-      old_con = sheet.con.to_i
-      race_changed = false
-
       new_race_id = data['raceId']
       resolved_race_id = resolve_race_id(new_race_id)
       if new_race_id.present? && resolved_race_id.present? && resolved_race_id != sheet.race_id.to_i
         clear!('sheet.metadata.race_choices', reason: DESTRUCTIVE_REASONS[:race_changed], confirm: true)
         sheet.race_id = resolved_race_id
         sheet.sub_race_id = nil
-        race_changed = true
       end
 
       if data.key?('subraceId')
@@ -110,19 +106,10 @@ module CharacterSheetEdits
       # atualizado).
       CharacterSheetSummaryService.sync_ability_columns_from_metadata!(sheet.reload)
 
-      # ZE2 do segundo audit: antes era `if race_changed && sheet.con != old_con`,
-      # mas mudancas SEM trocar a raca tambem podem alterar CON:
-      #   - Trocar so a sub-raca (Anão da Montanha CON+2 vs Anão da Colina SAB+1).
-      #   - Editar `raceChoices` (ex.: re-selecionar idiomas — no PR atual nao
-      #     muda CON, mas race_choices e ponto de extensao para futuros
-      #     traços com bonus de atributo, p.ex. Variant Human cria mod via
-      #     ASI/feat que ja vai pelo applier).
-      # A condicao agora e baseada apenas no DELTA real de CON, igual ao
-      # AbilitiesEditService — mais robusto e desacoplado da causa raiz.
-      if sheet.con.to_i != old_con
-        recompute_hp_max!(new_con: sheet.con.to_i)
-        sheet.save!
-      end
+      # PV máximo deve refletir CON atual e também bônus raciais como Robustez Anã (+1/nível),
+      # mesmo quando o total de CON não muda (ex.: Anão Montanha ↔ Anão da Colina).
+      recompute_hp_max!(new_con: sheet.con.to_i)
+      sheet.save! if sheet.changed?
 
       # `apply!` retorna implicitamente; warnings/cleared keys ja foram
       # acumulados via `warn!`/`clear!`.

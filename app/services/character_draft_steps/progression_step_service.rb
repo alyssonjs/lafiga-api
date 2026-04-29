@@ -51,6 +51,8 @@ module CharacterDraftSteps
         merged['spellSelections'] = prev_sel.deep_merge(data['spellSelections'])
       end
 
+      merged['level1HpChoice'] = data['level1HpChoice'] if data.key?('level1HpChoice')
+
       merged['progressionSubLevel'] = data['progressionSubLevel'].to_i if data.key?('progressionSubLevel')
 
       char_level = merged['level'].to_i

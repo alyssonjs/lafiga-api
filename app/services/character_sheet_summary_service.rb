@@ -35,6 +35,8 @@ class CharacterSheetSummaryService
 
   def call
     ActiveRecord::Base.transaction do
+      sync_sheet_hp_from_progression_if_behind! if @sync
+
       # Feature sync runs once inside FeaturesAggregator (FeatureGrantService).
 
       total_level = CharacterRules.total_level(@sheet)
@@ -395,6 +397,35 @@ class CharacterSheetSummaryService
   end
 
   private
+
+  # Fichas antigas / pipeline com drift: colunas hp_* atrás do cálculo canónico
+  # (per_level + Robustez Anã etc.). GET summary?sync=true autocorrige e devolve valores alinhados.
+  def sync_sheet_hp_from_progression_if_behind!
+    sk = @sheet.sheet_klasses.max_by { |x| x.level.to_i }
+    return unless sk&.klass
+
+    per_level = (@sheet.metadata || {}).dig('class_choices', 'per_level')
+    return unless per_level.is_a?(Hash) && per_level.keys.any?
+
+    character_level = @sheet.sheet_klasses.sum(&:level).to_i
+    character_level = sk.level.to_i if character_level <= 0
+
+    expected = SheetHpFromProgression.expected_max(@sheet, sk.klass, character_level, per_level)
+    return if expected <= 0
+    return if @sheet.hp_max.to_i >= expected
+
+    prev_max = @sheet.hp_max.to_i
+    cur = @sheet.hp_current.to_i
+    new_cur = if prev_max <= 0 || cur <= 0 || cur == prev_max
+                expected
+              else
+                [(expected * (cur.to_f / [prev_max, 1].max)).round, expected].min
+              end
+    @sheet.update!(hp_max: expected, hp_current: new_cur)
+    @sheet.reload
+  rescue StandardError => e
+    Rails.logger.warn("CharacterSheetSummaryService: HP drift sync skipped: #{e.class}: #{e.message}")
+  end
 
   def build_abilities(sheet, ignore_authoritative_flag: false)
     meta = sheet.metadata || {}

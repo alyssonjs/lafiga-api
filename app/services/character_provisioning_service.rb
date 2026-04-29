@@ -203,13 +203,29 @@ class CharacterProvisioningService
 
       # Upsert or create Sheet
       sheet = char.sheet || Sheet.new(character: char)
-      # Compute conservative hp for level 1; LevelUpService will add more later
+      # Compute conservative hp for level 1; LevelUpService will add more later.
+      # Inclui +1 PV do 1º nível para traços como Robustez Anã (grants.hp_per_level em RaceRules).
       begin
         k = Klass.find(klass_id)
         hd = k.hit_die.to_i.nonzero? || 8
         con_mod = CharacterRules.modifier(base_con)
-        init_hp = [1, hd + con_mod].max
-      rescue
+        row1_hp = begin
+          r1 = per_level['1'] || per_level[1] || {}
+          r1.is_a?(Hash) ? (r1['hp'] || r1[:hp]) : nil
+        end
+        init_hp = if row1_hp.is_a?(Hash)
+                    SheetHpFromProgression.hp_gain_for_level_row(row1_hp, hd, con_mod)
+                  else
+                    [1, hd + con_mod].max
+                  end
+        r_prov = race_id.present? ? Race.find_by(id: race_id) : nil
+        s_prov = sub_race_id.present? ? SubRace.find_by(id: sub_race_id) : nil
+        rp = RacialHpBonus.per_level_from_race_records(
+          r_prov, s_prov, race['raceChoices'] || race[:raceChoices] || {},
+        )
+        init_hp += rp if r_prov.present? && rp.positive?
+      rescue StandardError => e
+        Rails.logger.warn("[CharacterProvisioningService] init_hp: #{e.class}: #{e.message}")
         init_hp = 8 + CharacterRules.modifier(base_con)
       end
       # Resolver background_id a partir do api_index (backgroundKey)
@@ -755,6 +771,7 @@ class CharacterProvisioningService
       begin
         sheet.reload
         CharacterSheetSummaryService.sync_ability_columns_from_metadata!(sheet)
+        finalize_sheet_hp_after_provision!(sheet)
       rescue => e
         Rails.logger.warn "CharacterProvisioningService: ability column sync skipped: #{e.message}"
       end
@@ -911,50 +928,15 @@ class CharacterProvisioningService
     nil
   end
 
-  def level_one_hp_floor(sheet, klass)
-    hit_die = klass.hit_die.to_i.nonzero? || 8
-    con_mod = CharacterRules.modifier(sheet.con)
-    [1, hit_die + con_mod].max
-  end
-
-  def hp_gain_for_level_row(h, hit_die, con_mod)
-    if h.is_a?(Hash)
-      dr = h['dieResult'] || h[:dieResult] || h['die_result'] || h[:die_result]
-      if dr.present?
-        [dr.to_i + con_mod, 1].max
-      elsif (h['total'] || h[:total]).present?
-        [(h['total'] || h[:total]).to_i, 1].max
-      else
-        [(hit_die / 2.0).ceil + con_mod, 1].max
-      end
-    else
-      [(hit_die / 2.0).ceil + con_mod, 1].max
-    end
-  end
-
-  def expected_max_hp_from_progression(sheet, klass, character_level, per_level)
-    hit_die = klass.hit_die.to_i.nonzero? || 8
-    con_mod = CharacterRules.modifier(sheet.con)
-    total = [1, hit_die + con_mod].max
-    return total if character_level.to_i <= 1
-
-    (2..character_level.to_i).each do |lv|
-      row = per_level[lv.to_s] || per_level[lv] || {}
-      h = row['hp'] || row[:hp]
-      total += hp_gain_for_level_row(h, hit_die, con_mod)
-    end
-    total
-  end
-
   # Corrige fichas antigas: nível de classe já = nível do personagem, mas hp_max ainda só o do 1º nível.
   # Operações: após deploy, reprovisionar o personagem; log: "reconciled hp_max X -> Y (sheet Z)".
   def reconcile_sheet_hp_if_stuck_at_level_one!(sheet, klass, sk, character_level, per_level)
     return unless sk && sk.level.to_i == character_level.to_i && character_level.to_i > 1
 
-    floor = level_one_hp_floor(sheet, klass)
+    floor = SheetHpFromProgression.level_one_floor(sheet, klass)
     return unless sheet.hp_max.to_i <= floor
 
-    expected = expected_max_hp_from_progression(sheet, klass, character_level, per_level)
+    expected = SheetHpFromProgression.expected_max(sheet, klass, character_level, per_level)
     return if expected <= sheet.hp_max.to_i
 
     prev_max = sheet.hp_max.to_i
@@ -970,6 +952,32 @@ class CharacterProvisioningService
     Rails.logger.info "CharacterProvisioningService: reconciled hp_max #{prev_max} -> #{new_max} (sheet #{sheet.id})"
   rescue StandardError => e
     Rails.logger.warn "CharacterProvisioningService: HP reconcile failed: #{e.message}"
+  end
+
+  # Garante hp_max/hp_current = soma canónica de `per_level` + racial após todo o pipeline
+  # (corrige drift quando LevelUpService não somou Robustez Anã por slug PT na sub-raça, etc.).
+  def finalize_sheet_hp_after_provision!(sheet)
+    sk = sheet.sheet_klasses.order(level: :desc).first
+    return unless sk&.klass
+
+    character_level = sheet.sheet_klasses.sum(&:level).to_i
+    character_level = sk.level.to_i if character_level <= 0
+    per_level = (sheet.metadata || {}).dig('class_choices', 'per_level') || {}
+    expected = SheetHpFromProgression.expected_max(sheet, sk.klass, character_level, per_level)
+    return if expected <= 0
+    return if sheet.hp_max.to_i == expected
+
+    prev_max = sheet.hp_max.to_i
+    cur = sheet.hp_current.to_i
+    new_cur = if prev_max <= 0 || cur <= 0 || cur == prev_max
+                expected
+              else
+                [(expected * (cur.to_f / [prev_max, 1].max)).round, expected].min
+              end
+    sheet.update!(hp_max: expected, hp_current: new_cur)
+    Rails.logger.info "CharacterProvisioningService: finalized hp_max #{prev_max} -> #{expected} (sheet #{sheet.id})"
+  rescue StandardError => e
+    Rails.logger.warn "CharacterProvisioningService: HP finalize failed: #{e.message}"
   end
 
   # Preenche armor/weapon/tool/skills em class_summary delegando ao ClassSummaryRebuilder

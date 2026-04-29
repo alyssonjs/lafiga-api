@@ -601,6 +601,8 @@ trait_definitions:
     name: "Robustez Anã"
     description: "+1 PV por nível."
     sheet_impact: "Aumentar PV máximo em +1 por nível (aplicar em cada up)."
+    grants:
+      hp_per_level: 1
 
   keen_senses:
     name: "Sentidos Aguçados"

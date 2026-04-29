@@ -1,6 +1,24 @@
 require 'rails_helper'
 
 RSpec.describe 'RaceRules YAML integration' do
+  it 'maps hill_dwarf api_index to YAML hill subrace (Robustez Anã / hp_per_level)' do
+    applied = RaceRules.apply(race_id: 'dwarf', subrace_id: 'hill_dwarf', choices: {})
+    keys = Array(applied[:traits]).map { |t| t[:key] }
+    expect(keys).to include('dwarven_toughness')
+  end
+
+  it 'maps anao_da_colina (slug do nome PT) para hill' do
+    applied = RaceRules.apply(race_id: 'dwarf', subrace_id: 'anao_da_colina', choices: {})
+    keys = Array(applied[:traits]).map { |t| t[:key] }
+    expect(keys).to include('dwarven_toughness')
+  end
+
+  it 'normaliza race_id anao para dwarf ao aplicar sub-raça' do
+    applied = RaceRules.apply(race_id: 'anao', subrace_id: 'colina', choices: {})
+    keys = Array(applied[:traits]).map { |t| t[:key] }
+    expect(keys).to include('dwarven_toughness')
+  end
+
   it 'applies Aarakocra subrace Falconicos with flight traits' do
     sel = { race_id: 'aarakocra', subrace_id: 'falconicos', choices: {} }
     applied = RaceRules.apply(sel)

@@ -90,6 +90,11 @@ class Api::V1::Player::SheetPreparedSpellsController < ApplicationController
           sp.source = 'class'
         end
       end
+      # find_or_create não atualiza linhas antigas: quem preparou domínio antes do flag `auto`
+      # ficava com auto=false e consumia o teto no POST. Alinhar sempre.
+      if ap_spell_ids.any?
+        SheetPreparedSpell.where(sheet_id: sheet.id, spell_id: ap_spell_ids).update_all(auto: true)
+      end
     rescue => _e
       # falhas nessa etapa não devem quebrar a listagem
     end
@@ -123,7 +128,13 @@ class Api::V1::Player::SheetPreparedSpellsController < ApplicationController
       prep_klass = sheet.sheet_klasses.includes(:klass).map(&:klass).find { |k| %w[cleric druid wizard paladin].include?(k.api_index) }
       if prep_klass
         limit = SpellRules.prepared_limit_for(sheet, prep_klass)
-        non_auto = SheetPreparedSpell.where(sheet_id: sheet.id, auto: false).count
+        # Mesma fonte que o index materializa: não contar preparadas de subclasse sempre ativas
+        # (domínio, etc.) mesmo se algum registo legado ainda tiver auto=false.
+        ap_ids = always_prepared_subclass_spell_ids(sheet)
+        non_auto = SheetPreparedSpell
+          .where(sheet_id: sheet.id, auto: false)
+          .then { |rel| ap_ids.any? ? rel.where.not(spell_id: ap_ids) : rel }
+          .count
         if non_auto >= limit
           return render json: { error: "Limite de magias preparadas alcançado (#{non_auto}/#{limit})" }, status: :unprocessable_entity
         end
@@ -165,6 +176,20 @@ class Api::V1::Player::SheetPreparedSpellsController < ApplicationController
   end
 
   private
+
+  # SpellSource always_prepared da subclasse (sem terreno druida — index completo materializa terreno).
+  def always_prepared_subclass_spell_ids(sheet)
+    ids = []
+    sheet.sheet_klasses.find_each do |sk|
+      next unless sk.sub_klass_id.present?
+      lvl = (sk.level || 1).to_i
+      ids |= SpellSource
+        .where(source_type: 'SubKlass', source_id: sk.sub_klass_id, always_prepared: true)
+        .where('min_class_level IS NULL OR min_class_level <= ?', lvl)
+        .pluck(:spell_id)
+    end
+    ids.uniq
+  end
 
   def current_user_sheet
     # Accept both query param (?sheet_id=) and nested body { sheet_prepared_spell: { sheet_id: ... } }

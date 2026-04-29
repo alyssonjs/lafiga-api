@@ -102,6 +102,28 @@ module CharacterSheetEdits
         model.where('LOWER(api_index) = ?', slug_kebab.tr('-', '_')).pick(:id)
     end
 
+    # Sync hp_max / hp_current from `metadata.class_choices.per_level` + racial bonus,
+    # same formula as provisioning — picks up real HP rolls/averages, not only max+avg heuristic.
+    def apply_progression_hp_to_sheet!
+      sk = sheet.sheet_klasses.order(level: :desc).first
+      return unless sk&.klass
+
+      per_level = (sheet.metadata || {}).dig('class_choices', 'per_level') || {}
+      character_level = sheet.sheet_klasses.sum(&:level).to_i
+      expected = SheetHpFromProgression.expected_max(sheet, sk.klass, character_level, per_level)
+      return if expected <= 0
+
+      prev_max = sheet.hp_max.to_i
+      old_cur = sheet.hp_current.to_i
+      sheet.hp_max = expected
+      sheet.hp_current = if prev_max <= 0
+                          expected
+                        else
+                          ratio = old_cur.to_f / [prev_max, 1].max
+                          [(expected * ratio).round, expected].min
+                        end
+    end
+
     # Recompute hp_max with new CON modifier, preserving live ratio.
     # Used by abilities_edit and race_edit.
     def recompute_hp_max!(new_con:)
@@ -114,7 +136,12 @@ module CharacterSheetEdits
       avg_per_level = (hd / 2.0).ceil
       base = [1, hd + con_mod].max
       extra = (total_levels - 1).clamp(0, 19) * (avg_per_level + con_mod)
-      new_max = [1, base + extra].max
+      racial_hp = begin
+                    RacialHpBonus.per_level_for_sheet(sheet) * total_levels
+                  rescue StandardError
+                    0
+                  end
+      new_max = [1, base + extra + racial_hp].max
 
       old_max = sheet.hp_max.to_i
       old_cur = sheet.hp_current.to_i

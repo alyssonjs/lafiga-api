@@ -31,10 +31,16 @@ class CharacterCreationService
       # Conceder features de nível 1 (classe e possivelmente subclasse se choose_level == 1)
       FeatureGrantService.call(sheet: sheet, klass: @klass, from_level: 0, to_level: 1)
 
-      # HP inicial = DV máximo + mod CON
+      # HP inicial = DV máximo + mod CON + traços raciais (+1 nível para Robustez Anã, etc.)
       con_mod = CharacterRules.modifier(sheet.con)
       hit_die = @klass.hit_die.to_i.nonzero? || 8
-      sheet.update!(hp_max: hit_die + con_mod, hp_current: hit_die + con_mod, temp_hp: 0)
+      rp = begin
+             RacialHpBonus.per_level_for_sheet(sheet)
+           rescue StandardError
+             0
+           end
+      base_hp = hit_die + con_mod + (rp.positive? ? rp : 0)
+      sheet.update!(hp_max: base_hp, hp_current: base_hp, temp_hp: 0)
 
       # Opcional: associar background à ficha (metadata)
       if @background_key.present?

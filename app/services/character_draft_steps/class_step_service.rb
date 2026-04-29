@@ -74,6 +74,10 @@ module CharacterDraftSteps
         merged['levelChoices'] = []
         keys_to_clear << 'levelChoices'
       end
+      unless data.key?('level1HpChoice')
+        merged['level1HpChoice'] = nil
+        keys_to_clear << 'level1HpChoice'
+      end
       unless data.key?('spellSelections')
         merged['spellSelections'] = { 'cantrips' => [], 'known' => [], 'spellbook' => [], 'prepared' => [] }
         keys_to_clear << 'spellSelections'
