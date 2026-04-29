@@ -273,6 +273,36 @@ RSpec.describe 'ASI feat no level-up e edit (Camada A.2)' do
       expect(summary[:abilities][:scores][:wis]).to eq(15),
         "esperado wis=15 (base 14 + 1 do Observador), veio #{summary[:abilities][:scores][:wis]}"
     end
+
+    it 'Perito no nivel 4 aplica skillsAndTools na ficha' do
+      sheet = build_mago_lvl4_aguardando_feat
+      CharacterSheetEdits::ProgressionEditService.new(
+        character: sheet.character,
+        level: 4,
+        data: {
+          'levelChoice' => {
+            'level' => 4,
+            'asiChoice' => {
+              'mode' => 'feat',
+              'featId' => 'perito',
+              'featGrantChoices' => {
+                'skillsAndTools' => ['Investigação', 'Natureza', 'Utensílios de Cozinheiro']
+              }
+            }
+          }
+        }
+      ).call
+
+      sheet.reload
+      perito = Array(sheet.metadata['feats']).find { |f| f['feat_id'].to_s == 'perito' }
+      expect(perito).to be_present
+      expect(Array(perito.dig('proficiency_bonuses', 'skills'))).to include('Investigação', 'Natureza')
+      expect(Array(perito.dig('proficiency_bonuses', 'tools'))).to include('Utensílios de Cozinheiro')
+
+      summary = summary_for(sheet)
+      expect(Array(summary.dig(:proficiencies, :skills, :feat))).to include('Investigação', 'Natureza')
+      expect(Array(summary.dig(:proficiencies, :tools))).to include('Utensílios de Cozinheiro')
+    end
   end
 
   # ──────────────────────────────────────────────────────────────────────────

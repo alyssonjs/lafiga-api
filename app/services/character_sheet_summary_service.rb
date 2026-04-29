@@ -762,11 +762,17 @@ class CharacterSheetSummaryService
       # best-effort only
     end
 
-    # Merge feat-derived proficiencies (armor/shields/weapons)
+    feat_skills = []
+
+    # Merge feat-derived proficiencies (skills/tools/armor/shields/weapons)
     begin
       feats = Array(meta['feats'])
       feats.each do |f|
         pb = f['proficiency_bonuses'] || f[:proficiency_bonuses] || {}
+        s = pb['skills'] || pb[:skills]
+        feat_skills |= Array(s).map(&:to_s)
+        t = pb['tools'] || pb[:tools]
+        Array(t).each { |tool| tools << tool.to_s if tool.to_s.strip != '' }
         # Armor groups (e.g., ['leve','média','pesada'])
         a = pb['armors'] || pb[:armors]
         armor |= Array(a).map(&:to_s)
@@ -831,7 +837,8 @@ class CharacterSheetSummaryService
       skills: {
         class: class_cs_skills,
         background: to_arr.call(bg['skills']),
-        race: (race_skills + to_arr.call(vh_skill) + race_choice_skills).uniq
+        race: (race_skills + to_arr.call(vh_skill) + race_choice_skills).uniq,
+        feat: feat_skills.uniq
       }
     }
   end

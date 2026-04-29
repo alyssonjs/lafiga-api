@@ -1,4 +1,12 @@
 class FeatRules
+  CANONICAL_SKILL_NAMES = [
+    'Atletismo',
+    'Acrobacia', 'Furtividade', 'Prestidigitação',
+    'Arcanismo', 'História', 'Investigação', 'Natureza', 'Religião',
+    'Adestrar Animais', 'Intuição', 'Medicina', 'Percepção', 'Sobrevivência',
+    'Atuação', 'Enganação', 'Intimidação', 'Persuasão'
+  ].freeze
+
   # Define all available feats with their rules
   RULES = {
     'observador' => {
@@ -890,7 +898,16 @@ class FeatRules
 
     # Get proficiency bonuses
     proficiency_bonuses = feat[:proficiency_bonuses] || {}
-    if proficiency_bonuses[:choose]
+    if proficiency_bonuses[:skills_or_tools]
+      chosen = choices[:skills_or_tools] || choices['skills_or_tools'] ||
+               choices[:skillsAndTools] || choices['skillsAndTools'] ||
+               choices[:proficiencies] || choices['proficiencies'] || []
+      skill_picks, tool_picks = split_skills_and_tools(chosen)
+      resolved = {}
+      resolved['skills'] = skill_picks if skill_picks.any?
+      resolved['tools'] = tool_picks if tool_picks.any?
+      proficiency_bonuses = resolved if resolved.any?
+    elsif proficiency_bonuses[:choose]
       chosen_proficiencies = choices[:proficiencies] || choices['proficiencies'] || []
       proficiency_bonuses = { 'skills' => chosen_proficiencies } if chosen_proficiencies.any?
     end
@@ -1068,5 +1085,27 @@ class FeatRules
 
     Rails.logger.info "All prerequisites met"
     true
+  end
+
+  def self.split_skills_and_tools(values)
+    skill_keys = CANONICAL_SKILL_NAMES.index_by { |name| fold_key(name) }
+    skills = []
+    tools = []
+    Array(values).each do |raw|
+      value = raw.is_a?(Hash) ? (raw['name'] || raw[:name] || raw['id'] || raw[:id]) : raw
+      name = value.to_s.strip
+      next if name.empty?
+
+      if skill_keys.key?(fold_key(name))
+        skills << name
+      else
+        tools << name
+      end
+    end
+    [skills.uniq, tools.uniq]
+  end
+
+  def self.fold_key(value)
+    value.to_s.unicode_normalize(:nfd).gsub(/\p{Mn}/, '').downcase.strip
   end
 end
