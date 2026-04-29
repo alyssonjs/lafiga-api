@@ -19,6 +19,9 @@
   duration: Instantaneous
   classes:
   - cozinheiro
+  prereqs:
+    level: 6
+    subclass: amassador-de-monstros
   higher_level: 'A cura e o dano aumentam: 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6),
     20º (7d6).'
 - slug: cook-snack-cacarola-de-cenoura

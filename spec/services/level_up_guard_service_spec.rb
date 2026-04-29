@@ -593,6 +593,11 @@ RSpec.describe LevelUpGuardService do
           sk.name = 'Doceiro Encantado'
         end
       end
+      let(:amassador) do
+        SubKlass.find_or_create_by!(klass: cook, api_index: 'amassador-de-monstros') do |sk|
+          sk.name = 'Amassador de Monstros'
+        end
+      end
 
       it 'fails when more than 3 snacks chosen at level 1' do
         sheet = make_sheet(metadata: {
@@ -666,13 +671,41 @@ RSpec.describe LevelUpGuardService do
         sheet = make_sheet(metadata: {
           'class_choices' => {
             'per_level' => {
-              '1' => { 'snacks' => ['Corte Fresco'] }
+              '1' => { 'snacks' => ['Chá Verde'] }
             }
           }
         })
         SheetKlass.create!(sheet: sheet, klass: cook, level: 1)
         result = LevelUpGuardService.call(sheet: sheet, klass: cook)
         expect(result.errors.full_messages.join).not_to match(/Petisco|Petiscos/)
+      end
+
+      it 'fails when wizard singular snack key selects Corte Fresco before level 6' do
+        sheet = make_sheet(metadata: {
+          'class_choices' => {
+            'per_level' => {
+              '1' => { 'snack' => %w[cook-snack-corte-fresco cook-snack-cha-verde cook-snack-pao-duro] }
+            }
+          }
+        })
+        SheetKlass.create!(sheet: sheet, klass: cook, level: 1)
+        result = LevelUpGuardService.call(sheet: sheet, klass: cook)
+        message = result.errors.full_messages.join
+        expect(message).to match(/Corte Fresco.*n[íi]vel 6/i)
+        expect(message).to match(/Corte Fresco.*subclasse amassador-de-monstros/i)
+      end
+
+      it 'accepts Corte Fresco at level 6 for Amassador de Monstros' do
+        sheet = make_sheet(metadata: {
+          'class_choices' => {
+            'per_level' => {
+              '6' => { 'snack' => %w[cook-snack-corte-fresco] }
+            }
+          }
+        })
+        SheetKlass.create!(sheet: sheet, klass: cook, sub_klass: amassador, level: 6)
+        result = LevelUpGuardService.call(sheet: sheet, klass: cook)
+        expect(result.errors.full_messages.join).not_to match(/Corte Fresco|Petisco|Petiscos/)
       end
     end
 

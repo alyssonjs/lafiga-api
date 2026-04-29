@@ -413,7 +413,7 @@ class LevelUpGuardService
         chosen_snacks = []
         (1..current_level).each do |lvl|
           row = per[lvl.to_s] || {}
-          ss = row['snacks'] || row[:snacks]
+          ss = Array(row['snacks'] || row[:snacks]) + Array(row['snack'] || row[:snack])
           Array(ss).each { |x| chosen_snacks << (x.is_a?(Hash) ? (x['slug'] || x[:slug] || x['name'] || x[:name]) : x) }
         end
         chosen_snacks = chosen_snacks.compact.map(&:to_s).map(&:strip).uniq

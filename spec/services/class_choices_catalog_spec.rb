@@ -37,6 +37,17 @@ RSpec.describe ClassChoicesCatalog do
     end
   end
 
+  describe '.load(:snacks) — Cozinheiro' do
+    it 'gates Corte Fresco behind Amassador de Monstros level 6' do
+      entry = described_class.resolve(:snacks, 'cook-snack-corte-fresco')
+      expect(entry).to be_present
+      expect(entry[:prereqs]).to include(
+        'level' => 6,
+        'subclass' => 'amassador-de-monstros'
+      )
+    end
+  end
+
   describe '.resolve(:metamagic, identifier)' do
     it 'matched por slug' do
       e = described_class.resolve(:metamagic, 'mm-careful')

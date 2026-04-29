@@ -2,6 +2,8 @@ spells:
   - api_index: cook-snack-corte-fresco
     name: "Corte Fresco"
     level: 0
+    min_level: 6
+    requires_subclass: amassador_de_monstros
     school: "Transmutation"
     range: "Touch"
     components: ["V","S"]
@@ -13,7 +15,7 @@ spells:
     desc:
       - "Cura aliados ou fere inimigos ao ser ingerido. Aliado recupera 2d6 PV. Inimigo faz TR de CON; falha: 2d6 de dano ácido, sucesso: metade."
       - "O uso é por ação ao alimentar o alvo; só um petisco ativo por criatura."
-      - "Pré-requisito de classe e limitações de uso são regidas pelas regras do Cozinheiro."
+      - "Pré-requisito: 6º nível, Amassador de Monstros (Bolsa Autônoma)."
     higher_level:
       - "A cura e o dano aumentam: 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6)."
 

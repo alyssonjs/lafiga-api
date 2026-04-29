@@ -28,10 +28,16 @@ namespace :snacks do
     # Ajuste aqui conforme seus arquétipos
     SUBCLASS_NAME_MAP = {
       'sous chef' => 'mestre-da-fritura',
+      'sous_chef' => 'mestre-da-fritura',
       'sargento alimentar' => 'cantineiro-de-guerra',
+      'sargento_alimentar' => 'cantineiro-de-guerra',
       'mestre-cuca' => 'alquimista-gourmet',
+      'mestre_cuca' => 'alquimista-gourmet',
       'mestre cervejeiro' => 'mestre-do-fogo-e-fumaca',
-      'doceiro' => 'doceiro-encantado'
+      'mestre_cervejeiro' => 'mestre-do-fogo-e-fumaca',
+      'doceiro' => 'doceiro-encantado',
+      'amassador de monstros' => 'amassador-de-monstros',
+      'amassador_de_monstros' => 'amassador-de-monstros'
     }.freeze
 
     to_slug = ->(s) { ActiveSupport::Inflector.transliterate(s.to_s).downcase.gsub(/[^a-z0-9]+/, '-').gsub(/^-+|-+$/,'') }
@@ -111,4 +117,3 @@ namespace :snacks do
     puts "[snacks] Spells upserted: #{created}; links created/updated: #{linked}"
   end
 end
-
