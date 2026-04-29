@@ -26,9 +26,8 @@ RUN bundle install
 COPY . /lafiga-api
 
 # Configura o script de entrypoint
-COPY entrypoint.sh /usr/bin/
-RUN chmod +x /usr/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
+COPY --chmod=755 entrypoint.sh /usr/bin/entrypoint.sh
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]
 
 # Exponha a porta 3000 para o servidor Rails
 EXPOSE 3000
