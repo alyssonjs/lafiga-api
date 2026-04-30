@@ -2044,6 +2044,33 @@ ranger:
               once_per_turn: true
               advantage_first_attack_vs_favored: true
               extra_damage: "1d8"
+      - level: 10
+        features:
+          - name: "Inimigo Favorito Adicional"
+            description: |
+              No 10° nível, você pode escolher outro inimigo favorito adicional e um idioma associado. Suas escolhas devem refletir os tipos de monstros que você encontrou nas suas aventuras.
+            choices:
+              favored_enemy:
+                choose: 1
+                options:
+                  - { id: "aberration",  name: "Aberração" }
+                  - { id: "beast",       name: "Fera" }
+                  - { id: "celestial",   name: "Celestial" }
+                  - { id: "construct",   name: "Construto" }
+                  - { id: "dragon",      name: "Dragão" }
+                  - { id: "elemental",   name: "Elemental" }
+                  - { id: "fey",         name: "Feérico" }
+                  - { id: "fiend",       name: "Infernal/Abissal" }
+                  - { id: "giant",       name: "Gigante" }
+                  - { id: "humanoid",    name: "Humanóide (subtipo)" }
+                  - { id: "monstrosity", name: "Monstruosidade" }
+                  - { id: "ooze",        name: "Lodo" }
+                  - { id: "plant",       name: "Planta" }
+                  - { id: "undead",      name: "Morto-vivo" }
+            grants:
+              languages:
+                choose: 1
+                options: ["Anão","Élfico","Orc","Gnômico","Goblinóide","Infernal","Abissal","Celestial","Dracônico","Silvestre"]
       - level: 11
         features:
           - name: "Estudar Inimigo"
