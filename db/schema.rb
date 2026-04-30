@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_29_120000) do
+ActiveRecord::Schema.define(version: 2026_04_30_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -313,7 +313,9 @@ ActiveRecord::Schema.define(version: 2026_04_29_120000) do
     t.text "description"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "dm_customized", default: false, null: false
     t.index ["api_index"], name: "index_features_on_api_index", unique: true
+    t.index ["dm_customized"], name: "index_features_on_dm_customized"
   end
 
   create_table "features_sub_klass_levels", id: false, force: :cascade do |t|

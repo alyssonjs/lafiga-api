@@ -11,10 +11,14 @@ class Feature < ApplicationRecord
   enum category: { class_feature: 0, subclass_feature: 1, racial_trait: 2, feat: 3 }
 
   def localized_name
+    return name if respond_to?(:dm_customized?) && dm_customized?
+
     DndTranslations.translated_feature_name(api_index, name)
   end
 
   def localized_description
+    return description if respond_to?(:dm_customized?) && dm_customized?
+
     DndTranslations.translated_feature_description(api_index, description)
   end
 

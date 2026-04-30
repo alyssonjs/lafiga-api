@@ -68,8 +68,20 @@ Rails.application.routes.draw do
         end
         resources :races, only: [:index, :show, :create, :update, :destroy]
         resources :sub_races, only: [:index, :show, :create, :update, :destroy]
-        resources :klasses, only: [:index, :show, :create, :update, :destroy]
-        resources :sub_klasses, only: [:index, :show, :create, :update, :destroy]
+        resources :klasses, only: [:index, :show, :create, :update, :destroy] do
+          member do
+            post :level_features
+            patch 'level_features/:feature_id', action: :update_level_feature
+            delete 'level_features/:feature_id', action: :destroy_level_feature
+          end
+        end
+        resources :sub_klasses, only: [:index, :show, :create, :update, :destroy] do
+          member do
+            post :level_features
+            patch 'level_features/:feature_id', action: :update_level_feature
+            delete 'level_features/:feature_id', action: :destroy_level_feature
+          end
+        end
         resources :backgrounds, only: [:index, :show, :create, :update, :destroy]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
           member do
