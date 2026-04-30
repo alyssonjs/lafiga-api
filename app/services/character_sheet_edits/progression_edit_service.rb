@@ -67,7 +67,12 @@ module CharacterSheetEdits
       # deep-merge: o PATCH sobrescreve apenas as chaves que vieram, preservando
       # o resto. UI de progression pode editar incrementalmente sem medo.
       existing_row = (meta['class_choices']['per_level'][target_level.to_s] || {}).deep_dup
-      meta['class_choices']['per_level'][target_level.to_s] = existing_row.deep_merge(normalized_patch)
+      merged_row = existing_row.deep_merge(normalized_patch)
+      # `asi` é uma escolha mutuamente exclusiva. Deep-merge interno deixava
+      # campos antigos de feat (featId/choices) presos quando o usuário trocava
+      # para +2/+1 atributos no mesmo nível.
+      merged_row['asi'] = normalized_patch['asi'] if normalized_patch.stringify_keys.key?('asi')
+      meta['class_choices']['per_level'][target_level.to_s] = merged_row
       sheet.metadata = meta
 
       level_changed = false

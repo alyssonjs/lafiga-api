@@ -22,7 +22,7 @@ class Api::V1::Player::CharacterDraftsController < ApplicationController
       svc = CharacterDraftSteps.service_for(step_key).new(character: @character, data: {}, level: params[:level])
       render json: response_envelope(step_key, svc.read, mode: 'creation', warnings: [])
     else
-      svc = CharacterSheetEdits.service_for(step_key).new(character: @character, data: {}, level: params[:level])
+      svc = CharacterSheetEdits.service_for(step_key).new(character: @character, data: {}, level: params[:level], current_user: @current_user)
       render json: response_envelope(step_key, svc.read, mode: 'edit', warnings: [])
     end
   rescue ArgumentError => e
@@ -78,7 +78,7 @@ class Api::V1::Player::CharacterDraftsController < ApplicationController
       log_step(:patch, step_key, mode: 'creation', warnings: result.warnings.length, cleared: result.cleared_keys.length)
       render json: response_envelope(step_key, svc.read, mode: 'creation', warnings: result.warnings, cleared: result.cleared_keys)
     else
-      svc = CharacterSheetEdits.service_for(step_key).new(character: @character, data: payload_data, level: level, force: force)
+      svc = CharacterSheetEdits.service_for(step_key).new(character: @character, data: payload_data, level: level, force: force, current_user: @current_user)
       result = svc.call
 
       if result.requires_confirmation

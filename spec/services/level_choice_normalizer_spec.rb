@@ -84,6 +84,20 @@ RSpec.describe LevelChoiceNormalizer do
       expect(out).to eq(row)
     end
 
+    it 'lets asiChoice replace a previously merged canonical asi' do
+      row = {
+        'asi' => {
+          'mode' => 'feat',
+          'featId' => 'observador',
+          'choices' => { 'ability' => 'wis' }
+        },
+        'asiChoice' => { 'mode' => 'plus2', 'ability1' => 'cha' }
+      }
+      out = described_class.normalize_row(row)
+      expect(out).not_to have_key('asiChoice')
+      expect(out['asi']).to eq('mode' => 'plus2', 'ability1' => 'cha')
+    end
+
     it 'symbol keys also work (deep_stringify)' do
       row = { asiChoice: { mode: 'plus2', ability1: 'cha' } }
       out = described_class.normalize_row(row)

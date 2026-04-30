@@ -100,6 +100,87 @@ RSpec.describe 'Api::V1::Player::CharactersController provision', type: :request
       end
     end
 
+    context 'when selected race is not playable' do
+      it 'rejects a player character' do
+        race = human_race
+        race.update!(playable: false)
+        sub = human_standard_subrace(race)
+        klass = barbarian_klass
+        bg = acolyte_background
+        align = lawful_good_alignment
+
+        payload = minimal_l1_barbarian_provision_payload(
+          race: race,
+          sub_race: sub,
+          klass: klass,
+          background: bg,
+          alignment: align
+        )
+
+        post '/api/v1/player/characters/provision', params: payload, headers: headers, as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['errors'].join).to include('Raça indisponível')
+      ensure
+        race&.update!(playable: true)
+      end
+
+      it 'allows a DM to create an NPC with a restricted race' do
+        dm_role = Role.find_by(name: 'DM') || create(:role, name: 'DM')
+        dm_user = create(:user, role: dm_role)
+        race = human_race
+        race.update!(playable: false)
+        sub = human_standard_subrace(race)
+        klass = barbarian_klass
+        bg = acolyte_background
+        align = lawful_good_alignment
+
+        payload = minimal_l1_barbarian_provision_payload(
+          race: race,
+          sub_race: sub,
+          klass: klass,
+          background: bg,
+          alignment: align
+        )
+        payload[:wizard][:general] = { isNPC: true, npcStatus: 'alive' }
+
+        post '/api/v1/player/characters/provision',
+             params: payload, headers: bearer_headers_for(dm_user), as: :json
+
+        expect(response).to have_http_status(:created), -> { response.body }
+        character_id = response.parsed_body.dig('character', 'id')
+        expect(Character.find(character_id).sheet.metadata.dig('general', 'isNPC')).to eq(true)
+      ensure
+        race&.update!(playable: true)
+      end
+    end
+
+    context 'when selected sub-race is not playable' do
+      it 'rejects a player character' do
+        race = human_race
+        sub = human_standard_subrace(race)
+        sub.update!(playable: false)
+        klass = barbarian_klass
+        bg = acolyte_background
+        align = lawful_good_alignment
+
+        payload = minimal_l1_barbarian_provision_payload(
+          race: race,
+          sub_race: sub,
+          klass: klass,
+          background: bg,
+          alignment: align
+        )
+
+        post '/api/v1/player/characters/provision', params: payload, headers: headers, as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['errors'].join).to include('Sub-raça indisponível')
+      ensure
+        sub&.update!(playable: true)
+      end
+    end
+
     # Regressao: Mestre reprovisionando ficha alheia (wizard de edicao do PC
     # importado) recebia 422 porque o service fazia `owner.characters.find(cid)`
     # com `owner = current_user (DM)` — o char nao pertence ao DM, ActiveRecord

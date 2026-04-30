@@ -82,7 +82,7 @@ class Api::V1::Admin::CharactersController < ApplicationController
   def provision
     payload = params.permit!.to_h
     # Admin can provision for arbitrary user via payload.character.user_id
-    svc = CharacterProvisioningService.call(user: nil, payload: payload)
+    svc = CharacterProvisioningService.call(user: nil, actor_user: @current_user, payload: payload)
     if svc.success?
       render json: svc.result, status: :created
     else

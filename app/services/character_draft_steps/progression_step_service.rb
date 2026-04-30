@@ -30,7 +30,11 @@ module CharacterDraftSteps
         idx = existing.find_index { |r| r['level'].to_i == level }
         if idx
           existing_row = (existing[idx] || {}).deep_dup
-          existing[idx] = existing_row.deep_merge(patch_row)
+          merged_row = existing_row.deep_merge(patch_row)
+          if patch_row.key?('asi') || patch_row.key?(:asi)
+            merged_row['asi'] = patch_row['asi'] || patch_row[:asi]
+          end
+          existing[idx] = merged_row
         else
           existing << patch_row
           existing.sort_by! { |r| r['level'].to_i }

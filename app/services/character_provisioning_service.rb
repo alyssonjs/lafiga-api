@@ -9,8 +9,9 @@ class CharacterProvisioningService
   # - character: Character record (used together with `from_server_draft: true`)
   # - from_server_draft: when true, derives payload from character.draft_data via
   #   CharacterDraftPayloadBuilder. Frontend can call /provision with no body.
-  def initialize(user:, payload: {}, character: nil, from_server_draft: false)
+  def initialize(user:, payload: {}, character: nil, from_server_draft: false, actor_user: nil)
     @current_user = user
+    @actor_user = actor_user || user
     @payload = payload || {}
     @character_arg = character
     @from_server_draft = !!from_server_draft
@@ -156,6 +157,7 @@ class CharacterProvisioningService
         sub_slug = race['subRuleId'] || race[:subRuleId]
         sub_race_id = SubRace.find_by(api_index: sub_slug)&.id if sub_slug.present?
       end
+      ensure_playable_race_allowed!(race_id: race_id, sub_race_id: sub_race_id, wizard: wizard)
 
       klass_id    = klass['klassId']  || klass[:klassId]
       if klass_id.blank?
@@ -590,6 +592,8 @@ class CharacterProvisioningService
 
       # Apply Feats from race (Human Variant) and per-level ASIs with mode 'feat'
       begin
+        cleanup_non_feat_asi_levels!(sheet: sheet, per_level: per_level, max_level: level)
+
         # Human Variant feat
         rc = race['raceChoices'] || race[:raceChoices] || {}
         hv = rc['variantHumanASI'] || rc[:variantHumanASI]
@@ -787,6 +791,31 @@ class CharacterProvisioningService
   end
 
   private
+
+  def ensure_playable_race_allowed!(race_id:, sub_race_id:, wizard:)
+    return if allow_non_playable_race?(wizard)
+
+    race_record = race_id.present? ? Race.find_by(id: race_id) : nil
+    if race_record.present? && !race_record.playable?
+      raise StandardError, 'Raça indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+    end
+
+    sub_race_record = sub_race_id.present? ? SubRace.find_by(id: sub_race_id) : nil
+    return unless sub_race_record.present? && !sub_race_record.playable?
+
+    raise StandardError, 'Sub-raça indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+  end
+
+  def allow_non_playable_race?(wizard)
+    Group.user_is_dm?(@actor_user) && wizard_npc?(wizard)
+  end
+
+  def wizard_npc?(wizard)
+    general = wizard['general'] || wizard[:general]
+    return false unless general.is_a?(Hash)
+
+    ActiveModel::Type::Boolean.new.cast(general['isNPC'] || general[:isNPC])
+  end
 
   # Alinha com CharacterSheetEdits::GeneralEditService — `sheet.metadata['general']`.
   def merge_wizard_general_into_metadata!(metadata, wizard)
@@ -1066,6 +1095,22 @@ class CharacterProvisioningService
     class_sources = [nil, 'class', 'subclass']
     SheetKnownSpell.where(sheet_klass_id: sk.id, source: class_sources).delete_all
     SheetPreparedSpell.where(sheet_id: sheet.id, source: class_sources).delete_all
+  end
+
+  def cleanup_non_feat_asi_levels!(sheet:, per_level:, max_level:)
+    levels = []
+    (1..max_level.to_i).each do |lv|
+      row = per_level[lv.to_s] || per_level[lv]
+      next unless row.is_a?(Hash)
+
+      asi = row['asi'] || row[:asi]
+      next unless asi.is_a?(Hash)
+
+      mode = (asi['mode'] || asi[:mode]).to_s
+      feat_id = asi['featId'] || asi[:featId] || asi['featName'] || asi[:featName]
+      levels << lv unless mode == 'feat' && feat_id.present?
+    end
+    SheetFeatLevelCleaner.call(sheet: sheet, levels: levels)
   end
 
   # Chaves de metadata ligadas à classe que não devem sobreviver a uma troca de classe.

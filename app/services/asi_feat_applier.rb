@@ -40,10 +40,16 @@ class AsiFeatApplier
   def call
     asi = read_asi_row
     return Result.new(applied: false, skipped_reason: :no_per_level_row) if asi.nil?
-    return Result.new(applied: false, skipped_reason: :not_feat_mode)    unless feat_mode?(asi)
+    unless feat_mode?(asi)
+      SheetFeatLevelCleaner.call(sheet: @sheet, levels: [@level])
+      return Result.new(applied: false, skipped_reason: :not_feat_mode)
+    end
 
     feat_id = (asi['featId'] || asi[:featId]).to_s
-    return Result.new(applied: false, skipped_reason: :missing_feat_id)  if feat_id.empty?
+    if feat_id.empty?
+      SheetFeatLevelCleaner.call(sheet: @sheet, levels: [@level])
+      return Result.new(applied: false, skipped_reason: :missing_feat_id)
+    end
 
     choices = build_choices(asi)
     cmd = FeatAssignmentService.call(

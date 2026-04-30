@@ -716,6 +716,7 @@ class CharacterSheetSummaryService
     # Start with class summary and then merge subclass grants (armor/weapons)
     armor = Array(cs['armor_proficiencies'] || [])
     weapons = Array(cs['weapon_proficiencies'] || [])
+    per_level_choices = meta.dig('class_choices', 'per_level') || {}
 
     # Mesclar proficiências da raça (armas/armaduras/ferramentas fixas) que vivem em
     # `race_summary.proficiencies` (populado pelo CharacterProvisioningService via RaceRules.apply).
@@ -753,9 +754,24 @@ class CharacterSheetSummaryService
           a = prof['armor'] || prof[:armor] || []
           w = prof['weapons'] || prof[:weapons] || []
           tlist = prof['tools'] || prof[:tools] || []
-          armor |= Array(a).map(&:to_s)
-          weapons |= Array(w).map(&:to_s)
-          Array(tlist).each { |t| tools << t.to_s if t.to_s.strip != '' }
+          armor |= resolve_proficiency_grant_values(
+            a,
+            per_level: per_level_choices,
+            level: rlevel,
+            choice_keys: %w[armor armors]
+          )
+          weapons |= resolve_proficiency_grant_values(
+            w,
+            per_level: per_level_choices,
+            level: rlevel,
+            choice_keys: %w[weapon weapons]
+          )
+          resolve_proficiency_grant_values(
+            tlist,
+            per_level: per_level_choices,
+            level: rlevel,
+            choice_keys: %w[tool tools instruments]
+          ).each { |t| tools << t.to_s if t.to_s.strip != '' }
         end
       end
     rescue => _e
@@ -841,6 +857,55 @@ class CharacterSheetSummaryService
         feat: feat_skills.uniq
       }
     }
+  end
+
+  def resolve_proficiency_grant_values(raw, per_level:, level:, choice_keys:)
+    case raw
+    when Hash
+      h = raw.stringify_keys
+      if h['choose'].to_i.positive?
+        selected = selected_proficiency_choices(per_level, level, choice_keys)
+        allowed = Array(h['options']).map(&:to_s).reject(&:blank?)
+        selected = selected.select do |choice|
+          allowed.blank? || allowed.any? { |option| normalized_proficiency_token(option) == normalized_proficiency_token(choice) }
+        end
+        return selected.first(h['choose'].to_i)
+      end
+      return Array(h['fixed']).map(&:to_s).reject(&:blank?) if h['fixed'].is_a?(Array)
+
+      []
+    when Array
+      raw.flat_map do |entry|
+        resolve_proficiency_grant_values(entry, per_level: per_level, level: level, choice_keys: choice_keys)
+      end.uniq
+    else
+      value = raw.to_s.strip
+      value.present? ? [value] : []
+    end
+  end
+
+  def selected_proficiency_choices(per_level, level, choice_keys)
+    row = per_level[level.to_s] || per_level[level] || {}
+    return [] unless row.is_a?(Hash)
+
+    choice_keys.flat_map do |key|
+      Array(row[key] || row[key.to_sym]).map do |entry|
+        if entry.is_a?(Hash)
+          h = entry.stringify_keys
+          (h['name'] || h['id']).to_s
+        else
+          entry.to_s
+        end
+      end
+    end.map(&:strip).reject(&:blank?).uniq
+  end
+
+  def normalized_proficiency_token(value)
+    value.to_s
+         .unicode_normalize(:nfd)
+         .gsub(/\p{Mn}/, '')
+         .downcase
+         .strip
   end
 
   def apply_feat_movement_bonuses(sheet)

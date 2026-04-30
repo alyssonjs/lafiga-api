@@ -439,6 +439,29 @@ halfling:
       traits:
         - { key: stout_resilience }
 
+tabaxi:
+  id: tabaxi
+  name: "Tabaxi"
+  description: "Felinos humanoides, curiosos e impulsivos; exploradores ágeis de sentidos aguçados."
+  size: "Médio"
+  speed: 30            # 9 m ≈ 30 ft
+  ability:
+    type: fixed
+    increases: [{ ability: DEX, amount: 2 }, { ability: CHA, amount: 1 }]
+  darkvision: { range: 60 }
+  languages:
+    always: [Comum]
+    choiceCount: 1
+    choiceList: [Anão, Élfico, Halfling, Dracônico, Gnômico, Orc, Infernal, Silvestre]
+  proficiencies:
+    skills:
+      fixed: [Percepção, Furtividade]
+  traits:
+    - { key: darkvision, range: 60 }
+    - { key: feline_agility }
+    - { key: cat_claws_1d4_slashing }
+    - { key: cats_talent }
+
 tiefling:
   id: tiefling
   name: "Tiefling"
@@ -690,6 +713,21 @@ trait_definitions:
     name: "Resiliência dos Robustos"
     description: "Vantagem em testes vs veneno e resistência a dano de veneno."
     sheet_impact: "Igual a Resiliência Anã (aplicar à linhagem Halfling Robusto)."
+
+  feline_agility:
+    name: "Agilidade Felina"
+    description: "Quando se move no seu turno em combate, pode dobrar seu deslocamento até o fim do turno. Depois de usar, só pode usar novamente após passar um turno movendo 0 m."
+    sheet_impact: "Adicionar recurso situacional: dobrar deslocamento por 1 turno; recarga ao passar um turno movendo 0 m."
+
+  cat_claws_1d4_slashing:
+    name: "Garras de Gato"
+    description: "Você tem deslocamento de escalada de 6 m. Suas garras são armas naturais: ataques desarmados causam 1d4 + modificador de FOR de dano cortante."
+    sheet_impact: "Adicionar deslocamento de escalada 6 m e ataque natural ‘Garras’ (1d4 cortante + FOR, prof.)."
+
+  cats_talent:
+    name: "Talento Felino"
+    description: "Proficiência em Percepção e Furtividade."
+    sheet_impact: "Adicionar Perícias: Percepção e Furtividade (prof.)."
 
   gnome_cunning:
     name: "Astúcia Gnômica"

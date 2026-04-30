@@ -448,6 +448,12 @@ class LevelUpService
         next if row[key.to_s].present? || meta['class_choices'][key.to_s].present?
         count = conf[:choose].to_i
         next if count <= 0
+        strict = LevelUpGuardService.strict_required_choices?
+        Rails.logger.warn(
+          "[autochoice-levelup] would-have-filled key=#{key} klass=#{@klass.api_index} level=#{current_level} strict=#{strict}"
+        )
+        next if strict
+
         options = conf[:options]
         list = resolve_choice_options_for_autofill(options)
         row[key.to_s] = list.sample(count)

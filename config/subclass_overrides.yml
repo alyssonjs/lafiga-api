@@ -1208,7 +1208,7 @@ cleric:
             grants:
               spells:
                 always_prepared:
-                  2: ["feather-fall","expeditious-retreat"]
+                  1: ["feather-fall","expeditious-retreat"]
                   3: ["levitate","misty-step"]
                   5: ["slow","haste"]
                   7: ["blink","dimension-door"]

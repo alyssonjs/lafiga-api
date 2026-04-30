@@ -373,5 +373,48 @@ RSpec.describe 'ASI feat no level-up e edit (Camada A.2)' do
       expect(summary[:abilities][:scores][:con]).to eq(15),
         "esperado con=15 (base 14 + 1 do Resiliente), veio #{summary[:abilities][:scores][:con]}"
     end
+
+    it 'troca Observador por +2 CHA removendo o SheetFeat e o bonus antigo' do
+      sheet = build_mago_lvl3
+      sheet.sheet_klasses.first.update!(level: 4)
+      sheet.update!(current_level: 4)
+
+      CharacterSheetEdits::ProgressionEditService.new(
+        character: sheet.character,
+        data: {
+          'levelChoice' => {
+            'level' => 4,
+            'asiChoice' => { 'mode' => 'feat', 'featId' => 'observador', 'featAbility' => 'wis' }
+          }
+        },
+        level: 4
+      ).call
+
+      CharacterSheetEdits::ProgressionEditService.new(
+        character: sheet.character,
+        data: {
+          'levelChoice' => {
+            'level' => 4,
+            'asiChoice' => { 'mode' => 'plus2', 'ability1' => 'cha' }
+          }
+        },
+        level: 4
+      ).call
+
+      sheet.reload
+      row4 = sheet.metadata.dig('class_choices', 'per_level', '4')
+      expect(row4['asi']).to eq('mode' => 'plus2', 'ability1' => 'cha')
+      expect(sheet.sheet_feats.where(level_gained: 4).count).to eq(0),
+        "nenhum SheetFeat deveria sobreviver no nivel 4 apos trocar talento por atributo"
+      expect(Array(sheet.metadata['feats']).map { |f| f['feat_id'] }).not_to include('observador')
+
+      summary = summary_for(sheet)
+      expect(summary[:abilities][:scores][:wis]).to eq(14),
+        "esperado wis=14 apos remover Observador, veio #{summary[:abilities][:scores][:wis]}"
+      expect(summary[:abilities][:scores][:int]).to eq(16),
+        "esperado int=16 apos remover Observador, veio #{summary[:abilities][:scores][:int]}"
+      expect(summary[:abilities][:scores][:cha]).to eq(12),
+        "esperado cha=12 (base 10 + ASI +2), veio #{summary[:abilities][:scores][:cha]}"
+    end
   end
 end

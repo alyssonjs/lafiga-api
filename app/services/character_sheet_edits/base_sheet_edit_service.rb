@@ -25,14 +25,15 @@ module CharacterSheetEdits
       race_changed:  'Trocar de raca recomputa proficiencias, deslocamento e idiomas; perde escolhas raciais antigas.'
     }.freeze
 
-    attr_reader :character, :sheet, :data, :level
+    attr_reader :character, :sheet, :data, :level, :current_user
 
-    def initialize(character:, data:, level: nil, force: false)
+    def initialize(character:, data:, level: nil, force: false, current_user: nil)
       @character = character
       @sheet     = character.sheet or raise ArgumentError, 'edit mode requires character.sheet to be present'
       @data      = (data.is_a?(Hash) ? data.deep_stringify_keys : {})
       @level     = level&.to_i
       @force     = !!force
+      @current_user = current_user
       @warnings  = []
       @cleared   = []
       @requires_confirmation = nil

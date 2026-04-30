@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_28_120000) do
+ActiveRecord::Schema.define(version: 2026_04_29_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -462,7 +462,9 @@ ActiveRecord::Schema.define(version: 2026_04_28_120000) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "api_index"
+    t.boolean "playable", default: true, null: false
     t.index ["api_index"], name: "index_races_on_api_index", unique: true
+    t.index ["playable"], name: "index_races_on_playable"
   end
 
   create_table "roles", force: :cascade do |t|
@@ -730,6 +732,8 @@ ActiveRecord::Schema.define(version: 2026_04_28_120000) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "api_index"
+    t.boolean "playable", default: true, null: false
+    t.index ["playable"], name: "index_sub_races_on_playable"
     t.index ["race_id", "api_index"], name: "index_sub_races_on_race_id_and_api_index", unique: true
     t.index ["race_id"], name: "index_sub_races_on_race_id"
   end

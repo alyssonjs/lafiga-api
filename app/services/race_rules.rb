@@ -62,6 +62,7 @@ class RaceRules
     'meio_orc' => 'half_orc',
     'meio-orc' => 'half_orc',
     'tiefling' => 'tiefling',
+    'tabaxi' => 'tabaxi',
     'aarakocra' => 'aarakocra',
     'centauro' => 'centaur',
   }.freeze

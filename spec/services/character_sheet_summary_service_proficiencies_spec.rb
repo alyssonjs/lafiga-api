@@ -196,4 +196,47 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges subcla
       'Ferramentas de Funileiro',
     )
   end
+
+  it 'resolve grants.proficiencies.weapons com choose/options pela escolha do per_level' do
+    sub = SubKlass.create!(
+      klass: wizard,
+      api_index: 'feiticeiro-da-espada-spec',
+      name: 'Feitiçaria da Espada (spec)',
+      levels_json: [
+        {
+          'level' => 2,
+          'grants' => {
+            'proficiencies' => {
+              'weapons' => {
+                'choose' => 1,
+                'options' => ['espada curta', 'espada longa', 'cimitarra']
+              }
+            }
+          }
+        }
+      ].to_json
+    )
+    character = Character.create!(user: user, name: 'Sword PC', background: 'Test')
+    sheet = Sheet.create!(
+      character: character,
+      race_id: human_race.id,
+      str: 8, dex: 14, con: 14, int: 16, wis: 12, cha: 8,
+      hp_max: 8, hp_current: 8,
+      class_summary: { 'weapon_proficiencies' => [] },
+      metadata: {
+        'class_choices' => {
+          'per_level' => {
+            '2' => { 'weapon' => ['Espada Longa'] }
+          }
+        }
+      }
+    )
+    SheetKlass.create!(sheet: sheet, klass: wizard, sub_klass: sub, level: 2)
+    cmd = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+    expect(cmd.success?).to be(true), -> { cmd.errors.full_messages.join('; ') rescue cmd.inspect }
+    weapons = Array(cmd.result.dig(:proficiencies, :weapons)).map(&:to_s)
+    expect(weapons).to include('Espada Longa')
+    expect(weapons.join(' ')).not_to include('choose')
+    expect(weapons.join(' ')).not_to include('options')
+  end
 end

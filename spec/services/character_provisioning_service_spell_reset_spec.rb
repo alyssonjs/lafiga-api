@@ -62,4 +62,54 @@ RSpec.describe CharacterProvisioningService, type: :service do
       expect(SheetPreparedSpell.where(sheet_id: sheet.id).count).to eq(1)
     end
   end
+
+  describe '#cleanup_non_feat_asi_levels!' do
+    let(:user) { create(:user) }
+    let(:service) { described_class.new(user: user, payload: {}) }
+    let(:character) { create(:character, user: user, status: :active) }
+    let(:sheet) do
+      create(:sheet, character: character, metadata: {
+        'feats' => [
+          { 'feat_id' => 'observador', 'level_gained' => 4 },
+          { 'feat_id' => 'resiliente', 'level_gained' => 8 },
+          { 'feat_id' => 'racial', 'level_gained' => 1 }
+        ]
+      })
+    end
+
+    it 'remove feats antigos de níveis ASI que agora são incremento de atributo' do
+      observador = Feat.create!(
+        api_index: 'observador_cleanup',
+        name: "Observador Cleanup #{SecureRandom.hex(3)}",
+        description: ''
+      )
+      resiliente = Feat.create!(
+        api_index: 'resiliente_cleanup',
+        name: "Resiliente Cleanup #{SecureRandom.hex(3)}",
+        description: ''
+      )
+      racial = Feat.create!(
+        api_index: 'racial_cleanup',
+        name: "Racial Cleanup #{SecureRandom.hex(3)}",
+        description: ''
+      )
+      SheetFeat.create!(sheet: sheet, feat: observador, level_gained: 4)
+      SheetFeat.create!(sheet: sheet, feat: resiliente, level_gained: 8)
+      SheetFeat.create!(sheet: sheet, feat: racial, level_gained: 1)
+
+      service.send(
+        :cleanup_non_feat_asi_levels!,
+        sheet: sheet,
+        max_level: 8,
+        per_level: {
+          '4' => { 'asi' => { 'mode' => 'attributes', 'attributes' => ['CHA'] } },
+          '8' => { 'asi' => { 'mode' => 'feat', 'featId' => 'resiliente' } }
+        }
+      )
+
+      remaining_levels = sheet.reload.sheet_feats.order(:level_gained).pluck(:level_gained)
+      expect(remaining_levels).to eq([1, 8])
+      expect(Array(sheet.metadata['feats']).map { |f| f['feat_id'] }).to eq(%w[resiliente racial])
+    end
+  end
 end

@@ -48,6 +48,7 @@ module CharacterSheetEdits
       new_race_id = data['raceId']
       resolved_race_id = resolve_race_id(new_race_id)
       if new_race_id.present? && resolved_race_id.present? && resolved_race_id != sheet.race_id.to_i
+        ensure_playable_race_allowed!(race_id: resolved_race_id, sub_race_id: nil)
         clear!('sheet.metadata.race_choices', reason: DESTRUCTIVE_REASONS[:race_changed], confirm: true)
         sheet.race_id = resolved_race_id
         sheet.sub_race_id = nil
@@ -61,6 +62,7 @@ module CharacterSheetEdits
         if data['subraceId'].present? && resolved_sub.nil?
           warn!("subraceId '#{data['subraceId']}' não resolveu para nenhuma SubRace de race_id=#{target_race_id}; nada alterado")
         else
+          ensure_playable_race_allowed!(race_id: target_race_id, sub_race_id: resolved_sub)
           sheet.sub_race_id = resolved_sub
         end
       end
@@ -172,6 +174,29 @@ module CharacterSheetEdits
       sheet.save!
     rescue StandardError => e
       warn!("RaceRules.apply falhou: #{e.message}")
+    end
+
+    def ensure_playable_race_allowed!(race_id:, sub_race_id:)
+      return if allow_non_playable_race?
+
+      race_record = race_id.present? ? Race.find_by(id: race_id) : nil
+      if race_record.present? && !race_record.playable?
+        raise ArgumentError, 'Raça indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+      end
+
+      sub_race_record = sub_race_id.present? ? SubRace.find_by(id: sub_race_id) : nil
+      return unless sub_race_record.present? && !sub_race_record.playable?
+
+      raise ArgumentError, 'Sub-raça indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+    end
+
+    def allow_non_playable_race?
+      Group.user_is_dm?(current_user) && sheet_npc?
+    end
+
+    def sheet_npc?
+      general = (sheet.metadata || {}).dig('general') || {}
+      ActiveModel::Type::Boolean.new.cast(general['isNPC'] || general[:isNPC])
     end
 
     # X2: agora delega ao helper compartilhado em BaseSheetEditService.

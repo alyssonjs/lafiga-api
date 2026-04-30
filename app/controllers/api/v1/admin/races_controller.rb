@@ -1,10 +1,10 @@
 class Api::V1::Admin::RacesController < ApplicationController
-  before_action :authorize_admin_request
+  before_action :authorize_site_wide_dm
   before_action :set_race, only: [:show, :update, :destroy]
 
 
   def index
-    races = Race.all
+    races = Race.order(:name)
     render json: {races: races}, status: 200
   end
   
@@ -50,6 +50,6 @@ class Api::V1::Admin::RacesController < ApplicationController
   end
 
   def race_params
-    params.require(:race).permit(:name)
+    params.require(:race).permit(:name, :api_index, :playable)
   end
 end

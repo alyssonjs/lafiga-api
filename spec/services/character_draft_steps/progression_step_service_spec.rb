@@ -83,6 +83,33 @@ RSpec.describe CharacterDraftSteps::ProgressionStepService do
       expect(row['subclassChoice']).to eq('id' => 'sub-1')     # preservado
     end
 
+    it 'substitui o asi inteiro ao trocar talento por atributo no mesmo nivel' do
+      character.update!(draft_data: {
+        'level' => 5,
+        'levelChoices' => [
+          {
+            'level' => 4,
+            'asi' => {
+              'mode' => 'feat',
+              'featId' => 'observador',
+              'choices' => { 'ability' => 'wis' }
+            }
+          }
+        ]
+      })
+
+      svc = described_class.new(
+        character: character,
+        data: { 'levelChoice' => { 'asiChoice' => { 'mode' => 'plus2', 'ability1' => 'cha' } } },
+        level: 4
+      )
+      result = svc.call
+
+      row = result.draft_data['levelChoices'].find { |r| r['level'] == 4 }
+      expect(row['asi']).to eq('mode' => 'plus2', 'ability1' => 'cha')
+      expect(row).not_to have_key('asiChoice')
+    end
+
     it 'preserva known/spellbook/prepared quando PATCH parcial edita so cantrips' do
       character.update!(draft_data: {
         'spellSelections' => {

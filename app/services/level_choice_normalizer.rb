@@ -69,7 +69,7 @@ module LevelChoiceNormalizer
     out['invocations'] = inv_tokens if inv_tokens.any?
 
     asi_choice = out.delete('asiChoice')
-    if asi_choice.present? && !out['asi'].is_a?(Hash)
+    if asi_choice.present?
       out['asi'] = build_asi(asi_choice)
     end
     out

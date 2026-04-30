@@ -1,9 +1,9 @@
 class Api::V1::Admin::SubRacesController < ApplicationController
-  before_action :authorize_admin_request
+  before_action :authorize_site_wide_dm
   before_action :set_sub_race, only: [:show, :update, :destroy]
 
   def index
-    sub_races = SubRace.all
+    sub_races = SubRace.order(:name)
     render json: {sub_races: sub_races}, status: 200
   end
 
@@ -25,7 +25,7 @@ class Api::V1::Admin::SubRacesController < ApplicationController
 
   def update
     if @sub_race.update(sub_race_params)
-      render json: {sub_races: @sub_race}, status: 200 
+      render json: {sub_race: @sub_race}, status: 200
     else
       render json: { errors: @sub_race.errors.full_messages }, status: :unprocessable_entity
     end
@@ -49,6 +49,6 @@ class Api::V1::Admin::SubRacesController < ApplicationController
   end
 
   def sub_race_params
-    params.require(:sub_race).permit(:name, :race_id)
+    params.require(:sub_race).permit(:name, :race_id, :api_index, :playable)
   end
 end

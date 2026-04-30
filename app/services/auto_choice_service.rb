@@ -38,6 +38,9 @@ class AutoChoiceService
         Rails.logger.warn(
           "[autochoice-service] would-have-filled key=#{choice_key} klass=#{@klass.api_index} level=#{@level} strict=#{strict}"
         )
+      else
+        Rails.logger.info "AutoChoiceService: #{choice_key} já presente para nível #{@level}, mantendo escolha do jogador."
+        next
       end
       next if strict && already_set.blank?
 
@@ -68,7 +71,7 @@ class AutoChoiceService
     when 'fighting_style'
       make_fighting_style_choice(options, class_choices)
     when 'metamagic'
-      make_metamagic_choice(choose_count, options, class_choices)
+      make_metamagic_choice(choose_count, options, class_choices, per_level)
     when 'invocations'
       make_invocations_choice(choose_count, options, class_choices)
     when 'pact_boon'
@@ -137,7 +140,7 @@ class AutoChoiceService
     end
   end
 
-  def make_metamagic_choice(choose_count, options, class_choices)
+  def make_metamagic_choice(choose_count, options, class_choices, per_level)
     # Kit 1.PoC: options pode vir como Symbol :metamagic → resolve via catálogo canônico.
     resolved = if options.is_a?(Symbol)
                  begin
@@ -157,8 +160,11 @@ class AutoChoiceService
     else
       chosen = (resolved.presence || ['Magia Acelerada', 'Magia Expandida']).first(choose_count)
     end
-    class_choices['metamagic'] = chosen
-    Rails.logger.info "Metamagic escolhidas: #{chosen.join(', ')}"
+    level_key = @level.to_s
+    per_level[level_key] ||= {}
+    per_level[level_key]['metamagic'] = chosen
+    class_choices['per_level'] = per_level
+    Rails.logger.info "Metamagic escolhidas (per_level[#{level_key}]): #{chosen.join(', ')}"
   end
 
   def make_invocations_choice(choose_count, options, class_choices)

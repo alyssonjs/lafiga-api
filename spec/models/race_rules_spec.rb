@@ -46,5 +46,20 @@ RSpec.describe 'RaceRules YAML integration' do
     expect(keys).to include('legacy_resistance_fire')
     expect(keys).to include('infernal_legacy_variant')
   end
-end
 
+  it 'applies Tabaxi base traits, proficiencies, and extra language choice' do
+    RaceRules.reload!
+
+    sel = { race_id: 'tabaxi', subrace_id: nil, choices: { extraLanguages: ['Élfico'] } }
+    applied = RaceRules.apply(sel)
+    keys = Array(applied[:traits]).map { |t| t[:key] }
+
+    expect(applied[:ability][:increases]).to include({ ability: 'DEX', amount: 2 })
+    expect(applied[:ability][:increases]).to include({ ability: 'CHA', amount: 1 })
+    expect(applied[:speed]).to eq(30)
+    expect(applied[:darkvision]).to include(range: 60)
+    expect(applied[:languages]).to include('Comum', 'Élfico')
+    expect(applied.dig(:proficiencies, :skills, :fixed)).to contain_exactly('Percepção', 'Furtividade')
+    expect(keys).to include('darkvision', 'feline_agility', 'cat_claws_1d4_slashing', 'cats_talent')
+  end
+end

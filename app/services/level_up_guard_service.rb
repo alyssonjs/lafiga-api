@@ -80,8 +80,12 @@ class LevelUpGuardService
             if auto_choice.present?
               chosen = auto_choice
               meta['class_choices'] ||= {}
-              meta['class_choices'][key.to_s] = chosen
-              Rails.logger.info "Escolha automática feita e salva: #{chosen}"
+              meta['class_choices']['per_level'] ||= {}
+              meta['class_choices']['per_level'][lvl.to_s] ||= {}
+              meta['class_choices']['per_level'][lvl.to_s][key.to_s] = chosen
+              # Compatibilidade com leitores antigos para escolhas historicamente root-only.
+              meta['class_choices'][key.to_s] = chosen if key.to_s == 'fighting_style' && meta['class_choices'][key.to_s].blank?
+              Rails.logger.info "Escolha automática feita e salva em per_level[#{lvl}]: #{chosen}"
             end
           end
         end

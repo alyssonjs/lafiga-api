@@ -5,14 +5,14 @@ class Api::V1::Public::SubRacesController < ApplicationController
     sub_races = SubRace.all
     render json: {
       sub_races: sub_races.map { |sr|
-        { id: sr.id, name: sr.name, race_id: sr.race_id, api_index: (sr.api_index.presence || (sr.name || '').to_s.parameterize(separator: '_')) }
+        { id: sr.id, name: sr.name, race_id: sr.race_id, api_index: (sr.api_index.presence || (sr.name || '').to_s.parameterize(separator: '_')), playable: sr.playable? }
       }
     }, status: 200
   end
 
   def show
     render json: {
-      sub_race: { id: @sub_race.id, name: @sub_race.name, race_id: @sub_race.race_id, api_index: (@sub_race.api_index.presence || (@sub_race.name || '').to_s.parameterize(separator: '_')) }
+      sub_race: { id: @sub_race.id, name: @sub_race.name, race_id: @sub_race.race_id, api_index: (@sub_race.api_index.presence || (@sub_race.name || '').to_s.parameterize(separator: '_')), playable: @sub_race.playable? }
     }, status: 200
   end
 

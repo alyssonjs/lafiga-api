@@ -9,30 +9,31 @@ class FeatAssignmentService
   end
 
   def call
-    ActiveRecord::Base.transaction do
-      Rails.logger.info "=== FeatAssignmentService Debug ==="
-      Rails.logger.info "feat_id: #{@feat_id}"
-      Rails.logger.info "choices: #{@choices.inspect}"
-      Rails.logger.info "sheet_id: #{@sheet.id}"
+    Rails.logger.info "=== FeatAssignmentService Debug ==="
+    Rails.logger.info "feat_id: #{@feat_id}"
+    Rails.logger.info "choices: #{@choices.inspect}"
+    Rails.logger.info "sheet_id: #{@sheet.id}"
 
-      # Check if feat exists in rules
-      feat_rule = FeatRules.find(@feat_id)
-      unless feat_rule
-        Rails.logger.error "Feat não encontrado: #{@feat_id}"
-        errors.add(:feat, 'não encontrado')
-        return nil
-      end
-      Rails.logger.info "Feat encontrado: #{feat_rule[:name]}"
+    # Validation failures must happen outside the DB transaction. Returning from
+    # inside a nested transaction can poison the outer provisioning transaction
+    # on PostgreSQL, surfacing later as PG::InFailedSqlTransaction.
+    feat_rule = FeatRules.find(@feat_id)
+    unless feat_rule
+      Rails.logger.error "Feat não encontrado: #{@feat_id}"
+      errors.add(:feat, 'não encontrado')
+      return nil
+    end
+    Rails.logger.info "Feat encontrado: #{feat_rule[:name]}"
 
-      # Check prerequisites
-      unless FeatRules.check_prerequisites(@feat_id, @sheet)
-        Rails.logger.error "Pré-requisitos não atendidos para feat: #{@feat_id}"
-        errors.add(:feat, 'pré-requisitos não atendidos')
-        return nil
-      end
-      Rails.logger.info "Pré-requisitos atendidos"
+    unless FeatRules.check_prerequisites(@feat_id, @sheet)
+      Rails.logger.error "Pré-requisitos não atendidos para feat: #{@feat_id}"
+      errors.add(:feat, 'pré-requisitos não atendidos')
+      return nil
+    end
+    Rails.logger.info "Pré-requisitos atendidos"
 
-      # Create or find feat in database first
+    sheet_feat = nil
+    ActiveRecord::Base.transaction(requires_new: true) do
       feat = Feat.find_or_create_by(api_index: @feat_id) do |f|
         f.name = feat_rule[:name]
         f.description = feat_rule[:description]
@@ -45,22 +46,14 @@ class FeatAssignmentService
       # Substituir talento no mesmo nível (ex.: edição de ASI no nível 4): remove DB + entrada em metadata.
       lg = @level_gained.to_i
       if lg.positive?
-        @sheet.sheet_feats.where(level_gained: lg).destroy_all
-        metadata = @sheet.reload.metadata || {}
-        feats_meta = Array(metadata['feats']).reject do |entry|
-          next false unless entry.is_a?(Hash)
-          egl = entry['level_gained'] || entry[:level_gained]
-          egl.to_i == lg
-        end
-        metadata['feats'] = feats_meta
-        @sheet.update!(metadata: metadata)
+        SheetFeatLevelCleaner.call(sheet: @sheet, levels: [lg])
       end
 
       # Check if sheet already has this feat
       if @sheet.sheet_feats.exists?(feat: feat)
         Rails.logger.error "Sheet já possui este feat: #{@feat_id}"
         errors.add(:feat, 'já possui este talento')
-        return nil
+        raise ActiveRecord::Rollback
       end
       Rails.logger.info "Feat não duplicado"
 
@@ -79,9 +72,8 @@ class FeatAssignmentService
 
       # Apply special rules if any
       apply_special_rules(sheet_feat) if feat_rule[:special_rules]
-
-      sheet_feat
     end
+    sheet_feat
   rescue StandardError => e
     errors.add(:base, e.message)
     nil

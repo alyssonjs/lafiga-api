@@ -998,19 +998,7 @@ class FeatRules
 
     # Check spellcasting capability if required
     if prereqs[:spellcasting]
-      has_casting = false
-      begin
-        meta = sheet.metadata || {}
-        cs = meta['class_summary'] || {}
-        has_casting ||= cs['spellcasting'].present?
-      rescue StandardError
-        # ignore
-      end
-      begin
-        has_casting ||= sheet.sheet_klasses.joins(:klass).where.not(spellcasting: nil).exists?
-      rescue StandardError
-        # association might not exist yet during character creation; be permissive
-      end
+      has_casting = sheet_has_spellcasting?(sheet)
       unless has_casting
         Rails.logger.error "Prerequisite failed: requires spellcasting"
         return false
@@ -1085,6 +1073,49 @@ class FeatRules
 
     Rails.logger.info "All prerequisites met"
     true
+  end
+
+  def self.sheet_has_spellcasting?(sheet)
+    return false unless sheet
+
+    begin
+      meta = (sheet.metadata || {}).deep_stringify_keys
+      cs = meta['class_summary'] || {}
+      return true if cs['spellcasting'].present? || cs['conjuration'].present?
+
+      sel = meta['spell_selections'] || {}
+      return true if %w[cantrips known spellbook prepared].any? { |k| Array(sel[k]).any? }
+
+      per_level = meta.dig('class_choices', 'per_level') || {}
+      per_level.each_value do |row|
+        next unless row.is_a?(Hash)
+
+        return true if %w[cantrips spells spellbook prepared].any? { |k| Array(row[k]).any? }
+      end
+    rescue StandardError
+      # continue with relational checks
+    end
+
+    begin
+      if SheetKlass.column_names.include?('spellcasting')
+        return true if sheet.sheet_klasses.joins(:klass).where.not(spellcasting: nil).exists?
+      end
+    rescue StandardError
+      # older/imported rows may not have this denormalized column populated
+    end
+
+    begin
+      sheet.sheet_klasses.includes(:sub_klass, klass: { class_levels: :spellcasting }).any? do |sk|
+        klass = sk.klass
+        next false unless klass
+
+        klass.spellcasting_ability.present? ||
+          SpellRules.sc_for(klass, sk.level).present? ||
+          SpellRules.subclass_sc_for(sk).present?
+      end
+    rescue StandardError
+      false
+    end
   end
 
   def self.split_skills_and_tools(values)

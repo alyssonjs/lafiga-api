@@ -9,7 +9,8 @@ class Api::V1::Public::RacesController < ApplicationController
           id: r.id,
           name: r.name,
           api_index: (r.api_index.presence || (r.name || '').to_s.parameterize(separator: '_')),
-          sub_races: r.sub_races.map { |sr| { id: sr.id, name: sr.name, race_id: r.id, api_index: (sr.api_index.presence || (sr.name || '').to_s.parameterize(separator: '_')) } }
+          playable: r.playable?,
+          sub_races: r.sub_races.map { |sr| { id: sr.id, name: sr.name, race_id: r.id, api_index: (sr.api_index.presence || (sr.name || '').to_s.parameterize(separator: '_')), playable: sr.playable? } }
         }
       }
     }, status: 200
@@ -21,7 +22,8 @@ class Api::V1::Public::RacesController < ApplicationController
       race: {
         id: @race.id,
         name: @race.name,
-        api_index: api_index
+        api_index: api_index,
+        playable: @race.playable?
       }
     }, status: 200
   end
