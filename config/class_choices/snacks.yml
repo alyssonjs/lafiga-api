@@ -341,7 +341,7 @@
   higher_level: 'Dado do bônus: 10º (1d6), 15º (1d8), 20º (1d10).'
   prereqs:
     level: 3
-    subclass: mestre-da-fritura
+    subclass: sous-chef
 - slug: cook-snack-cerveja-forte
   name_pt: Cerveja Forte
   name_en: Cerveja Forte
@@ -355,7 +355,7 @@
   - cozinheiro
   prereqs:
     level: 7
-    subclass: mestre-da-fritura
+    subclass: sous-chef
 - slug: cook-snack-peixe-no-mel
   name_pt: Peixe no Mel
   name_en: Peixe no Mel
@@ -368,7 +368,7 @@
   - cozinheiro
   prereqs:
     level: 13
-    subclass: mestre-da-fritura
+    subclass: sous-chef
 - slug: cook-snack-pure-de-pinhoes
   name_pt: Purê de Pinhões
   name_en: Purê de Pinhões
@@ -382,7 +382,7 @@
   - cozinheiro
   prereqs:
     level: 17
-    subclass: mestre-da-fritura
+    subclass: sous-chef
 - slug: cook-snack-brotos-fedorentos
   name_pt: Brotos Fedorentos
   name_en: Brotos Fedorentos
@@ -395,7 +395,7 @@
   - cozinheiro
   prereqs:
     level: 3
-    subclass: mestre-do-fogo-e-fumaca
+    subclass: sargento-alimentar
 - slug: cook-snack-feijoes-de-inchaco
   name_pt: Feijões de Inchaço
   name_en: Feijões de Inchaço
@@ -409,7 +409,7 @@
   - cozinheiro
   prereqs:
     level: 7
-    subclass: mestre-do-fogo-e-fumaca
+    subclass: sargento-alimentar
 - slug: cook-snack-cafe-tremulante
   name_pt: Café Tremulante
   name_en: Café Tremulante
@@ -423,7 +423,7 @@
   - cozinheiro
   prereqs:
     level: 13
-    subclass: mestre-do-fogo-e-fumaca
+    subclass: sargento-alimentar
 - slug: cook-snack-aveia-gorda
   name_pt: Aveia Gorda
   name_en: Aveia Gorda
@@ -436,7 +436,7 @@
   - cozinheiro
   prereqs:
     level: 17
-    subclass: mestre-do-fogo-e-fumaca
+    subclass: sargento-alimentar
 - slug: cook-snack-papa-gordurosa
   name_pt: Papa Gordurosa
   name_en: Papa Gordurosa
@@ -451,7 +451,7 @@
   higher_level: 'Dano: 4º (2d6), 7º (3d6), 9º (4d6), 13º (5d6), 17º (6d6), 20º (7d6).'
   prereqs:
     level: 3
-    subclass: alquimista-gourmet
+    subclass: mestre-cuca
 - slug: cook-snack-sais-de-fogo
   name_pt: Sais de Fogo
   name_en: Sais de Fogo
@@ -466,7 +466,7 @@
   higher_level: 'Dano: 9º (5d6), 13º (6d6), 17º (7d6), 20º (8d6).'
   prereqs:
     level: 7
-    subclass: alquimista-gourmet
+    subclass: mestre-cuca
 - slug: cook-snack-atim-no-alho
   name_pt: Atum no Alho
   name_en: Atum no Alho
@@ -480,7 +480,7 @@
   - cozinheiro
   prereqs:
     level: 13
-    subclass: alquimista-gourmet
+    subclass: mestre-cuca
 - slug: cook-snack-cebola-rancosa
   name_pt: Cebola Rançosa
   name_en: Cebola Rançosa
@@ -494,7 +494,7 @@
   - cozinheiro
   prereqs:
     level: 17
-    subclass: alquimista-gourmet
+    subclass: mestre-cuca
 - slug: cook-snack-gole-do-subterraneo
   name_pt: Gole do Subterrâneo
   name_en: Gole do Subterrâneo
@@ -508,7 +508,7 @@
   - cozinheiro
   prereqs:
     level: 3
-    subclass: cantineiro-de-guerra
+    subclass: mestre-cervejeiro
 - slug: cook-snack-raspadinha-de-vodka
   name_pt: Raspadinha de Vodka
   name_en: Raspadinha de Vodka
@@ -522,7 +522,7 @@
   - cozinheiro
   prereqs:
     level: 7
-    subclass: cantineiro-de-guerra
+    subclass: mestre-cervejeiro
 - slug: cook-snack-whisky-de-fogo-infernal
   name_pt: Whisky de Fogo Infernal
   name_en: Whisky de Fogo Infernal
@@ -536,7 +536,7 @@
   - cozinheiro
   prereqs:
     level: 13
-    subclass: cantineiro-de-guerra
+    subclass: mestre-cervejeiro
 - slug: cook-snack-beijo-de-anjo
   name_pt: Beijo de Anjo
   name_en: Beijo de Anjo
@@ -550,4 +550,4 @@
   - cozinheiro
   prereqs:
     level: 17
-    subclass: cantineiro-de-guerra
+    subclass: mestre-cervejeiro

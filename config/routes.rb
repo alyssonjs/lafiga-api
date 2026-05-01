@@ -156,6 +156,10 @@ Rails.application.routes.draw do
 
             resources :session_logs, only: [:index, :create]
           end
+
+          # Histórico do feed da sessão (chat + dice rolls). Writes via
+          # ActionCable (SessionFeedChannel); aqui só leitura paginada.
+          resources :session_feed_items, only: [:index]
         end
         resources :schedule_characters, only: [:index, :show, :update]
         resources :groups, only: [:index, :show, :create, :update, :destroy] do

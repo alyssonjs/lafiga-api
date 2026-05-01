@@ -18,9 +18,10 @@ class Schedule < ApplicationRecord
   has_many :campaign_notes, dependent: :nullify
 
   # Realtime session resources (Fase 1 — combate server-authoritative).
-  has_one  :combat_state,  dependent: :destroy
-  has_many :combat_npcs,   dependent: :destroy
-  has_many :session_logs,  dependent: :destroy
+  has_one  :combat_state,        dependent: :destroy
+  has_many :combat_npcs,         dependent: :destroy
+  has_many :session_logs,        dependent: :destroy
+  has_many :session_feed_items,  dependent: :delete_all
 
   LINKED_NPC_CHARACTER_IDS_COL = 'linked_npc_character_ids'.freeze
   DM_TEMP_NPC_CHARACTER_IDS_COL = 'dm_temp_npc_character_ids'.freeze
@@ -68,12 +69,21 @@ class Schedule < ApplicationRecord
     joins(:schedule_characters).where(schedule_characters: { character_id: character_id })
   }
 
-  # Hub / GET index (jogador não-DM global): todas as sessões que a conta deve
-  # enxergar — grupos onde tem personagem (`User#groups`) + grupos que detém
-  # como mestre da mesa (`User#owned_groups`, sem exigir PC) + qualquer sessão
-  # em que um personagem seu está em `schedule_characters` (ex.: vínculo
-  # explícito ou dados legados). Substitui `User#schedules` (through :groups),
-  # que omitia `owned_groups` e só passava por personagens com `group_id`.
+  # Index do hub do jogador (GET /player/schedules sem filtros extras):
+  # retorna apenas sessões cujo group_id pertence a um dos grupos onde o
+  # usuário tem pelo menos um personagem (`character.group_id`).
+  # Aplica-se a qualquer role — inclusive DM/Admin acessando a interface
+  # de jogador: eles vêem só as sessões dos grupos onde têm personagens.
+  # Para visão completa de DM, usar o endpoint admin.
+  def self.for_player_index(user)
+    gids = user.characters.where.not(group_id: nil).distinct.pluck(:group_id)
+    gids.any? ? where(group_id: gids) : none
+  end
+
+  # Hub / GET index (jogador não-DM global, escopo amplo — usado em autorizações
+  # de mutations): sessões dos grupos onde tem personagem + grupos que detém como
+  # mestre da mesa + sessões em que um personagem seu está em schedule_characters.
+  # Para o index de listagem, prefira `for_player_index`.
   def self.for_hub_player(user)
     return all if Group.user_is_dm?(user)
 

@@ -884,6 +884,9 @@ class ClassRules
         options: {
           berserker: { id: 'berserker', name: 'Caminho do Furioso' },
           totem: { id: 'totem', name: 'Caminho do Guerreiro Totêmico' },
+          # Path of the Zealot (XGtE) — adicionado para alinhar com o front
+          # (BARBARIAN_ZEALOT em subclassFeatures.ts).
+          zealot: { id: 'zealot', name: 'Caminho do Zelote' },
           :'barbaro-cicatrizes-runicas' => { id: 'barbaro-cicatrizes-runicas', name: 'Caminho do Bárbaro das Cicatrizes Rúnicas' },
           :'desistente' => { id: 'desistente', name: 'Caminho do Desistente' },
           :'furioso-imortal' => { id: 'furioso-imortal', name: 'Caminho do Furioso Imortal' },
@@ -926,6 +929,9 @@ class ClassRules
         options: {
           lore: { id: 'lore', name: 'Colégio do Conhecimento' },
           valor: { id: 'valor', name: 'Colégio da Bravura' },
+          # College of Glamour (XGtE) — adicionado para alinhar com o front
+          # (BARD_GLAMOUR em subclassFeatures.ts).
+          :'colegio-do-glamour' => { id: 'colegio-do-glamour', name: 'Colégio do Glamour' },
           :'colegio-busca-cancao' => { id: 'colegio-busca-cancao', name: 'Colégio da Busca da Canção' },
           :'colegio-comedia' => { id: 'colegio-comedia', name: 'Colégio da Comédia' },
           :'colegio-fortuna' => { id: 'colegio-fortuna', name: 'Colégio da Fortuna' },
@@ -1440,11 +1446,14 @@ class ClassRules
       subclass: {
         choose_level: 3,
         options: {
-          'mestre-da-fritura':      { id: 'mestre-da-fritura',      name: 'Mestre da Fritura' },
-          'alquimista-gourmet':     { id: 'alquimista-gourmet',     name: 'Alquimista Gourmet' },
-          'doceiro-encantado':      { id: 'doceiro-encantado',      name: 'Doceiro Encantado' },
-          'mestre-do-fogo-e-fumaca':{ id: 'mestre-do-fogo-e-fumaca',name: 'Mestre do Fogo e Fumaça' },
-          'cantineiro-de-guerra':   { id: 'cantineiro-de-guerra',   name: 'Cantineiro de Guerra' }
+          # Canônicos do PDF (O_Cozinheiro_-_Classe.pdf — Sam Grierson)
+          'sous-chef':              { id: 'sous-chef',              name: 'Sous Chef' },
+          'sargento-alimentar':     { id: 'sargento-alimentar',     name: 'Sargento Alimentar' },
+          'mestre-cuca':            { id: 'mestre-cuca',            name: 'Mestre-Cuca' },
+          'mestre-cervejeiro':      { id: 'mestre-cervejeiro',      name: 'Mestre Cervejeiro' },
+          'amassador-de-monstros':  { id: 'amassador-de-monstros',  name: 'Amassador de Monstros' },
+          # Homebrew Lafiga
+          'doceiro-encantado':      { id: 'doceiro-encantado',      name: 'Doceiro Encantado' }
         }
       },
 

@@ -1,10 +1,20 @@
 # frozen_string_literal: true
 
-# Ephemeral session feed (chat + dice bubble) over ActionCable.
+# Session feed (chat + dice bubble) over ActionCable, com persistência
+# (SessionFeedItem) para histórico entre conexões e dispositivos.
 # Subscribe: { channel: 'SessionFeedChannel', schedule_id:, token: }
 # Client perform: feed_item with { item: <FeedItem hash> }
 #
-# No DB persistence — one broadcast per valid item. Rate-limited per user/schedule.
+# Pipeline por mensagem válida:
+#   1. Rate limit por user/schedule (SessionFeed::RateLimit).
+#   2. Normaliza payload (sanitização + whitelist de campos).
+#   3. SessionFeed::Persist.call (idempotente, dedup por client_id, upsert
+#      roll_pending → roll, atualização in-place de attack_hit_resolution).
+#   4. ActionCable.server.broadcast para os subscribers.
+#
+# Falhas em (3) NÃO bloqueiam o broadcast (degrada para comportamento
+# anterior — efêmero) mas são logadas. Histórico via REST:
+# GET /api/v1/player/schedules/:id/session_feed_items.
 class SessionFeedChannel < ApplicationCable::Channel
   # Stickers locais (data URL base64) precisam de folga; ainda rate-limited por utilizador.
   MAX_PAYLOAD_BYTES = 28_672
@@ -61,10 +71,25 @@ class SessionFeedChannel < ApplicationCable::Channel
       return
     end
 
+    persist_item(normalized)
+
     ActionCable.server.broadcast(self.class.stream_name_for(@schedule_id), normalized)
   end
 
   private
+
+  # Persiste o item já normalizado. Falha aqui não bloqueia o broadcast —
+  # histórico fica off-line para esta mensagem mas a sessão continua.
+  def persist_item(normalized)
+    SessionFeed::Persist.call(schedule_id: @schedule_id, normalized: normalized)
+  rescue StandardError => e
+    Rails.logger.warn(
+      { event: 'session_feed.persist_failed',
+        schedule_id: @schedule_id,
+        error: e.class.name,
+        message: e.message }.to_json,
+    )
+  end
 
   # Aceita id numérico ou prefixo UI `api-123` (mesmo contrato que scheduleAdapters no front).
   def find_schedule_from_params

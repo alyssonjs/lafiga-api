@@ -584,8 +584,8 @@ RSpec.describe LevelUpGuardService do
         end
       end
       let(:sous_chef) do
-        SubKlass.find_or_create_by!(klass: cook, api_index: 'mestre-da-fritura') do |sk|
-          sk.name = 'Mestre da Fritura'
+        SubKlass.find_or_create_by!(klass: cook, api_index: 'sous-chef') do |sk|
+          sk.name = 'Sous Chef'
         end
       end
       let(:doceiro) do
@@ -638,7 +638,7 @@ RSpec.describe LevelUpGuardService do
         })
         SheetKlass.create!(sheet: sheet, klass: cook, sub_klass: doceiro, level: 3)
         result = LevelUpGuardService.call(sheet: sheet, klass: cook)
-        expect(result.errors.full_messages.join).to match(/Uvas Cristalizadas.*requer subclasse mestre-da-fritura/i)
+        expect(result.errors.full_messages.join).to match(/Uvas Cristalizadas.*requer subclasse sous-chef/i)
       end
 
       it 'accepts subclass-locked snack with the correct subclass' do

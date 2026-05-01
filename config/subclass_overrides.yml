@@ -151,6 +151,69 @@ barbarian:
                       - "não possa ver/ouvir você"
                       - "imune a medo"
 
+  # ============================================================================
+  # Path of the Zealot (XGtE) — Caminho do Zelote
+  # Bárbaro consagrado a uma divindade da guerra/destruição. Foco em dano divino,
+  # ressurreição barata e resiliência espiritual.
+  # ============================================================================
+  zealot:
+    name: "Caminho do Zelote"
+    flavor: "Caminho Primitivo"
+    description: "Bárbaros consagrados a divindades de guerra ou destruição. Sua fúria é canalizada por essência divina, transformando-os em mártires que retornam da morte para servir aos seus deuses."
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Fúria Divina"
+            description: "O primeiro acerto corpo-a-corpo em cada turno durante a Fúria causa +1d6 de dano extra (necrótico OU radiante, à sua escolha ao ganhar a feature). O dado escala: +1d6 a cada 5 níveis de Bárbaro (1d6 nv 3, 2d6 nv 8, 3d6 nv 13, 4d6 nv 18)."
+            rules:
+              trigger: "primeiro acerto corpo-a-corpo no turno durante Fúria"
+              damage_type:
+                choose_one_at_3: ["necrótico", "radiante"]
+              damage_dice_by_level:
+                3: "1d6"
+                8: "2d6"
+                13: "3d6"
+                18: "4d6"
+          - name: "Guerreiro dos Deuses"
+            description: "Magias que restauram você à vida (Reviver os Mortos, Ressurreição, etc.) não exigem componentes materiais para serem conjuradas em você."
+            rules:
+              ignore_material_components_on_revive: true
+              applicable_spells:
+                - "Reviver os Mortos"
+                - "Ressurreição"
+                - "Ressurreição Verdadeira"
+                - "Despertar"
+      - level: 6
+        features:
+          - name: "Concentração Fanática"
+            description: "Quando estiver em Fúria, ganha vantagem em testes de resistência para manter concentração."
+            rules:
+              advantage_on_concentration_saves_while_raging: true
+      - level: 10
+        features:
+          - name: "Presença Fervorosa"
+            description: "Ação bônus: até 10 criaturas amigáveis em 18 m que você escolher (incluindo você) ganham vantagem em jogadas de ataque e testes de resistência até o início do seu próximo turno."
+            rules:
+              bonus_action: true
+              range_m: 18
+              targets: 10
+              advantage_on:
+                - "jogadas de ataque"
+                - "testes de resistência"
+              duration: "até o início do seu próximo turno"
+              uses:
+                per: "descanso longo"
+                value: 1
+      - level: 14
+        features:
+          - name: "Fúria Além da Morte"
+            description: "Enquanto estiver em Fúria, dano que reduziria você a 0 PV não te derruba inconsciente nem te mata. Você ainda faz testes de resistência contra a morte e sofre os efeitos normais de tomar dano com 0 PV. Você só morre se a Fúria terminar e ainda estiver com 0 PV."
+            rules:
+              ignore_zero_hp_unconscious_while_raging: true
+              still_makes_death_saves: true
+              dies_only_if_zero_hp_when_rage_ends: true
+
   barbaro-cicatrizes-runicas:
     name: "Caminho do Bárbaro das Cicatrizes Rúnicas"
     flavor: "Caminho Primitivo"
@@ -886,6 +949,75 @@ bard:
               spend:
                 bardic_inspiration_die: 1
               reduce_damage_by: "resultado do dado de Inspiração + mod. Car (opcional, se usar na mesa)"
+
+  # ============================================================================
+  # College of Glamour (XGtE) — Colégio do Glamour
+  # Bardos imbuídos com magia das fadas; encantam, comandam e protegem aliados
+  # com presença carismática.
+  # ============================================================================
+  colegio-do-glamour:
+    name: "Colégio do Glamour"
+    flavor: "Colégio Bárdico"
+    description: "Bardos que aprenderam sua magia diretamente do mundo das fadas (Feywild). Usam carisma sobrenatural para inspirar aliados, comandar inimigos e se manter inalcançáveis em combate."
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Manto de Inspiração"
+            description: "Ação bônus: gasta 1 uso de Inspiração Bárdica para envolver-se em magia feérica. Até 5 criaturas amigáveis em 18 m que possam ver você ganham 5 PV temporários (escala com nível: 8 nv 5, 11 nv 10, 14 nv 15). Ao receber, cada uma pode usar reação para se mover até seu deslocamento sem provocar ataques de oportunidade."
+            rules:
+              bonus_action: true
+              cost:
+                bardic_inspiration_die: 1
+              range_m: 18
+              targets: 5
+              temp_hp_by_level:
+                3: 5
+                5: 8
+                10: 11
+                15: 14
+              reaction_grant: "movimento até deslocamento sem provocar AO"
+          - name: "Presença Cativante"
+            description: "Como ação, gasta 1 minuto realizando performance bárdica. Criaturas humanóides em 18 m que possam ver e ouvir você fazem TR de Sabedoria contra sua CD de Magia ou ficam encantadas por 1 minuto OU até sofrerem dano. Recobra ao terminar descanso curto ou longo."
+            rules:
+              action: true
+              performance_time_minutes: 1
+              range_m: 18
+              targets_type: "humanoides"
+              save:
+                ability: "Sabedoria"
+                dc_formula: "spell_dc"
+                on_fail: "encantada por 1 minuto ou até sofrer dano"
+              uses:
+                per: "descanso curto ou longo"
+                value: 1
+      - level: 6
+        features:
+          - name: "Manto de Majestade"
+            description: "Ação bônus: ganha aura de majestade por 1 minuto (concentração). A cada turno na duração, pode usar ação bônus para conjurar Comando como magia (sem gastar slot, contra criaturas que possam ver e ouvir você). Criaturas encantadas por você falham automaticamente em TR contra esse Comando."
+            rules:
+              bonus_action_to_activate: true
+              duration: "1 minuto (concentração)"
+              each_turn_bonus_action: "conjura Comando sem slot"
+              charmed_auto_fail: true
+              uses:
+                per: "descanso longo"
+                value: 1
+      - level: 14
+        features:
+          - name: "Majestade Inquebrável"
+            description: "Ação bônus: assume aparência sobrenatural. Por 1 minuto, todo ataque corpo-a-corpo que acertá-lo força o atacante a fazer TR de Carisma; falha: não pode atacar você até o fim do próximo turno (precisa atacar outra criatura ou desperdiça a ação). Adicionalmente, ataques contra você sofrem desvantagem se atacante puder ver você."
+            rules:
+              bonus_action: true
+              duration: "1 minuto"
+              save_on_melee_hit:
+                ability: "Carisma"
+                dc_formula: "8 + proficiência + Car"
+                on_fail: "não pode atacar você até fim do próximo turno"
+              attacks_against_you_disadvantage_if_can_see: true
+              uses:
+                per: "descanso longo"
+                value: 1
 
 cleric:
   # ======== DOMÍNIOS ORIGINAIS (seus) ========
@@ -4938,172 +5070,165 @@ warlock:
       effect: "Inscreve e conjura quaisquer magias com a tag 'ritual' como ritual via Livro das Sombras."
 
 cozinheiro:
-  mestre-da-fritura:
-    name: "Mestre da Fritura"
+  # ===========================================================================
+  # ARQUÉTIPOS CANÔNICOS DO PDF (O_Cozinheiro_-_Classe.pdf — Sam Grierson,
+  # tradução de Pedro Chicalhoni). 5 arquétipos canônicos + Doceiro Encantado
+  # (homebrew Lafiga). Choose level: 3. Features em L3, L6, L10, L14, L18.
+  # ===========================================================================
+
+  sous-chef:
+    name: "Sous Chef"
     flavor: "Arquétipo do Cozinheiro"
-    description: "Especialista em óleo quente, frigideiras chiando e estalos que distraem inimigos enquanto fortalecem o grupo."
+    description: "O Sous Chef tradicional acredita que seus aliados são mais merecedores de sua comida. Foca em entregar petiscos benéficos rapidamente, à distância, fortalecendo o grupo com molhos e refeições magníficas."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - name: "Óleo Borbulhante"
-            description: "Acende óleo e o arremessa como ação: área pequena que causa dano e pode derrubar."
+          - name: "Nós Entregamos"
+            description: "Quando alimenta criatura voluntária com petisco, ela pode receber o petisco a até 18 m (sem cobertura total bloqueando boca/orifício). Adicionalmente, alimentar criatura voluntária que pode tocar (que não seja você mesmo) pode ser feito como ação bônus."
             rules:
-              action: true
-              range_m: 6
-              area: "círculo 1,5 m"
-              save:
-                ability: "Destreza"
-                dc_formula: "8 + proficiência + Sab ou Int (à sua escolha)"
-                on_fail:
-                  - "sofre 2d6 fogo"
-                  - "fica caído (se já estava encharcado/oleoso)"
-                on_success: "metade do dano e não cai"
-              ongoing:
-                start_of_turn_damage: "1d6 fogo"
-                end_condition:
-                  - "ação para apagar"
-                  - "chuva/imersão"
-                  - "passar no TS Destreza uma vez"
-              uses:
-                per: "descanso curto ou longo"
-                value: 2
-          - name: "Frigideira Tática"
-            description: "Proficiência com frigideiras/utensílios como armas improvisadas; contam como mágicas para resistências."
-            rules:
-              weapons:
-                improvised:
-                  treated_as: "Clava (1d6 concussão)"
-                  counts_as_magical: true
-              bonus:
-                on_hit_once_per_turn: "+1d4 fogo"
+              feed_range_m: 18
+              feed_as_bonus_action: true
       - level: 6
         features:
-          - name: "Sela e Sela!"
-            description: "Ação bônus após acertar ataque corpo a corpo: marca o alvo e o deixa relutante a se mover por causa do óleo quente."
+          - name: "Molho Secreto"
+            description: "Toda vez que alimenta criatura amigável com petisco, ela recupera pontos de vida iguais ao seu modificador de Constituição."
             rules:
-              bonus_action: true
-              mark_until: "fim do seu próximo turno"
-              effects_while_marked:
-                move_penalty: "terreno difícil quando se afasta de você"
-                first_time_leaves_your_reach_each_turn:
-                  damage: "1d6 fogo"
-              uses:
-                per: "descanso curto ou longo"
-                value: "Sab (mín. 1)"
+              ally_heal_on_feed: "CON modifier"
       - level: 10
         features:
-          - name: "Crosta Perfeita"
-            description: "Quando você ou aliado em até 3 m causar dano de fogo, pode realçar o sabor (e a dor)."
-            rules:
-              reaction: true
-              range_m: 3
-              trigger: "você ou aliado causa dano de fogo"
-              effect: "+1d8 fogo ao dano"
-              uses:
-                per: "descanso curto ou longo"
-                value: 2
-      - level: 14
-        features:
-          - name: "Tempestade de Estalos"
-            description: "Ação: cria zona chiando (concentração) que cega/distrai e queima levemente."
+          - name: "Suor Aromático"
+            description: "Como ação, expele odores em poderosa onda. Todas as criaturas amigáveis visíveis (incluindo você) em raio de 9 m recuperam PV = nível de Cozinheiro, e cada uma pode imediatamente usar reação para fazer 1 ataque corpo-a-corpo."
             rules:
               action: true
-              duration: "1 minuto (concentração)"
-              area: "raio 6 m, centrado em ponto a 18 m"
-              effects:
-                obscurement: "leve; visão sofre desvantagem na área"
-                start_of_turn_damage: "1d4 fogo (criaturas hostis)"
-                save_end_of_turn:
-                  ability: "Constituição"
-                  on_fail: "desvantagem em Percepção (visão) e na primeira jogada de ataque dentro da área até o próximo turno"
+              range_m: 9
+              heal: "Cook level"
+              grants_reaction_attack: true
+              uses:
+                per: "descanso longo"
+                value: 1
+      - level: 14
+        features:
+          - name: "Refeição Magnífica"
+            description: "Adquire a habilidade de conjurar a magia Banquete de Heróis. Substitui os componentes materiais por comidas finas no valor de 500 po."
+            rules:
+              spell: "Banquete de Heróis"
+              material_substitution_gp: 500
+              uses:
+                per: "descanso longo"
+                value: 1
+      - level: 18
+        features:
+          - name: "Petisco Lendário — Cérebro de Macaco"
+            description: "Durante descanso longo, prepara um petisco (apenas um, dura até o próximo descanso longo). Cérebro de Macaco: nos próximos 10 minutos, o alvo pode automaticamente ter sucesso em um teste de resistência da escolha dele (após rolar, antes do resultado)."
+            rules:
+              legendary_snack: "cerebro-de-macaco"
+              prep_during: "long rest"
               uses:
                 per: "descanso longo"
                 value: 1
 
-  alquimista-gourmet:
-    name: "Alquimista Gourmet"
+  sargento-alimentar:
+    name: "Sargento Alimentar"
     flavor: "Arquétipo do Cozinheiro"
-    description: "Caldeirão, infusões e especiarias tônicas; cozinha que cura, fortifica e explode."
+    description: "O Sargento Alimentar acredita em dieta rígida, controle completo do corpo. Busca a perfeição corporal através do cálculo exato dos nutrientes ingeridos."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - name: "Caldeirão de Campo"
-            description: "Durante descanso curto, prepara duas poções culinárias simples."
+          - name: "Nunca Satisfeito"
+            description: "Pode comer petisco como ação bônus (em vez de ação). Adicionalmente, apetite regrado fortalece sua saúde: PV máximo aumenta em 3 imediatamente, e +1 por nível ganho nesta classe."
             rules:
-              short_rest:
-                brew:
-                  count: 2
-                  options:
-                    - id: "sopa_vigor"
-                      name: "Sopa do Vigor"
-                      effect: "Ao beber, ganha 1d6 + seu mod. Sab PV temporários por 1 h"
-                    - id: "cha_clareza"
-                      name: "Chá da Clareza"
-                      effect: "Vantagem no próximo teste de Sabedoria ou Inteligência em 1 h (consome no uso)"
-                    - id: "molho_ardente"
-                      name: "Molho Ardente"
-                      effect: "Próximo ataque corpo a corpo do alvo causa +1d6 fogo"
-              spoilage: "estragam ao final de um descanso longo"
-          - name: "Kit de Alquicozinha"
-            description: "Proficiência com Kit de Herbalismo e Ferramentas de Alquimia; usa Sab para CD de itens criados."
-            grants:
-              proficiencies:
-                tools:
-                  add:
-                    - "Kit de Herbalismo"
-                    - "Ferramentas de Alquimia"
+              eat_snack_as_bonus_action: true
+              max_hp_bonus_immediate: 3
+              max_hp_bonus_per_level: 1
       - level: 6
         features:
-          - name: "Redução e Concentração"
-            description: "Pode gastar ação para concentrar uma infusão existente e turbinar seu efeito."
+          - name: "Arroto Sonoro"
+            description: "Como ação, criaturas hostis em cone de 3 m fazem TR de Sabedoria contra CD de Petisco; falha: desvantagem em ataques contra todas as criaturas exceto você até início do seu próximo turno."
             rules:
               action: true
-              target: "uma poção culinária sua não consumida"
-              effect: "duplica o dado base (ex.: 1d6 → 2d6) OU transforma vantagem em +1d4 de bônus (escolha no uso)"
+              area: "cone 3 m"
+              save:
+                ability: "Sabedoria"
+                dc_formula: "snack_dc"
+                on_fail: "desvantagem em ataques exceto contra você até início do próximo turno"
               uses:
-                per: "descanso curto ou longo"
-                value: 2
+                per: "descanso longo"
+                value: "CON (mín. 1)"
       - level: 10
         features:
-          - name: "Granada de Pimenta"
-            description: "Ação: arremessa frasco que irrita olhos e pulmões; área pequena com dano leve e cegueira breve."
+          - name: "Estômago Robusto"
+            description: "Pode estar sob efeitos de 2 petiscos ao mesmo tempo. Se ingerir um terceiro, perde um dos efeitos originais (sua escolha)."
             rules:
-              action: true
-              range_m: 9
-              area: "círculo 3 m"
-              save:
-                ability: "Constituição"
-                dc_formula: "8 + proficiência + Sab"
-                on_fail:
-                  - "cegueira até o fim do próximo turno"
-                  - "1d8 ácido (vapores)"
-                on_success: "metade do dano e não fica cego"
-              uses:
-                per: "descanso curto ou longo"
-                value: 2
+              max_active_snacks: 2
       - level: 14
         features:
-          - name: "Cardápio Magistral"
-            description: "Durante descanso longo, prepara 1 refeição lendária para até 6 criaturas."
+          - name: "Dieta Estrita"
+            description: "Escolha Força, Destreza ou Constituição: aumenta o valor da habilidade em 2, e o limite passa a ser 22."
             rules:
-              long_rest:
-                cook_legendary_meal: true
-                pick_one_menu:
-                  - id: "banquete_vital"
-                    name: "Banquete Vital"
-                    effects:
-                      - "cada alvo recupera 4d8 + seu mod. Sab PV"
-                      - "remove 1 condição: envenenado, amedrontado ou exausto (−1 nível)"
-                  - id: "mesa_do_ferreiro"
-                    name: "Mesa do Ferreiro"
-                    effects:
-                      - "por 24 h, armas dos alvos contam como mágicas e ganham +1 no dano (não acumula com bônus existentes)"
-                  - id: "sobremesa_eterea"
-                    name: "Sobremesa Etérea"
-                    effects:
-                      - "cada alvo pode, 1 vez nas próximas 24 h, usar ação bônus para ficar etéreo até o fim do turno"
+              choose_one:
+                - { ability: "FOR", increase: 2, max: 22 }
+                - { ability: "DES", increase: 2, max: 22 }
+                - { ability: "CON", increase: 2, max: 22 }
+      - level: 18
+        features:
+          - name: "Petisco Lendário — Coração Cristalino"
+            description: "Durante descanso longo, prepara um petisco. Coração Cristalino: por 10 minutos, se total de teste de habilidade ou TR de FOR, DES ou CON for menor que o valor da habilidade testada, alvo pode usar o valor da habilidade ao invés do total."
+            rules:
+              legendary_snack: "coracao-cristalino"
+              prep_during: "long rest"
+              uses:
+                per: "descanso longo"
+                value: 1
+
+  mestre-cuca:
+    name: "Mestre-Cuca"
+    flavor: "Arquétipo do Cozinheiro"
+    description: "O Mestre-Cuca tradicional acredita no aspecto científico da comida. A comida é o combustível, o corpo é o fogo. Foca em debilitar inimigos com petiscos venenosos e proficiência marcial."
+    choose_level: 3
+    levels:
+      - level: 3
+        features:
+          - name: "Proficiências Bônus"
+            description: "Ganha proficiência com armas marciais."
+            grants:
+              proficiencies:
+                weapons:
+                  add: ["Armas Marciais"]
+          - name: "Entregamos a Morte"
+            description: "Pode alimentar inimigos à distância. Quando alimenta criatura hostil, ela pode estar a até 18 m (vê-la e boca/orifício não bloqueado por cobertura total)."
+            rules:
+              hostile_feed_range_m: 18
+      - level: 6
+        features:
+          - name: "Ataque Extra"
+            description: "Pode atacar duas vezes ao invés de uma sempre que realizar a ação Atacar."
+            rules:
+              extra_attack: 1
+      - level: 10
+        features:
+          - name: "Fedor Horroroso"
+            description: "Cheiro repugnante: sempre que criatura hostil a 3 m fizer TR contra um dos seus petiscos, subtrai 1d4 do TR."
+            rules:
+              aura_radius_m: 3
+              save_penalty_against_snacks: "1d4"
+      - level: 14
+        features:
+          - name: "Ataque Nocivo"
+            description: "Quando uma criatura fizer TR contra efeito de um dos seus petiscos, pode impor desvantagem na rolagem."
+            rules:
+              impose_disadvantage_on_snack_save: true
+              uses:
+                per: "descanso curto ou longo"
+                value: 1
+      - level: 18
+        features:
+          - name: "Petisco Lendário — Pílula Gasosa"
+            description: "Durante descanso longo, prepara um petisco. Pílula Gasosa: dióxido de carbono no estômago do alvo. TR de CON; falha: envenenado e deslocamento metade até fim do próximo turno. Sucesso ou falha, se o alvo morrer dentro de 1 hora, explode (criaturas em até 3 m fazem TR de DES; falha: 10d6 força Médio ou menor + 5d6 por categoria maior; sucesso: metade)."
+            rules:
+              legendary_snack: "pilula-gasosa"
+              prep_during: "long rest"
               uses:
                 per: "descanso longo"
                 value: 1
@@ -5183,133 +5308,133 @@ cozinheiro:
                 per: "descanso longo"
                 value: 1
 
-  mestre-do-fogo-e-fumaca:
-    name: "Mestre do Fogo e Fumaça"
+  mestre-cervejeiro:
+    name: "Mestre Cervejeiro"
     flavor: "Arquétipo do Cozinheiro"
-    description: "Defumação, brasas e controle de visibilidade; combate de zona com aroma de madeira."
+    description: "Onde a maioria apenas enxerga o perigo do vício, o Mestre Cervejeiro vê potencial. Especialista em bebidas, manipula álcool e infusões para intoxicar aliados ou inimigos com benefícios estratégicos."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - name: "Brasa Viva"
-            description: "Ação: cria braseiro portátil que emana luz e pode ser chutado como ataque improvisado."
+          - name: "Petiscos Adulterados"
+            description: "Ganha proficiência com Suprimentos de Cervejeiro (se já não tiver). Pode adulterar petiscos ao prepará-los; se uma criatura sob efeito de petisco adulterado ingerir outro adulterado, o efeito original não cessa e ela fica intoxicada por 1 minuto. Intoxicada: imune a Enfeitiçado e Amedrontado. Quando termina, perde efeitos dos petiscos e fica de ressaca (não pode mover ou agir até fim do próximo turno). Uma vez intoxicada, não pode novamente até descanso curto/longo."
+            grants:
+              proficiencies:
+                tools:
+                  add: ["Suprimentos de Cervejeiro"]
             rules:
-              action: true
-              place_brazier:
-                duration: "1 hora ou até você desfazer"
-                light: "6 m/penumbra +6 m"
-              bonus_action:
-                kick_brazier:
-                  range_m: 6
-                  save:
-                    ability: "Destreza"
-                    on_fail: "1d6 fogo e pega fogo (1d4 no início do turno até apagar)"
-              limit: "1 braseiro por vez"
+              intoxication_duration: "1 minuto"
+              intoxication_immunities: ["enfeitiçado", "amedrontado"]
+              hangover_after: "não pode mover ou agir até fim do próximo turno"
       - level: 6
         features:
-          - name: "Cortina de Fumaça"
-            description: "Ação: erige nuvem de fumaça controlada."
+          - name: "Andar Cambaleante"
+            description: "Criaturas que você intoxica têm deslocamento +3 m e outras criaturas têm desvantagem em ataques de oportunidade contra elas."
             rules:
-              action: true
-              range_m: 18
-              area: "cilindro 6 m raio, 6 m alt."
-              duration: "1 minuto (concentração)"
-              effects:
-                lightly_obscured_all: true
-                heavy_for_creatures_outside_looking_in: true
-                advantage_on_stealth_inside: true
-                suffocation_note: "criaturas que iniciarem turno na nuvem fazem TS CON; falha: 1 nível de exaustão (máx. 1x durante a duração)"
-              uses:
-                per: "descanso curto ou longo"
-                value: 1
+              intoxicated_speed_bonus_m: 3
+              intoxicated_disadvantage_on_ao_against: true
       - level: 10
         features:
-          - name: "Defumador de Guerra"
-            description: "Aliados que comecem o turno no seu braseiro ou na sua fumaça ganham bônus temporário."
-            rules:
-              aura_radius_from_brazier_m: 3
-              start_of_turn_buff:
-                choose_one_each_turn:
-                  - "+1d4 em dano do próximo ataque até o fim do turno"
-                  - "resistência a fogo até o fim do turno"
-      - level: 14
-        features:
-          - name: "Chama Domada"
-            description: "Imunidade a dano de fogo de fontes não-mágicas; resistência contra fogo mágico; pode atravessar e mover o braseiro 3 m como ação bônus."
+          - name: "Rendimento Ébrio"
+            description: "Suas infusões relaxam os músculos, aliviando as pancadas de ataques recentes. Criaturas que você intoxica ganham resistência contra dano de concussão."
             grants:
               defenses:
-                immunity:
-                  - "fogo (não-mágico)"
-                resistance:
-                  - "fogo (mágico)"
+                resistance: ["concussão (em criaturas intoxicadas)"]
+      - level: 14
+        features:
+          - name: "Bravura Alcoólica"
+            description: "Uma vez por turno, quando uma criatura que você intoxicou acertar uma criatura com um ataque, ela pode adicionar o seu modificador de Constituição na rolagem do dano."
+            rules:
+              once_per_turn: true
+              add_con_to_intoxicated_damage: true
+      - level: 18
+        features:
+          - name: "Petisco Lendário — Criação do Mestre"
+            description: "Durante descanso longo, prepara um petisco. Criação do Mestre: licor fino com alto teor alcoólico. Quando ingerido, alvo fica imediatamente intoxicado por 10 minutos. Quando a intoxicação termina, alvo não fica de ressaca."
+            rules:
+              legendary_snack: "criacao-do-mestre"
+              prep_during: "long rest"
+              uses:
+                per: "descanso longo"
+                value: 1
 
-  cantineiro-de-guerra:
-    name: "Cantineiro de Guerra"
+  amassador-de-monstros:
+    name: "Amassador de Monstros"
     flavor: "Arquétipo do Cozinheiro"
-    description: "Logística, ração quente na linha de frente e disciplina de campo; suporte tático robusto."
+    description: "A maioria dos cozinheiros se depara com o poder físico da vitalidade ou simplesmente sentem seu poder instintivamente. Os amassadores estudam a vitalidade que dá poder aos seus petiscos, colhendo carnes monstruosas e canalizando essências vitais em refeições especiais."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - name: "Ração Quente"
-            description: "Durante descanso curto, serve guisado que acelera recuperação."
+          - name: "Proficiências Bônus"
+            description: "Quando se torna um Amassador de Monstros no 3º nível, ganha proficiência com armas marciais."
+            grants:
+              proficiencies:
+                weapons:
+                  add: ["Armas Marciais"]
+          - name: "Colheita Vital"
+            description: "Se você ou aliado matar criatura de nível de desafio 1 ou maior e o corpo não for destruído, pode colher carne (até 1 hora após a morte) para uma refeição especial. Mantém a carne na Bolsa de Cozinheiro até preparar (apenas 1 dessas carnes por vez). Como parte de descanso curto/longo, prepara a refeição: 5 + mod CON criaturas podem partilhar e ganham um benefício baseado no tipo de criatura (24 h ou até próximo descanso longo)."
             rules:
-              short_rest:
-                serve: true
-                effects_on_up_to:
-                  creatures: "proficiência + Sab (mín. 1)"
-                  benefits:
-                    - "+1 dado adicional de DV gasto (cura bônus = 1d6, sem consumir DV extra)"
-                    - "remove condição para todo o grupo: exausto (−1 nível) OU envenenado"
-          - name: "Linha de Serviço"
-            description: "Você e aliados adjacentes ganham +1 CA contra ataques à distância se não se moverem no turno."
+              harvest_min_cr: 1
+              harvest_window_hours: 1
+              max_meat_in_bag: 1
+              shareable_with: "5 + CON modifier"
+              benefit_duration: "24 horas ou até o próximo descanso longo"
+              creature_type_benefits:
+                aberracao: "visão no escuro 18 m + telepatia 18 m"
+                bestas: "PV atuais e máximos +10"
+                corruptores: "vantagem em testes de perícia e TR de CAR e INT"
+                dragao: "voo 18 m (cai se nada o suspende)"
+                gigante: "efeito de Aumentar"
+                limo: "percepção às cegas 3 m"
+                monstruosidade: "vantagem em TR FOR/DES/CON contra magia"
+                planta: "sob luz solar: vantagem perícia FOR/CON + cura máxima"
       - level: 6
         features:
-          - name: "Café da Disciplina"
-            description: "Ação bônus: dá caneca para 1 aliado; ele ganha 1 reação extra com restrições táticas."
+          - name: "Bolsa Autônoma"
+            description: "Modifica sua Bolsa de Cozinheiro. Quando causa dano cortante ou perfurante em criatura hostil que NÃO seja humanoide/celestial/morto-vivo/construto/fada com arma corpo-a-corpo, pode cortar pedaço e colocar na Bolsa como parte do mesmo ataque. O petisco (Corte Fresco) é temperado e cozido imediatamente. Não pode ter mais de 1 desses na Bolsa por vez."
             rules:
-              bonus_action: true
-              range_m: 6
-              effect:
-                grant_reaction:
-                  extra_reaction_until: "início do seu próximo turno"
-                  restriction:
-                    - "Usar Preparar"
-                    - "Ataque de Oportunidade"
-                    - "Ajudar (somente Defesa)"
+              trigger: "causar dano cortante/perfurante com arma corpo-a-corpo em hostil válido"
+              valid_target_types_excluded:
+                - humanoide
+                - celestial
+                - morto-vivo
+                - construto
+                - fada
+              auto_cooked_snack: "Corte Fresco"
+              max_in_bag: 1
               uses:
-                per: "descanso curto ou longo"
-                value: "Sab (mín. 1)"
+                per: "descanso longo"
+                value: "CON (mín. 1)"
       - level: 10
         features:
-          - name: "Campo Bem Montado"
-            description: "Ao iniciar combate, se não estiver surpreso, pode posicionar abrigo leve."
+          - name: "Bolsa de Combate"
+            description: "Modifica sua Bolsa em arma que cospe petiscos como projéteis. Funciona como arma simples à distância que apenas você tem proficiência. Causa 1d12 de concussão e tem propriedade munição (9/36). Munição = seus petiscos. Você escolhe qual petisco usa como munição para cada ataque. Quando acerta uma criatura, pode forçar o alvo a ingerir imediatamente o petisco usado como munição."
             rules:
-              pre_combat:
-                place_cover:
-                  count: 2
-                  size: "1,5 m × 1,5 m"
-                  ac_bonus_when_behind: 2
-                  hp_each: 10
-                  immunities:
-                    - "psíquico"
-                    - "necrótico"
-                    - "veneno"
-                  duration: "até o fim do encontro ou destruído"
+              weapon_type: "simples à distância (proficiência exclusiva)"
+              damage: "1d12 concussão"
+              range_m: { normal: 9, long: 36 }
+              ammo: "petiscos preparados"
+              on_hit_force_ingest: true
       - level: 14
         features:
-          - name: "Refeição de Batalha"
-            description: "Ação: até 6 criaturas em 9 m recebem vigor e foco."
+          - name: "Observância Vital"
+            description: "Se observar criatura por 1 minuto, descobre se ela tem vulnerabilidade, imunidade ou resistência (e quais). Você precisa ser capaz de ver a criatura pela duração de 1 minuto. Não pode observar mais de uma criatura por minuto."
             rules:
-              action: true
-              range_m: 9
-              targets: 6
-              effects:
-                temp_hp: "2d8 + Sab"
-                buff_duration: "1 minuto (concentração)"
-                while_buffed:
-                  - "vantagem em TS de Constituição para manter concentração"
-                  - "+3 m de deslocamento"
+              observe_duration_minutes: 1
+              reveals: ["vulnerabilidades", "imunidades", "resistências"]
+              max_targets_per_minute: 1
+              uses:
+                per: "descanso longo"
+                value: "CON (mín. 1)"
+      - level: 18
+        features:
+          - name: "Petisco Lendário — Carne Vital"
+            description: "Durante descanso longo, prepara um petisco. Carne Vital: pedaço de uma das suas colheitas. Quando preparado, escolhe um benefício listado em Colheita Vital. Quando ingerido, o alvo recebe o benefício escolhido por 1 minuto."
+            rules:
+              legendary_snack: "carne-vital"
+              prep_during: "long rest"
+              benefit_duration_minutes: 1
               uses:
                 per: "descanso longo"
                 value: 1

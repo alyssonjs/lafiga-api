@@ -251,4 +251,38 @@ RSpec.describe SessionFeedChannel, type: :channel do
       perform :feed_item, item: valid_chat
     end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
   end
+
+  describe 'persistência (SessionFeed::Persist)' do
+    it 'cria SessionFeedItem para chat válido' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      expect { perform :feed_item, item: valid_chat }
+        .to change(SessionFeedItem, :count).by(1)
+
+      item = SessionFeedItem.find_by(schedule_id: schedule.id, client_id: 'msg-1')
+      expect(item).to be_present
+      expect(item.kind).to eq('chat')
+      expect(item.payload['text']).to eq('Olá')
+    end
+
+    it 'não persiste quando rate limited' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      allow(SessionFeed::RateLimit).to receive(:allow?).and_return(false)
+      expect { perform :feed_item, item: valid_chat }
+        .not_to change(SessionFeedItem, :count)
+    end
+
+    it 'não persiste payload com kind inválido' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      expect { perform :feed_item, item: { 'kind' => 'system', 'text' => 'x' } }
+        .not_to change(SessionFeedItem, :count)
+    end
+
+    it 'broadcast continua mesmo quando persistência levanta' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      allow(SessionFeed::Persist).to receive(:call).and_raise(StandardError.new('boom'))
+      expect { perform :feed_item, item: valid_chat }
+        .to have_broadcasted_to("session_feed_#{schedule.id}")
+        .with(a_hash_including('kind' => 'chat', 'text' => 'Olá'))
+    end
+  end
 end

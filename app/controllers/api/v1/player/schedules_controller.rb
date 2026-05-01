@@ -11,31 +11,20 @@ class Api::V1::Player::SchedulesController < ApplicationController
   #   ?status=        → "completed" / lista de status
   #   ?from=YYYY-MM-DD&to=YYYY-MM-DD → range de datas (calendário mensal)
   def index
-    # Calendário / hub: qualquer jogador autenticado vê todas as sessões (como o
-    # overlay público em date_dimensions). Notas do mestre são redigidas no
-    # serializer para quem não é mestre da campanha. Mutations continuam
-    # restritas em `set_schedule_mutatable`.
-    base = Schedule.all
+    # Hub do jogador: exibe apenas sessões dos grupos onde o usuário tem
+    # personagens (character.group_id), independente do role (DM ou jogador).
+    # Mutations continuam restritas em `set_schedule_mutatable` (for_hub_player).
+    base = Schedule.for_player_index(@current_user)
 
-    # Hub do personagem envia `character_id`: deve listar todas as sessões da
-    # campanha (grupo), não só as em que o PC está em `schedule_characters`.
-    # Participação na sessão é opcional; jogadores do mesmo grupo enxergam o
-    # calendário da mesa. Sem `group_id` no personagem, mantém o filtro antigo.
+    # Hub do personagem envia `character_id`: filtra as sessões pelo grupo
+    # do personagem (`character.group_id`). Personagens sem grupo retornam
+    # lista vazia — não há calendário sem grupo associado.
     if params[:character_id].present?
-      character =
-        if Group.user_is_dm?(@current_user)
-          Character.find_by(id: params[:character_id])
-        else
-          @current_user.characters.find_by(id: params[:character_id])
-        end
+      character = @current_user.characters.find_by(id: params[:character_id])
       return render(json: { schedules: [] }, status: 200) unless character
+      return render(json: { schedules: [] }, status: 200) unless character.group_id.present?
 
-      base =
-        if character.group_id.present?
-          base.where(group_id: character.group_id)
-        else
-          base.for_character(character.id)
-        end
+      base = base.where(group_id: character.group_id)
     end
 
     if params[:group_id].present?

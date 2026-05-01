@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_30_120000) do
+ActiveRecord::Schema.define(version: 2026_04_30_120100) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -510,6 +510,21 @@ ActiveRecord::Schema.define(version: 2026_04_30_120000) do
     t.index ["status"], name: "index_schedules_on_status"
   end
 
+  create_table "session_feed_items", force: :cascade do |t|
+    t.bigint "schedule_id", null: false
+    t.string "kind", null: false
+    t.string "client_id", null: false
+    t.string "roll_group_id"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "posted_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["schedule_id", "client_id"], name: "index_session_feed_items_on_schedule_and_client_id_uniq", unique: true
+    t.index ["schedule_id", "posted_at"], name: "index_session_feed_items_on_schedule_and_posted_at_desc", order: { posted_at: :desc }
+    t.index ["schedule_id", "roll_group_id"], name: "index_session_feed_items_on_schedule_and_roll_group_id", where: "(roll_group_id IS NOT NULL)"
+    t.index ["schedule_id"], name: "index_session_feed_items_on_schedule_id"
+  end
+
   create_table "session_logs", force: :cascade do |t|
     t.bigint "schedule_id", null: false
     t.integer "kind", default: 0, null: false
@@ -817,6 +832,7 @@ ActiveRecord::Schema.define(version: 2026_04_30_120000) do
   add_foreign_key "schedules", "battle_maps"
   add_foreign_key "schedules", "date_dimensions"
   add_foreign_key "schedules", "groups"
+  add_foreign_key "session_feed_items", "schedules"
   add_foreign_key "session_logs", "schedules"
   add_foreign_key "sheet_feats", "feats"
   add_foreign_key "sheet_feats", "sheets"

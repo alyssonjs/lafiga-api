@@ -42,7 +42,7 @@ Cada arquivo segue o mesmo schema. Top-level: lista de entradas.
     pact: chain                           # Pacto requerido (warlock)
     spell: eldritch_blast                 # Magia/cantrip requerido
     class: warlock                        # Classe requerida
-    subclass: mestre-da-fritura           # Subclasse requerida (api_index canônico)
+    subclass: sous-chef                   # Subclasse requerida (api_index canônico)
     ability_min:                          # Atributos mínimos
       DEX: 13
 ```

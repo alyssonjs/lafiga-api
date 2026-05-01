@@ -27,5 +27,10 @@
   "cl-10:sub-3": "trapaceiro-arcano",
   "cl-11:sub-1": "draconic",
   "cl-12:sub-5": "escola-de-evocacao",
-  "cl-13:mestre-da-fritura": "mestre-da-fritura"
+  "cl-13:sous-chef": "sous-chef",
+  "cl-13:sargento-alimentar": "sargento-alimentar",
+  "cl-13:mestre-cuca": "mestre-cuca",
+  "cl-13:mestre-cervejeiro": "mestre-cervejeiro",
+  "cl-13:amassador-de-monstros": "amassador-de-monstros",
+  "cl-13:doceiro-encantado": "doceiro-encantado"
 }

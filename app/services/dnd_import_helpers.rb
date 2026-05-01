@@ -12,7 +12,8 @@ module DndImportHelpers
   SUBCLASS_ALIASES = {
     'barbarian' => {
       'caminho-do-furioso' => 'berserker',
-      'caminho-do-guerreiro-totemico' => 'totem'
+      'caminho-do-guerreiro-totemico' => 'totem',
+      'caminho-do-zelote' => 'zealot'
     },
     'bard' => {
       'colegio-da-bravura' => 'valor',
@@ -39,6 +40,18 @@ module DndImportHelpers
     },
     'wizard' => {
       'escola-de-evocacao' => 'evocation'
+    },
+    # Cozinheiro — alinhamento ao PDF canônico (O_Cozinheiro_-_Classe.pdf).
+    # Migra fichas legadas que apontam para api_indexes antigos para os novos.
+    # Usado tanto no rake apply_subclass_overrides quanto no resolver de
+    # `SheetKlass.sub_klass_id` quando uma ficha tem api_index legado.
+    'cozinheiro' => {
+      'mestre-da-fritura'        => 'sous-chef',
+      'alquimista-gourmet'       => 'mestre-cuca',
+      'mestre-do-fogo-e-fumaca'  => 'sargento-alimentar',
+      'cantineiro-de-guerra'     => 'mestre-cervejeiro'
+      # 'doceiro-encantado' permanece (homebrew Lafiga)
+      # 'amassador-de-monstros' é novo (não tem alias)
     }
   }.freeze
 

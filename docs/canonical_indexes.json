@@ -74,6 +74,9 @@
       "totem": {
         "name": "Caminho do Guerreiro Totêmico"
       },
+      "zealot": {
+        "name": "Caminho do Zelote"
+      },
       "barbaro-cicatrizes-runicas": {
         "name": "Caminho do Bárbaro das Cicatrizes Rúnicas"
       },
@@ -124,7 +127,7 @@
     },
     "cleric": {
       "life": {
-        "name": "Life"
+        "name": "Domínio da Vida"
       },
       "dominio-agua": {
         "name": "Domínio da Água"
@@ -180,7 +183,7 @@
     },
     "druid": {
       "land": {
-        "name": "Land"
+        "name": "Círculo da Terra"
       },
       "circulo-da-terra": {
         "name": "Círculo da Terra"
@@ -224,7 +227,7 @@
     },
     "fighter": {
       "champion": {
-        "name": "Champion"
+        "name": "Campeão"
       },
       "campeao": {
         "name": "Campeão"
@@ -256,7 +259,7 @@
     },
     "monk": {
       "open-hand": {
-        "name": "Open Hand"
+        "name": "Caminho da Mão Aberta"
       },
       "mao-aberta": {
         "name": "Caminho da Mão Aberta"
@@ -352,7 +355,7 @@
     },
     "rogue": {
       "thief": {
-        "name": "Thief"
+        "name": "Ladrão"
       },
       "ladrao": {
         "name": "Ladrão"
@@ -384,7 +387,7 @@
     },
     "sorcerer": {
       "draconic": {
-        "name": "Draconic"
+        "name": "Linhagem Dracônica"
       },
       "wild": {
         "name": "Magia Selvagem"
@@ -499,24 +502,27 @@
         "name": "Teurgia Mística"
       },
       "evocacao": {
-        "name": "Evocacao"
+        "name": "Escola de Evocação"
       }
     },
     "cozinheiro": {
-      "mestre-da-fritura": {
-        "name": "Mestre da Fritura"
+      "sous-chef": {
+        "name": "Sous Chef"
       },
-      "alquimista-gourmet": {
-        "name": "Alquimista Gourmet"
+      "sargento-alimentar": {
+        "name": "Sargento Alimentar"
+      },
+      "mestre-cuca": {
+        "name": "Mestre-Cuca"
+      },
+      "mestre-cervejeiro": {
+        "name": "Mestre Cervejeiro"
+      },
+      "amassador-de-monstros": {
+        "name": "Amassador de Monstros"
       },
       "doceiro-encantado": {
         "name": "Doceiro Encantado"
-      },
-      "mestre-do-fogo-e-fumaca": {
-        "name": "Mestre do Fogo e Fumaça"
-      },
-      "cantineiro-de-guerra": {
-        "name": "Cantineiro de Guerra"
       }
     }
   },
@@ -659,9 +665,9 @@
   },
   "backgrounds": {
     "acolyte": {
-      "name": "Acolyte",
-      "feature_name": "Shelter of the Faithful",
-      "feature_desc": "As an acolyte, you command the respect of those who share your faith, and you can perform the religious ceremonies of your deity. You and your adventuring companions can expect to receive free healing and care at a temple, shrine, or other established presence of your faith, though you must provide any material components needed for spells. Those who share your religion will support you (but only you) at a modest lifestyle.\n\nYou might also have ties to a specific temple dedicated to your chosen deity or pantheon, and you have a residence there. This could be the temple where you used to serve, if you remain on good terms with it, or a temple where you have found a new home. While near your temple, you can call upon the priests for assistance, provided the assistance you ask for is not hazardous and you remain in good standing with your temple."
+      "name": "Acólito",
+      "feature_name": "Abrigo dos Fiéis",
+      "feature_desc": "Como um acólito, você possui o respeito daqueles que compartilham da sua fé, e pode realizar cerimônias religiosas da sua divindade. Você e seus companheiros aventureiros podem esperar receber cura e cuidados gratuitos em um templo, santuário ou outra presença estabelecida da sua fé, embora você precise fornecer quaisquer componentes materiais necessários para magias. Aqueles que compartilham da sua religião darão apoio (apenas a você) em um estilo de vida modesto.\n\nVocê também pode ter laços com um templo específico dedicado à divindade ou panteão escolhido, e ter uma residência lá. Pode ser o templo onde costumava servir, se permanece em bons termos com ele, ou um templo onde encontrou um novo lar. Enquanto próximo ao seu templo, você pode contar com a ajuda dos sacerdotes, desde que a assistência solicitada não seja perigosa e você permaneça em boa relação com o templo."
     },
     "charlatan": {
       "name": "Charlatão",
@@ -726,31 +732,31 @@
   },
   "alignments": {
     "chaotic-evil": {
-      "name": "Chaotic Evil"
+      "name": "Caótico e Mau"
     },
     "chaotic-good": {
-      "name": "Chaotic Good"
+      "name": "Caótico e Bom"
     },
     "chaotic-neutral": {
-      "name": "Chaotic Neutral"
+      "name": "Caótico e Neutro"
     },
     "lawful-evil": {
-      "name": "Lawful Evil"
+      "name": "Leal e Mau"
     },
     "lawful-good": {
-      "name": "Lawful Good"
+      "name": "Leal e Bom"
     },
     "lawful-neutral": {
-      "name": "Lawful Neutral"
+      "name": "Leal e Neutro"
     },
     "neutral": {
-      "name": "Neutral"
+      "name": "Neutro"
     },
     "neutral-evil": {
-      "name": "Neutral Evil"
+      "name": "Neutro e Mau"
     },
     "neutral-good": {
-      "name": "Neutral Good"
+      "name": "Neutro e Bom"
     }
   },
   "feats": {

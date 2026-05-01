@@ -24,20 +24,42 @@ namespace :snacks do
       next
     end
 
-    # Mapa de nomes usados no YAML -> api_index reais das subclasses
-    # Ajuste aqui conforme seus arquétipos
+    # Mapa de nomes usados no YAML -> api_index canônico das subclasses (PDF).
+    # Pós-rewrite (2026-04-30): subclassIds canônicos do PDF substituíram os
+    # legados (mestre-da-fritura, alquimista-gourmet, mestre-do-fogo-e-fumaca,
+    # cantineiro-de-guerra). Aliases legados mantidos para retro-compat com
+    # cook_snacks.yml que ainda usem nomes antigos.
     SUBCLASS_NAME_MAP = {
-      'sous chef' => 'mestre-da-fritura',
-      'sous_chef' => 'mestre-da-fritura',
-      'sargento alimentar' => 'cantineiro-de-guerra',
-      'sargento_alimentar' => 'cantineiro-de-guerra',
-      'mestre-cuca' => 'alquimista-gourmet',
-      'mestre_cuca' => 'alquimista-gourmet',
-      'mestre cervejeiro' => 'mestre-do-fogo-e-fumaca',
-      'mestre_cervejeiro' => 'mestre-do-fogo-e-fumaca',
-      'doceiro' => 'doceiro-encantado',
+      # Canônicos (PDF)
+      'sous chef' => 'sous-chef',
+      'sous_chef' => 'sous-chef',
+      'sous-chef' => 'sous-chef',
+      'sargento alimentar' => 'sargento-alimentar',
+      'sargento_alimentar' => 'sargento-alimentar',
+      'sargento-alimentar' => 'sargento-alimentar',
+      'mestre-cuca' => 'mestre-cuca',
+      'mestre_cuca' => 'mestre-cuca',
+      'mestre cuca' => 'mestre-cuca',
+      'mestre cervejeiro' => 'mestre-cervejeiro',
+      'mestre_cervejeiro' => 'mestre-cervejeiro',
+      'mestre-cervejeiro' => 'mestre-cervejeiro',
       'amassador de monstros' => 'amassador-de-monstros',
-      'amassador_de_monstros' => 'amassador-de-monstros'
+      'amassador_de_monstros' => 'amassador-de-monstros',
+      'amassador-de-monstros' => 'amassador-de-monstros',
+      # Homebrew Lafiga
+      'doceiro' => 'doceiro-encantado',
+      'doceiro encantado' => 'doceiro-encantado',
+      'doceiro-encantado' => 'doceiro-encantado',
+      # Aliases legados (api_indexes antigos → canônicos)
+      'mestre-da-fritura' => 'sous-chef',
+      'mestre da fritura' => 'sous-chef',
+      'alquimista-gourmet' => 'mestre-cuca',
+      'alquimista gourmet' => 'mestre-cuca',
+      'mestre-do-fogo-e-fumaca' => 'sargento-alimentar',
+      'mestre do fogo e fumaca' => 'sargento-alimentar',
+      'mestre do fogo e fumaça' => 'sargento-alimentar',
+      'cantineiro-de-guerra' => 'mestre-cervejeiro',
+      'cantineiro de guerra' => 'mestre-cervejeiro'
     }.freeze
 
     to_slug = ->(s) { ActiveSupport::Inflector.transliterate(s.to_s).downcase.gsub(/[^a-z0-9]+/, '-').gsub(/^-+|-+$/,'') }
