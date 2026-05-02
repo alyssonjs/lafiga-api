@@ -1,4 +1,6 @@
 class AuthenticationController < ApplicationController
+  include RoleSerializer
+
   before_action :authorize_request, except: [:login, :logout, :signup]
 
   def login
@@ -59,20 +61,5 @@ class AuthenticationController < ApplicationController
 
   def signup_params
     params.permit(:name, :username, :email, :password, :password_confirmation, :role_id)
-  end
-
-  # O front (UserContext) compara `user.role === 'dm'` em minúsculas. O banco
-  # guarda capitalizado ('DM', 'Player', 'Admin') porque o `Role.name` é a
-  # chave canônica do back (usada em policies). Aqui no payload de auth a
-  # gente normaliza pra lowercase pra bater com o contrato do front.
-  #
-  # `Admin` vira `dm` (alias legado: enquanto não migramos os usuários
-  # antigos, qualquer Admin é tratado como DM no front também).
-  def serialize_role(role_name)
-    return 'guest' if role_name.blank?
-    normalized = role_name.to_s.downcase
-    return 'dm' if normalized == 'admin'
-    return 'player' if normalized == 'user' # legado: 'User' role no seed antigo
-    normalized
   end
 end

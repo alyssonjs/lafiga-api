@@ -17,6 +17,11 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      # Single source of truth do estado de autenticação a partir do servidor.
+      # Front consome após boot/login para derivar `role`/`permissions` em vez
+      # de confiar em localStorage. Ver `Api::V1::MeController`.
+      get 'me', to: 'me#show'
+
       namespace :admin do
         get 'dm_user_picker', to: 'dm_user_picker#index'
         resources :dm_users, only: %i[index show create update] do
