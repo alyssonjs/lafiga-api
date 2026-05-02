@@ -23,22 +23,17 @@ module Api
 
       # GET /api/v1/me
       # Retorna o mesmo schema do payload de login para o front reusar
-      # `mapUserInfosToAuthUser` sem ramificações. Diferença intencional vs.
-      # `AuthenticationController#login`: filtra `password_digest` da
-      # serialização. O login antigo vaza esse campo (bug pré-existente
-      # rastreado em follow-up); aqui não introduzimos a regressão.
+      # `mapUserInfosToAuthUser` sem ramificações. Filtragem de campos
+      # sensíveis (bcrypt hash) via `User::SENSITIVE_API_FIELDS` —
+      # mesma constante usada em `AuthenticationController#login`/`#signup`
+      # depois do PR C.
       def show
         render json: {
-          user_infos: @current_user.as_json(except: SENSITIVE_USER_FIELDS),
+          user_infos: @current_user.as_json(except: User::SENSITIVE_API_FIELDS),
           role: serialize_role(@current_user.role.name),
           permissions: @current_user.role.permissions
         }, status: :ok
       end
-
-      private
-
-      SENSITIVE_USER_FIELDS = %i[password_digest password_changed_at].freeze
-      private_constant :SENSITIVE_USER_FIELDS
     end
   end
 end

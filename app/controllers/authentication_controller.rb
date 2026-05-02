@@ -11,7 +11,12 @@ class AuthenticationController < ApplicationController
       token = JsonWebToken.encode({ user_id: @user.id }, exp_at)
       render json: { token: token, message: 'Login success!',
                       exp: exp_at.strftime("%m-%d-%Y %H:%M"),
-                      user_infos: @user,
+                      # `password_digest` (bcrypt hash) era exposto aqui antes
+                      # do PR C — bug pré-existente não pego porque não havia
+                      # spec do AuthenticationController. Filtrado via
+                      # `User::SENSITIVE_API_FIELDS`. Mesmo padrão em #signup
+                      # e em `Api::V1::MeController#show`.
+                      user_infos: @user.as_json(except: User::SENSITIVE_API_FIELDS),
                       role: serialize_role(@user.role.name),
                       permissions: @user.role.permissions
                     },
@@ -42,7 +47,8 @@ class AuthenticationController < ApplicationController
         token:        token,
         message:      'Signup realizado com sucesso!',
         exp:          exp,
-        user_infos:   @user,
+        # Mesmo filtro do #login — não vazar bcrypt hash mesmo em signup.
+        user_infos:   @user.as_json(except: User::SENSITIVE_API_FIELDS),
         role:         serialize_role(@user.role.name),
         permissions:  @user.role.permissions
       }, status: :created

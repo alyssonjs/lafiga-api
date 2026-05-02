@@ -1,4 +1,17 @@
 class User < ApplicationRecord
+    # Campos que NUNCA devem aparecer em payloads de API. Usado pelos
+    # controllers de auth/me/admin via `as_json(except: SENSITIVE_API_FIELDS)`.
+    #
+    # `password_digest`: hash bcrypt — vazava em /authenticate, /signup e /me
+    # antes desta refatoração. Bcrypt resiste a brute force razoável, mas
+    # expor o hash facilita ataques offline e quebra a expectativa básica
+    # de "credenciais nunca saem do servidor".
+    #
+    # `password_changed_at` NÃO está aqui — é metadado público (front mostra
+    # "última troca de senha em ..." na Profile page) e revelar a data não
+    # introduz vetor.
+    SENSITIVE_API_FIELDS = %i[password_digest].freeze
+
     has_secure_password
 
     validates :password, length: { minimum: 6 }, allow_nil: true
