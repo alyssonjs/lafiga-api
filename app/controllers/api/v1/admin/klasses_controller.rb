@@ -109,6 +109,7 @@ class Api::V1::Admin::KlassesController < ApplicationController
       :primary_ability,
       :description,
       :short_description,
+      :progression_table,
       :subclass_level,
       rules: {},
       saving_throws: [],

@@ -111,6 +111,21 @@ RSpec.describe 'Api::V1::Admin::Klasses', type: :request do
       klass.reload
       expect(klass.short_description).to eq('Guerreiro berserker movido pela fúria.')
     end
+
+    it 'persiste progression_table (rich-text com tabela de niveis)' do
+      # Coluna `progression_table` (migration `add_progression_table_to_klasses`):
+      # rich-text HTML exibido num Collapse acima de "Caracteristicas de Classe"
+      # no painel de detalhe. DMs colam HTML/tabela markdown do PHB com
+      # progressao por nivel (Nivel | Prof | Caracteristicas | Furias | ...).
+      table_html = '<table><thead><tr><th>Nivel</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>'
+      patch "/api/v1/admin/klasses/#{klass.id}", params: {
+        klass: { progression_table: table_html },
+      }.to_json, headers: headers
+
+      expect(response).to have_http_status(:ok)
+      klass.reload
+      expect(klass.progression_table).to eq(table_html)
+    end
   end
 
   describe 'DELETE /api/v1/admin/klasses/:id' do

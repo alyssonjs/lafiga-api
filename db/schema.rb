@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_03_180000) do
+ActiveRecord::Schema.define(version: 2026_05_03_190000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -380,6 +380,7 @@ ActiveRecord::Schema.define(version: 2026_05_03_180000) do
     t.string "primary_ability"
     t.jsonb "saving_throws", default: []
     t.string "short_description"
+    t.text "progression_table"
     t.index ["api_index"], name: "index_klasses_on_api_index", unique: true
   end
 
