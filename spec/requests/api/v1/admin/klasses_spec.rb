@@ -98,6 +98,19 @@ RSpec.describe 'Api::V1::Admin::Klasses', type: :request do
       expect(klass.description).to include('Novo')
       expect(klass.primary_ability).to eq('Forca')
     end
+
+    it 'persiste short_description (tagline exibida no header do painel)' do
+      # Coluna `short_description` (migration `add_short_description_to_klasses`):
+      # tagline curta, exibida no cabecalho do `ClassDetailPanel` abaixo da
+      # linha de stats. Distinta de `description` (rich-text na aba Historia).
+      patch "/api/v1/admin/klasses/#{klass.id}", params: {
+        klass: { short_description: 'Guerreiro berserker movido pela fúria.' },
+      }.to_json, headers: headers
+
+      expect(response).to have_http_status(:ok)
+      klass.reload
+      expect(klass.short_description).to eq('Guerreiro berserker movido pela fúria.')
+    end
   end
 
   describe 'DELETE /api/v1/admin/klasses/:id' do

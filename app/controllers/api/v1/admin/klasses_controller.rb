@@ -93,11 +93,14 @@ class Api::V1::Admin::KlassesController < ApplicationController
 
   def klass_params
     # Adicionados (migration `add_description_and_metadata_to_klasses`):
-    # - `description`: rich-text vindo do `RichTextEditor` do front.
+    # - `description`: rich-text vindo do `RichTextEditor` do front (aba
+    #   "Historia" no painel de detalhe).
     # - `primary_ability`: habilidade primária (string livre).
     # - `saving_throws`: array de strings (proficiências em ST).
-    # Antes desta versão o modal `ClassFormModal.tsx` coletava esses
-    # campos mas eles eram silenciosamente descartados pelo permit.
+    # - `short_description` (`add_short_description_to_klasses`): tagline
+    #   exibida no cabecalho do painel.
+    # Antes destes permits o modal `ClassFormModal.tsx` coletava esses
+    # campos mas eles eram silenciosamente descartados.
     params.require(:klass).permit(
       :name,
       :api_index,
@@ -105,6 +108,7 @@ class Api::V1::Admin::KlassesController < ApplicationController
       :spellcasting_ability,
       :primary_ability,
       :description,
+      :short_description,
       :subclass_level,
       rules: {},
       saving_throws: [],
