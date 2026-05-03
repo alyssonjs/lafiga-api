@@ -13,9 +13,13 @@ class Api::V1::Admin::KlassesController < ApplicationController
 
   def create
     @klass = Klass.new(klass_params)
-    
+
     if @klass.save
-      render json: @klass, status: :created
+      # Envelopa em `{ klass: ... }` para o front consumir o mesmo shape
+      # de `show`/`update` (`buildWizardClassOptionFromApi` espera o
+      # registro raiz). Antes retornava `@klass` solto — exigia `as` ad-hoc
+      # no caller.
+      render json: { klass: @klass }, status: :created
     else
       render json: { errors: @klass.errors.full_messages }, status: :unprocessable_entity
     end
@@ -88,7 +92,23 @@ class Api::V1::Admin::KlassesController < ApplicationController
   end
 
   def klass_params
-    params.require(:klass).permit(:name, :api_index, :hit_die, :spellcasting_ability, :subclass_level, rules: {})
+    # Adicionados (migration `add_description_and_metadata_to_klasses`):
+    # - `description`: rich-text vindo do `RichTextEditor` do front.
+    # - `primary_ability`: habilidade primária (string livre).
+    # - `saving_throws`: array de strings (proficiências em ST).
+    # Antes desta versão o modal `ClassFormModal.tsx` coletava esses
+    # campos mas eles eram silenciosamente descartados pelo permit.
+    params.require(:klass).permit(
+      :name,
+      :api_index,
+      :hit_die,
+      :spellcasting_ability,
+      :primary_ability,
+      :description,
+      :subclass_level,
+      rules: {},
+      saving_throws: [],
+    )
   end
 
   def level_feature_params

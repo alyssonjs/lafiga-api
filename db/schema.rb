@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_30_120100) do
+ActiveRecord::Schema.define(version: 2026_05_03_160000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -376,6 +376,9 @@ ActiveRecord::Schema.define(version: 2026_04_30_120100) do
     t.string "spellcasting_ability"
     t.integer "subclass_level"
     t.jsonb "rules"
+    t.text "description"
+    t.string "primary_ability"
+    t.jsonb "saving_throws", default: []
     t.index ["api_index"], name: "index_klasses_on_api_index", unique: true
   end
 
