@@ -40,7 +40,10 @@ class SpellRules
 
   def self.prepared_limit_for(sheet, klass)
     # Ex.: Cleric/Druid/Wizard: ability mod + class level. Outras classes variam.
-    ability = klass.spellcasting_ability&.downcase
+    # Normaliza ability porque `klass.spellcasting_ability` pode vir como
+    # 'Inteligência' (PT-BR completo) — `sheet.send('inteligência')` quebraria;
+    # `sheet.send('int')` retorna o atributo. Ver CharacterRules.normalize_ability_key.
+    ability = CharacterRules.normalize_ability_key(klass.spellcasting_ability)
     return 0 unless ability
     ability_score = sheet.send(ability)
     sk = sheet.sheet_klasses.find_by(klass_id: klass.id)

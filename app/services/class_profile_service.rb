@@ -38,10 +38,14 @@ class ClassProfileService
     db_ability = klass.spellcasting_ability.to_s.strip.upcase
     db_ability = nil if db_ability.blank?
     rules_ability = self.class.spellcasting_ability_from_class_rules(klass.api_index)
-    ability = (subcaster_ability || db_ability || rules_ability || 'CHA').to_s.upcase
+    raw_ability = (subcaster_ability || db_ability || rules_ability || 'CHA').to_s
+    # Mesmo bug do build_conjuration: nomes PT-BR completos ('Inteligência')
+    # caíam em `mods[:inteligência]` = nil → 0. Normaliza pra str/dex/.../cha.
+    ability_short = CharacterRules.normalize_ability_key(raw_ability) || 'cha'
+    ability = ability_short.upcase
     mods = ability_mods
     prof = CharacterRules.proficiency_bonus(CharacterRules.total_level(@sheet))
-    mod = mods[ability.downcase.to_sym] || 0
+    mod = mods[ability_short.to_sym] || 0
     atk_bonus = mod + prof
     dc = 8 + mod + prof
 

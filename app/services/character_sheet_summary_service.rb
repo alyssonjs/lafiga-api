@@ -1204,7 +1204,11 @@ class CharacterSheetSummaryService
     db_ab = klass.spellcasting_ability.to_s.strip.upcase
     db_ab = nil if db_ab.blank?
     rules_ab = ClassProfileService.spellcasting_ability_from_class_rules(klass.api_index)
-    ability_key = (sub_ability || db_ab || rules_ab || 'CHA').to_s.downcase
+    raw_ability = (sub_ability || db_ab || rules_ab || 'CHA').to_s
+    # Normaliza para a chave curta (str/dex/.../cha). Antes era só `.downcase`,
+    # o que deixava nomes como 'Inteligência' (PT-BR completo) cair em `mods[:inteligência]`
+    # = nil → mod 0. Ver CharacterRules.normalize_ability_key.
+    ability_key = CharacterRules.normalize_ability_key(raw_ability) || 'cha'
     mod = abilities[:mods][ability_key.to_sym] || 0
     atk_bonus = mod + prof
     dc = 8 + mod + prof
