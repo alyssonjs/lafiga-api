@@ -28,3 +28,12 @@ translate-key.json
 
 # Export local de users para import em outro ambiente (gerado; não versionar)
 /config/users_migration.yml
+
+# Local OS/editor artifacts.
+.DS_Store
+*.orig
+*.new
+
+# Local dev exports/backups.
+/docs/*.xlsx
+/docs/*.dev-backup
