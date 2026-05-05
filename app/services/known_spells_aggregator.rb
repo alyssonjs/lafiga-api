@@ -79,6 +79,8 @@ class KnownSpellsAggregator
               # via per-step PATCH (NÃO em `metadata.spell_selections.cantrips` —
               # essa lista só carrega os cantrips regulares de classe). Sem este
               # loop o branch `casting_known` ignorava as 3 magias do livro.
+              # `known_source: 'tome'` para a ficha exibir chip "TOMO" (front mapeia
+              # em `knownSourceApiKeyToChipLabel`).
               per_for_tome = (@sheet.metadata || {}).dig('class_choices', 'per_level') || {}
               per_for_tome.values.each do |row_pl|
                 next unless row_pl.is_a?(Hash)
@@ -89,10 +91,9 @@ class KnownSpellsAggregator
                   new_seen.add(sp.id)
                   lvl = sp.level.to_i
                   ks_row = SheetKnownSpell.find_by(sheet_klass_id: pk.id, spell_id: sp.id)
-                  chip = self.class.known_source_chip_key(ks_row&.source) || 'class'
                   row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
                   row[:sheet_known_spell_id] = ks_row.id if ks_row
-                  row[:known_source] = chip
+                  row[:known_source] = 'tome'
                   new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
                 end
