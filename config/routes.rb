@@ -93,6 +93,8 @@ Rails.application.routes.draw do
             get :summary
             get  :wallet, to: 'wallets#show'
             put  :wallet, to: 'wallets#update'
+            get  :xp,     to: 'xp#show'
+            put  :xp,     to: 'xp#update'
           end
           resources :coin_pouches, only: [:create, :update, :destroy]
         end

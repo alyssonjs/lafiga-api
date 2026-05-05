@@ -3,6 +3,15 @@ class Sheet < ApplicationRecord
   COIN_DEFAULTS = COIN_KEYS.each_with_object({}) { |k, h| h[k] = 0 }.freeze
   PRIMARY_POUCH_ID = 'primary'.freeze
 
+  # XP cumulativo por nivel de personagem (D&D 5e PHB p.15).
+  # Index = nivel (1..20). XP_THRESHOLDS[1] = 0 (nivel inicial).
+  XP_THRESHOLDS = [
+    0, 0, 300, 900, 2_700, 6_500, 14_000, 23_000, 34_000, 48_000, 64_000,
+    85_000, 100_000, 120_000, 140_000, 165_000, 195_000, 225_000, 265_000,
+    305_000, 355_000
+  ].freeze
+  MAX_LEVEL = 20
+
   validates :character_id, uniqueness: true
   validate :sub_race_belongs_to_race
   validate :coins_must_be_valid
@@ -169,6 +178,41 @@ class Sheet < ApplicationRecord
     raise ArgumentError, 'Informe ao menos uma moeda com valor positivo' unless moved
 
     assign_pouches_and_save!(list)
+  end
+
+  # ─── Experience Points (DM-only writes) ────────────────────────────────
+  # `experience_points` e' a unica fonte de XP da ficha. Players leem via
+  # summary, mas so o DM (papel site-wide) escreve via `Api::V1::Admin::XpController`.
+
+  # Soma `delta` ao XP atual. `delta` aceita inteiro (positivo ou negativo).
+  # Resultado nunca fica abaixo de 0.
+  def apply_xp_delta!(delta)
+    amount = delta.to_i
+    new_value = [experience_points.to_i + amount, 0].max
+    update!(experience_points: new_value)
+    self
+  end
+
+  # Substitui o XP por um valor absoluto (>= 0).
+  def set_xp!(value)
+    new_value = [value.to_i, 0].max
+    update!(experience_points: new_value)
+    self
+  end
+
+  # Avanca o XP ate o threshold do proximo nivel (milestone do DM).
+  # Nao mexe em `current_level` nem em `sheet_klasses` — quem sobe nivel
+  # e' o player, atraves do fluxo proprio. Aqui apenas destravamos o XP
+  # minimo para o proximo nivel ficar disponivel na ficha.
+  def advance_xp_to_next_level!
+    cur = current_level.to_i.clamp(1, MAX_LEVEL)
+    return self if cur >= MAX_LEVEL
+
+    target = XP_THRESHOLDS[cur + 1].to_i
+    return self if experience_points.to_i >= target
+
+    update!(experience_points: target)
+    self
   end
 
   private
