@@ -187,6 +187,11 @@ class KnownSpellsAggregator
           Array(row['cantrips']).each              { |it| insert_entry.call(resolve_meta_entry.call(it)) }
           Array(row['spells']).each                { |it| insert_entry.call(resolve_meta_entry.call(it)) }
           Array(row['learn_any_class_spells']).each { |it| insert_entry.call(resolve_meta_entry.call(it)) }
+          # Bruxo, Pacto do Tomo (PHB): 3 truques de qualquer classe não contam
+          # contra cantrips conhecidos mas DEVEM aparecer na ficha. LevelUpService
+          # já persiste em SheetKnownSpell; aqui garantimos no summary mesmo
+          # quando vier do metadata fallback (legado / sync atrasado).
+          Array(row['tome_cantrips']).each         { |it| insert_entry.call(resolve_meta_entry.call(it)) }
         end
       end
     rescue => _e

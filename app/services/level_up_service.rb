@@ -291,6 +291,12 @@ class LevelUpService
       row = per[lvl.to_s] || {}
       process_picks.call(row, 'cantrips', lvl)
       process_picks.call(row, 'spells',   lvl)
+      # Bruxo, Pacto do Tomo: 3 truques de qualquer classe que NÃO contam contra
+      # cantrips conhecidos, MAS DEVEM virar SheetKnownSpell para reaparecer no
+      # summary após reload. PHB: "enquanto o livro estiver com você, pode
+      # conjurá-los à vontade". Mesmo tratamento de `cantrips` (find_or_create_by
+      # idempotente por spell_id).
+      process_picks.call(row, 'tome_cantrips', lvl)
 
       # Auto-preencher até o limite do nível (se faltando escolhas) para classes de magias conhecidas
       sc = SpellRules.sc_for(@klass, lvl)
