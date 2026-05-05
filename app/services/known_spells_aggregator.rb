@@ -73,6 +73,31 @@ class KnownSpellsAggregator
                 end
               end
 
+              # Bruxo, Pacto do Tomo (PHB): 3 truques de qualquer classe que NÃO
+              # contam contra cantrips conhecidos mas DEVEM aparecer na ficha. O
+              # front salva esses ids em `metadata.class_choices.per_level[N].tome_cantrips`
+              # via per-step PATCH (NÃO em `metadata.spell_selections.cantrips` —
+              # essa lista só carrega os cantrips regulares de classe). Sem este
+              # loop o branch `casting_known` ignorava as 3 magias do livro.
+              per_for_tome = (@sheet.metadata || {}).dig('class_choices', 'per_level') || {}
+              per_for_tome.values.each do |row_pl|
+                next unless row_pl.is_a?(Hash)
+                Array(row_pl['tome_cantrips']).each do |tok|
+                  sp = sel_resolver.resolve(tok)
+                  next unless sp
+                  next if new_seen.include?(sp.id)
+                  new_seen.add(sp.id)
+                  lvl = sp.level.to_i
+                  ks_row = SheetKnownSpell.find_by(sheet_klass_id: pk.id, spell_id: sp.id)
+                  chip = self.class.known_source_chip_key(ks_row&.source) || 'class'
+                  row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
+                  row[:sheet_known_spell_id] = ks_row.id if ks_row
+                  row[:known_source] = chip
+                  new_by_level[lvl] << row
+                  new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
+                end
+              end
+
               SheetKnownSpell.includes(:spell, :sheet_klass).joins(:sheet_klass)
                 .where(sheet_klasses: { sheet_id: @sheet.id }, source: NON_CLASS_KNOWN_SOURCES)
                 .find_each do |ks|
