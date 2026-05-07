@@ -121,20 +121,41 @@ class SheetItem < ApplicationRecord
     EquipmentRules::ARMOR_TABLE.key?(idx) rescue false
   end
 
+  # Match por:
+  #   1) `api_index` canônico (`mestre_de_armas_duplas` no DB; `dual_wielder` em
+  #      payloads vindos do front/SRD).
+  #   2) substring do nome (PT-BR oficial + variantes históricas).
+  # Bug histórico: a checagem só por substring `'duas armas'` não cobria
+  # o nome canônico `'Mestre de Armas Duplas'` — usuário com a façanha
+  # ficava bloqueado de equipar arma não-leve na mão secundária.
+  DUAL_WIELDER_NAME_PATTERNS = [
+    'mestre de armas duplas',  # PT-BR oficial (config/feats_improved.yml)
+    'dual wielder',            # SRD EN
+    'empunhador duplo',        # tradução alternativa
+    'duas armas',              # match histórico
+    'duelista duplo',          # tradução alternativa
+  ].freeze
+  DUAL_WIELDER_API_INDEXES = %w[mestre_de_armas_duplas dual_wielder].freeze
+
   def has_dual_wielder_feat?
-    # checa feats via associação e via metadata
     begin
+      api_indexes = []
       names = []
       begin
-        names += Array(sheet.feats).map { |f| f.name.to_s.downcase }
+        Array(sheet.feats).each do |f|
+          api_indexes << f.api_index.to_s.downcase if f.respond_to?(:api_index) && f.api_index.present?
+          names << f.name.to_s.downcase if f.respond_to?(:name) && f.name.present?
+        end
       rescue; end
       begin
         feats_meta = Array((sheet.metadata || {})['feats'])
-        names += feats_meta.map { |f| (f['name'] || f[:name]).to_s.downcase }
+        feats_meta.each do |f|
+          api_indexes << (f['api_index'] || f[:api_index]).to_s.downcase
+          names << (f['name'] || f[:name]).to_s.downcase
+        end
       rescue; end
-      names.any? do |n|
-        n.include?('dual wielder') || n.include?('empunhador duplo') || n.include?('duas armas') || n.include?('duelista duplo')
-      end
+      api_indexes.compact.any? { |idx| DUAL_WIELDER_API_INDEXES.include?(idx) } ||
+        names.compact.any? { |n| DUAL_WIELDER_NAME_PATTERNS.any? { |pat| n.include?(pat) } }
     rescue
       false
     end
