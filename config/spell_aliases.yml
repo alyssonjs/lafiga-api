@@ -87,8 +87,13 @@
 # === Espiritos Guardioes (spirit-guardians) — sufixo "(Classe)" ===
 "espiritos guardioes (classe)": spirit-guardians
 
-# === Globos de Luz (dancing-lights) — singular "Globo" no excel ===
-"globo de luz": dancing-lights
+# === Globos de Luz (globos-de-luz) — truque distinto de "Luzes Dançantes" ===
+# "Globos de Luz" e "Luzes Dançantes" sao DOIS truques separados no nosso
+# sistema. Excels antigos, exports e fichas que referenciam por nome devem
+# resolver para o registro `globos-de-luz` (NAO para `dancing-lights`, que e'
+# o nome canonico PHB-PT da magia racial Drow).
+"globo de luz": globos-de-luz
+"globos de luz": globos-de-luz
 
 # === Lamina da Chama Esverdeada (pt-lamina-da-chama-esverdeada) ===
 # DB tem com hifen e "da", excel escreve sem acento e "de"

@@ -983,6 +983,7 @@ class CharacterSheetSummaryService
     meta = sheet.metadata || {}
     rs = (meta['race_summary'].presence || column_hash(sheet, :race_summary) || {})
     raw_traits = rs['traits'] || []
+    metadata_by_key = trait_metadata_by_key_for_sheet(sheet)
 
     if raw_traits.is_a?(Array) && raw_traits.any?
       first = raw_traits.first
@@ -994,7 +995,16 @@ class CharacterSheetSummaryService
             deduped = deduped.select { |t| allowed.include?((t['name'] || t[:name]).to_s.downcase.strip) }
           end
         end
-        mapped = deduped.map { |t| { key: t['api_index'] || t['name'], name: t['name'] || t[:name], description: t['description'] || t[:description] } }
+        mapped = deduped.map do |t|
+          key = t['api_index'] || t['name']
+          name = t['name'] || t[:name]
+          metadata = lookup_trait_metadata(metadata_by_key, key) || lookup_trait_metadata(metadata_by_key, name)
+          {
+            key: key,
+            name: name,
+            description: interpolate_trait_description(t['description'] || t[:description], metadata)
+          }
+        end
         return mapped if mapped.any?
       elsif raw_traits.all? { |x| x.is_a?(String) }
         traits_by_index = Trait.where(api_index: raw_traits.uniq).to_a
@@ -1004,7 +1014,10 @@ class CharacterSheetSummaryService
             traits_by_index.select! { |t| allowed.include?(t.name.to_s.downcase.strip) }
           end
         end
-        found = traits_by_index.map { |t| { key: t.api_index, name: t.name, description: t.description } }
+        found = traits_by_index.map do |t|
+          metadata = lookup_trait_metadata(metadata_by_key, t.api_index) || lookup_trait_metadata(metadata_by_key, t.name)
+          { key: t.api_index, name: t.name, description: interpolate_trait_description(t.description, metadata) }
+        end
         found.uniq! { |h| h[:name].to_s.downcase.strip }
         return found if found.any?
       end
@@ -1015,9 +1028,106 @@ class CharacterSheetSummaryService
       trait_records = sheet.race&.base_traits&.to_a || []
       trait_records += sheet.sub_race&.traits&.to_a || [] if sheet.sub_race_id.present?
       trait_records.uniq!(&:id)
-      return trait_records.map { |t| { key: t.api_index, name: t.name, description: t.description } } if trait_records.any?
+      if trait_records.any?
+        return trait_records.map do |t|
+          metadata = lookup_trait_metadata(metadata_by_key, t.api_index) || lookup_trait_metadata(metadata_by_key, t.name)
+          { key: t.api_index, name: t.name, description: interpolate_trait_description(t.description, metadata) }
+        end
+      end
     end
     []
+  end
+
+  # Mapeia identificador do trait -> metadata da `RaceTrait` correspondente
+  # (jsonb com `range`, `damage`, etc.). Combina race base + subrace, com a
+  # subrace tendo prioridade caso defina um override (ex.: alcance maior).
+  # O lookup expoe a mesma metadata sob 3 chaves para o `build_traits` casar
+  # tanto pelo `api_index` quanto pelo nome (PT-BR e lowercase), porque o
+  # `race_summary['traits']` salvo no sheet so guarda `name`/`description`.
+  def trait_metadata_by_key_for_sheet(sheet)
+    return {} unless sheet.race_id.present?
+
+    out = {}
+    register = lambda do |trait, metadata|
+      next unless trait
+      payload = metadata.is_a?(Hash) ? metadata.dup : {}
+      api_index = trait.api_index.to_s
+      name = trait.name.to_s
+      out[api_index] = (out[api_index] || {}).merge(payload) if api_index.present?
+      out[name] = (out[name] || {}).merge(payload) if name.present?
+      out[name.downcase.strip] = (out[name.downcase.strip] || {}).merge(payload) if name.present?
+    end
+
+    RaceTrait.where(race_id: sheet.race_id, sub_race_id: nil).includes(:trait).each do |rt|
+      register.call(rt.trait, rt.metadata)
+    end
+
+    if sheet.sub_race_id.present?
+      RaceTrait.where(race_id: sheet.race_id, sub_race_id: sheet.sub_race_id).includes(:trait).each do |rt|
+        register.call(rt.trait, rt.metadata)
+      end
+    end
+
+    out
+  end
+
+  # Procura metadata para `key` aceitando api_index, nome literal ou nome
+  # lowercase/strip. Devolve `nil` se nada bater.
+  def lookup_trait_metadata(metadata_by_key, key)
+    return nil if key.nil?
+    raw = key.to_s
+    metadata_by_key[raw] || metadata_by_key[raw.downcase.strip]
+  end
+
+  # Substitui placeholders PT-BR (ex.: `<alcance>`, `<tipo>`) na descricao do
+  # trait pelos valores do `RaceTrait.metadata`. Quando nao ha metadata para
+  # interpolar, devolve o texto original (placeholder visivel) para nao mascarar
+  # bug de seed/import.
+  TRAIT_PLACEHOLDER_MAP = {
+    'alcance' => %w[range alcance],
+    'tipo'    => %w[damage tipo type],
+    'cd'      => %w[dc cd],
+    'dano'    => %w[damage dano],
+    'area'    => %w[area area_effect breath]
+  }.freeze
+
+  def interpolate_trait_description(description, metadata)
+    text = description.to_s
+    return text if text.blank?
+    return text unless text.include?('<')
+    return text if metadata.blank?
+
+    md = metadata.transform_keys(&:to_s)
+
+    text.gsub(/<([^<>\s]+)>/) do |match|
+      raw = Regexp.last_match(1).to_s.strip
+      placeholder = raw.downcase
+      # Ignora placeholders nao-textuais (ex.: tags HTML que possam vazar).
+      next match unless placeholder.match?(/\A[\p{L}_]+\z/)
+
+      keys = TRAIT_PLACEHOLDER_MAP[placeholder] || [placeholder]
+      value = keys.lazy.map { |k| md[k] }.find { |v| !v.nil? && v.to_s.strip != '' }
+      next match if value.nil?
+
+      formatted = format_trait_metadata_value(placeholder, value)
+      formatted.presence || match
+    end
+  end
+
+  # Formata o valor metadata para encaixe no texto. Para `alcance` aceitamos
+  # tanto numero (ft) quanto string ja formatada ("18 m / 60 ft").
+  def format_trait_metadata_value(placeholder, value)
+    case placeholder
+    when 'alcance'
+      v = value.is_a?(Hash) ? (value['range'] || value[:range]) : value
+      return v.to_s if v.is_a?(String)
+      ft = v.to_i
+      return '' if ft <= 0
+      meters = (ft * 0.3048).round
+      "#{meters} m / #{ft} ft"
+    else
+      value.to_s
+    end
   end
 
   def build_background(sheet)

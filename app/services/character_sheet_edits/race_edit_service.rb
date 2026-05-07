@@ -113,6 +113,14 @@ module CharacterSheetEdits
       recompute_hp_max!(new_con: sheet.con.to_i)
       sheet.save! if sheet.changed?
 
+      # Bug "Drow → Tiefling guardava magias antigas": antes deste reapply,
+      # o edit per-step de raca nao tocava SheetKnownSpell.from_race — entao
+      # mudar raca via wizard de edicao deixava as magias da raca anterior
+      # presas na ficha (Globos de Luz do Drow continuavam apos virar
+      # Tiefling). RacialSpellsService.call agora limpa `from_race` antes
+      # de re-aplicar, deixando a operacao idempotente.
+      reapply_racial_spells!
+
       # `apply!` retorna implicitamente; warnings/cleared keys ja foram
       # acumulados via `warn!`/`clear!`.
     end
@@ -174,6 +182,31 @@ module CharacterSheetEdits
       sheet.save!
     rescue StandardError => e
       warn!("RaceRules.apply falhou: #{e.message}")
+    end
+
+    # Re-aplica magias raciais inatas com base na raca/sub-raca atual da
+    # ficha. Idempotente: `RacialSpellsService` limpa todas as magias com
+    # `source: 'race'` antes de inserir as novas, entao chamadas repetidas
+    # sao seguras e a troca de raca remove magias antigas automaticamente.
+    def reapply_racial_spells!
+      return unless sheet.race_id.present?
+      return unless sheet.sheet_klasses.exists?
+
+      race = Race.find_by(id: sheet.race_id) or return
+      sub_race = SubRace.find_by(id: sheet.sub_race_id)
+      rid = race.api_index.presence || race.name.to_s.parameterize(separator: '_')
+      sid = sub_race&.api_index&.presence || sub_race&.name&.to_s&.parameterize(separator: '_')
+      choices = (sheet.metadata || {}).dig('race_choices') || {}
+      extra_langs = Array(choices['chosenLanguages']).flatten.compact.map(&:to_s)
+      race_rule = RaceRules.apply(race_id: rid, subrace_id: sid, choices: { extraLanguages: extra_langs })
+
+      RacialSpellsService.call(
+        sheet: sheet,
+        race_rule: race_rule,
+        character_level: CharacterRules.total_level(sheet)
+      )
+    rescue StandardError => e
+      warn!("RacialSpellsService falhou: #{e.message}")
     end
 
     def ensure_playable_race_allowed!(race_id:, sub_race_id:)

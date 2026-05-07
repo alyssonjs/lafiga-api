@@ -262,6 +262,114 @@ RSpec.describe RacialSpellsService, type: :service do
         expect(result.result).to eq(sheet)
       end
     end
+
+    context 'Drow PHB-PT: aplica nomes canonicos via api_index (nao "Globos de Luz")' do
+      # Regressao: o YAML race_rules.yml#drow_magic.grants.spells lista
+      # `spell: dancing-lights` (api_index canonico). Antes do fix de
+      # canonicalizacao, a Spell na DB tinha `name: 'Globos De Luz'`,
+      # divergindo do PHB-PT ('Luzes Dançantes') e do `description` do
+      # trait. Resultado: o jogador via "Globos de Luz" na ficha Drow e o
+      # wizard nao casava `'Luzes Dançantes'` no spell picker (`useRaceGrantedSpellLocks`).
+      let!(:dancing_lights_canonical) do
+        Spell.find_by(api_index: 'dancing-lights') ||
+          create(:spell, api_index: 'dancing-lights', name: 'Luzes Dançantes', level: 0)
+      end
+      let!(:faerie_fire_canonical) do
+        Spell.find_by(api_index: 'faerie-fire') ||
+          create(:spell, api_index: 'faerie-fire', name: 'Fogo das Fadas', level: 1)
+      end
+      let!(:darkness_canonical) do
+        Spell.find_by(api_index: 'darkness') ||
+          create(:spell, api_index: 'darkness', name: 'Escuridão', level: 2)
+      end
+
+      let(:race_rule_drow_l5) do
+        # Mesma estrutura que `RaceRules.extract_innate_spells_from_traits`
+        # devolve em producao para `drow_magic.grants.spells` no YAML.
+        {
+          race_id: 'drow',
+          innate_spells: [
+            { name: 'dancing-lights', unlocked_at_level: 1, ability: 'CHA', uses: nil },
+            { name: 'faerie-fire',    unlocked_at_level: 3, ability: 'CHA', uses: 'LR' },
+            { name: 'darkness',       unlocked_at_level: 5, ability: 'CHA', uses: 'LR' }
+          ]
+        }
+      end
+
+      it 'cria SheetKnownSpell para Luzes Dançantes (nao "Globos de Luz")' do
+        described_class.call(sheet: sheet, race_rule: race_rule_drow_l5, character_level: 5)
+
+        ks = SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race').includes(:spell).map(&:spell)
+        names = ks.map(&:name).sort
+        expect(names).to include('Luzes Dançantes'), "esperava 'Luzes Dançantes', recebeu #{names.inspect}"
+        expect(names).not_to include('Globos De Luz')
+        expect(names).not_to include('Globos de Luz')
+      end
+
+      it 'cria as 3 magias raciais com api_indices canonicos no nivel 5' do
+        described_class.call(sheet: sheet, race_rule: race_rule_drow_l5, character_level: 5)
+
+        api_indices = SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race').joins(:spell).pluck('spells.api_index').sort
+        expect(api_indices).to eq(%w[dancing-lights darkness faerie-fire])
+      end
+
+      it 'aplica apenas Luzes Dançantes no nivel 1 (faerie-fire/darkness exigem nivel 3/5)' do
+        described_class.call(sheet: sheet, race_rule: race_rule_drow_l5, character_level: 1)
+
+        api_indices = SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race').joins(:spell).pluck('spells.api_index').sort
+        expect(api_indices).to eq(['dancing-lights'])
+      end
+    end
+
+    context 'troca de raca: limpa magias raciais antigas antes de aplicar novas' do
+      # Regressao: Drow → Tiefling antes deste fix mantinha Globos de Luz/Fogo
+      # das Fadas (source: 'race') na ficha mesmo apos virar Tiefling, porque
+      # `find_or_initialize_by` so adicionava as novas. RacialSpellsService.call
+      # agora limpa todas as `source: 'race'` antes de re-aplicar — operacao
+      # idempotente, segura para reprovision repetido.
+      let!(:thaumaturgy) { create(:spell, name: 'Taumaturgia', level: 0) }
+
+      before do
+        # Estado simulando ficha vinda da raca anterior (Drow level 3).
+        SheetKnownSpell.create!(sheet_klass: sheet_klass, spell: dancing_lights, source: 'race')
+        SheetKnownSpell.create!(sheet_klass: sheet_klass, spell: faerie_fire, source: 'race', uses_per_rest: 'LR', uses_remaining: 1)
+      end
+
+      let(:race_rule_tiefling) do
+        {
+          race_id: 'tiefling',
+          innate_spells: [
+            { level: 1, spells: ['Taumaturgia'], ability: 'CHA', uses: nil }
+          ]
+        }
+      end
+
+      it 'remove magias raciais antigas mesmo quando a nova raca tem outras magias' do
+        described_class.call(sheet: sheet, race_rule: race_rule_tiefling, character_level: 1)
+
+        race_known = SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race').joins(:spell).pluck('spells.name').sort
+        expect(race_known).to eq(['Taumaturgia'])
+        expect(SheetKnownSpell.exists?(sheet_klass: sheet_klass, spell: dancing_lights)).to be(false)
+        expect(SheetKnownSpell.exists?(sheet_klass: sheet_klass, spell: faerie_fire)).to be(false)
+      end
+
+      it 'remove magias raciais antigas mesmo quando a nova raca nao tem magias inatas' do
+        described_class.call(sheet: sheet, race_rule: { race_id: 'human', innate_spells: [] }, character_level: 1)
+
+        expect(SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race')).to be_empty
+      end
+
+      it 'preserva magias com `source: feat` ao trocar raca' do
+        feat_only_spell = create(:spell, name: 'Magic Initiate Cantrip', level: 0)
+        SheetKnownSpell.create!(sheet_klass: sheet_klass, spell: feat_only_spell, source: 'feat')
+
+        described_class.call(sheet: sheet, race_rule: race_rule_tiefling, character_level: 1)
+
+        feat_kept = SheetKnownSpell.find_by(sheet_klass: sheet_klass, spell: feat_only_spell)
+        expect(feat_kept).to be_present
+        expect(feat_kept.source).to eq('feat')
+      end
+    end
   end
 
   describe 'métodos do modelo SheetKnownSpell' do

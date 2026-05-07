@@ -18,11 +18,26 @@ class RacialSpellsService
   end
 
   def call
+    # Bug "Drow → Tiefling guardava magias antigas":
+    # antes deste reset, `find_or_initialize_by` so adicionava as magias da
+    # nova raca, sem nunca remover as da raca anterior. Resultado:
+    # SheetKnownSpell acumulava `source: 'race'` de cada raca passada (ex.:
+    # Globos de Luz do Drow continuavam mesmo depois de virar Tiefling).
+    # Cobertura: spec/services/racial_spells_service_spec.rb (resetagem).
+    sk_ids = @sheet.sheet_klasses.pluck(:id)
+    if sk_ids.any?
+      removed = SheetKnownSpell.where(sheet_klass_id: sk_ids, source: 'race').delete_all
+      removed_prep = SheetPreparedSpell.where(sheet_id: @sheet.id, source: 'race').delete_all
+      if removed.positive? || removed_prep.positive?
+        Rails.logger.info "RacialSpellsService: cleared #{removed} known + #{removed_prep} prepared racial spells for sheet #{@sheet.id}"
+      end
+    end
+
     innate_spells = collect_innate_spells
     return @sheet if innate_spells.empty?
 
     primary_sk = @sheet.sheet_klasses.order(level: :desc).first
-    
+
     unless primary_sk
       Rails.logger.warn "RacialSpellsService: No sheet_klass found for sheet #{@sheet.id}"
       return @sheet

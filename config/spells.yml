@@ -209,7 +209,24 @@ spells:
   higher_level: []
   material:
 - api_index: dancing-lights
-  name: Globos De Luz
+  name: Luzes Dançantes
+  level: 0
+  school: Evocation
+  range: 36 metros
+  components:
+  - V
+  - S
+  - M
+  material: um pouco de fósforo ou wychwood ou um inseto luminoso
+  ritual: false
+  duration: Concentração, até 1 minuto
+  concentration: true
+  casting_time: 1 ação
+  desc:
+  - Você cria até quatro luzes do tamanho de tochas dentro do alcance, fazendo-as parecerem tochas, lanternas ou esferas luminosas que flutuam no ar pela duração. Você também pode combinar as quatro luzes em uma forma luminosa, vagamente humanoide, de tamanho Médio. Qualquer que seja a forma que você escolher, cada luz produz penumbra num raio de 3 metros. Com uma ação bônus, no seu turno, você pode mover as luzes, até 18 metros, para um novo local dentro do alcance. Uma luz deve estar a, pelo menos, 6 metros de outra luz criada por essa magia e uma luz some se exceder o alcance da magia.
+  higher_level: []
+- api_index: globos-de-luz
+  name: Globos de Luz
   level: 0
   school: Evocation
   range: 36 metros
@@ -1370,7 +1387,7 @@ spells:
   higher_level: []
   material:
 - api_index: faerie-fire
-  name: Fogo Das Fadas
+  name: Fogo das Fadas
   level: 1
   school: Evocation
   range: 18 metros
