@@ -54,6 +54,12 @@ module Modifiers
           [tough_hp_per_level(entry)].compact
         when 'mestre_de_armas_duplas'
           mestre_armas_duplas_ac_bonus(entry).compact
+        when 'alerta'
+          [alerta_initiative_bonus(entry)].compact
+        when 'maestria_em_armadura_pesada'
+          [maestria_armadura_pesada_damage_resistance(entry)].compact
+        when 'mestre_do_escudo'
+          mestre_do_escudo_save_grant(entry).compact
         else
           # Heurística genérica: ler `entry['special_rules']` (escrito por
           # FeatAssignmentService a partir de FeatSpecialRulesService) e
@@ -145,6 +151,75 @@ module Modifiers
             note: '+1 CA empunhando duas armas (Mestre de Armas Duplas)',
           ),
         ]
+      end
+
+      # ─── Alerta (Alert) — +5 iniciativa ───────────────────────────
+      # PHB Alert: +5 iniciativa, imune a surpresa, ignora vantagem de
+      # atacantes escondidos. Aqui só convertemos o bônus numérico — os
+      # outros 2 efeitos são flags booleanas tratadas pelo combat engine
+      # separadamente (ver special_rules.combat_modifiers do feat).
+      def alerta_initiative_bonus(_entry)
+        mod(
+          target: 'initiative',
+          op: :add,
+          value: 5,
+          source: 'feat:alerta',
+          stacking_type: 'untyped',
+          note: '+5 em iniciativa (Alerta)'
+        )
+      end
+
+      # ─── Maestria em Armadura Pesada (Heavy Armor Master) ──────────
+      # PHB Heavy Armor Master: enquanto vestindo armadura pesada, ataques
+      # de armas NÃO-mágicas que causariam dano de contusão/perfuração/
+      # cortante têm o dano reduzido em 3.
+      #
+      # Predicate `wearing_heavy_armor=true` é avaliado pelo summary com
+      # base no equipamento atual. Se não houver context disponível (caminho
+      # genérico do summary), o modifier ainda é emitido — o resolver final
+      # decide se aplica ou não baseado em `predicate`.
+      def maestria_armadura_pesada_damage_resistance(_entry)
+        mod(
+          target: 'damage_resistance.bps_nonmagical',
+          op: :add,
+          value: 3,
+          source: 'feat:maestria_em_armadura_pesada',
+          stacking_type: 'untyped',
+          predicate: { 'condition' => 'wearing_heavy_armor' },
+          note: 'Reduz em 3 dano físico não-mágico em armadura pesada (Heavy Armor Master)'
+        )
+      end
+
+      # ─── Mestre do Escudo (Shield Master) ──────────────────────────
+      # PHB Shield Master tem 3 efeitos. Aqui modelamos:
+      # 1. AC bonus a saves DEX que afetem só você (escudo equipado).
+      # Os outros 2 (empurrão como ação bônus / 0 dano em DEX save com
+      # sucesso) são tratados pelo combat engine via special_rules.
+      #
+      # Predicate: requer escudo equipado. Modelado como save.dex.add_shield.
+      def mestre_do_escudo_save_grant(_entry)
+        return [] unless wearing_shield?
+
+        [
+          mod(
+            target: 'save.dex',
+            op: :add,
+            value: 'shield_ac_bonus',  # resolved via context (geralmente +2)
+            source: 'feat:mestre_do_escudo',
+            stacking_type: 'untyped',
+            predicate: { 'condition' => 'wearing_shield' },
+            note: '+escudo a saves DEX só-você (Mestre do Escudo)'
+          )
+        ]
+      end
+
+      def wearing_shield?
+        eq = context[:equipment]
+        return false unless eq
+        equipped = eq[:equipped] || eq['equipped'] || {}
+        oh = equipped[:off_hand] || equipped['off_hand'] || {}
+        cat = (oh[:category] || oh['category']).to_s.downcase
+        cat.include?('shield') || cat == 'escudo' || cat == 'escudos'
       end
 
       # ─── Heurística genérica para special_rules ────────────────────

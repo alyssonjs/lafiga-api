@@ -365,6 +365,10 @@ class CharacterSheetSummaryService
             ac_bonus_total: modifier_bag.sum_for('ac'),
             equipment_ac_bonus: modifier_bag.sum_for_kind('ac', source_kind: :item),
             feat_ac_bonus: modifier_bag.sum_for_kind('ac', source_kind: :feat),
+            # Iniciativa — Fase 5 — consumida por Combat::CombatantsController#defaults_for
+            # para que feats como Alerta (+5) cheguem ao combatant.
+            initiative_bonus: modifier_bag.sum_for('initiative'),
+            feat_initiative_bonus: modifier_bag.sum_for_kind('initiative', source_kind: :feat),
             # ── Itens equipados: efeitos consolidados (Fase 2) ──
             resistances:            modifier_bag.granted('resistance'),
             damage_immunities:      modifier_bag.granted('damage_immunity'),

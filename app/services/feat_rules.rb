@@ -28,27 +28,36 @@ class FeatRules
     'duravel' => {
       id: 'duravel',
       name: 'Durável',
-      description: 'Você desenvolveu uma resistência excepcional.',
-      prerequisites: { ability_score: { con: 13 } },
+      # PT alternativo: o YAML `feats_improved.yml` declara o mesmo feat sob
+      # o nome "Resistente" (com `key_aliases: ['durable', 'duravel']`).
+      # Mantemos `duravel` como api_index canônico no Ruby.
+      aliases: ['Resistente', 'Durable'],
+      description: 'Sua vitalidade é forte. Você se recupera mais rápido durante descansos.',
+      # PHB: Durable não tem prereq de ability_score. (Antes do fix, o Ruby
+      # exigia CON 13 — divergente do livro.)
+      prerequisites: {},
       ability_bonuses: { con: 1 },
       proficiency_bonuses: {},
       features: {
         name: 'Durável',
-        desc: 'Quando você rola um dado de vida para recuperar pontos de vida, você pode rerrolar o dado se rolar um 1 e deve usar o novo resultado.'
+        desc: 'Quando você rola um Dado de Vida para recuperar pontos de vida, o número mínimo recuperado é igual a 2 × seu modificador de Constituição (mínimo 2).'
+      },
+      # Engine de cura consome esta chave para aplicar o piso PHB.
+      # Mesmo formato usado em `config/feats_improved.yml` (resistente).
+      special_rules: {
+        dice_modifiers: {
+          hit_dice_minimum_heal: {
+            implementation: 'hit_die_minimum_heal',
+            parameters: { minimum: '2x_con_mod', minimum_floor: 2 }
+          }
+        }
       }
     },
-    'atirador_agucado' => {
-      id: 'atirador_agucado',
-      name: 'Atirador Aguçado',
-      description: 'Você é um especialista em ataques à distância.',
-      prerequisites: { ability_score: { dex: 13 } },
-      ability_bonuses: { dex: 1 },
-      proficiency_bonuses: {},
-      features: {
-        name: 'Atirador Aguçado',
-        desc: 'Você ignora a cobertura parcial e a cobertura de três quartos. Você não tem desvantagem em ataques à distância quando está dentro de 1,5 metro de um inimigo hostil.'
-      }
-    },
+    # NOTA: `atirador_agucado` (homebrew híbrido entre PHB Sharpshooter e
+    # Crossbow Expert) foi removido na Fase 3. O efeito de "ignorar cobertura"
+    # vive em `atirador_eximio` (Sharpshooter completo do PHB) e o efeito de
+    # "sem desvantagem a 1,5m" vive em `especialista_em_besta` (Crossbow Expert).
+    # Verificação de DB anterior confirmou 0 uso em SheetFeat / metadata.feats.
     'sentinela' => {
       id: 'sentinela',
       name: 'Sentinela',
@@ -118,30 +127,31 @@ class FeatRules
         desc: 'Você aprende dois truques de uma lista de magias de uma classe de sua escolha. Você também aprende uma magia de 1º nível dessa mesma lista.'
       }
     },
+    # PHB Heavily Armored: prereq profic. armadura média, +1 STR, ganha
+    # profic. pesada. **Mantido como ALIAS DEPRECATED** de `protecao_pesada`
+    # (que é o api_index canônico do projeto para Heavily Armored). Os 2
+    # entries existem porque fichas legadas podem usar qualquer um dos
+    # nomes — não há divergência funcional. Para Heavy Armor Master (feat
+    # PHB SEPARADO com -3 dano físico), use `maestria_em_armadura_pesada`.
     'especialista_em_armadura' => {
       id: 'especialista_em_armadura',
       name: 'Especialista em Armadura',
-      description: 'Você desenvolveu uma habilidade especial com armaduras.',
-      prerequisites: { ability_score: { str: 15 } },
+      aliases: ['Heavily Armored', 'Empenhado em Armadura Pesada', 'Proteção Pesada'],
+      deprecated_for: 'protecao_pesada',  # canônico
+      description: 'Você se especializou em armaduras mais pesadas que sua categoria atual.',
+      prerequisites: { proficiencies: { armors: ['média'] } },
       ability_bonuses: { str: 1 },
-      proficiency_bonuses: { armor: ['armadura_pesada'] },
+      proficiency_bonuses: { armor: ['pesada'] },
       features: {
         name: 'Especialista em Armadura',
-        desc: 'Você ganha proficiência com armaduras pesadas.'
+        desc: '+1 STR. Você ganha proficiência com armaduras pesadas (PHB Heavily Armored — equivalente a `protecao_pesada`).'
       }
     },
-    'especialista_em_escudo' => {
-      id: 'especialista_em_escudo',
-      name: 'Especialista em Escudo',
-      description: 'Você desenvolveu uma habilidade especial com escudos.',
-      prerequisites: { ability_score: { str: 13 } },
-      ability_bonuses: { choose: { amount: 1, options: ['str', 'dex'] } },
-      proficiency_bonuses: {},
-      features: {
-        name: 'Especialista em Escudo',
-        desc: 'Você pode usar escudos como armas improvisadas. Quando você usa um escudo como arma, ele causa 1d4 de dano contundente.'
-      }
-    },
+    # NOTA: `especialista_em_escudo` (homebrew "escudo como arma improvisada
+    # 1d4") foi removido na Fase 3 — sem equivalente PHB. Para escudo como
+    # arma na regra oficial use `especialista_em_briga` (Tavern Brawler), que
+    # dá proficiência com armas improvisadas e d4 desarmado.
+    # Verificação de DB anterior confirmou 0 uso em SheetFeat / metadata.feats.
     'mestre_de_armas_duplas' => {
       id: 'mestre_de_armas_duplas',
       name: 'Mestre de Armas Duplas',
@@ -504,6 +514,30 @@ class FeatRules
         desc: 'Proficiência com armaduras pesadas e +1 FOR.'
       }
     },
+    # PHB Heavy Armor Master (feat SEPARADO de Heavily Armored): prereq
+    # profic. armadura pesada, +1 STR, reduz dano físico não-mágico em 3.
+    # Portado de `config/feats_improved.yml` (Fase 3).
+    'maestria_em_armadura_pesada' => {
+      id: 'maestria_em_armadura_pesada',
+      name: 'Maestria em Armadura Pesada',
+      aliases: ['Heavy Armor Master'],
+      description: 'Seu treinamento em armadura pesada absorve golpes que aleijariam outros.',
+      prerequisites: { proficiencies: { armors: ['pesada'] } },
+      ability_bonuses: { str: 1 },
+      proficiency_bonuses: {},
+      features: {
+        name: 'Peso que Protege',
+        desc: '+1 STR. Enquanto estiver usando armadura pesada, ataques de armas não-mágicas que causariam dano de contusão, perfuração ou cortante têm o dano reduzido em 3.'
+      },
+      special_rules: {
+        defense_modifiers: {
+          damage_resistance: {
+            implementation: 'reduce_nonmagical_bps_damage',
+            parameters: { reduce: 3, requires_armor_category: 'pesada' }
+          }
+        }
+      }
+    },
     'duelista_montado' => {
       id: 'duelista_montado',
       name: 'Duelista Montado',
@@ -763,6 +797,278 @@ class FeatRules
           }
         }
       }
+    },
+
+    # ============================================================
+    # FASE 2 — Cobertura PHB completa: feats portados do
+    # `config/feats_improved.yml` para o Ruby (single source) e os
+    # 2 feats que estavam ausentes em ambos (Alerta, Mente Aguçada).
+    # Cada feat referencia o nome canônico PHB e mantém compatibilidade
+    # com aliases comuns em fichas legadas.
+    # ============================================================
+
+    # PHB Alert — não estava em Ruby nem YAML. Sem prereq, sem ASI;
+    # +5 iniciativa, imune a surpresa, ignora vantagem de atacantes escondidos.
+    'alerta' => {
+      id: 'alerta',
+      name: 'Alerta',
+      aliases: ['Alert'],
+      description: 'Sempre à espera de perigo, você ganha bônus em iniciativa e nunca é surpreendido.',
+      prerequisites: {},
+      ability_bonuses: {},
+      proficiency_bonuses: {},
+      features: {
+        name: 'Atenção Constante',
+        desc: '+5 em iniciativa; você não pode ser surpreso enquanto estiver consciente; outras criaturas não ganham vantagem em ataques contra você por estarem escondidas.'
+      },
+      special_rules: {
+        combat_modifiers: {
+          initiative_bonus: {
+            implementation: 'initiative_flat_bonus',
+            parameters: { bonus: 5 }
+          },
+          surprise_immunity: {
+            implementation: 'cannot_be_surprised_while_conscious',
+            parameters: {}
+          },
+          ignore_hidden_attacker_advantage: {
+            implementation: 'ignore_hidden_attacker_advantage',
+            parameters: {}
+          }
+        }
+      }
+    },
+
+    # PHB Keen Mind — não estava em Ruby nem YAML.
+    'mente_agucada' => {
+      id: 'mente_agucada',
+      name: 'Mente Aguçada',
+      aliases: ['Keen Mind'],
+      description: 'Sua mente perfeita armazena informações com precisão extraordinária.',
+      prerequisites: {},
+      ability_bonuses: { int: 1 },
+      proficiency_bonuses: {},
+      features: {
+        name: 'Memória Eidética',
+        desc: '+1 INT; você sempre sabe a direção do norte; sempre sabe quantas horas faltam para o próximo nascer ou pôr do sol; lembra perfeitamente de qualquer coisa que viu ou ouviu no último mês.'
+      },
+      special_rules: {
+        social_modifiers: {
+          perfect_recall_30_days: {
+            implementation: 'perfect_recall',
+            parameters: { window_days: 30 }
+          },
+          knows_north: {
+            implementation: 'always_knows_compass_direction',
+            parameters: { direction: 'north' }
+          },
+          knows_solar_time: {
+            implementation: 'always_knows_solar_time',
+            parameters: {}
+          }
+        }
+      }
+    },
+
+    # PHB Actor — portado de feats_improved.yml (`ator`).
+    'ator' => {
+      id: 'ator',
+      name: 'Ator',
+      aliases: ['Actor'],
+      description: 'Mímica e dramaturgia aprimoradas.',
+      prerequisites: {},
+      ability_bonuses: { cha: 1 },
+      proficiency_bonuses: {},
+      features: {
+        name: 'Performance Versátil',
+        desc: '+1 CAR; vantagem em testes de Atuação e Enganação ao tentar passar por outra pessoa; pode imitar a voz/sons de uma criatura que ouviu por pelo menos 1 minuto.'
+      },
+      special_rules: {
+        skill_modifiers: {
+          skill_advantage: {
+            implementation: 'skill_advantage',
+            parameters: ['Atuação', 'Enganação']
+          }
+        },
+        social_modifiers: {
+          mimicry: {
+            implementation: 'voice_mimicry',
+            parameters: { requires_listen_min: 1 }
+          }
+        }
+      }
+    },
+
+    # PHB Charger — portado de feats_improved.yml (`investida_poderosa`).
+    'investida_poderosa' => {
+      id: 'investida_poderosa',
+      name: 'Investida Poderosa',
+      aliases: ['Charger'],
+      description: 'Transforma sua Disparada em impacto contundente.',
+      prerequisites: {},
+      ability_bonuses: {},
+      proficiency_bonuses: {},
+      features: {
+        name: 'Impulso Ofensivo',
+        desc: 'Após usar Disparada, você pode realizar (ação bônus) um ataque corpo-a-corpo OU empurrar a criatura. Se mover ao menos 3 m em linha reta antes do ataque, soma +5 ao dano (ou empurra +1,5 m).'
+      },
+      special_rules: {
+        combat_modifiers: {
+          bonus_action_attack_or_shove_after_dash: {
+            implementation: 'bonus_action_attack_or_shove_after_dash',
+            parameters: { min_move_ft: 10, damage_bonus: 5 }
+          }
+        }
+      }
+    },
+
+    # PHB Elemental Adept — portado de feats_improved.yml (`adepto_elemental`).
+    'adepto_elemental' => {
+      id: 'adepto_elemental',
+      name: 'Adepto Elemental',
+      aliases: ['Elemental Adept'],
+      description: 'Suas magias ignoram resistências de um tipo de dano escolhido.',
+      prerequisites: { spellcasting: true },
+      ability_bonuses: {},
+      proficiency_bonuses: {},
+      features: {
+        name: 'Canalização Elemental',
+        desc: 'Escolha um tipo de dano: ácido, frio, fogo, relâmpago ou trovão. Suas magias desse tipo ignoram resistência ao dano. Quando você rola dano de uma magia, qualquer 1 nos dados conta como 2.'
+      },
+      special_rules: {
+        magic_modifiers: {
+          elemental_focus: {
+            implementation: 'elemental_adept',
+            parameters: {
+              damage_type_choice: ['ácido', 'frio', 'fogo', 'relâmpago', 'trovão'],
+              ones_count_as: 2
+            }
+          }
+        }
+      }
+    },
+
+    # PHB Mage Slayer — portado de feats_improved.yml (`matador_de_conjuradores`).
+    'matador_de_conjuradores' => {
+      id: 'matador_de_conjuradores',
+      name: 'Matador de Conjuradores',
+      aliases: ['Mage Slayer'],
+      description: 'Treinado para punir conjuradores adjacentes.',
+      prerequisites: {},
+      ability_bonuses: {},
+      proficiency_bonuses: {},
+      features: {
+        name: 'Antimagia Agressiva',
+        desc: 'Reação: ataque corpo-a-corpo quando uma criatura a 1,5 m conjura magia. Ao causar dano em conjurador concentrando, ele tem desvantagem para manter a concentração. Você tem vantagem em testes de resistência contra magias conjuradas a 1,5 m de você.'
+      },
+      special_rules: {
+        combat_modifiers: {
+          reaction_attack_on_cast: {
+            implementation: 'reaction_melee_attack_when_adjacent_casts',
+            parameters: { range_m: 1.5 }
+          },
+          impose_concentration_disadvantage: {
+            implementation: 'disadvantage_on_concentration_when_hit',
+            parameters: {}
+          },
+          advantage_on_saves_vs_adjacent_spells: {
+            implementation: 'advantage_on_saves_vs_adjacent_caster',
+            parameters: { range_m: 1.5 }
+          }
+        }
+      }
+    },
+
+    # PHB Martial Adept — portado de feats_improved.yml (`adepto_marcial`).
+    'adepto_marcial' => {
+      id: 'adepto_marcial',
+      name: 'Adepto Marcial',
+      aliases: ['Martial Adept'],
+      description: 'Você aprende manobras de Mestre de Batalha e ganha 1 dado de superioridade.',
+      prerequisites: {},
+      ability_bonuses: {},
+      proficiency_bonuses: {},
+      features: {
+        name: 'Técnicas de Combate',
+        desc: 'Aprende 2 manobras da lista do Mestre de Batalha (Battle Master). Ganha 1 dado de superioridade (d6) recuperado em descanso curto/longo. Se já tiver dados de superioridade, ganha 1 a mais.'
+      },
+      special_rules: {
+        maneuvers: {
+          choose: 2,
+          options: [
+            { id: 'aparar', name: 'Aparar' },
+            { id: 'ameacador', name: 'Ataque Ameaçador' },
+            { id: 'encontrao', name: 'Ataque de Encontrão' },
+            { id: 'desarmar', name: 'Ataque Desarmante' },
+            { id: 'trespassante', name: 'Ataque Trespassante' },
+            { id: 'provocante', name: 'Ataque Provocante' },
+            { id: 'derrubar', name: 'Derrubar' },
+            { id: 'distrativo', name: 'Golpe Distrativo' },
+            { id: 'ripostar', name: 'Contra-Atacar' },
+            { id: 'preciso', name: 'Ataque Preciso' }
+          ]
+        },
+        superiority_die: {
+          implementation: 'grant_superiority_die',
+          parameters: { count: 1, die: 'd6' }
+        }
+      }
+    },
+
+    # PHB Medium Armor Master — portado de feats_improved.yml.
+    'maestria_em_armadura_media' => {
+      id: 'maestria_em_armadura_media',
+      name: 'Maestria em Armadura Média',
+      aliases: ['Medium Armor Master'],
+      description: 'Sua armadura média não compromete sua agilidade.',
+      prerequisites: { proficiencies: { armors: ['média'] } },
+      ability_bonuses: {},
+      proficiency_bonuses: {},
+      features: {
+        name: 'Ajuste Preciso',
+        desc: 'Não sofre desvantagem em testes de Furtividade por usar armadura média; pode somar até +3 do mod. DEX à CA (em vez de +2) ao usar armadura média (requer DEX 16+).'
+      },
+      special_rules: {
+        defense_modifiers: {
+          stealth_no_disadvantage_in_medium: {
+            implementation: 'stealth_no_disadvantage_in_armor_category',
+            parameters: { armor_category: 'média' }
+          },
+          dex_cap_plus_three: {
+            implementation: 'medium_armor_dex_cap',
+            parameters: { dex_cap: 3, requires_dex: 16 }
+          }
+        }
+      }
+    },
+
+    # PHB Tavern Brawler — portado de feats_improved.yml (`especialista_em_briga`).
+    'especialista_em_briga' => {
+      id: 'especialista_em_briga',
+      name: 'Especialista em Briga',
+      aliases: ['Tavern Brawler', 'Brigão de Taverna'],
+      description: 'Você transforma qualquer coisa em arma — inclusive seus próprios punhos.',
+      prerequisites: {},
+      ability_bonuses: { choose: { amount: 1, options: %w[str con] } },
+      proficiency_bonuses: { weapons: ['armas improvisadas'] },
+      features: {
+        name: 'Briga de Taverna',
+        desc: '+1 FOR ou CON; proficiência com armas improvisadas; dado de dano desarmado vira 1d4; após acertar com desarmado/improvisada, pode tentar agarrar o alvo como ação bônus.'
+      },
+      special_rules: {
+        unarmed_modifiers: {
+          unarmed_damage_die: {
+            implementation: 'unarmed_damage_die',
+            parameters: { die: 'd4' }
+          }
+        },
+        combat_modifiers: {
+          bonus_action_grapple_on_hit: {
+            implementation: 'bonus_action_grapple_on_hit',
+            parameters: {}
+          }
+        }
+      }
     }
   }.with_indifferent_access.freeze
 
@@ -914,6 +1220,14 @@ class FeatRules
     elsif proficiency_bonuses[:choose]
       chosen_proficiencies = choices[:proficiencies] || choices['proficiencies'] || []
       proficiency_bonuses = { 'skills' => chosen_proficiencies } if chosen_proficiencies.any?
+    else
+      # Resolver `choose:` ANINHADO em sub-categorias (Fase 5D).
+      # Exemplo: `proficiency_bonuses: { weapons: { choose: { amount: 4, options: [...] } } }`
+      # do feat `especialista_em_armas`. Antes, só `choose:` top-level era
+      # resolvido — o nó aninhado vazava como Hash bruto e o summary não
+      # conseguia ler. Agora cada categoria (weapons/armor/armors/tools)
+      # com `choose:` é resolvida via `choices['proficiencies']`.
+      proficiency_bonuses = resolve_nested_proficiency_choice(proficiency_bonuses, choices)
     end
 
     # Get cantrips
@@ -1120,6 +1434,46 @@ class FeatRules
     rescue StandardError
       false
     end
+  end
+
+  # Resolve `choose:` aninhado em categorias de proficiência (Fase 5D).
+  #
+  # Caso PHB Weapon Master:
+  #   proficiency_bonuses: { weapons: { choose: { amount: 4, options: [...] } } }
+  #
+  # Antes deste resolver, o nó `weapons.choose` vazava como Hash bruto e o
+  # summary expunha como string `"[\"choose\", {...}]"` em proficiencies.
+  # Agora trocamos `weapons` por um Array com os picks de
+  # `choices['proficiencies']` (limitando a `amount`).
+  #
+  # Suporta chaves: `weapons`, `armor`/`armors`, `tools`, `languages`.
+  # Categorias sem `choose:` ficam intocadas.
+  def self.resolve_nested_proficiency_choice(pb, choices)
+    return pb unless pb.is_a?(Hash)
+
+    chosen = Array(choices[:proficiencies] || choices['proficiencies'])
+    return pb if chosen.empty?
+
+    # Normalizar chaves para string e operar sobre hash plano (RULES vem com
+    # `with_indifferent_access`, mas `deep_dup` pode perder isso e operações
+    # com `[:weapons]`/`['weapons']` ficam inconsistentes).
+    nested_keys = %w[weapons armor armors tools languages]
+    out = pb.deep_stringify_keys
+
+    nested_keys.each do |key|
+      block = out[key]
+      next unless block.is_a?(Hash)
+      block_str = block.deep_stringify_keys
+      next unless block_str['choose'].is_a?(Hash)
+
+      choose_meta = block_str['choose']
+      amount = (choose_meta['amount']).to_i.nonzero? || 1
+      picks = chosen.first(amount).map(&:to_s)
+      # Substitui o subhash por um Array plano (mesmo formato esperado pelo
+      # summary em proficiency_bonuses.weapons / .armors / etc).
+      out[key] = picks
+    end
+    out
   end
 
   def self.split_skills_and_tools(values)

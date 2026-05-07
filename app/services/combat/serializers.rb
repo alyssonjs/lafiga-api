@@ -35,6 +35,11 @@ module Combat
         hp_current: c.hp_current,
         hp_max: c.hp_max,
         ac: c.ac,
+        # speed_ft (Fase 5A): leitura derivada da Sheet/NPC. Antes do fix,
+        # CombatCombatant não expunha movimento e feats como Mobilidade
+        # (+10 ft) ficavam invisíveis no combate. Aceita nil (CombatCombatant
+        # legacy sem speed_ft persistido).
+        speed_ft: c.respond_to?(:speed_ft) ? c.speed_ft : nil,
         temp_hp: c.temp_hp,
         is_delayed: c.is_delayed,
         is_concentrating: c.is_concentrating,

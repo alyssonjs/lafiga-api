@@ -195,16 +195,23 @@ module Api::V1::Player::Combat
       case combatable
       when Character
         sheet = combatable.sheet
-        dex = character_dex_score(sheet)
-        bonus = ((dex - 10) / 2.0).floor
-        {
-          name: combatable.name,
-          hp_current: sheet&.hp_current.to_i,
-          hp_max:     sheet&.hp_max.to_i,
-          ac:         10, # combat profile virá depois (Fase 2 com sheet AC)
-          initiative_bonus: bonus,
-          tie_break_dex: dex,
-        }
+        # Tenta consumir o summary (que já agrega feats: Alerta init, AC bonus,
+        # speed bonus, etc.). Se falhar (sheet nil ou erro), cai no caminho
+        # legado com DEX cru. Comportamento backward-compatible.
+        sd = build_combat_defaults_from_summary(sheet)
+        if sd
+          { name: combatable.name }.merge(sd)
+        else
+          dex = character_dex_score(sheet)
+          {
+            name: combatable.name,
+            hp_current: sheet&.hp_current.to_i,
+            hp_max:     sheet&.hp_max.to_i,
+            ac:         10,
+            initiative_bonus: ((dex - 10) / 2.0).floor,
+            tie_break_dex: dex,
+          }
+        end
       when CombatNpc
         st = combatable.stats || {}
         raw = st['dex'] || st[:dex]
@@ -222,6 +229,47 @@ module Api::V1::Player::Combat
       else
         { name: 'Combatente', hp_current: 0, hp_max: 0, ac: 10, initiative_bonus: 0, tie_break_dex: 10 }
       end
+    end
+
+    # Constrói defaults de combat a partir do CharacterSheetSummaryService —
+    # único local que consolida feats + raça + classe + equipamento. Antes
+    # do fix da Fase 5, defaults_for usava DEX cru e AC=10 hardcoded, ignorando
+    # Alerta (+5 init), Mestre de Armas Duplas (+1 CA), etc.
+    #
+    # Retorna `nil` quando o summary não pode ser construído — caller usa
+    # caminho legado.
+    def build_combat_defaults_from_summary(sheet)
+      return nil unless sheet&.id
+
+      cmd = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+      return nil unless cmd&.success?
+
+      summary = cmd.result
+      scores = summary.dig(:abilities, :scores) || {}
+      dex = (scores[:dex] || scores['dex']).to_i
+      dex = 10 unless dex.positive?
+
+      # Iniciativa = (DEX-10)/2 + soma de modifiers de feats sobre 'initiative'
+      # (FeatProducer.alerta_initiative_bonus, etc.).
+      base_ini = ((dex - 10) / 2.0).floor
+      feat_ini = (summary.dig(:modifiers, :initiative_bonus) ||
+                  summary.dig(:modifiers, :feat_initiative_bonus) || 0).to_i
+
+      # AC vive em summary[:equipment][:ac][:ac] (estrutura do
+      # CharacterSheetSummaryService, agregando armadura + feats + estilo de
+      # luta + itens mágicos). Fallback 10 (nu, sem AC).
+      ac = (summary.dig(:equipment, :ac, :ac) || 10).to_i
+      ac = 10 if ac < 1
+
+      {
+        hp_current: sheet.hp_current.to_i,
+        hp_max:     sheet.hp_max.to_i,
+        ac:         ac,
+        initiative_bonus: base_ini + feat_ini,
+        tie_break_dex: dex,
+      }
+    rescue StandardError
+      nil
     end
 
     def character_dex_score(sheet)
