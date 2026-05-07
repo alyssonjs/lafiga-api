@@ -595,15 +595,6 @@ class CharacterSheetSummaryService
     []
   end
 
-  def build_movement(sheet)
-    meta = sheet.metadata || {}
-    rs = meta['race_summary'] || {}
-    {
-      speed_ft: rs['speed_ft'],
-      speed_m: rs['speed_m']
-    }
-  end
-
   def build_klasses(sheet)
     sheet.sheet_klasses.map do |sk|
       {

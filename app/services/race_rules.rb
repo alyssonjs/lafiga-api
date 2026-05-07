@@ -27,9 +27,16 @@ class RaceRules
   end
 
   # api_index legado ou SRD que não bate com a chave em `subraces:` do YAML (ex.: hill_dwarf → hill).
-  # Inclui slugs PT-BR vindos de `SubRace#name.parameterize` (ex.: anao_da_colina → hill) — sem
-  # isso `RacialHpBonus.per_level_for_sheet` falha no LevelUpService e só o init_hp soma +1 PV.
+  # Inclui:
+  #   - slugs SRD/legado (`hill_dwarf` → `hill`)
+  #   - slugs PT-BR vindos de `SubRace#name.parameterize` (`anao_da_colina` → `hill`)
+  #   - slugs PT-BR com hífen e variações com acento (`falcônicos` → `falconicos`)
+  #
+  # Esta tabela é a **única fonte de tradução** consumida por
+  # `canonical_subrace_key`. Antes da consolidação, `RaceProfileService` mantinha
+  # um `sub_map_by_race` paralelo, com risco de divergência ao adicionar raças.
   SUBRACE_KEY_ALIASES = {
+    # --- Anão / Dwarf ---
     %w[dwarf hill_dwarf] => 'hill',
     %w[dwarf mountain_dwarf] => 'mountain',
     %w[dwarf anao_da_colina] => 'hill',
@@ -38,16 +45,39 @@ class RaceRules
     %w[dwarf anao_da_montanha] => 'mountain',
     %w[dwarf anao-da-montanha] => 'mountain',
     %w[dwarf montanha] => 'mountain',
+    # --- Elfo / Elf ---
     %w[elf wood_elf] => 'wood',
     %w[elf high_elf] => 'high',
     %w[elf elfo_da_floresta] => 'wood',
     %w[elf floresta] => 'wood',
     %w[elf alto_elfo] => 'high',
     %w[elf alto] => 'high',
+    %w[elf negro] => 'drow',
+    # --- Gnomo / Gnome ---
     %w[gnome forest_gnome] => 'forest',
     %w[gnome rock_gnome] => 'rock',
+    %w[gnome gnomo_da_floresta] => 'forest',
+    %w[gnome floresta] => 'forest',
+    %w[gnome gnomo_das_rochas] => 'rock',
+    %w[gnome rocha] => 'rock',
+    # --- Halfling ---
     %w[halfling lightfoot_halfling] => 'lightfoot',
     %w[halfling stout_halfling] => 'stout',
+    %w[halfling pes_leves] => 'lightfoot',
+    ['halfling', 'pés_leves'] => 'lightfoot',  # com acento — não cabe em %w[]
+    %w[halfling robusto] => 'stout',
+    # --- Humano / Human (Lafiga: subrace `variant`) ---
+    %w[human variante] => 'variant',
+    # --- Tiefling (Lafiga houserules: 3 sub-raças) ---
+    %w[tiefling abissal] => 'abissal',
+    %w[tiefling infernal] => 'infernal',
+    %w[tiefling ctonico] => 'ctonico',
+    ['tiefling', 'ctoníco'] => 'ctonico',      # com acento
+    # --- Aarakocra (Lafiga houserules: 3 sub-raças) ---
+    %w[aarakocra falconicos] => 'falconicos',
+    ['aarakocra', 'falcônicos'] => 'falconicos',  # com acento
+    %w[aarakocra nocturnos] => 'nocturnos',
+    %w[aarakocra cypselanos] => 'cypselanos',
   }.freeze
 
   RACE_KEY_ALIASES = {
@@ -70,6 +100,26 @@ class RaceRules
   def self.normalize_race_key(race_id)
     rk = race_id.to_s.strip
     RACE_KEY_ALIASES[rk] || rk
+  end
+
+  # Normaliza valores de "alcance" do YAML para Integer.
+  #
+  # Vários campos do `race_rules.yml` são expressos como Hash `{range: N}`
+  # (ex.: `darkvision`, `superior_darkvision`), mas consumidores frequentemente
+  # querem só o número. Antes deste helper, `applied[:darkvision].to_i` em
+  # Hash retornava 0 (Ruby semantics) e a guarda `> 0` falhava silenciosamente:
+  # bug ativo em CPS / RaceEditService / RaceProfileService que mantinha
+  # darkvision fora do `race_summary` para 8 raças. Cobertura:
+  # spec/services/race_creation_*_bdd_spec.rb.
+  #
+  # @param value [Hash{range: Integer}, Hash{'range' => Integer}, Integer, String, nil]
+  # @return [Integer] 0 se valor ausente/inválido
+  def self.normalize_range(value)
+    return value.to_i if value.is_a?(Numeric)
+    return value.to_i if value.is_a?(String)
+    return (value[:range] || value['range']).to_i if value.is_a?(Hash)
+
+    0
   end
 
   # @return [String, nil] chave canónica presente em `race[:subraces]`, ou o valor original se já casar
@@ -110,12 +160,29 @@ class RaceRules
 
     merged = deep_merge(race.deep_dup, (sub || {}).deep_dup)
 
-    # Languages
+    # Languages: monta array final (always + escolhidos) E expõe metadado de
+    # escolha para o front. Antes, só `languages` era retornado e a UI do
+    # Variant Human não tinha como saber que precisava pedir 1 idioma extra
+    # (o YAML tem `human.languages.choiceCount: 1` na RAÇA BASE; sub-raça
+    # `variant` não declara, herda via deep_merge). O front ficava cego
+    # porque consumia só o resultado de `apply`.
+    choice_count = merged.dig(:languages, :choiceCount).to_i
+    choice_options = Array(merged.dig(:languages, :choiceList))
+    requested_picks = Array(selection.dig(:choices, :extraLanguages))
+    picks_taken = requested_picks.first(choice_count)
+
     langs = Array(merged.dig(:languages, :always)).dup
-    if merged.dig(:languages, :choiceCount).to_i > 0
-      picks = Array(selection.dig(:choices, :extraLanguages))
-      langs.concat(picks.first(merged.dig(:languages, :choiceCount).to_i))
-    end
+    langs.concat(picks_taken) if choice_count.positive?
+
+    language_choices_required =
+      if choice_count.positive?
+        {
+          count: choice_count,
+          options: choice_options.map(&:to_s),
+          chosen: picks_taken.map(&:to_s),
+          remaining: [choice_count - picks_taken.length, 0].max
+        }
+      end
 
     # Extract innate spells from traits
     innate_spells = extract_innate_spells_from_traits(merged[:traits] || [])
@@ -127,6 +194,7 @@ class RaceRules
       speed: merged[:speed],
       darkvision: merged[:darkvision],
       languages: langs.uniq,
+      language_choices_required: language_choices_required,
       proficiencies: merged[:proficiencies] || {},
       traits: merged[:traits] || [],
       innate_spells: innate_spells,

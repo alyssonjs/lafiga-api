@@ -142,15 +142,34 @@ module CharacterSheetEdits
       extra_langs = Array(choices['chosenLanguages']).flatten.compact.map(&:to_s)
       applied = RaceRules.apply(race_id: rid, subrace_id: sid, choices: { extraLanguages: extra_langs })
 
+      # Speed em 3 níveis (paridade com CharacterProvisioningService:281-288):
+      #   1. `applied[:speed]` do RaceRules.apply (fonte canônica do YAML)
+      #   2. `race.speed_ft` da coluna do model (legado, raramente usado)
+      #   3. 30 ft como fallback final (último recurso para raça sem dados)
+      # Antes, o RaceEdit pulava o nível 2 com `.to_i.nonzero? || 30`,
+      # gerando inconsistência silenciosa criação ↔ edição.
+      applied_speed = applied[:speed].to_i
+      speed_ft = if applied_speed.positive?
+                   applied_speed
+                 elsif race.respond_to?(:speed_ft) && race.speed_ft.present?
+                   race.speed_ft.to_i
+                 else
+                   30
+                 end
+
       summary = {
         'name' => race.name,
         'race_name' => race.name,
-        'speed_ft' => applied[:speed].to_i.nonzero? || 30,
+        'speed_ft' => speed_ft,
         'sub_race_name' => sub_race&.name
       }.compact
       summary['languages'] = applied[:languages].map(&:to_s) if applied[:languages].present?
       summary['proficiencies'] = applied[:proficiencies].deep_stringify_keys if applied[:proficiencies].is_a?(Hash)
-      summary['darkvision'] = applied[:darkvision].to_i if applied[:darkvision].to_i > 0
+      # Darkvision vem como Hash `{range: 60}` no YAML; `RaceRules.normalize_range`
+      # cuida da extração. Antes do fix, `.to_i` direto em Hash retornava 0 e
+      # a linha nunca gravava (mesmo bug do CPS pré-fix).
+      dv_val = RaceRules.normalize_range(applied[:darkvision])
+      summary['darkvision'] = dv_val if dv_val.positive?
 
       # Traits: junta base_traits da raca + traits da sub-raca (mesma logica do
       # CharacterProvisioningService:261-269). Sem isso a edicao de raca apaga

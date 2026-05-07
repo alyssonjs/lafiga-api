@@ -3,9 +3,11 @@ module CharacterDraftSteps
     def step_key = 'abilities'
 
     KEYS = %w[str dex con int wis cha].freeze
-    POINT_BUY_MIN = 8
-    POINT_BUY_MAX = 15
-    HARD_MAX = 20
+    # Limites canônicos de point-buy / cap absoluto vivem em `CharacterRules`.
+    # Mantemos referências locais para legibilidade (point_cost lookup).
+    POINT_BUY_MIN = CharacterRules::ABILITY_SCORE_MIN_POINT_BUY
+    POINT_BUY_MAX = CharacterRules::ABILITY_SCORE_MAX_POINT_BUY
+    HARD_MAX      = CharacterRules::ABILITY_SCORE_HARD_MAX
 
     protected
 

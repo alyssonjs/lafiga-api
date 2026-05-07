@@ -10,7 +10,10 @@ module CharacterDraftSteps
     def apply!(merged)
       merged['levelChoices'] ||= []
 
-      if level && level >= 2
+      # Per-level rows existem APENAS a partir do 2º nível: o nível 1 é
+       # coberto pelo passo Class (`level1HpChoice` + skill picks iniciais).
+       # `MIN_LEVEL + 1` deixa essa intenção explícita em vez de usar `>= 2`.
+      if level && level > CharacterRules::MIN_LEVEL
         # ZX3 do segundo audit (paridade com B7.1 do ProgressionEditService):
         # antes era `existing[idx] = row` direto. PATCH parcial editando so `hp` do
         # nivel 4 descartava `feat`, `expertise`, `spells`, `subclassChoice` etc.

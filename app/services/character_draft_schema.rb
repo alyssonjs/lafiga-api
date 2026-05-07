@@ -127,7 +127,7 @@ class CharacterDraftSchema
       d['selectedSkills'] ||= []
       d['level1Choices'] ||= {}
       d['levelChoices'] ||= []
-      d['spellSelections'] ||= { 'cantrips' => [], 'known' => [], 'spellbook' => [], 'prepared' => [] }
+      d['spellSelections'] ||= CharacterRules::SPELL_SELECTION_BUCKETS.each_with_object({}) { |k, h| h[k] = [] }
       d['equipmentChoices'] ||= []
       d['equipmentGenericSelections'] ||= {}
       d['backgroundToolChoices'] ||= []

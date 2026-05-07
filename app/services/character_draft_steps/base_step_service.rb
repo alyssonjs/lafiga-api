@@ -50,9 +50,15 @@ module CharacterDraftSteps
   class BaseStepService
     Result = Struct.new(:draft_data, :warnings, :cleared_keys, :requires_confirmation, keyword_init: true)
 
+    # Mensagens exibidas ao jogador quando uma escolha apaga dependentes.
+    # Centralizadas aqui (não literais espalhados) para facilitar revisão de
+    # tom de voz. Caso o projeto adote i18n full, mover para
+    # `config/locales/pt-BR.yml` sob `character_draft.destructive_reasons.*`
+    # e trocar acessos por `I18n.t(...)`. Hoje o backend não usa I18n nos
+    # services, então mantemos a constante simples.
     DESTRUCTIVE_REASONS = {
-      class_changed: 'Trocar de classe apaga progressao, escolhas de nivel 1 e magias.',
-      race_changed:  'Trocar de raca apaga escolhas raciais, sub-raca e feat racial.'
+      class_changed: 'Trocar de classe apaga progressão, escolhas de nível 1 e magias.',
+      race_changed:  'Trocar de raça apaga escolhas raciais, sub-raça e feat racial.'
     }.freeze
 
     attr_reader :character, :data, :level

@@ -183,6 +183,7 @@ elf:
       ability:
         type: fixed
         increases: [{ ability: CHA, amount: 1 }]
+      darkvision: { range: 120 }   # Visão no Escuro Superior (PHB Drow): 120 ft, sobrescreve os 60 ft do elfo base via deep_merge.
       proficiencies:
         weapons: [rapieira, espada curta, besta de mão]
       traits:
@@ -521,8 +522,7 @@ minotaur:
     choiceCount: 0
   proficiencies:
     skills:
-      choiceCount: 1
-      choices: [Intimidação, Persuasão]
+      fixed: [Intimidação]            # PDF Lafiga "Atualização das Raças" p. 2: "Ameaçador: Você é proficiente na perícia Intimidação"
   traits:
     - { key: minotaur_horns_1d6 }
     - { key: goring_rush }

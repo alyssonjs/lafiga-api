@@ -243,7 +243,7 @@ backgrounds:
   folk-hero:
     name: Herói do Povo
     starting_proficiencies:
-      skills: [Adestrar Animais, Sobrevivência]
+      skills: ["Lidar com Animais", Sobrevivência]   # canônico de skills.yml
       tools: ["Ferramentas de artesão (à escolha)", "Veículos (terrestres)"]
     starting_equipment:
       - { item: "Ferramentas de artesão (à escolha)", qty: 1, container: null }

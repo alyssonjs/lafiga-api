@@ -1,9 +1,13 @@
 class FeatRules
+  # Nome canônico de cada perícia conforme `config/skills.yml` (PHB PT-BR).
+  # NÃO usar 'Adestrar Animais' — o canônico é 'Lidar com Animais'. Manter
+  # essa lista alinhada com `config/skills.yml` evita divergência de match
+  # quando services/yamls referenciam perícias por nome.
   CANONICAL_SKILL_NAMES = [
     'Atletismo',
     'Acrobacia', 'Furtividade', 'Prestidigitação',
     'Arcanismo', 'História', 'Investigação', 'Natureza', 'Religião',
-    'Adestrar Animais', 'Intuição', 'Medicina', 'Percepção', 'Sobrevivência',
+    'Lidar com Animais', 'Intuição', 'Medicina', 'Percepção', 'Sobrevivência',
     'Atuação', 'Enganação', 'Intimidação', 'Persuasão'
   ].freeze
 

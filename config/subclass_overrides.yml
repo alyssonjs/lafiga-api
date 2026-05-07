@@ -1532,11 +1532,11 @@ cleric:
       - level: 1
         features:
           - name: "Acólito da Natureza"
-            description: "Ganha 1 truque de druida; proficiência em Adestrar Animais, Natureza ou Sobrevivência."
+            description: "Ganha 1 truque de druida; proficiência em Lidar com Animais, Natureza ou Sobrevivência."
             choices:
               skill_prof:
                 choose: 1
-                options: ["Adestrar Animais","Natureza","Sobrevivência"]
+                options: ["Lidar com Animais","Natureza","Sobrevivência"]
             grants:
               spells:
                 add_cantrips_from_class:
@@ -2000,7 +2000,7 @@ druid:
               duration: "até 1 hora (concentração)"
               cr_limit: "≤ nível/3 (arred. p/ baixo)"
               types_at_8: ["besta","fada","elemental","planta"]
-          - { name: "Empatia com a Natureza", description: "Vantagem em Adestrar Animais para influenciar besta/elemental/fada/planta." }
+          - { name: "Empatia com a Natureza", description: "Vantagem em Lidar com Animais para influenciar besta/elemental/fada/planta." }
       - level: 6
         features:
           - name: "Vínculo Selvagem"
@@ -2987,7 +2987,7 @@ fighter:
             description: |
               A partir do 3° nível, você adquire os serviços de uma leal montaria. Sua montaria normalmente será um cavalo de guerra, se você for Médio ou um pônei, se você for Pequeno ou um anão. Você pode adquirir uma besta diferente como montaria, com nível de desafio igual ou inferior a 1/2 e sem deslocamento de voo, com a permissão do Mestre. O máximo de pontos de vida dela será igual ao seu total normal ou a cinco vezes seu nível de guerreiro, o que for maior. Como qualquer criatura, sua montaria pode gastar Dados de Vida durante um descanso curto e recupera todos os seus pontos de vida ao terminar um descanso longo.
                Sua montaria realiza o turno dela na sua iniciativa e obedece seus direcionamentos enquanto você estiver montando-a. No seu turno, você pode coordenar sua montaria para guiar seu movimento (sem ação necessária). Você pode usar uma ação bônus para direcionar sua montaria a realizar as ações de Ataque, Disparada ou Desengajar. Ela age por contra própria se você estiver incapacitado ou ausente, focando-se em defender você.
-               Se a montaria morrer, você pode obter outra montaria de formas tradicionais ou tentando adestrar uma nova besta selvagem apropriada que você encontrar, através de um teste de Carisma (Adestrar Animais) CD 15 que requer 8 horas para ser concluído.
+               Se a montaria morrer, você pode obter outra montaria de formas tradicionais ou tentando adestrar uma nova besta selvagem apropriada que você encontrar, através de um teste de Carisma (Lidar com Animais) CD 15 que requer 8 horas para ser concluído.
       - level: 7
         features:
           - name: "Montaria Incansável"

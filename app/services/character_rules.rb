@@ -1,4 +1,31 @@
 class CharacterRules
+  # ============================================================
+  # Constantes de regras (5e PHB) — single source of truth para a
+  # pipeline de criação de personagem. Antes da consolidação, esses
+  # números viviam hardcoded em vários services (abilities_step,
+  # general_step, payload_builder, provisioning_service), com risco
+  # de divergência (ex.: payload_builder usava `|| 8` enquanto
+  # provisioning usava `|| 10` para a mesma intenção).
+  # ============================================================
+
+  # Atributos
+  ABILITY_SCORE_MIN_POINT_BUY = 8       # PHB point-buy floor (escolha ativa)
+  ABILITY_SCORE_MAX_POINT_BUY = 15      # PHB point-buy ceiling (antes de racial)
+  ABILITY_SCORE_HARD_MAX      = 20      # Cap absoluto pré-epic (PHB)
+  ABILITY_SCORE_DEFAULT       = 10      # "Safe null" — atributo neutro (mod 0)
+
+  # Nível
+  MIN_LEVEL = 1
+  MAX_LEVEL = 20
+
+  # Classe
+  DEFAULT_HIT_DIE = 8                   # d8 = mediano (Bardo/Clérigo/Druida/Ladino/Monge/Patrulheiro)
+
+  # Magias (estrutura de buckets para spellSelections no draft + provisioning)
+  SPELL_SELECTION_BUCKETS = %w[cantrips known spellbook prepared].freeze
+
+  # ============================================================
+
   # Calcula bônus de proficiência pelo nível total do personagem (5e PHB)
   def self.proficiency_bonus(total_level)
     case total_level.to_i

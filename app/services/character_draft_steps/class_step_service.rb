@@ -1,5 +1,10 @@
 module CharacterDraftSteps
   class ClassStepService < BaseStepService
+    # Navegação do wizard: ao trocar de classe, o usuário é levado direto
+    # para o sub-nível 2 do passo de progressão (escolhas de nível 1 já
+    # foram refeitas via clear). Não é regra D&D — é UX do wizard.
+    WIZARD_SUBLEVEL_AFTER_CLASS_CHANGE = 2
+
     def step_key = 'class'
 
     protected
@@ -79,7 +84,8 @@ module CharacterDraftSteps
         keys_to_clear << 'level1HpChoice'
       end
       unless data.key?('spellSelections')
-        merged['spellSelections'] = { 'cantrips' => [], 'known' => [], 'spellbook' => [], 'prepared' => [] }
+        merged['spellSelections'] =
+          CharacterRules::SPELL_SELECTION_BUCKETS.each_with_object({}) { |k, h| h[k] = [] }
         keys_to_clear << 'spellSelections'
       end
 
@@ -106,7 +112,7 @@ module CharacterDraftSteps
         keys_to_clear << 'startingGoldRolled'
       end
 
-      merged['progressionSubLevel'] = 2
+      merged['progressionSubLevel'] = WIZARD_SUBLEVEL_AFTER_CLASS_CHANGE
 
       keys_to_clear.each { |k| clear!(k, reason: DESTRUCTIVE_REASONS[:class_changed], confirm: destructive) }
     end

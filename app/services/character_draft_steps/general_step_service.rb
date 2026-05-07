@@ -18,7 +18,10 @@ module CharacterDraftSteps
       end
 
       if data.key?('level')
-        new_level = [[data['level'].to_i, 1].max, 20].min
+        # Limites de nível (1..20) vivem em `CharacterRules`. Antes, este
+        # número estava cravado aqui e em outros pontos do pipeline; mudar
+        # para campanha epic/homebrew exigia caçar literais 20 espalhados.
+        new_level = data['level'].to_i.clamp(CharacterRules::MIN_LEVEL, CharacterRules::MAX_LEVEL)
         merged['level'] = new_level
       end
 
@@ -37,7 +40,10 @@ module CharacterDraftSteps
         merged['levelChoices'] = kept
         clear!('levelChoices')
       end
-      merged['progressionSubLevel'] = [[merged['progressionSubLevel'].to_i, new_lv].min, 1].max
+      # Wizard exibe progressão em sub-níveis 1..N. Min é o próprio MIN_LEVEL
+      # (não pode haver "sub-nível 0"); cap = nível máximo recém-aplicado.
+      merged['progressionSubLevel'] =
+        merged['progressionSubLevel'].to_i.clamp(CharacterRules::MIN_LEVEL, new_lv)
 
       # ZS2 do segundo audit: a versao antiga so podava `levelChoices` no
       # downgrade, mas spellSelections (cantrips/conhecidos/preparadas) nao era

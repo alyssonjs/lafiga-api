@@ -61,7 +61,9 @@ class CharacterDraftPayloadBuilder
       'id'         => character.id,
       'name'       => draft['name'],
       'background' => draft.dig('selectedBackground', 'name') || draft['_bgName'],
-      'status'     => 'active'
+      # Status do Character ao concluir o wizard: provisão final = active.
+      # Usar Rails enum em vez de string solta blinda contra renomeação.
+      'status'     => Character.statuses['active']
     }.compact
   end
 
@@ -203,8 +205,11 @@ class CharacterDraftPayloadBuilder
 
   def ability_scores
     src = draft['abilityScores'] || {}
+    # Quando o jogador NÃO escolheu nenhum atributo no draft, caímos no piso
+    # do point-buy (PHB) — o jogador pode pagar 0 pontos para ficar com tudo
+    # em 8. Constante canônica em `CharacterRules`.
     ABILITY_KEYS.each_with_object({}) do |k, h|
-      h[k] = (src[k] || 8).to_i
+      h[k] = (src[k] || CharacterRules::ABILITY_SCORE_MIN_POINT_BUY).to_i
     end
   end
 

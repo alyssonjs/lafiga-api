@@ -36,14 +36,22 @@ module SheetHpFromProgression
             else
               [1, hit_die + con_mod].max
             end
-    return total if character_level.to_i <= 1
 
-    (2..character_level.to_i).each do |lv|
-      row = per_level[lv.to_s] || per_level[lv] || {}
-      h = row['hp'] || row[:hp]
-      total += hp_gain_for_level_row(h, hit_die, con_mod)
+    if character_level.to_i > 1
+      (2..character_level.to_i).each do |lv|
+        row = per_level[lv.to_s] || per_level[lv] || {}
+        h = row['hp'] || row[:hp]
+        total += hp_gain_for_level_row(h, hit_die, con_mod)
+      end
     end
-    racial = RacialHpBonus.per_level_for_sheet(sheet) * character_level.to_i
+
+    # Racial HP bonus (ex.: Robustez Anã do Hill Dwarf, +1 PV/nível). Antes do
+    # fix, o `return total if character_level <= 1` saía ANTES desta linha,
+    # então o `init_hp` em CPS aplicava o +1 corretamente, mas
+    # `finalize_sheet_hp_after_provision!` chamava aqui e SOBRESCREVIA o
+    # hp_max sem o racial — Hill Dwarf nv 1 ficava com 12 em vez de 13.
+    # Cobertura: race_creation_dwarf_bdd_spec.rb (Hill).
+    racial = RacialHpBonus.per_level_for_sheet(sheet) * [character_level.to_i, 1].max
     total += racial if racial.positive?
     total
   end

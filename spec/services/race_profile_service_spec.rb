@@ -56,8 +56,13 @@ RSpec.describe RaceProfileService, type: :service do
         "  Causa provavel: fallback derivou subrace_id de sub_race.name " \
         "('Elfo da Floresta' -> 'elfo_da_floresta') em vez de usar " \
         "sub_race.api_index ('wood'). Bug do Adimael Neverdie."
-      expect(profile[:speed_m]).to eq(11.0),
-        "esperado ~11.0 m (35 * 0.3048), veio #{profile[:speed_m].inspect}"
+      # 35 ft × 0.3048 m/ft = 10.668 m → round(1) = 10.7 m. O valor 11.0 do
+      # spec antigo refletia o cálculo bugado `(speed * 0.3).round` (= 11)
+      # que existia no `RaceProfileService.call`. Após a unificação com a
+      # fórmula PHB exata em ambos os caminhos (call + normalize), o valor
+      # correto é 10.7.
+      expect(profile[:speed_m]).to eq(10.7),
+        "esperado 10.7 m (35 × 0.3048 ≈ 10.668, round(1) = 10.7), veio #{profile[:speed_m].inspect}"
     end
   end
 

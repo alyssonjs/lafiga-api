@@ -83,7 +83,7 @@ class CharacterProvisioningService
         attrs = {
           name: name_fallback,
           background: background_fallback,
-          status: cdata['status'] || cdata[:status] || 'active'
+          status: cdata['status'] || cdata[:status] || Character.statuses['active']
         }
         if cdata.key?('group_id') || cdata.key?(:group_id)
           attrs[:group_id] = cdata['group_id'] || cdata[:group_id]
@@ -98,7 +98,7 @@ class CharacterProvisioningService
           name: name_fallback,
           background: background_fallback,
           group_id: cdata['group_id'] || cdata[:group_id],
-          status: cdata['status'] || cdata[:status] || 'active',
+          status: cdata['status'] || cdata[:status] || Character.statuses['active'],
           draft_data: cdata['draft_data'] || cdata[:draft_data]
         )
       end
@@ -120,23 +120,28 @@ class CharacterProvisioningService
           {}
         end
 
+      # Atributos pós-racial (totais do payload). Fallback = atributo neutro
+      # (mod 0) — `CharacterRules::ABILITY_SCORE_DEFAULT`. Diferente do
+      # `payload_builder` que usa o piso do point-buy (8) quando o jogador
+      # não definiu ainda no draft: aqui já é o estado final/persistido.
+      ability_default = CharacterRules::ABILITY_SCORE_DEFAULT
       attrs = (race['attributes'] || race[:attributes] || {})
-      base_str = (attrs['str'] || attrs[:str] || 10).to_i
-      base_dex = (attrs['dex'] || attrs[:dex] || 10).to_i
-      base_con = (attrs['con'] || attrs[:con] || 10).to_i
-      base_int = (attrs['int'] || attrs[:int] || 10).to_i
-      base_wis = (attrs['wis'] || attrs[:wis] || 10).to_i
-      base_cha = (attrs['cha'] || attrs[:cha] || 10).to_i
+      base_str = (attrs['str'] || attrs[:str] || ability_default).to_i
+      base_dex = (attrs['dex'] || attrs[:dex] || ability_default).to_i
+      base_con = (attrs['con'] || attrs[:con] || ability_default).to_i
+      base_int = (attrs['int'] || attrs[:int] || ability_default).to_i
+      base_wis = (attrs['wis'] || attrs[:wis] || ability_default).to_i
+      base_cha = (attrs['cha'] || attrs[:cha] || ability_default).to_i
 
       # Point-buy (sem racial) para summary/ASI — quando o front envia baseAttributes + abilityBonuses
       pb = race['baseAttributes'] || race[:base_attributes] || {}
       pb_hash = pb.is_a?(Hash) && pb.keys.any?
-      meta_base_str = pb_hash ? (pb['str'] || pb[:str] || 10).to_i : base_str
-      meta_base_dex = pb_hash ? (pb['dex'] || pb[:dex] || 10).to_i : base_dex
-      meta_base_con = pb_hash ? (pb['con'] || pb[:con] || 10).to_i : base_con
-      meta_base_int = pb_hash ? (pb['int'] || pb[:int] || 10).to_i : base_int
-      meta_base_wis = pb_hash ? (pb['wis'] || pb[:wis] || 10).to_i : base_wis
-      meta_base_cha = pb_hash ? (pb['cha'] || pb[:cha] || 10).to_i : base_cha
+      meta_base_str = pb_hash ? (pb['str'] || pb[:str] || ability_default).to_i : base_str
+      meta_base_dex = pb_hash ? (pb['dex'] || pb[:dex] || ability_default).to_i : base_dex
+      meta_base_con = pb_hash ? (pb['con'] || pb[:con] || ability_default).to_i : base_con
+      meta_base_int = pb_hash ? (pb['int'] || pb[:int] || ability_default).to_i : base_int
+      meta_base_wis = pb_hash ? (pb['wis'] || pb[:wis] || ability_default).to_i : base_wis
+      meta_base_cha = pb_hash ? (pb['cha'] || pb[:cha] || ability_default).to_i : base_cha
 
       race_bonus_raw = race['abilityBonuses'] || race[:abilityBonuses] || {}
       race_bonuses_applied = {}
@@ -209,7 +214,10 @@ class CharacterProvisioningService
       # Inclui +1 PV do 1º nível para traços como Robustez Anã (grants.hp_per_level em RaceRules).
       begin
         k = Klass.find(klass_id)
-        hd = k.hit_die.to_i.nonzero? || 8
+        # Hit die fallback (`DEFAULT_HIT_DIE` = 8) cobre o caso de uma classe
+        # nova/legada ainda sem `hit_die` populado no DB. d8 é a mediana das
+        # 12 classes do PHB (Bardo/Clérigo/Druida/Ladino/Monge/Patrulheiro).
+        hd = k.hit_die.to_i.nonzero? || CharacterRules::DEFAULT_HIT_DIE
         con_mod = CharacterRules.modifier(base_con)
         row1_hp = begin
           r1 = per_level['1'] || per_level[1] || {}
@@ -228,7 +236,7 @@ class CharacterProvisioningService
         init_hp += rp if r_prov.present? && rp.positive?
       rescue StandardError => e
         Rails.logger.warn("[CharacterProvisioningService] init_hp: #{e.class}: #{e.message}")
-        init_hp = 8 + CharacterRules.modifier(base_con)
+        init_hp = CharacterRules::DEFAULT_HIT_DIE + CharacterRules.modifier(base_con)
       end
       # Resolver background_id a partir do api_index (backgroundKey)
       bg_key = bg['backgroundKey'] || bg[:backgroundKey]
@@ -293,6 +301,15 @@ class CharacterProvisioningService
           'speed_ft' => speed_ft
         }
         race_sum['sub_race_name'] = sub_race_obj.name if sub_race_obj
+
+        # Darkvision: YAML expressa como Hash `{range: 60}` (formato canônico).
+        # Sem `RaceRules.normalize_range`, fazer `.to_i` direto em Hash retorna 0
+        # e a guarda `> 0` silencia tudo — race_summary ficava sem darkvision
+        # na criação para 8 raças. Cobertura: race_creation_*_bdd_spec.rb.
+        if applied.is_a?(Hash)
+          dv_val = RaceRules.normalize_range(applied[:darkvision])
+          race_sum['darkvision'] = dv_val if dv_val.positive?
+        end
         begin
           trait_records = race_obj.base_traits.to_a
           trait_records += sub_race_obj.traits.to_a if sub_race_obj
