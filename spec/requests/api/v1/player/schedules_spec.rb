@@ -361,6 +361,35 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(json['group_id']).to eq(group.id)
       expect(json['battle_map_id']).to eq(battle_map.id)
     end
+
+    # Modo observador: jogador autenticado SEM personagem na sessao (e sem
+    # personagem no grupo) chega via link direto `/sessions/:id/play`. O
+    # `index` filtra (for_player_index), entao a sessao nao aparece na lista,
+    # mas o `show` deve devolver 200 para que o frontend hidrate via
+    # `ensureSessionLoaded` e renderize a tela em read-only.
+    it 'permite que um observador (sem personagem no grupo) acesse o show' do
+      observer = create(:user)
+      observer_headers = bearer_headers_for(observer)
+
+      # observer NAO tem personagem em `group` (campanha alvo) — somente em outro grupo.
+      other_group = create(:group)
+      create(:character, user: observer, group: other_group)
+
+      get "/api/v1/player/schedules/#{schedule.id}", headers: observer_headers
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['schedule']['id']).to eq(schedule.id)
+    end
+
+    it 'permite que um observador SEM nenhum personagem acesse o show' do
+      observer = create(:user) # zero personagens
+      observer_headers = bearer_headers_for(observer)
+
+      get "/api/v1/player/schedules/#{schedule.id}", headers: observer_headers
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['schedule']['id']).to eq(schedule.id)
+    end
   end
 
   describe 'GET /api/v1/player/schedules com character_id (campanha do grupo)' do
