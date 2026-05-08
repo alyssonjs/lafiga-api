@@ -17,7 +17,23 @@ RSpec.describe BattleMap, type: :model do
 
     it 'rejeita width fora do range MIN_DIM..MAX_DIM' do
       expect(build(:battle_map, width: 4)).not_to be_valid
-      expect(build(:battle_map, width: 51)).not_to be_valid
+      expect(build(:battle_map, width: 201)).not_to be_valid
+    end
+
+    it 'aceita width/height ate 200 (mapa grande, ex.: overworld)' do
+      large = build(:battle_map,
+                    width: 200,
+                    height: 200,
+                    cells: Array.new(200) { Array.new(200, 'empty') })
+      expect(large).to be_valid
+    end
+
+    it 'aceita width/height intermediarios (ex.: 100x80)' do
+      medium = build(:battle_map,
+                     width: 100,
+                     height: 80,
+                     cells: Array.new(80) { Array.new(100, 'empty') })
+      expect(medium).to be_valid
     end
 
     it 'rejeita matriz cells com height inconsistente' do

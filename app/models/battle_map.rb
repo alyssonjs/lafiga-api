@@ -21,7 +21,12 @@ class BattleMap < ApplicationRecord
   # hidden_tokens = mapa visível; só tokens com centro na célula ficam ocultos (jogador).
   FOG_MODES = %w[hidden_cells hidden_tokens].freeze
   MIN_DIM = 5
-  MAX_DIM = 50
+  # MAX_DIM = 200: limite generoso para mapas grandes (overworld, dungeons multi-andar
+  # carregadas como uma malha unica). Acima disso o backend ainda aceita mas a UI
+  # comeca a degradar (40k celulas em 200x200; rendering canvas + json paint exige
+  # virtualizacao). 50 era o limite legacy quando o canvas SVG renderizava todas as
+  # celulas em DOM — viewport-based culling agora evita o gargalo.
+  MAX_DIM = 200
 
   belongs_to :user
   belongs_to :group, optional: true
