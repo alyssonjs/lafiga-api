@@ -21,6 +21,7 @@ module Combat
       npc_upserted
       npc_destroyed
       log_appended
+      concentration_broken
     ].freeze
 
     module_function
@@ -53,6 +54,18 @@ module Combat
     def log_appended(log)
       return if suppressed? || log.nil?
       broadcast(log.schedule_id, 'log_appended', Combat::Serializers.log(log))
+    end
+
+    # Fase 6F — emitido após `record_concentration_save` quando o save falha.
+    # Front pode usar para destacar visualmente a quebra (com som/animação)
+    # antes do próximo `combatant_upserted` consolidar o estado.
+    def concentration_broken(combatant, spell_name: nil, dc: nil)
+      return if suppressed? || combatant.nil?
+      broadcast(combatant.combat_state.schedule_id, 'concentration_broken', {
+        combatant_id: combatant.id,
+        spell: spell_name,
+        dc: dc
+      })
     end
 
     # Suprime broadcasts dentro do bloco. Usado em fluxos batch (StartService

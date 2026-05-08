@@ -7,6 +7,40 @@ module Combat
     MAX_ENTRIES = 200
     MAX_FT = 10_000
 
+    # Fase 6G — Validação por token contra speed do combatente.
+    # Recebe um ledger já validado (output de `.call`) + Hash
+    # `{ tokenId => { speed_ft: N, multiplier: M } }`. Retorna lista de
+    # violações `[{ tokenId, total_ft, cap_ft }]` para que o caller decida
+    # rejeitar ou apenas sinalizar via `overBudget: true`.
+    #
+    # `multiplier` default = 1 (1 turno). Caller pode passar 4 quando o
+    # ledger cobre todo o round (Disparada/Investida costuma dobrar speed).
+    def self.cap_violations(validated_ledger, combatant_speeds)
+      return [] if validated_ledger.blank? || combatant_speeds.blank?
+
+      totals = Hash.new(0.0)
+      Array(validated_ledger).each do |entry|
+        next unless entry.is_a?(Hash) && entry['kind'] == 'map'
+        token = entry['tokenId']
+        next unless token.is_a?(String)
+        totals[token] += entry['ft'].to_f
+      end
+
+      violations = []
+      totals.each do |token, total_ft|
+        info = combatant_speeds[token] || combatant_speeds[token.to_sym]
+        next unless info.is_a?(Hash)
+        speed = (info[:speed_ft] || info['speed_ft']).to_i
+        next if speed <= 0
+        multiplier = (info[:multiplier] || info['multiplier'] || 1).to_i.nonzero? || 1
+        cap = speed * multiplier
+        next if total_ft <= cap
+
+        violations << { 'tokenId' => token, 'total_ft' => total_ft, 'cap_ft' => cap }
+      end
+      violations
+    end
+
     def self.call(raw)
       return [] if raw.nil?
       return nil unless raw.is_a?(Array)

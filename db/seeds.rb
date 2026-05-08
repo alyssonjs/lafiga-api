@@ -183,6 +183,26 @@ end
 # Raças e sub-raças
 seed_races_from_rules
 
+# Wiki sections — built-ins. Sao a fonte de verdade da sidebar da Wiki
+# para todos os usuarios; seedadas aqui para que mesmo um banco zerado ja
+# tenha as 8 secoes canonicas em ordem definida. Customs sao criadas pelo
+# DM via `Api::V1::Admin::WikiSectionsController` e nao moram aqui.
+puts 'Garantindo wiki_sections built-ins…'
+WikiSection::BUILT_IN_DEFAULTS.each_with_index do |(slug, attrs), idx|
+  section = WikiSection.find_or_initialize_by(slug: slug)
+  # Reaplica defaults apenas para registros novos. Renomes feitos pelo DM
+  # no painel devem persistir entre re-seeds — checamos via `new_record?`.
+  if section.new_record?
+    section.assign_attributes(attrs.merge(position: idx, built_in: true))
+  else
+    # Re-seed nao deve sobrescrever customizacoes; apenas garante o flag
+    # `built_in` e o icone caso tenha sido apagado por engano (fallback).
+    section.built_in = true
+    section.icon_name = attrs[:icon_name] if section.icon_name.blank?
+  end
+  section.save!
+end
+
 puts 'Carregando dados de D&D através das tarefas rake…'
 Rails.application.load_tasks unless Rake::Task.task_defined?('dnd:bootstrap')
 

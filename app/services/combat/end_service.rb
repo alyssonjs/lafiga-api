@@ -58,7 +58,29 @@ module Combat
           # (pode ter sido editado pelo DM mid-combate via spell/effect mas
           # "fora de combate" o hp_max canônico vem da Sheet/level).
         )
+
+        # Fase 6C — round-trip de runtime state.
+        # Conditions, concentration e death_saves ficavam órfãos em
+        # CombatCombatant após o combate. Agora copiamos para
+        # SheetRuntimeState (entidade canônica fora-de-combate).
+        sync_runtime_state_back_to_sheet(sheet, combatant)
       end
+    end
+
+    # Copia o estado mutável (não-HP) do combatente para SheetRuntimeState.
+    # Sem este sync, condições aplicadas em combate (envenenado/paralisado/
+    # atordoado) e concentração ativa eram perdidas ao terminar.
+    def sync_runtime_state_back_to_sheet(sheet, combatant)
+      patch = {
+        'conditions'    => Array(combatant.conditions),
+        'concentration' => combatant.is_concentrating ? combatant.concentration_spell.to_s : nil,
+        'death_saves'   => combatant.death_saves.is_a?(Hash) ?
+                            combatant.death_saves : SheetRuntimeState::DEATH_SAVES_DEFAULT.dup
+      }
+
+      sheet.runtime!.apply_patch!(patch)
+    rescue StandardError => e
+      Rails.logger.warn "[Combat::EndService] runtime sync falhou para sheet ##{sheet.id}: #{e.class}: #{e.message}"
     end
   end
 end

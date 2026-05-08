@@ -168,6 +168,15 @@ class LevelUpService
         rescue => _e
           Rails.logger.warn("LevelUpService: racial HP bonus omitido (#{_e.class})") if defined?(Rails.logger)
         end
+        # Feat HP bonus (Robusto/Tough +2/nível). Antes deste fix, level ups
+        # aplicados depois do feat assignment ignoravam o bônus, causando
+        # divergência entre sheet.hp_max e o cálculo do front.
+        begin
+          fp = FeatHpBonus.per_level_for_sheet(@sheet)
+          step_gain += fp if fp.positive?
+        rescue => _e
+          Rails.logger.warn("LevelUpService: feat HP bonus omitido (#{_e.class})") if defined?(Rails.logger)
+        end
         gained_hp += step_gain
       end
 

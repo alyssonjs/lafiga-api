@@ -88,6 +88,11 @@ Rails.application.routes.draw do
           end
         end
         resources :backgrounds, only: [:index, :show, :create, :update, :destroy]
+        resources :wiki_sections, only: %i[create update destroy] do
+          collection do
+            post :reorder
+          end
+        end
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
           member do
             get :summary
@@ -148,6 +153,8 @@ Rails.application.routes.draw do
                 post :apply_damage
                 post :heal
                 post :record_death_save
+                post :cast_spell                  # Fase 6D — consome spell slot em runtime_state
+                post :record_concentration_save   # Fase 6F — resolve CON save após dano
               end
               collection do
                 post :reorder
@@ -273,6 +280,7 @@ Rails.application.routes.draw do
         resources :backgrounds, only: [:index, :show]
         post 'backgrounds/apply', to: 'backgrounds#apply'
         resources :alignments, only: [:index, :show]
+        resources :wiki_sections, only: [:index]
         resources :feats, only: [:index, :show]
         resources :skills, only: [:index, :show]
         resources :saving_throws, only: [:index, :show]

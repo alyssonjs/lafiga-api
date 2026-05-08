@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_07_100000) do
+ActiveRecord::Schema.define(version: 2026_05_07_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -242,6 +242,12 @@ ActiveRecord::Schema.define(version: 2026_05_07_100000) do
     t.datetime "defeated_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "resistances", default: [], null: false
+    t.jsonb "damage_immunities", default: [], null: false
+    t.jsonb "damage_vulnerabilities", default: [], null: false
+    t.jsonb "condition_immunities", default: [], null: false
+    t.jsonb "legendary_actions", default: [], null: false
+    t.jsonb "lair_actions", default: [], null: false
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id"
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id_alive", where: "(defeated_at IS NULL)"
   end
@@ -804,6 +810,19 @@ ActiveRecord::Schema.define(version: 2026_05_07_100000) do
     t.index ["api_index"], name: "index_weapons_on_api_index", unique: true
     t.index ["category"], name: "index_weapons_on_category"
     t.index ["range_type"], name: "index_weapons_on_range_type"
+  end
+
+  create_table "wiki_sections", force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "label", null: false
+    t.text "description"
+    t.string "icon_name", default: "BookOpen", null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "built_in", default: false, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["built_in", "position"], name: "index_wiki_sections_on_built_in_and_position"
+    t.index ["slug"], name: "index_wiki_sections_on_slug", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

@@ -70,7 +70,9 @@ class FeatAssignmentService
       # Apply cantrips and spells if any
       apply_feat_spells(sheet_feat) if feat_rule[:cantrips] || feat_rule[:spells]
 
-      # Apply special rules if any
+      # Apply special rules if any. Para Robusto (`hit_points_bonus`) o caminho
+      # `handle_immediate_special_rules` JÁ aplica +N×nível retroativamente em
+      # sheet.hp_max — não precisa duplicar aqui. Cobertura: spec/services/feat_hp_bonus_spec.rb.
       apply_special_rules(sheet_feat) if feat_rule[:special_rules]
     end
     sheet_feat

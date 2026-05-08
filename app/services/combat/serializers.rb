@@ -76,6 +76,15 @@ module Combat
         skills: Hash(npc.skills),
         attacks: Array(npc.attacks),
         equipment: Hash(npc.equipment),
+        # Fase 6E — campos de resistências/imunidades/legendary/lair.
+        # Defaults `[]` na migration garantem leitura segura mesmo em
+        # NPCs criados antes do schema novo.
+        resistances:           npc.respond_to?(:resistances)           ? Array(npc.resistances)           : [],
+        damage_immunities:     npc.respond_to?(:damage_immunities)     ? Array(npc.damage_immunities)     : [],
+        damage_vulnerabilities: npc.respond_to?(:damage_vulnerabilities) ? Array(npc.damage_vulnerabilities) : [],
+        condition_immunities:  npc.respond_to?(:condition_immunities)  ? Array(npc.condition_immunities)  : [],
+        legendary_actions:     npc.respond_to?(:legendary_actions)     ? Array(npc.legendary_actions)     : [],
+        lair_actions:          npc.respond_to?(:lair_actions)          ? Array(npc.lair_actions)          : [],
         notes: npc.notes,
         defeated_at: npc.defeated_at,
         updated_at: npc.updated_at,

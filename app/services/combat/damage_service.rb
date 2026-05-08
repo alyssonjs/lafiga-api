@@ -1,26 +1,59 @@
 module Combat
-  # Aplica dano a um combatente e devolve, junto, se um teste de
-  # concentração é necessário (G12).
+  # Aplica dano a um combatente respeitando resistência / imunidade /
+  # vulnerabilidade e reduções fixas (Heavy Armor Master), e devolve
+  # se um teste de concentração é necessário.
   #
-  # Em D&D 5e, sempre que um combatente concentrando em uma magia toma dano,
-  # ele faz um teste de Constituição com CD = max(10, dano/2). Se falhar,
-  # perde a concentração (a magia termina). O cálculo do dano em si está em
-  # `CombatCombatant#apply_damage!`. Este service apenas orquestra:
-  #   - aplicar o dano
-  #   - calcular a CD se aplicável
-  #   - retornar a info estruturada para o front rolar o save
+  # Regras D&D 5e (PHB 5e p. 197):
+  #   - Imune ao tipo de dano        → dano = 0
+  #   - Resistente ao tipo de dano   → dano metade (round down, mínimo 0)
+  #   - Vulnerável ao tipo de dano   → dano dobrado
+  #   - Reduções fixas (HAM)         → subtraídas ANTES da divisão por
+  #     resistência (PHB: "reduções primeiro, depois resistência").
   #
-  # O front decide rolar (PC) ou auto-rolar (NPC) e chama o endpoint
-  # `record_concentration_save` (a ser adicionado se quisermos resolver o save
-  # no servidor; por ora, o front só atualiza is_concentrating=false em caso
-  # de falha).
+  # Concentração: ao tomar dano, combatente concentrando faz CON save com
+  # CD = max(10, dano_aplicado / 2). Note que o cálculo usa o dano FINAL
+  # (pós-modifiers), não o bruto — corrigido na Fase 6A.
+  #
+  # Fontes de modifiers:
+  #   - PC (Character): `sheet.metadata['resistances'/...]` (também aceita
+  #     summary[:modifiers] no futuro). Pode haver predicate
+  #     `wearing_heavy_armor` para HAM.
+  #   - NPC (CombatNpc): `combatable.resistances/immunities/vulnerabilities`
+  #     (Fase 6E adiciona essas colunas; antes disso, vazio).
   class DamageService
     prepend SimpleCommand
 
-    def initialize(combatant:, amount:, current_user: nil)
-      @combatant = combatant
-      @amount = amount.to_i
+    # Dano físico (B/P/S) reduzido pelo Heavy Armor Master quando o PC
+    # está em armadura pesada e o ataque é não-mágico.
+    PHYSICAL_DAMAGE_TYPES = %w[contundente perfurante cortante bludgeoning piercing slashing].freeze
+
+    # Sinônimos PT/EN aceitos como damage_type (case-insensitive).
+    DAMAGE_TYPE_NORMALIZE = {
+      'fogo' => 'fogo', 'fire' => 'fogo',
+      'frio' => 'frio', 'cold' => 'frio',
+      'ácido' => 'ácido', 'acido' => 'ácido', 'acid' => 'ácido',
+      'relâmpago' => 'relâmpago', 'relampago' => 'relâmpago', 'lightning' => 'relâmpago',
+      'trovão' => 'trovão', 'trovao' => 'trovão', 'thunder' => 'trovão',
+      'veneno' => 'veneno', 'poison' => 'veneno',
+      'necrótico' => 'necrótico', 'necrotico' => 'necrótico', 'necrotic' => 'necrótico',
+      'radiante' => 'radiante', 'radiant' => 'radiante',
+      'psíquico' => 'psíquico', 'psiquico' => 'psíquico', 'psychic' => 'psíquico',
+      'energia' => 'energia', 'force' => 'energia',
+      'contundente' => 'contundente', 'bludgeoning' => 'contundente',
+      'perfurante' => 'perfurante', 'piercing' => 'perfurante',
+      'cortante' => 'cortante', 'slashing' => 'cortante'
+    }.freeze
+
+    def initialize(combatant:, amount:, current_user: nil, damage_type: nil, magical: false, attack_kind: 'normal')
+      @combatant   = combatant
+      @amount      = amount.to_i
       @current_user = current_user
+      @damage_type = normalize_damage_type(damage_type)
+      @magical     = !!magical
+      # 'normal' | 'critical' — usado em PHB p. 197 para death saves de PCs
+      # inconscientes (a 0 HP). Auto-hit a 5 ft (paralyzed/etc) usa 'critical'
+      # também — o caller sinaliza via attack_kind.
+      @attack_kind = attack_kind.to_s
     end
 
     def call
@@ -28,17 +61,130 @@ module Combat
       return errors.add(:amount, 'deve ser >= 0') && nil if @amount.negative?
 
       was_concentrating = @combatant.is_concentrating
-      @combatant.apply_damage!(@amount)
+
+      modifiers = collect_target_modifiers
+      damage_modifier = decide_damage_modifier(modifiers)
+      flat_reduction  = compute_flat_reduction(modifiers)
+
+      raw = @amount
+      after_flat = [raw - flat_reduction, 0].max
+
+      final = apply_damage_modifier(after_flat, damage_modifier)
+
+      # PHB p. 197 — Ataque contra PC inconsciente (a 0 HP):
+      # cada acerto adiciona 1 falha de death save; crítico adiciona 2.
+      # Aplica-se ANTES do `apply_damage!` porque o estado relevante é
+      # "alvo a 0 HP no momento do ataque". `is_dead` (NPC) ou já-morto
+      # (3 falhas anteriores) não dispara mais.
+      death_save_failures_added = compute_death_save_failures_from_attack
+      death_save_failures_added.times { @combatant.record_death_save!(:failure) }
+
+      @combatant.apply_damage!(final)
 
       {
         combatant: @combatant,
-        damage_applied: @amount,
-        concentration_check_required: was_concentrating && @amount.positive? && !@combatant.is_dead,
-        concentration_dc: was_concentrating && @amount.positive? ? [10, @amount / 2].max : nil,
+        damage_applied: final,
+        damage_raw: raw,
+        damage_type: @damage_type,
+        damage_modifier: damage_modifier,            # :immune | :resistant | :vulnerable | :normal
+        flat_reduction_applied: flat_reduction,
+        attack_kind: @attack_kind,
+        death_save_failures_added: death_save_failures_added,
+        concentration_check_required: was_concentrating && final.positive? && !@combatant.is_dead,
+        concentration_dc: was_concentrating && final.positive? ? [10, final / 2].max : nil,
       }
     rescue ArgumentError => e
       errors.add(:base, e.message)
       nil
+    end
+
+    private
+
+    def normalize_damage_type(raw)
+      return nil if raw.nil?
+      key = raw.to_s.strip.downcase
+      DAMAGE_TYPE_NORMALIZE[key] || key
+    end
+
+    # Lê resistances / damage_immunities / damage_vulnerabilities do alvo.
+    # Para PC (Character): `sheet.metadata['resistances'/'damage_immunities'/...]`
+    # e flag `wearing_heavy_armor` para HAM.
+    # Para NPC (CombatNpc): colunas dedicadas adicionadas na Fase 6E.
+    def collect_target_modifiers
+      target = @combatant.combatable
+
+      # Caminho NPC — colunas dedicadas (Fase 6E)
+      if target.is_a?(CombatNpc)
+        return {
+          resistances: Array(target.respond_to?(:resistances) ? target.resistances : [])
+                        .map { |r| normalize_damage_type(r) }.compact,
+          immunities: Array(target.respond_to?(:damage_immunities) ? target.damage_immunities : [])
+                        .map { |r| normalize_damage_type(r) }.compact,
+          vulnerabilities: Array(target.respond_to?(:damage_vulnerabilities) ? target.damage_vulnerabilities : [])
+                        .map { |r| normalize_damage_type(r) }.compact,
+          wearing_heavy_armor: false,  # NPCs não têm a flag específica do feat
+          feats: []
+        }
+      end
+
+      # Caminho PC — sheet.metadata
+      meta_source =
+        if target.respond_to?(:sheet) && target.sheet&.metadata.is_a?(Hash)
+          target.sheet.metadata
+        elsif target.respond_to?(:metadata) && target.metadata.is_a?(Hash)
+          target.metadata
+        else
+          {}
+        end
+
+      {
+        resistances: Array(meta_source['resistances']).map { |r| normalize_damage_type(r) }.compact,
+        immunities:  Array(meta_source['damage_immunities']).map { |r| normalize_damage_type(r) }.compact,
+        vulnerabilities: Array(meta_source['damage_vulnerabilities']).map { |r| normalize_damage_type(r) }.compact,
+        wearing_heavy_armor: !!meta_source['wearing_heavy_armor'],
+        feats: Array(meta_source['feats']).select { |f| f.is_a?(Hash) }
+      }
+    end
+
+    def decide_damage_modifier(mods)
+      return :normal if @damage_type.nil?
+
+      return :immune     if mods[:immunities].include?(@damage_type)
+      return :vulnerable if mods[:vulnerabilities].include?(@damage_type)
+      return :resistant  if mods[:resistances].include?(@damage_type)
+      :normal
+    end
+
+    def apply_damage_modifier(amount, modifier)
+      case modifier
+      when :immune     then 0
+      when :resistant  then [amount / 2, 0].max
+      when :vulnerable then amount * 2
+      else                  amount
+      end
+    end
+
+    # Reduções fixas (HAM): subtraídas ANTES da resistência (PHB ordem).
+    # Heavy Armor Master: -3 dano físico não-mágico em armadura pesada.
+    def compute_flat_reduction(mods)
+      return 0 unless mods[:wearing_heavy_armor]
+      return 0 if @magical
+      return 0 unless PHYSICAL_DAMAGE_TYPES.include?(@damage_type.to_s)
+
+      ham = mods[:feats].any? { |f| (f['feat_id'] || f[:feat_id]).to_s == 'maestria_em_armadura_pesada' }
+      ham ? 3 : 0
+    end
+
+    # PHB p. 197 — alvo PC com 0 HP atingido por ataque sofre 1 falha de
+    # death save (acerto normal) ou 2 falhas (acerto crítico). NPCs morrem
+    # diretamente a 0 HP (não usam death saves), então o caso só aplica a
+    # combatable_type == Character.
+    def compute_death_save_failures_from_attack
+      return 0 unless @combatant.combatable_type == 'Character'
+      return 0 unless @combatant.hp_current.to_i == 0
+      return 0 if @combatant.is_dead
+
+      @attack_kind == 'critical' ? 2 : 1
     end
   end
 end

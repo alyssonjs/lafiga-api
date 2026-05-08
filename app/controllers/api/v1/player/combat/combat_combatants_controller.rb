@@ -148,6 +148,55 @@ module Api::V1::Player::Combat
       render json: { error: e.message }, status: :unprocessable_entity
     end
 
+    # Fase 6F — Body: { passed: bool, dc: Integer (opcional, p/ broadcast) }
+    # Resolve o concentration save após apply_damage. Se passed=false:
+    #   - seta is_concentrating=false
+    #   - emite broadcast `concentration_broken` para a UI
+    # Se passed=true: apenas confirma (sem mudança).
+    def record_concentration_save
+      passed = ActiveModel::Type::Boolean.new.cast(params[:passed])
+      dc     = params[:dc].present? ? params[:dc].to_i : nil
+      spell  = @combatant.concentration_spell
+
+      if passed
+        render json: { combatant: ::Combat::Serializers.combatant(@combatant), passed: true, dc: dc }, status: :ok
+      else
+        @combatant.update!(is_concentrating: false, concentration_spell: nil)
+        ::Combat::Broadcaster.concentration_broken(@combatant, spell_name: spell, dc: dc)
+        ::Combat::Broadcaster.combatant_upserted(@combatant)
+        render json: { combatant: ::Combat::Serializers.combatant(@combatant), passed: false, dc: dc }, status: :ok
+      end
+    end
+
+    # Fase 6D — Body: { slot_level: Integer, spell_name: 'Hold Person' (opcional) }
+    # Decrementa o spell_slots_used da SheetRuntimeState do PC e cria
+    # SessionLog para o front exibir. NPCs não consomem slots (têm spell DCs
+    # mas não slot tracking — usam "/dia" próprio).
+    def cast_spell
+      if @combatant.combatable_type != 'Character'
+        return render(json: { error: 'apenas PCs consomem spell slots no tracker' },
+                      status: :unprocessable_entity)
+      end
+
+      sheet = @combatant.combatable&.sheet
+      return render(json: { error: 'PC sem ficha vinculada' }, status: :unprocessable_entity) unless sheet
+
+      result = ::Combat::CastSpellService.call(
+        sheet: sheet,
+        slot_level: params[:slot_level].to_i,
+        spell_name: params[:spell_name].presence
+      )
+      if result.success?
+        ::Combat::Broadcaster.combatant_upserted(@combatant)
+        render json: {
+          combatant: ::Combat::Serializers.combatant(@combatant),
+          runtime: result.result[:runtime].as_payload
+        }, status: :ok
+      else
+        render json: { errors: result.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
     private
 
     def ensure_combat_state!

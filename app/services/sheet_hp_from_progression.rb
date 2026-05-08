@@ -53,6 +53,15 @@ module SheetHpFromProgression
     # Cobertura: race_creation_dwarf_bdd_spec.rb (Hill).
     racial = RacialHpBonus.per_level_for_sheet(sheet) * [character_level.to_i, 1].max
     total += racial if racial.positive?
+
+    # Feat HP bonus (ex.: PHB Tough/Robusto +2 PV/nível). Antes deste fix,
+    # PCs com Robusto aplicado retroativamente (após criação ou via Variant
+    # Human) ficavam com sheet.hp_max sem o +N×nível, gerando divergência
+    # entre o resumo (front recalculava) e a ficha (lia sheet.hp_max direto).
+    # Cobertura: spec/services/feat_hp_bonus_spec.rb.
+    feat_hp = FeatHpBonus.total_for_sheet(sheet, character_level.to_i)
+    total += feat_hp if feat_hp.positive?
+
     total
   end
 end
