@@ -525,7 +525,9 @@ backgrounds:
   sage:
     name: Sábio
     starting_proficiencies:
-      skills: [Arcana, História]
+      # PHB pg 137: Perícias: Arcanismo, História. Estava como "Arcana" (nome
+      # EN), divergente de config/skills.yml e da ficha (audit 2026-05-08).
+      skills: [Arcanismo, História]
       languages: { count: 2 }
     starting_equipment:
       - { item: "Tinta preta (frasco)",   qty: 1, container: "estojo" }

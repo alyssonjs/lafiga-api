@@ -316,7 +316,9 @@ gnome:
   id: gnome
   name: "Gnomo"
   description: "Curiosos e engenhosos; mente rápida e humor leve."
-  size: "Médio"
+  # PHB pg 32: "Tamanho. Gnomos têm cerca de 90 cm e pesam aproximadamente
+  # 18 kg. Seu tamanho é Pequeno." Estava como "Médio" (audit 2026-05-08).
+  size: "Pequeno"
   speed: 25
   ability:
     type: fixed

@@ -1193,7 +1193,11 @@ class ClassRules
       armor_proficiencies: %w[leve média escudos],
       weapon_proficiencies: ['armas simples','armas marciais'],
       tool_proficiencies: [],
-      skill_proficiencies: { choose: 3, options: ['Lidar com Animais','Atletismo','Intuição','Investigação','Natureza','Percepção','Furtividade','Sobrevivência'] },
+      # PHB pg 116: "Escolha três dentre Acrobacia, Adestrar Animais (=Lidar
+      # com Animais), Atletismo, Furtividade, Intuição, Investigação, Natureza,
+      # Percepção e Sobrevivência" — 9 opções. `Acrobacia` estava ausente
+      # (audit PHB×projeto 2026-05-08).
+      skill_proficiencies: { choose: 3, options: ['Acrobacia','Lidar com Animais','Atletismo','Furtividade','Intuição','Investigação','Natureza','Percepção','Sobrevivência'] },
       features_level1: ['Inimigo Favorito','Explorador Nato'],
       subclass: {
         choose_level: 3,
@@ -1346,7 +1350,10 @@ class ClassRules
     warlock: {
       id: 'warlock', name: 'Bruxo', hit_die: 'd8',
       primary_abilities: %w[CHA], saving_throws: %w[WIS CHA],
-      armor_proficiencies: %w[leve], weapon_proficiencies: ['armas','simples'], tool_proficiencies: [],
+      # PHB pg 105 Bruxo: "Armas: armas simples". Estava bugado em duas strings
+      # separadas (`['armas','simples']`) — quebra o pattern matching downstream
+      # que normaliza tokens individuais (audit PHB×projeto 2026-05-08).
+      armor_proficiencies: %w[leve], weapon_proficiencies: ['armas simples'], tool_proficiencies: [],
       skill_proficiencies: { choose: 2, options: ['Arcanismo','Enganação','História','Intimidação','Investigação','Natureza','Religião'] },
       features_level1: ['Patrono Sobrenatural','Magia de Pacto'],
       # SRD: fiend/archfey/great_old_one. Extras: subclass_overrides.yml (patron-*).

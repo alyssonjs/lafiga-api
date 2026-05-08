@@ -775,14 +775,45 @@ class CharacterSheetSummaryService
 
     feat_skills = []
 
-    # Merge feat-derived proficiencies (skills/tools/armor/shields/weapons)
+    # Merge feat-derived proficiencies (skills/tools/armor/shields/weapons).
+    #
+    # Compat com metadata.feats LEGADO (anteriores ao fix de Perito em
+    # 2026-04-28, commit 6e046c5): personagens criados antes desse commit
+    # têm `proficiency_bonuses` no formato RAW da regra (`{skills_or_tools:
+    # {choose: {amount, options}}}`) ao invés do resolvido (`{skills: [...],
+    # tools: [...]}`). Aqui, se detectarmos a forma raw, lemos
+    # `f.choices.skillsAndTools` e reclassificamos via
+    # `FeatRules.split_skills_and_tools` — assim evitamos exigir migração de
+    # dados antigos para fichas voltarem a mostrar perícias do Perito.
     begin
       feats = Array(meta['feats'])
       feats.each do |f|
         pb = f['proficiency_bonuses'] || f[:proficiency_bonuses] || {}
+
+        # Caminho 1: pb já está resolvido (formato pós-2026-04-28).
         s = pb['skills'] || pb[:skills]
-        feat_skills |= Array(s).map(&:to_s)
         t = pb['tools'] || pb[:tools]
+
+        # Caminho 2 (fallback legado): pb tem nó `skills_or_tools` raw e
+        # nenhum `skills`/`tools` resolvido. Re-resolvemos via choices da
+        # entrada (mesma fonte que FeatAssignmentService usa, mas in-place,
+        # sem mutar metadata).
+        sot_raw = pb['skills_or_tools'] || pb[:skills_or_tools]
+        if sot_raw && Array(s).empty? && Array(t).empty?
+          choices = f['choices'] || f[:choices] || {}
+          chosen = (choices['skillsAndTools'] || choices[:skillsAndTools] ||
+                    choices['skills_or_tools'] || choices[:skills_or_tools] ||
+                    choices['proficiencies'] || choices[:proficiencies] || [])
+          begin
+            s_resolved, t_resolved = FeatRules.split_skills_and_tools(chosen)
+            s = s_resolved
+            t = t_resolved
+          rescue StandardError
+            # mantém s/t nil se split falhar
+          end
+        end
+
+        feat_skills |= Array(s).map(&:to_s)
         Array(t).each { |tool| tools << tool.to_s if tool.to_s.strip != '' }
         # Armor groups (e.g., ['leve','média','pesada'])
         a = pb['armors'] || pb[:armors]
