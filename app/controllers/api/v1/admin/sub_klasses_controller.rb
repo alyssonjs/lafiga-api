@@ -34,10 +34,26 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
   end
 
   def destroy
-    @sub_klass.destroy
-    render json: {message: "Deletado com sucesso"}, status: 200
+    # Pre-check: bloqueia remocao se houver personagens usando a subclasse.
+    # Sem isto o `destroy` falharia com PG::ForeignKeyViolation (sheet_klasses
+    # tem FK pra sub_klasses) e o front exibia mensagem cru de PG.
+    in_use_count = SheetKlass.where(sub_klass_id: @sub_klass.id).count
+    if in_use_count.positive?
+      return render json: {
+        error: "Nao e' possivel remover: #{in_use_count} personagem(ns) usam esta subclasse. " \
+               'Remova ou troque a subclasse desses personagens primeiro.',
+        in_use_count: in_use_count
+      }, status: :unprocessable_entity
+    end
+
+    @sub_klass.destroy!
+    render json: { message: 'Deletado com sucesso' }, status: 200
+  rescue ActiveRecord::InvalidForeignKey => e
+    # Defesa em profundidade: caso a contagem acima esteja stale por race
+    # condition, devolvemos 422 (e nao 404) com mensagem amigavel.
+    render json: { error: 'Nao e\' possivel remover: ainda existem referencias a esta subclasse.', detail: e.message }, status: :unprocessable_entity
   rescue StandardError => e
-    render json: { error: e.message }, status: :not_found
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   def level_features
