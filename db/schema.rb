@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_07_120000) do
+ActiveRecord::Schema.define(version: 2026_05_13_000000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -559,7 +559,7 @@ ActiveRecord::Schema.define(version: 2026_05_07_120000) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["feat_id"], name: "index_sheet_feats_on_feat_id"
     t.index ["level_gained"], name: "index_sheet_feats_on_level_gained"
-    t.index ["sheet_id", "feat_id"], name: "index_sheet_feats_on_sheet_id_and_feat_id", unique: true
+    t.index ["sheet_id", "feat_id", "level_gained"], name: "index_sheet_feats_on_sheet_feat_level", unique: true
     t.index ["sheet_id"], name: "index_sheet_feats_on_sheet_id"
   end
 

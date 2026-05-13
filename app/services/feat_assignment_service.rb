@@ -49,13 +49,25 @@ class FeatAssignmentService
         SheetFeatLevelCleaner.call(sheet: @sheet, levels: [lg])
       end
 
-      # Check if sheet already has this feat
-      if @sheet.sheet_feats.exists?(feat: feat)
+      # Duplicação só é bloqueada quando o talento NÃO é repeatable. PHB
+      # marca alguns como múltiplos (Adepto Elemental, Mágico Iniciante);
+      # campanha Lafiga estende para Adepto Marcial, Poliglota, Perito,
+      # Conjurador de Ritual (cumulativos por pick). Cobertura BDD em
+      # `spec/services/feat_assignment_service_repeatable_spec.rb`.
+      #
+      # Quando repeatable=true e já existe ESSE feat no mesmo level_gained
+      # (cenário improvável — só edição rápida), o `SheetFeatLevelCleaner`
+      # acima já removeu a entrada antiga deste level, então `create!`
+      # abaixo nao quebra a unique constraint (sheet_id, feat_id) — ver
+      # migration 20260513* que relaxa a constraint pra (sheet_id, feat_id,
+      # level_gained).
+      is_repeatable = !!feat_rule[:repeatable]
+      if !is_repeatable && @sheet.sheet_feats.exists?(feat: feat)
         Rails.logger.error "Sheet já possui este feat: #{@feat_id}"
         errors.add(:feat, 'já possui este talento')
         raise ActiveRecord::Rollback
       end
-      Rails.logger.info "Feat não duplicado"
+      Rails.logger.info "Feat não duplicado (repeatable=#{is_repeatable})"
 
       # Create sheet_feat association
       sheet_feat = @sheet.sheet_feats.create!(

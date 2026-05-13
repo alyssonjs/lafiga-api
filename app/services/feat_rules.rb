@@ -125,7 +125,9 @@ class FeatRules
       features: {
         name: 'Mágico Iniciante',
         desc: 'Você aprende dois truques de uma lista de magias de uma classe de sua escolha. Você também aprende uma magia de 1º nível dessa mesma lista.'
-      }
+      },
+      # PHB pg 168: pode ser pego múltiplas vezes (classe diferente cada vez).
+      repeatable: true
     },
     # PHB Heavily Armored: prereq profic. armadura média, +1 STR, ganha
     # profic. pesada. **Mantido como ALIAS DEPRECATED** de `protecao_pesada`
@@ -453,7 +455,9 @@ class FeatRules
       features: {
         name: 'Treinamento Amplo',
         desc: 'Proficiência em três perícias e/ou ferramentas à escolha.'
-      }
+      },
+      # Houserule Lafiga: cumulativo (+3 perícias/ferramentas por pick).
+      repeatable: true
     },
     'poliglota' => {
       id: 'poliglota',
@@ -473,7 +477,9 @@ class FeatRules
       features: {
         name: 'Criptografia',
         desc: 'Cria cifra escrita; outros decifram com instrução, teste de INT (CD INT+prof) ou magia.'
-      }
+      },
+      # Houserule Lafiga: cada pick adiciona +3 idiomas + nova cifra.
+      repeatable: true
     },
     'protecao_leve' => {
       id: 'protecao_leve',
@@ -766,7 +772,9 @@ class FeatRules
             parameters: { requires_book_in_hand: true }
           }
         }
-      }
+      },
+      # Houserule Lafiga: cada pick acessa rituais de outra classe.
+      repeatable: true
     },
     'sniper_magico' => {
       id: 'sniper_magico',
@@ -945,7 +953,10 @@ class FeatRules
             }
           }
         }
-      }
+      },
+      # PHB pg 168: "You can take this feat multiple times" (each with different
+      # damage type). Cada nova escolha adiciona um tipo à imunidade.
+      repeatable: true
     },
 
     # PHB Mage Slayer — portado de feats_improved.yml (`matador_de_conjuradores`).
@@ -1012,7 +1023,9 @@ class FeatRules
           implementation: 'grant_superiority_die',
           parameters: { count: 1, die: 'd6' }
         }
-      }
+      },
+      # Houserule Lafiga: cumulativo (+1 dado superioridade + 2 manobras por pick).
+      repeatable: true
     },
 
     # PHB Medium Armor Master — portado de feats_improved.yml.
@@ -1184,7 +1197,13 @@ class FeatRules
           cantrips: (db_can.presence || static[:cantrips] || {}),
           spells: (db_sp.presence || static[:spells] || {}),
           features: (db_feat.presence || static[:features] || {}),
-          special_rules: (db_spec.presence || static[:special_rules] || {})
+          special_rules: (db_spec.presence || static[:special_rules] || {}),
+          # `repeatable` é metadata estática (não persistida no row de `feats`).
+          # Sem esse merge, o FeatAssignmentService não enxerga a flag quando
+          # o feat já existe no DB e bloqueia o 2º pick mesmo dos cumulativos
+          # (Perito, Adepto Marcial, etc.). Cobertura BDD em
+          # `feat_assignment_service_repeatable_spec.rb`.
+          repeatable: static[:repeatable] == true
         }
       else
         RULES[feat_id]
