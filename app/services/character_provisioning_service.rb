@@ -171,6 +171,7 @@ class CharacterProvisioningService
       end
       level       = (klass['level']   || klass[:level] || 1).to_i
       subclass_id = klass['classSubclassId'] || klass[:classSubclassId]
+      ensure_playable_klass_allowed!(klass_id: klass_id, subclass_id: subclass_id, wizard: wizard)
       per_level_raw = klass['classPicksByLevel'] || klass[:classPicksByLevel] || {}
       per_level = begin
         JSON.parse(per_level_raw.to_json)
@@ -821,6 +822,27 @@ class CharacterProvisioningService
     return unless sub_race_record.present? && !sub_race_record.playable?
 
     raise StandardError, 'Sub-raça indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+  end
+
+  # Espelha `ensure_playable_race_allowed!`: bloqueia jogador de provisionar
+  # personagem com Classe/Subclasse marcada como indisponível (`playable=false`).
+  # Mestres podem usá-las em NPCs (mesma exceção da raça).
+  def ensure_playable_klass_allowed!(klass_id:, subclass_id:, wizard:)
+    return if allow_non_playable_race?(wizard)
+
+    klass_record = klass_id.present? ? Klass.find_by(id: klass_id) : nil
+    if klass_record.present? && !klass_record.playable?
+      raise StandardError, 'Classe indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+    end
+
+    return if subclass_id.blank?
+
+    sub_klass_record =
+      SubKlass.find_by(id: subclass_id) ||
+      SubKlass.find_by(api_index: subclass_id.to_s)
+    return unless sub_klass_record.present? && !sub_klass_record.playable?
+
+    raise StandardError, 'Subclasse indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
   end
 
   def allow_non_playable_race?(wizard)

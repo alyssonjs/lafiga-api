@@ -111,6 +111,7 @@ class Api::V1::Admin::KlassesController < ApplicationController
       :short_description,
       :progression_table,
       :subclass_level,
+      :playable,
       rules: {},
       saving_throws: [],
     )

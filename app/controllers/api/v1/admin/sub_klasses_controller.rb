@@ -104,7 +104,16 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
   end
 
   def sub_klass_params
-    params.require(:sub_klass).permit(:name, :klass_id, :api_index, :subclass_flavor, :description, :levels_json)
+    params.require(:sub_klass).permit(
+      :name, :klass_id, :api_index, :subclass_flavor, :description, :levels_json, :playable,
+      # Override (DM) das Magias do Círculo por Terreno — array de
+      # { terrain, spells: [{ level, spellLevel, spells: [] }] }.
+      # `nil` mantém o catálogo estático canônico no front.
+      terrain_spells: [
+        :terrain,
+        { spells: [:level, :spellLevel, { spells: [] }] },
+      ],
+    )
   end
 
   def level_feature_params

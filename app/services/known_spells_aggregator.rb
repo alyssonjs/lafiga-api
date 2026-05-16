@@ -332,10 +332,46 @@ class KnownSpellsAggregator
           end
         end
 
-        # Subclasse: always_prepared_by_terrain via levels_json (ex.: Druida Terra)
+        # Override editável do DM (`sub_klasses.terrain_spells`, jsonb).
+        # Tem PRECEDÊNCIA sobre o levels_json canônico — espelha o
+        # `getEffectiveTerrainSpells` do front. Estrutura:
+        #   [{ "terrain": "Costa",
+        #      "spells": [{ "level": 3, "spellLevel": 2, "spells": ["..."] }] }]
+        terrain_override_applied = false
         begin
           sub = sk.sub_klass
-          if sub&.levels_json.present? && chosen_terrain
+          override = sub&.terrain_spells
+          if override.is_a?(Array) && override.any? && chosen_terrain
+            entry = override.find do |t|
+              t.is_a?(Hash) && to_slug.call(t['terrain'].to_s) == chosen_terrain
+            end
+            if entry
+              Array(entry['spells']).each do |slot|
+                next unless slot.is_a?(Hash)
+                next if slot['level'].to_i > lvl
+
+                Array(slot['spells']).each do |nm|
+                  sp = resolve_spell.call(nm.to_s)
+                  next unless sp
+
+                  upsert_prepared.call(sp.merge(level: sp[:level] || sp[:lvl]), { always: true, circle: true })
+                  if sp[:id]
+                    catalog[sp[:id]] ||= { id: sp[:id], name: sp[:name], level: sp[:level], desc: sp[:desc], higher_level: sp[:higher_level] }
+                    present_ids.add(sp[:id])
+                  end
+                end
+              end
+              terrain_override_applied = true
+            end
+          end
+        rescue => _e
+        end
+
+        # Subclasse: always_prepared_by_terrain via levels_json (ex.: Druida
+        # Terra). Só quando NÃO há override do DM para o terreno escolhido.
+        begin
+          sub = sk.sub_klass
+          if !terrain_override_applied && sub&.levels_json.present? && chosen_terrain
             rows = JSON.parse(sub.levels_json) rescue []
             rows = Array(rows).select { |r| r.is_a?(Hash) && (r['level'].to_i <= lvl) }
             names = []
@@ -413,9 +449,10 @@ class KnownSpellsAggregator
                       end
                     end
                   end
-                  # 2) always_prepared_by_terrain (Círculo da Terra)
+                  # 2) always_prepared_by_terrain (Círculo da Terra) — só
+                  # quando NÃO há override editável do DM (terrain_spells).
                   terr = (spells['always_prepared_by_terrain'] || {})
-                  if chosen_terrain && terr[chosen_terrain]
+                  if !terrain_override_applied && chosen_terrain && terr[chosen_terrain]
                     terr_map = terr[chosen_terrain] || {}
                     terr_map.each do |min_lvl, list|
                       ml = min_lvl.to_i

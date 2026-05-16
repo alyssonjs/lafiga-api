@@ -29,6 +29,14 @@ module CharacterSheetEdits
       class_changed = false
       resolved_class_id = resolve_klass_id(new_class_id)
 
+      # Espelha RaceEditService: bloqueia jogador de trocar para Classe/
+      # Subclasse marcada como indisponível (`playable=false`). Mestres
+      # editando NPC ficam isentos.
+      ensure_playable_klass_allowed!(
+        klass_id: resolved_class_id,
+        subclass_id: data['subclassId']
+      )
+
       # Gap G4.5 do relatorio de auditoria de steps: detectar multiclass ANTES
       # da limpeza para reportar com precisao quais classes secundarias serao
       # destruidas. Antes do fix, `clear!('sheet_klasses(level>=2)')` era
@@ -207,6 +215,34 @@ module CharacterSheetEdits
     # X2: delega ao helper compartilhado em BaseSheetEditService.
     def resolve_klass_id(raw)
       resolve_polymorphic_id(Klass, raw)
+    end
+
+    # Espelha RaceEditService#ensure_playable_race_allowed!.
+    def ensure_playable_klass_allowed!(klass_id:, subclass_id:)
+      return if allow_non_playable_klass?
+
+      klass_record = klass_id.present? ? Klass.find_by(id: klass_id) : nil
+      if klass_record.present? && !klass_record.playable?
+        raise ArgumentError, 'Classe indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+      end
+
+      return if subclass_id.blank?
+
+      sub_klass_record =
+        SubKlass.find_by(id: subclass_id) ||
+        SubKlass.find_by(api_index: subclass_id.to_s)
+      return unless sub_klass_record.present? && !sub_klass_record.playable?
+
+      raise ArgumentError, 'Subclasse indisponível para personagens de jogador. Apenas mestres podem usá-la em NPCs.'
+    end
+
+    def allow_non_playable_klass?
+      Group.user_is_dm?(current_user) && sheet_npc?
+    end
+
+    def sheet_npc?
+      general = (sheet.metadata || {}).dig('general') || {}
+      ActiveModel::Type::Boolean.new.cast(general['isNPC'] || general[:isNPC])
     end
 
     # Resolve uma referência a SubKlass — aceita id numérico OU api_index do

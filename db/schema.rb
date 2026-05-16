@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_13_000000) do
+ActiveRecord::Schema.define(version: 2026_05_16_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -387,7 +387,9 @@ ActiveRecord::Schema.define(version: 2026_05_13_000000) do
     t.jsonb "saving_throws", default: []
     t.string "short_description"
     t.text "progression_table"
+    t.boolean "playable", default: true, null: false
     t.index ["api_index"], name: "index_klasses_on_api_index", unique: true
+    t.index ["playable"], name: "index_klasses_on_playable"
   end
 
   create_table "magic_items", force: :cascade do |t|
@@ -749,9 +751,12 @@ ActiveRecord::Schema.define(version: 2026_05_13_000000) do
     t.string "subclass_flavor"
     t.text "description"
     t.text "levels_json"
+    t.boolean "playable", default: true, null: false
+    t.jsonb "terrain_spells"
     t.index ["api_index"], name: "index_sub_klasses_on_api_index"
     t.index ["klass_id", "api_index"], name: "idx_sub_klasses_unique_klass_api", unique: true
     t.index ["klass_id"], name: "index_sub_klasses_on_klass_id"
+    t.index ["playable"], name: "index_sub_klasses_on_playable"
   end
 
   create_table "sub_races", force: :cascade do |t|
