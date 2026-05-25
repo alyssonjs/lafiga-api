@@ -20,6 +20,16 @@ class BattleMap < ApplicationRecord
   # hidden_cells = névoa clássica (mapa + tokens ocultos na célula).
   # hidden_tokens = mapa visível; só tokens com centro na célula ficam ocultos (jogador).
   FOG_MODES = %w[hidden_cells hidden_tokens].freeze
+  # Fase 2.0 — builder unificado: 'battle' mostra grid por padrão; 'world'
+  # esconde (grid vira camada opcional). Default 'battle' = back-compat.
+  MAP_KINDS = %w[battle world].freeze
+  # Caps defensivos (front é a fonte da verdade do shape, mas limitamos
+  # tamanho p/ proteger o JSONB e o broadcast). Generosos, raramente batidos.
+  MAX_LAYERS = 64
+  MAX_TERRAIN_LAYERS = 48
+  MAX_STAMPS = 4000
+  MAX_PATHS = 800
+  MAX_STROKES_PER_LAYER = 2000
   MIN_DIM = 5
   # MAX_DIM = 200: limite generoso para mapas grandes (overworld, dungeons multi-andar
   # carregadas como uma malha unica). Acima disso o backend ainda aceita mas a UI
@@ -40,6 +50,7 @@ class BattleMap < ApplicationRecord
   validates :schema_version, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
   validates :distance_display_unit, inclusion: { in: %w[ft m] }
   validates :fog_mode, inclusion: { in: FOG_MODES }
+  validates :map_kind, inclusion: { in: MAP_KINDS }
   validates :background_image_pixel_width,
             numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 8192 },
             allow_nil: true
@@ -56,6 +67,12 @@ class BattleMap < ApplicationRecord
   validate :drawings_well_formed
   validate :aoe_placements_well_formed
   validate :player_permissions_well_formed
+  # Fase 2.0 — Map Builder (camadas de apresentação aditivas)
+  validate :layers_well_formed
+  validate :terrain_layers_well_formed
+  validate :stamps_well_formed
+  validate :paths_well_formed
+  validate :map_effects_well_formed
 
   PLAYER_TOOLS = %w[measure pencil aoe].freeze
   DEFAULT_PLAYER_PERMISSIONS = { 'measure' => true, 'pencil' => false, 'aoe' => true }.freeze
@@ -125,6 +142,13 @@ class BattleMap < ApplicationRecord
     copy.cells = deep_dup_nested_arrays(source.cells)
     copy.tokens = deep_dup_nested_arrays(source.tokens)
     copy.fog = source.fog.nil? ? nil : deep_dup_nested_arrays(source.fog)
+    # Fase 2.0 — preserva as camadas do builder ao duplicar (evita refs
+    # compartilhadas entre origem e cópia, igual a cells/tokens).
+    copy.layers = deep_dup_nested_arrays(source.layers)
+    copy.terrain_layers = deep_dup_nested_arrays(source.terrain_layers)
+    copy.stamps = deep_dup_nested_arrays(source.stamps)
+    copy.paths = deep_dup_nested_arrays(source.paths)
+    copy.map_effects = source.map_effects.respond_to?(:deep_dup) ? source.map_effects.deep_dup : source.map_effects
     copy.save!
     copy
   end
@@ -356,5 +380,122 @@ class BattleMap < ApplicationRecord
     unless ALLOWED_CELL_WORLD_FT.include?(v)
       errors.add(:cell_world_ft, "must be one of #{ALLOWED_CELL_WORLD_FT.join(', ')}")
     end
+  end
+
+  # ===== Fase 2.0 — Map Builder =====
+  # Validação leniente (front é a fonte da verdade do shape; aqui só evitamos
+  # crash do renderer e protegemos JSONB/broadcast com caps). Chaves extras
+  # são toleradas p/ forward-compat — mesma filosofia de tokens_well_formed.
+
+  # Registro/ordem-z das camadas: { id:String, type:String, ... }.
+  def layers_well_formed
+    return if layers.nil?
+    unless layers.is_a?(Array)
+      errors.add(:layers, 'must be an array')
+      return
+    end
+    if layers.size > MAX_LAYERS
+      errors.add(:layers, "too many (#{layers.size} > #{MAX_LAYERS})")
+      return
+    end
+    layers.each_with_index do |l, idx|
+      id = l.is_a?(Hash) ? (l['id'] || l[:id]) : nil
+      type = l.is_a?(Hash) ? (l['type'] || l[:type]) : nil
+      unless id.is_a?(String) && type.is_a?(String)
+        errors.add(:layers, "item #{idx} malformed")
+        return
+      end
+    end
+  end
+
+  # Brush layers (textura tile + máscara vetorial):
+  # { id:String, assetId:String?, strokes:Array, ... }
+  def terrain_layers_well_formed
+    return if terrain_layers.nil?
+    unless terrain_layers.is_a?(Array)
+      errors.add(:terrain_layers, 'must be an array')
+      return
+    end
+    if terrain_layers.size > MAX_TERRAIN_LAYERS
+      errors.add(:terrain_layers, "too many (#{terrain_layers.size} > #{MAX_TERRAIN_LAYERS})")
+      return
+    end
+    terrain_layers.each_with_index do |tl, idx|
+      unless tl.is_a?(Hash)
+        errors.add(:terrain_layers, "item #{idx} must be an object")
+        return
+      end
+      id = tl['id'] || tl[:id]
+      strokes = tl['strokes'] || tl[:strokes]
+      unless id.is_a?(String) && (strokes.nil? || strokes.is_a?(Array))
+        errors.add(:terrain_layers, "item #{idx} malformed")
+        return
+      end
+      if strokes.is_a?(Array) && strokes.size > MAX_STROKES_PER_LAYER
+        errors.add(:terrain_layers, "item #{idx} too many strokes (#{strokes.size} > #{MAX_STROKES_PER_LAYER})")
+        return
+      end
+    end
+  end
+
+  # Object layer — objetos livres: { id:String, assetId:String, x:Number, y:Number, ... }
+  def stamps_well_formed
+    return if stamps.nil?
+    unless stamps.is_a?(Array)
+      errors.add(:stamps, 'must be an array')
+      return
+    end
+    if stamps.size > MAX_STAMPS
+      errors.add(:stamps, "too many (#{stamps.size} > #{MAX_STAMPS})")
+      return
+    end
+    stamps.each_with_index do |s, idx|
+      unless s.is_a?(Hash)
+        errors.add(:stamps, "item #{idx} must be an object")
+        return
+      end
+      id = s['id'] || s[:id]
+      asset_id = s['assetId'] || s[:assetId]
+      x = s['x'] || s[:x]
+      y = s['y'] || s[:y]
+      unless id.is_a?(String) && asset_id.is_a?(String) && x.is_a?(Numeric) && y.is_a?(Numeric)
+        errors.add(:stamps, "item #{idx} malformed")
+        return
+      end
+    end
+  end
+
+  # Rios/estradas/trilhas: { id:String, kind:String, points:Array, widthPx:Number, ... }
+  def paths_well_formed
+    return if paths.nil?
+    unless paths.is_a?(Array)
+      errors.add(:paths, 'must be an array')
+      return
+    end
+    if paths.size > MAX_PATHS
+      errors.add(:paths, "too many (#{paths.size} > #{MAX_PATHS})")
+      return
+    end
+    paths.each_with_index do |p, idx|
+      unless p.is_a?(Hash)
+        errors.add(:paths, "item #{idx} must be an object")
+        return
+      end
+      id = p['id'] || p[:id]
+      points = p['points'] || p[:points]
+      unless id.is_a?(String) && points.is_a?(Array)
+        errors.add(:paths, "item #{idx} malformed")
+        return
+      end
+    end
+  end
+
+  # Efeitos globais (vinheta/grão/papel/iluminação/colorGrade): só um objeto
+  # de params. Sem arrays/pixels — leniente quanto às chaves.
+  def map_effects_well_formed
+    return if map_effects.nil?
+    return if map_effects.is_a?(Hash)
+
+    errors.add(:map_effects, 'must be an object')
   end
 end

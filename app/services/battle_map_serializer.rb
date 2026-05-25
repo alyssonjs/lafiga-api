@@ -27,6 +27,7 @@ class BattleMapSerializer
       distanceDisplayUnit: map.distance_display_unit.presence || 'm',
       cellWorldFt: map.cell_world_ft.to_f,
       fogMode: map.fog_mode.presence || 'hidden_cells',
+      mapKind: map.map_kind.presence || 'battle',
       createdAt: map.created_at&.iso8601,
       updatedAt: map.updated_at&.iso8601,
     }
@@ -46,6 +47,13 @@ class BattleMapSerializer
       backgroundImageOffsetY: map.background_image_offset_y,
       backgroundImagePixelWidth: map.background_image_pixel_width,
       backgroundImagePixelHeight: map.background_image_pixel_height,
+      # Fase 2.0 — camadas do Map Builder (só no :full; listagem :slim não
+      # carrega para não inflar o GET de listas).
+      layers: map.layers || [],
+      terrainLayers: map.terrain_layers || [],
+      stamps: map.stamps || [],
+      paths: map.paths || [],
+      mapEffects: map.map_effects || {},
     )
   end
 

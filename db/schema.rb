@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_16_120000) do
+ActiveRecord::Schema.define(version: 2026_05_21_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -89,6 +89,12 @@ ActiveRecord::Schema.define(version: 2026_05_16_120000) do
     t.string "fog_mode", default: "hidden_cells", null: false
     t.integer "background_image_pixel_width"
     t.integer "background_image_pixel_height"
+    t.jsonb "layers", default: [], null: false
+    t.jsonb "terrain_layers", default: [], null: false
+    t.jsonb "stamps", default: [], null: false
+    t.jsonb "paths", default: [], null: false
+    t.jsonb "map_effects", default: {}, null: false
+    t.string "map_kind", default: "battle", null: false
     t.index ["group_id", "updated_at"], name: "index_battle_maps_on_group_id_and_updated_at"
     t.index ["group_id"], name: "index_battle_maps_on_group_id"
     t.index ["user_id", "updated_at"], name: "index_battle_maps_on_user_id_and_updated_at"
@@ -422,6 +428,20 @@ ActiveRecord::Schema.define(version: 2026_05_16_120000) do
     t.index ["tags"], name: "index_magic_items_on_tags", using: :gin
   end
 
+  create_table "map_assets", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "kind", null: false
+    t.string "category", default: "custom", null: false
+    t.string "color"
+    t.boolean "enabled", default: true, null: false
+    t.bigint "user_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["kind", "enabled"], name: "index_map_assets_on_kind_and_enabled"
+    t.index ["kind"], name: "index_map_assets_on_kind"
+    t.index ["user_id"], name: "index_map_assets_on_user_id"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.bigint "channel_id", null: false
     t.bigint "user_id", null: false
@@ -753,6 +773,7 @@ ActiveRecord::Schema.define(version: 2026_05_16_120000) do
     t.text "levels_json"
     t.boolean "playable", default: true, null: false
     t.jsonb "terrain_spells"
+    t.jsonb "bonus_spells"
     t.index ["api_index"], name: "index_sub_klasses_on_api_index"
     t.index ["klass_id", "api_index"], name: "idx_sub_klasses_unique_klass_api", unique: true
     t.index ["klass_id"], name: "index_sub_klasses_on_klass_id"
@@ -851,6 +872,7 @@ ActiveRecord::Schema.define(version: 2026_05_16_120000) do
   add_foreign_key "diary_entries", "characters"
   add_foreign_key "diary_entries", "schedules"
   add_foreign_key "groups", "users", column: "dm_user_id"
+  add_foreign_key "map_assets", "users"
   add_foreign_key "messages", "channels"
   add_foreign_key "messages", "users"
   add_foreign_key "race_traits", "races"

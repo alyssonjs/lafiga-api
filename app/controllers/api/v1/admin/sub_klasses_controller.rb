@@ -113,6 +113,12 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
         :terrain,
         { spells: [:level, :spellLevel, { spells: [] }] },
       ],
+      # Magias bônus de subclasse (sempre conhecidas / sempre preparadas /
+      # lista expandida). Shape espelha `SubclassData.bonusSpells/Mode`.
+      bonus_spells: [
+        :mode,
+        { entries: [:level, :spellLevel, { spells: [] }] },
+      ],
     )
   end
 

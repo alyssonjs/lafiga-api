@@ -87,6 +87,8 @@ Rails.application.routes.draw do
             delete 'level_features/:feature_id', action: :destroy_level_feature
           end
         end
+        # Fase 2.6 — biblioteca de assets do Map Builder (upload do DM).
+        resources :map_assets, only: [:index, :create, :update, :destroy]
         resources :backgrounds, only: [:index, :show, :create, :update, :destroy]
         resources :wiki_sections, only: %i[create update destroy] do
           collection do

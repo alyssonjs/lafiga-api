@@ -190,7 +190,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       :background_image_url, :background_image_offset_x, :background_image_offset_y,
       :background_image_pixel_width, :background_image_pixel_height,
       :grid_opacity, :schema_version, :distance_display_unit, :cell_world_ft,
-      :fog_mode,
+      :fog_mode, :map_kind,
     ).to_h
 
     unsafe = raw.to_unsafe_h.with_indifferent_access
@@ -202,6 +202,13 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     permitted[:aoe_placements]     = unsafe[:aoe_placements]     if unsafe.key?(:aoe_placements)
     permitted[:drawings]           = unsafe[:drawings]           if unsafe.key?(:drawings)
     permitted[:player_permissions] = unsafe[:player_permissions] if unsafe.key?(:player_permissions)
+    # Fase 2.0 — camadas do Map Builder (nested arrays/objetos; mesmo padrão
+    # to_unsafe_h dos demais blobs; shape validado no model).
+    permitted[:layers]         = unsafe[:layers]         if unsafe.key?(:layers)
+    permitted[:terrain_layers] = unsafe[:terrain_layers] if unsafe.key?(:terrain_layers)
+    permitted[:stamps]         = unsafe[:stamps]         if unsafe.key?(:stamps)
+    permitted[:paths]          = unsafe[:paths]          if unsafe.key?(:paths)
+    permitted[:map_effects]    = unsafe[:map_effects]    if unsafe.key?(:map_effects)
     permitted
   end
 
@@ -235,6 +242,14 @@ class Api::V1::Player::BattleMapsController < ApplicationController
         distance_display_unit: %w[ft m].include?(h['distanceDisplayUnit'].to_s) ? h['distanceDisplayUnit'].to_s : 'm',
         cell_world_ft: normalize_legacy_cell_world_ft(h['cellWorldFt']),
         aoe_placements: h['aoePlacements'].is_a?(Array) ? h['aoePlacements'] : [],
+        # Fase 2.0 — camadas do builder (opcionais; default vazio mantém
+        # mapas legados idênticos).
+        layers: h['layers'].is_a?(Array) ? h['layers'] : [],
+        terrain_layers: h['terrainLayers'].is_a?(Array) ? h['terrainLayers'] : [],
+        stamps: h['stamps'].is_a?(Array) ? h['stamps'] : [],
+        paths: h['paths'].is_a?(Array) ? h['paths'] : [],
+        map_effects: h['mapEffects'].is_a?(Hash) ? h['mapEffects'] : {},
+        map_kind: BattleMap::MAP_KINDS.include?(h['mapKind'].to_s) ? h['mapKind'].to_s : 'battle',
       },
     }
   end
@@ -264,7 +279,10 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # `map_updated` com payload full.
   def broadcast_update_diffs
     changes = @map.previous_changes
-    structural = (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity group_id walls distance_display_unit cell_world_ft fog_mode]).any?
+    # Fase 2.0 — edições do Map Builder (layers/stamps/paths/effects) emitem
+    # `map_updated` full por ora (DM-only, debounced). Diffs granulares por
+    # camada virão na Fase 2.1 junto do painel de camadas.
+    structural = (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity group_id walls distance_display_unit cell_world_ft fog_mode layers terrain_layers stamps paths map_effects map_kind]).any?
 
     if structural
       payload = BattleMapSerializer.serialize(@map, mode: :full)
