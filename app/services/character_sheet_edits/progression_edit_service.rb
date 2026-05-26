@@ -285,7 +285,15 @@ module CharacterSheetEdits
       rules = k.api_index.present? ? (ClassRules.find(k.api_index) || {}) : {}
       prep = (rules.dig(:feature_rules, :spellcasting, :mode) ||
         rules.dig(:spellcasting, :preparation)).to_s
-      return if prep == 'prepared'
+      # Mago tambem e 'prepared' MAS tem spellbook persistido em meta.spell_selections
+      # — sem este sync, magias fantasma criadas pelo auto-fill do LevelUpService
+      # (find_or_create_by! sem source) ficavam para sempre no SheetKnownSpell ate
+      # alguem deletar manualmente. Sintoma: na ficha apareciam truques/magias que
+      # o jogador nunca selecionou no wizard.
+      # Para outras prepared (clerigo/druida/paladino) sel['known'] e vazio (prepara
+      # da lista toda da classe), entao rodar o sync limparia tudo erradamente.
+      is_wizard = k.api_index.to_s == 'wizard'
+      return if prep == 'prepared' && !is_wizard
 
       meta = (sheet.metadata || {}).deep_stringify_keys
       sel = normalize_spell_selections(meta['spell_selections'] || {})

@@ -253,6 +253,45 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
       expect(SheetKnownSpell.where(sheet_klass_id: sheet_klass.id, source: [nil, 'class', 'subclass']).count).to eq(0)
     end
 
+    it 'B7.8 — Mago tambem limpa SheetKnownSpell fantasmas no PATCH (regressao Valac/2026-05)' do
+      # Bug em prod: LevelUpService.ensure_level_requirements! sorteia magias
+      # da lista da classe quando o limite de cantrips/known nao foi atingido,
+      # gravando SheetKnownSpell SEM source. Para classes 'known' o sync ja
+      # limpava esses registros (B7.4); para Mago (que e 'prepared' mas com
+      # spellbook persistido em meta.spell_selections) o early-return em
+      # `sync_sheet_known_spells_from_spell_selections!` ignorava — fantasmas
+      # ficavam para sempre na ficha.
+      wizard = Klass.find_by(api_index: 'wizard') || create(:klass, api_index: 'wizard')
+      cl = ClassLevel.where(klass: wizard, level: 4).first ||
+        ClassLevel.create!(klass: wizard, level: 4, prof_bonus: 2, ability_score_bonuses: 0)
+      Spellcasting.where(class_level: cl).first || Spellcasting.create!(
+        class_level: cl, level: 1, cantrips_known: 4, spells_known: 0,
+        spell_slots: { '1' => 4, '2' => 3 }.to_json,
+      )
+      chosen_cantrip = create(:spell, name: 'B78 Truque Real', level: 0, api_index: "b78_c_#{SecureRandom.hex(3)}")
+      ghost_cantrip = create(:spell, name: 'B78 Truque Fantasma', level: 0, api_index: "b78_cg_#{SecureRandom.hex(3)}")
+      chosen_spell = create(:spell, name: 'B78 Magia Real', level: 1, api_index: "b78_s_#{SecureRandom.hex(3)}")
+      ghost_spell = create(:spell, name: 'B78 Magia Fantasma', level: 1, api_index: "b78_sg_#{SecureRandom.hex(3)}")
+
+      sheet_klass.update!(klass: wizard)
+      SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).delete_all
+      # Auto-fill ja gravou as 4 (2 reais + 2 fantasmas) sem source
+      [chosen_cantrip, ghost_cantrip, chosen_spell, ghost_spell].each do |sp|
+        create(:sheet_known_spell, sheet_klass: sheet_klass, spell: sp, source: nil)
+      end
+
+      described_class.new(character: character, level: 4, data: {
+        'spellSelections' => {
+          'cantrips' => [chosen_cantrip.id.to_s],
+          'known' => [chosen_spell.id.to_s],
+          'spellbook' => [chosen_spell.id.to_s],
+        },
+      }).call
+
+      remaining = SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).pluck(:spell_id).sort
+      expect(remaining).to eq([chosen_cantrip.id, chosen_spell.id].sort)
+    end
+
     it 'B7.7 — sync não falha quando spell_selections inclui magia já em SheetKnownSpell (race)' do
       caster = create(:klass, api_index: "b77_warlock_#{SecureRandom.hex(4)}")
       cl = ClassLevel.create!(klass: caster, level: 4, prof_bonus: 2, ability_score_bonuses: 0)
