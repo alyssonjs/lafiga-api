@@ -37,7 +37,7 @@ class BackgroundRules
     },
     charlatan: {
       id: 'charlatan', name: 'Charlatão',
-      skills: ['Enganação','Furtividade'],
+      skills: ['Enganação','Prestidigitação'],
       tools: ['Kit de disfarce', 'Ferramentas de falsificação'],
       languages: { choose: 0 },
       equipment: ['Um kit de disfarce', 'Ferramentas de falsificação', 'Um conjunto de roupas finas', 'Uma algibeira contendo 15 po'],
