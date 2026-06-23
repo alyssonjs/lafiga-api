@@ -35,6 +35,7 @@ barbarian:
                   condition: "amedrontado"
                   duration: "até o fim do seu próximo turno"
               extend_with_action: true
+              wasted_use_for_24h_on_save: true
               breaks_if:
                 - "alvo fora da linha de visão no fim do turno"
                 - "alvo a >18 m no fim do turno"
@@ -222,7 +223,7 @@ barbarian:
     levels:
       - level: 3
         features:
-          - name: "Conjuração Rúnica"
+          - name: "Conjuração"
             description: "Aprende truques e magias de feiticeiro; usa Carisma; tem tabela própria de espaços."
             rules:
               spellcasting:
@@ -233,7 +234,7 @@ barbarian:
           - name: "Inscrever Cicatriz Rúnica"
             description: "Ritual para vincular truques/magias às cicatrizes; fala, lê e escreve Dracônico."
             rules:
-              ritual_inscribe: { time_minutes: 10 }
+              ritual_inscribe: { time_minutes: 60, extra_minutes_per_spell_level_above_1: 60 }
               bind_spell_to_scar: true
             grants:
               languages:
@@ -276,7 +277,7 @@ barbarian:
           ritual_scars:
             choose: 2
             options:
-              - { id: "scar_thp", name: "+THP ao conjurar", rules: { temp_hp_on_cast: { formula: "nível da magia + Car" } } }
+              - { id: "scar_thp", name: "+THP ao conjurar", rules: { temp_hp_on_cast: { formula: "1d8 + 2 × nível da magia" } } }
               - { id: "scar_upcast", name: "Conjura como se +1 nível de espaço", rules: { treat_as_upcast: 1 } }
               - { id: "scar_offense", name: "+bônus em ataque/dano corpo-a-corpo = nível da magia", rules: { melee_attack_bonus: "nível da magia", melee_damage_bonus: "nível da magia", duration: "até o fim do próximo turno" } }
               - { id: "scar_defense", name: "+CA = nível da magia", rules: { ac_bonus: "nível da magia", duration: "até o início do seu próximo turno" } }
@@ -317,10 +318,10 @@ barbarian:
               countercast:
                 save:
                   ability: "Sabedoria (do conjurador)"
-                  dc_formula: "CD de suas magias/8+prof+Car? (use DC=8+prof+Con do bárbaro, se preferirem)"
+                  dc_formula: "8 + proficiência + Car"
                 on_fail: "conjurador perde o espaço e a magia falha"
               suppress_magic_item_on_hit:
-                duration: "1 turno"
+                duration: "até o fim do seu próximo turno"
                 exceptions: ["artefatos"]
       - level: 14
         features:
@@ -331,6 +332,7 @@ barbarian:
                 reaction: true
                 trigger: "você passa em um teste de resistência contra magia/efeito mágico"
                 gain_bonus_attack_damage: "nível da magia"
+                gain_bonus_attack_damage_min: 1
                 duration: "até o início do seu próximo turno"
                 impose_disadvantage_on_spell_attacks_against_you: true
 
@@ -357,6 +359,8 @@ barbarian:
               extreme_cold_heat_checks: "vantagem"
               exhaustion_handling:
                 ignore_level_1: true
+                shift_exhaustion_effects_by_one_level: true
+                dies_at_exhaustion_level: 7
                 reduce_two_levels_on_recovery_of_one: true
       - level: 10
         features:
@@ -401,11 +405,13 @@ barbarian:
                 natural_attacks:
                   bite: { dmg: "1d8 perfurante" }
                   claws:
-                    base: { dmg: "2d4 cortante" }
-                    earlier_note: "2d6 listado → padronizado para 2d4"
+                    base: { dmg: "2d6 cortante" }
               resistances_while_in_form: ["contundente","cortante","perfurante"]
               milestones:
-                5: { extra_attacks_with_weapons: true }
+                5:
+                  extra_attacks_with_weapons: true
+                  multiattack: "mordida + 2 garras (ou mordida + 2 ataques com arma)"
+                  claws_dmg: "2d4"
                 7: { natural_attacks_count_as_magical: true }
                 11:
                   size: "Grande"
@@ -430,6 +436,7 @@ barbarian:
               grapple_with_claws: true
               bonus_action_crush:
                 damage: "2d8 + For"
+                damage_type: "concussão"
               restrained_while_grappled: true
               escape_dc: "8 + prof + For"
       - level: 14
@@ -483,27 +490,29 @@ barbarian:
       - level: 10
         features:
           - name: "Defensor da Tribo"
-            description: "Reação quando aliado cair/inconsciente: ocupa o espaço dele e fornece cobertura; pode proteger contra área sofrendo desvantagem no próprio TS para impedir dano ao aliado."
+            description: "Reação quando aliado cair a 0 PV, ficar inconsciente ou paralisado: move-se até o espaço dele; enquanto o ocupar, o aliado não pode ser alvo de ataques. Pode proteger contra área sofrendo desvantagem no próprio TS para impedir dano ao aliado."
             rules:
               reaction: true
-              triggers: ["aliado cair a 0 PV","aliado ficar inconsciente"]
-              take_space_and_grant_cover: true
+              triggers: ["aliado cair a 0 PV","aliado ficar inconsciente","aliado ficar paralisado"]
+              take_space_and_ally_cannot_be_targeted: true
               protect_from_aoe:
                 self_save_disadvantage: true
                 prevent_damage_to_ally: true
       - level: 14
         features:
           - name: "Bastião Incansável"
-            description: "Ação: desafia hostis a 18 m (TS Sab) por 1 min; quem falha tem desvantagem para atacar outros que não você. Recarga descanso curto/longo."
+            description: "Ação: desafia hostis a 18 m (TS Sab) por 1 min; quem falha tem desvantagem para atacar outros que não você. A criatura repete o TR no fim de cada turno dela, terminando com sucesso; quem passar fica imune por 24 h. Recarga descanso curto/longo."
             rules:
               action: true
               range_m: 18
               duration: "1 minuto (concentração não necessária)"
               save:
                 ability: "Sabedoria"
-                dc_formula: "8 + prof + Con"
+                dc_formula: "8 + proficiência + Car"
                 on_fail:
                   impose_disadvantage_when_targeting_others: true
+                repeat_save_end_of_each_turn: true
+                immune_for_24h_on_save: true
               uses:
                 per: "descanso curto ou longo"
                 value: 1
@@ -559,8 +568,8 @@ barbarian:
             description: "Efeito adicional por elemento ao atingir."
             rules:
               water:  { on_hit: { save: { ability: "Con", on_fail: "impedido (contido) até o fim do seu próximo turno" } } }
-              air:    { on_hit: { effect: "alvo não pode realizar reações até o início do seu próximo turno" } }
-              fire:   { on_hit: { save: { ability: "Des", on_fail: "incendeia; sofre dano no início do turno (Mestre define)" } } }
+              air:    { on_hit: { effect: "alvo não pode realizar reações até o fim do seu próximo turno" } }
+              fire:   { on_hit: { save: { ability: "Des", on_fail: "incendeia: sofre 1d4 de fogo no início de cada turno; repete o TR no fim de cada turno para apagar, ou usa uma ação para apagar automaticamente", ongoing_damage: "1d4 fogo", extinguish: "repete TR no fim de cada turno, ou ação para apagar" } } }
               earth:  { on_hit: { save: { ability: "Con", on_fail: "desvantagem em ataques até o início do seu próximo turno" } } }
       - level: 14
         features:
@@ -649,10 +658,16 @@ bard:
                 ability: "Sabedoria"
                 dc_formula: "8 + prof + Car"
                 on_fail:
+                  condition: "irritado"
                   penalties:
-                    - "−dado de Inspiração em testes de INT e SAB"
-                    - "desvantagem para manter concentração"
+                    - "desvantagem em testes de INT e SAB"
+                    - "no início de cada turno, faz teste de Arcanismo (CD 10 + dado de Inspiração) para manter concentração em magias"
                     - "não pode usar ação bônus"
+              concentration_check:
+                skill: "Arcanismo"
+                dc_formula: "10 + dado de Inspiração"
+              repeat_save: "no fim de cada turno (sucesso encerra)"
+              immune_if: ["não puder ser enfeitiçada"]
               duration: "1 minuto"
       - level: 6
         features:
@@ -682,10 +697,14 @@ bard:
               threshold_hp: 50
               save:
                 ability: "Sabedoria"
-                dc_formula: "8 + prof + Car"
-                on_fail_if_leq_threshold: "PV a 0"
+                dc_formula: "8 + prof + Car + dado de Inspiração"
+                on_fail_if_leq_threshold: "cai a 0 PV (inconsciente)"
                 on_fail_if_gt_threshold: "5d10 psíquico"
-                on_success: "metade do dano psíquico? (se preferir, 0 — defina na mesa)"
+                on_success: "nenhum efeito"
+              immune_if: ["não puder ser enfeitiçada"]
+              uses:
+                per: "descanso longo"
+                value: 1
 
   colegio-fortuna:
     name: "Colégio da Fortuna"
@@ -712,25 +731,40 @@ bard:
       - level: 6
         features:
           - name: "Manipular a Sorte"
-            description: "Reação: força uma rerrolagem de d20 (aliado ou você)."
+            description: "Reação: quando você ou um aliado a até 9 m faz uma jogada de ataque, teste de habilidade ou TR, força a rerrolagem do d20. O alvo fica com o 2º resultado, podendo ser melhor ou pior."
             rules:
               reaction: true
-              range_m: 18
-              trigger: "uma criatura amiga (ou você) rolar um d20"
+              range_m: 9
+              trigger: "você ou um aliado a até 9 m rolar um d20 (ataque, teste de habilidade ou TR)"
               force_reroll: true
+              keep_result: "o 2º resultado (melhor ou pior)"
               uses:
-                per: "dia"
+                per: "descanso longo"
                 value: "Carisma (mín. 1)"
       - level: 14
         features:
           - name: "Roda do Infortúnio"
-            description: "Gasta Inspiração para impor um efeito negativo aleatório por 1 min (usar tabela)."
+            description: "Ação: gasta 1 dado de Inspiração; uma criatura hostil a até 18 m faz TR de Carisma ou sofre um efeito da tabela Roda do Infortúnio (definido pelo valor do dado de Inspiração) por 1 minuto. Repete a TR no fim de cada turno (sucesso encerra)."
             rules:
               action: true
+              range_m: 18
               spend:
                 bardic_inspiration_die: 1
+              save:
+                ability: "Carisma"
+                dc_formula: "8 + prof + Car"
               duration: "1 minuto"
-              requires_random_table: true
+              repeat_save: "no fim de cada turno (sucesso encerra)"
+              wheel_of_misfortune_table:
+                "1-2": "desvantagem em testes de habilidade"
+                "3-4": "desvantagem em jogadas de ataque"
+                "5-6": "desvantagem em testes de resistência"
+                "7-8": "sofre +1d8 de dano por ataque recebido"
+                "9-10": "outras criaturas têm vantagem em ataques contra o alvo"
+                "11-12": "no início do turno rola 1d6: 1-4 não faz nada nesse turno, 5-6 age normalmente"
+              uses:
+                per: "descanso curto ou longo"
+                value: 1
 
   colegio-quietude:
     name: "Colégio da Quietude"
@@ -742,21 +776,26 @@ bard:
         features:
           - name: "Menestrel Silencioso"
             description: "Proficiência em Enganação e Furtividade; aprende silêncio (não conta no limite)."
-            grants:
-              proficiencies:
-                skills:
-                  fixed: ["Enganação","Furtividade"]
-              spells:
-                add_spells_known: ["silence"]
             rules:
               bonus_known_spell_does_not_count_against_limit: true
           - name: "Inspiração Subconsciente"
-            description: "Você inspira por vibração até 9 m; Reação para impor penalidade (seu dado) ao teste/TS de um alvo influenciado."
+            description: "Você pode conceder o dado de Inspiração por vibração (o aliado não precisa ouvi-lo, mas deve estar a até 9 m). Além disso, quando você ou um aliado tenta influenciar/enfeitiçar/amedrontar uma criatura a até 9 m, usa a reação e 1 dado de Inspiração para impor penalidade (= seu dado) ao teste/TR dela; a criatura faz Sabedoria (Percepção) CD 20 ou não percebe o efeito mágico."
             rules:
               range_m: 9
               reaction: true
-              trigger: "alvo realizar teste ou TS"
+              trigger: "alvo realizar teste ou TR"
               impose_penalty_die: "seu dado de Inspiração"
+              detection_save:
+                skill: "Sabedoria (Percepção)"
+                dc: 20
+                on_fail: "não percebe o efeito mágico"
+        grants:
+          proficiencies:
+            skills:
+              fixed: ["Enganação","Furtividade"]
+          spells:
+            always_prepared:
+              3: ["silence"]
       - level: 6
         features:
           - name: "Magia Imperceptível"
@@ -870,34 +909,34 @@ bard:
             description: "Sentido sísmico 18 m por até 1 min; mantém com ação bônus."
             rules:
               action: true
-              tremorsense_ft: 60
+              tremorsense_m: 18
               duration: "1 minuto"
               sustain_with_bonus_action: true
 
   colegio-do-conhecimento:
     name: "Colégio do Conhecimento"
     flavor: "Colégio Bárdico"
-    description: "Erudição versátil; coleta saberes e desfere palavras cortantes."
+    description: "Erudição versátil; coleta saberes e desfere palavras para desestabilizar inimigos."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - name: "Aptidão"
-            description: "Escolha 2 perícias; seu bônus de proficiência é dobrado nos testes com elas."
-            choices:
-              expertise_skills:
-                choose: 2
-                options: ":selected_from_class_skills"
-            rules:
-              expertise_applies_to_chosen_skills: true
-          - name: "Palavras Cortantes"
-            description: "Usa Inspiração de Bardo para reduzir jogada de ataque, dano ou teste de habilidade de inimigos."
+          - name: "Proficiência Adicional"
+            description: "Ganha proficiência em 3 perícias à sua escolha."
+            grants:
+              proficiencies:
+                skills:
+                  choose: 3
+                  options: ":selected_from_class_skills"
+          - name: "Palavras de Interrupção"
+            description: "Reação: quando uma criatura a até 18 m faz uma jogada de ataque, um teste de habilidade ou uma jogada de dano, gasta 1 dado de Inspiração de Bardo e subtrai o resultado da rolagem da criatura (decide após a rolagem, antes de saber o resultado/dano). A criatura é imune se não puder ouvi-lo ou não puder ser enfeitiçada."
             rules:
               reaction: true
               range_m: 18
               spend:
                 bardic_inspiration_die: 1
               apply_as_penalty_to: ["jogada de ataque","dano","teste de habilidade"]
+              immune_if: ["não puder ouvir você","não puder ser enfeitiçada"]
       - level: 6
         features:
           - name: "Segredos Mágicos Adicionais"
@@ -907,11 +946,14 @@ bard:
                 learn_any_class: 2
       - level: 14
         features:
-          - name: "Inspiração Superior"
-            description: "Ao rolar iniciativa sem usos de Inspiração de Bardo, recupera todos."
+          - name: "Perícia Inigualável"
+            description: "Ao fazer um teste de habilidade, gasta 1 dado de Inspiração de Bardo e soma o resultado ao teste. Pode decidir após rolar o d20, mas antes de saber o resultado."
             rules:
-              trigger: "rolar iniciativa"
-              if_bardic_inspiration_uses_zero: "restaura ao máximo"
+              trigger: "você faz um teste de habilidade"
+              spend:
+                bardic_inspiration_die: 1
+              add_die_to: "teste de habilidade"
+              decide_after_d20_before_outcome: true
 
   colegio-da-bravura:
     name: "Colégio da Bravura"
@@ -921,18 +963,18 @@ bard:
     levels:
       - level: 3
         features:
-          - name: "Proficiências Adicionais"
-            description: "Armaduras médias, escudos e armas marciais."
+          - name: "Proficiência Adicional"
+            description: "Ganha proficiência com armaduras médias, escudos e armas marciais."
             grants:
               proficiencies:
                 armor: ["armaduras médias","escudos"]
                 weapons: ["armas marciais"]
-          - name: "Inspiração de Combate"
-            description: "Aliados podem usar seu dado de Inspiração para aumentar dano ou CA como reação."
+          - name: "Inspiração em Combate"
+            description: "Uma criatura que tenha um dado de Inspiração de Bardo seu pode rolá-lo e somar à jogada de dano que acabou de fazer; ou, ao ser alvo de um ataque, usar a reação para rolá-lo e somar à CA contra esse ataque (após a rolagem, antes de saber se o ataque acertou)."
             rules:
               ally_can_use_bardic_inspiration_to:
-                - "adicionar o dado ao dano"
-                - "adicionar o dado à CA como reação ao ser atingido (possivelmente convertendo em erro)"
+                - "rolar o dado e somar à jogada de dano que acabou de fazer"
+                - "ao ser alvo de um ataque, usar a reação para rolar o dado e somar à CA contra esse ataque (após a rolagem, antes de saber se acertou)"
       - level: 6
         features:
           - name: "Ataque Extra"
@@ -941,14 +983,12 @@ bard:
               extra_attack: 1
       - level: 14
         features:
-          - name: "Canção de Defesa"
-            description: "Reação: gasta Inspiração para reduzir dano sofrido por aliado a 9 m."
+          - name: "Magia de Batalha"
+            description: "Ao usar sua ação para conjurar uma magia de bardo, pode realizar um ataque com arma como ação bônus."
             rules:
-              reaction: true
-              range_m: 9
-              spend:
-                bardic_inspiration_die: 1
-              reduce_damage_by: "resultado do dado de Inspiração + mod. Car (opcional, se usar na mesa)"
+              trigger: "você usa a ação para conjurar uma magia de bardo"
+              bonus_action: true
+              effect: "realiza um ataque com arma como ação bônus"
 
   # ============================================================================
   # College of Glamour (XGtE) — Colégio do Glamour
@@ -1061,11 +1101,13 @@ cleric:
       - level: 2
         features:
           - name: "Canalizar Divindade: Bolha Protetora"
-            description: "Cria uma bolha móvel por 1 min; concede resistências (ácido, fogo, frio, trovejante, e concussão/corte/perf não-mágicos)."
+            description: "Engolfa um aliado a 18 m numa bolha de água móvel por 1 min; dentro respira normalmente mas o deslocamento cai à metade; concede resistências (ácido, fogo, frio, trovejante, e concussão/corte/perf não-mágicos)."
             rules:
               action: true
               duration: "1 minuto (concentração)"
+              range_m: 18
               aura_m: 3
+              movement_penalty: "deslocamento à metade dentro da bolha"
               grants_resistance: ["acido","fogo","frio","trovejante","contundente (não-mágico)","cortante (não-mágico)","perfurante (não-mágico)"]
       - level: 6
         features:
@@ -1119,12 +1161,12 @@ cleric:
                   choose: 1
                   options: ["Ferramentas de artesão"]
           - name: "Criação Menor"
-            description: "Cria objeto simples (≤5 kg, ≤1,5 m) por 10 min; possui um 'banco de tempo' diário."
+            description: "Cria objeto simples (≤5 kg, ≤1,5 m) por 10 min (ou até dissipar com ação)."
             rules:
               activation: "ação"
               object_limits: ["até 5 kg","até 1,5 m em qualquer dimensão","não-mágico e simples"]
               duration_per_object: "10 min"
-              daily_pool: "10 min × mod.Sab (mín. 10 min)"
+              uses: { per: "descanso longo", value: "Sabedoria (mín. 1)" }
       - level: 2
         features:
           - name: "Canalizar Divindade: Desconstruir"
@@ -1172,10 +1214,11 @@ cleric:
                   7: ["confusion","dominate-beast"]
                   9: ["rarys-telepathic-bond","modify-memory"]
           - name: "Surto Psíquico"
-            description: "Ação: 2d6 psíquico (alcance curto). Se deixar alvo < metade dos PV, TS INT ou fica atordoado até o fim do seu próximo turno."
+            description: "Ação: ataque à distância com magia (18 m), 2d6 psíquico. Se deixar alvo < metade dos PV, TS INT ou fica atordoado até o fim do seu próximo turno."
             rules:
               action: true
-              range_m: 9
+              range_m: 18
+              attack: "à distância com magia"
               damage: { type: "psiquico", dice: "2d6" }
               rider:
                 threshold: "alvo abaixo de metade dos PV"
@@ -1184,10 +1227,10 @@ cleric:
       - level: 2
         features:
           - name: "Canalizar Divindade: Controle Mental"
-            description: "Toque: força alvo a realizar uma ação breve (Sab ST evita)."
+            description: "Ação: ataque corpo-a-corpo com magia; se acertar, força o alvo a realizar uma ação breve (Sab ST evita)."
             rules:
               action: true
-              touch: true
+              attack: "corpo-a-corpo com magia"
               save: { ability: "Sabedoria", dc: "CD de magia do clérigo" }
       - level: 6
         features:
@@ -1413,14 +1456,14 @@ cleric:
                   9: ["conhecimento lendário","vidência"]
       - level: 2
         features:
-          - name: "CD: Conhecimento das Eras"
+          - name: "Canalizar Divindade: Conhecimento das Eras"
             description: "Ação: proficiência em 1 perícia/ferramenta por 10 min."
             rules:
               action: true
               duration: "10 min"
       - level: 6
         features:
-          - name: "Ler Pensamentos"
+          - name: "Canalizar Divindade: Ler Pensamentos"
             description: "Ao usar CD, lê pensamentos e pode conjurar 'sugestão' sem espaço."
       - level: 8
         features:
@@ -1508,8 +1551,12 @@ cleric:
                   9: ["coluna de chamas","vidência"]
       - level: 2
         features:
-          - name: "CD: Radiância da Aurora"
-            description: "Ação: dissipa escuridão mágica e causa dano radiante (CON metade) em inimigos próximos."
+          - name: "Canalizar Divindade: Radiação do Amanhecer"
+            description: "Ação: dissipa escuridão mágica a 9 m; cada inimigo a 9 m faz TR de Constituição (metade no sucesso). Cobertura total isenta."
+            rules:
+              action: true
+              range_m: 9
+              damage: { type: "radiante", dice: "2d10 + nível de clérigo", save: "CON metade" }
       - level: 6
         features:
           - name: "Labareda Aprimorada"
@@ -1532,11 +1579,11 @@ cleric:
       - level: 1
         features:
           - name: "Acólito da Natureza"
-            description: "Ganha 1 truque de druida; proficiência em Lidar com Animais, Natureza ou Sobrevivência."
+            description: "Ganha 1 truque de druida; proficiência em Adestrar Animais, Natureza ou Sobrevivência."
             choices:
               skill_prof:
                 choose: 1
-                options: ["Lidar com Animais","Natureza","Sobrevivência"]
+                options: ["Adestrar Animais","Natureza","Sobrevivência"]
             grants:
               spells:
                 add_cantrips_from_class:
@@ -1563,16 +1610,19 @@ cleric:
             description: "Encanta bestas e plantas próximas (CD = sua CD de magia)."
       - level: 6
         features:
-          - name: "Atenuar Elementos"
+          - name: "Amortecer Elementos"
             description: "Reação: concede resistência a ácido, frio, fogo, relâmpago ou trovão a você/aliado a 9 m até o fim do próximo turno."
       - level: 8
         features:
-          - name: "Golpe Divino (Frio/Fogo/Relâmpago)"
-            description: "1/turno +1d8 (2d8 no 14º) do tipo escolhido em ataque com arma."
+          - name: "Golpe Divino (Radiante)"
+            description: "1/turno, +1d8 radiante (2d8 no 14º) em ataque com arma."
+            rules:
+              once_per_turn: true
+              damage: { type: "radiante", dice: "1d8 (14º: 2d8)" }
       - level: 17
         features:
-          - name: "Mestre da Natureza"
-            description: "Comanda criaturas/plantas que tenha encantado (por curto período, sem gastar concentração)."
+          - name: "Senhor da Natureza"
+            description: "Enquanto uma criatura estiver enfeitiçada por Enfeitiçar Animais e Plantas, pode usar ação bônus para comandá-la verbalmente no próximo turno dela."
 
   dominio-da-tempestade:
     name: "Domínio da Tempestade"
@@ -1612,12 +1662,15 @@ cleric:
             description: "Quando causar dano elétrico/trovejante, pode maximizar o dano."
       - level: 6
         features:
-          - name: "Empurrão do Trovão"
-            description: "Quando causar dano elétrico, pode empurrar 3 m (1/turno)."
+          - name: "Golpe de Relâmpago"
+            description: "Quando causar dano elétrico a uma criatura Grande ou menor, pode empurrá-la até 3 m."
       - level: 8
         features:
-          - name: "Golpe Divino (Trovejante)"
-            description: "1/turno +1d8 trovejante (2d8 no 14º)."
+          - name: "Golpe Divino (Radiante)"
+            description: "1/turno, +1d8 radiante (2d8 no 14º) em ataque com arma."
+            rules:
+              once_per_turn: true
+              damage: { type: "radiante", dice: "1d8 (14º: 2d8)" }
       - level: 17
         features:
           - name: "Filho da Tormenta"
@@ -1651,20 +1704,23 @@ cleric:
                   9: ["dominar pessoa","modificar memória"]
       - level: 2
         features:
-          - name: "CD: Invocar Duplicata"
+          - name: "CD: Invocar Duplicidade"
             description: "Ação: cria uma duplicata ilusória; pode lançar magias como se estivesse na posição dela; vantagem em ataques se ambos enxergarem o alvo."
       - level: 6
         features:
-          - name: "Manto das Sombras"
+          - name: "Manto de Sombras"
             description: "Ação: fica invisível até o início do próximo turno ou até agir (atacar/conjurar/testar)."
       - level: 8
         features:
-          - name: "Golpe Divino (Venenoso)"
-            description: "1/turno +1d8 veneno (2d8 no 14º)."
+          - name: "Golpe Divino (Radiante)"
+            description: "1/turno, +1d8 radiante (2d8 no 14º) em ataque com arma."
+            rules:
+              once_per_turn: true
+              damage: { type: "radiante", dice: "1d8 (14º: 2d8)" }
       - level: 17
         features:
-          - name: "Duplicata Aprimorada"
-            description: "Pode manter até quatro duplicatas de 'Invocar Duplicata' ao mesmo tempo."
+          - name: "Duplicidade Aprimorada"
+            description: "Pode manter até quatro duplicatas de 'Invocar Duplicidade' ao mesmo tempo."
 
   dominio-da-guerra:
     name: "Domínio da Guerra"
@@ -1690,23 +1746,26 @@ cleric:
             grants:
               spells:
                 always_prepared:
-                  1: ["auxílio divino","escudo da fé"]
+                  1: ["divine-favor","escudo da fé"]
                   3: ["arma mágica","arma espiritual"]
                   5: ["manto do cruzado","espíritos guardiões"]
                   7: ["movimentação livre","pele de pedra"]
                   9: ["coluna de chamas","imobilizar monstro"]
       - level: 2
         features:
-          - name: "CD: Golpe Guiado"
+          - name: "CD: Ataque Dirigido"
             description: "Reação: +10 a uma jogada de ataque sua após ver o resultado."
       - level: 6
         features:
-          - name: "Benção do Deus da Guerra"
+          - name: "Bênção do Deus da Guerra"
             description: "Reação: concede +10 à jogada de ataque de um aliado a 9 m, gastando CD."
       - level: 8
         features:
-          - name: "Golpe Divino (Armas)"
-            description: "1/turno +1d8 dano extra (2d8 no 14º; tipo alinhado ao tema, ex.: radiante)."
+          - name: "Golpe Divino (Radiante)"
+            description: "1/turno, +1d8 radiante (2d8 no 14º) em ataque com arma."
+            rules:
+              once_per_turn: true
+              damage: { type: "radiante", dice: "1d8 (14º: 2d8)" }
       - level: 17
         features:
           - name: "Avatar da Batalha"
@@ -1856,7 +1915,7 @@ druid:
               attacks_count_as_magical: true
       - level: 10
         features:
-          - name: "Forma Selvagem Elemental"
+          - name: "Forma Selvagem de Elemental"
             description: "Gasta 2 usos de Forma Selvagem para assumir forma de Elemental (Ar, Terra, Fogo ou Água)."
             rules:
               cost_uses: 2
@@ -1912,14 +1971,21 @@ druid:
       - level: 14
         features:
           - name: "Corromper a Natureza"
-            description: "1/descanso longo: anima plantas próximas como servos infectados sob seu comando; ao morrer, explodem causando dano necrótico em área."
+            description: "1/descanso longo: em território natural com plantas, anima a vegetação como infectados sob seu comando, escolhendo entre oito galhos infectados, quatro espetos infectados ou duas vinhas infectadas; ao cair a 0 PV, explodem causando dano necrótico em área."
             rules:
-              activate: { time: "1 ação", duration: "até 1 hora", uses: "1/descanso longo" }
-              control: "compreende seus comandos (ação para ordenar ações complexas)"
+              activate: { time: "1 ação", uses: "1/descanso longo" }
+              options:
+                choose: 1
+                infected:
+                  - { id: "galhos", name: "oito galhos infectados" }
+                  - { id: "espetos", name: "quatro espetos infectados" }
+                  - { id: "vinhas", name: "duas vinhas infectadas" }
+              control: "rolam iniciativa e agem por conta; obedecem comandos verbais (sem ação); sem ordens, atacam vivos/plantas mais próximos"
+              empowered: "resistência a contundente/cortante/perfurante não-mágico; vantagem em ataques enquanto a até 9 m de você"
               death_burst:
                 area_m: 3
-                damage: "2d6 necrótico"
-                save: { ability: "Destreza", dc: "CD de magias", effect: "metade no sucesso" }
+                damage: "1d8 necrótico por Dado de Vida do infectado"
+                save: { ability: "Destreza", dc: 15, effect: "metade no sucesso" }
   circulo-vida:
     name: "Círculo da Vida"
     flavor: "Círculo Druídico"
@@ -1994,11 +2060,13 @@ druid:
       - level: 2
         features:
           - name: "Chamado Selvagem"
-            description: "Convoca besta (ND ≤ nível/3) amigável para ajudar; do 8º em diante, também fada/elemental/planta."
+            description: "Convoca besta (ND ≤ nível/3) amigável para ajudar; chega em 1d4 rodadas e permanece até o fim do combate ou até chegar a 1 PV (quando foge). Do 8º em diante, também fada/elemental/planta."
             rules:
               action: "1 ação"
-              duration: "até 1 hora (concentração)"
+              arrival: "1d4 rodadas"
+              duration: "até o fim do combate ou até a besta chegar a 1 PV (foge)"
               cr_limit: "≤ nível/3 (arred. p/ baixo)"
+              uses: "recobra em descanso curto ou longo"
               types_at_8: ["besta","fada","elemental","planta"]
           - { name: "Empatia com a Natureza", description: "Vantagem em Lidar com Animais para influenciar besta/elemental/fada/planta." }
       - level: 6
@@ -2017,11 +2085,12 @@ druid:
       - level: 14
         features:
           - name: "Convocar Ancião"
-            description: "Ritual de 1 h: convoca criatura ND ≤ metade do nível (ou grupo equivalente) por até 8 h sob seus comandos. 1/descanso longo."
+            description: "Ritual de 1 h: convoca criatura (besta/fada/elemental/planta) ND ≤ metade do nível (ou grupo equivalente) por até 8 h, enquanto mantiver concentração, sob seus comandos. 1/descanso longo. No 20º nível, comanda as criaturas com ação bônus."
             rules:
-              duration: "até 8 horas (sem concentração)"
-              control: "obedece comandos (ação para ordens complexas)"
+              duration: "até 8 horas (concentração)"
+              control: "usa a ação para comandar verbalmente (sem ordens, só se defendem)"
               uses: "1/descanso longo"
+              at_20: "comanda as criaturas com ação bônus"
 
   circulo-mundos:
     name: "Círculo dos Mundos"
@@ -2061,10 +2130,69 @@ druid:
       - level: 14
         features:
           - name: "Protetor dos Mundos"
-            description: "Resistências/anteplanos contra efeitos extraplanares; vantagem vs banimento e desintegração; você e aliados a 3 m não podem ser teleportados contra a vontade."
+            description: "Quando o equilíbrio de um plano é afetado por forças externas, você toma ciência (sem saber o local exato) e pode viajar até ele com as criaturas amigáveis a até 9 m, para um local conhecido, num ritual de 1 minuto gastando um espaço de magia de 7º nível. Já no plano, conhece a fonte da interferência e você e os aliados ficam imunes aos efeitos adversos do plano e ignoram terreno difícil."
             rules:
-              aura_radius_m: 3
-              benefits: ["vantagem em TS contra banishment/desintegração/teleporte forçado","teleporte/convocação hostil falham com você/aliados na aura (TS Sab do conjurador vs sua CD para superar)"]
+              ritual: "1 minuto"
+              cost: "1 espaço de 7º nível"
+              allies_range_m: 9
+              awareness: "toma ciência de um plano em desequilíbrio (sem saber o local exato)"
+              destination: "local já conhecido nesse plano"
+              on_arrival: "conhece a fonte da interferência"
+              benefits: ["você e aliados imunes aos efeitos adversos do plano (vento psíquico, ciclones de éter, perda de memória em Faéria, calor do Plano do Fogo etc.)","terreno difícil não custa movimento adicional"]
+
+  circulo-verdejante:
+    name: "Círculo Verdejante"
+    flavor: "Círculo Druídico"
+    description: "Druidas que veneram árvores e plantas acima de tudo; aprimoram a Forma Selvagem e contam com um aliado vegetal."
+    choose_level: 2
+    levels:
+      - level: 2
+        features:
+          - name: "Aspecto de Árvore"
+            description: "Pele como casca: +1 de armadura natural na CA (e +1 na forma de Forma Selvagem, se ela tiver armadura natural). Vantagem em Destreza (Furtividade) para se esconder em áreas de floresta ou com muito verde."
+            rules:
+              natural_armor_bonus: 1
+              wild_shape_bonus: "+1 de armadura natural na forma assumida (se já possuir)"
+              stealth_advantage: "em áreas de floresta ou com muito verde"
+          - name: "Aliado Planta"
+            description: "Adquire uma planta cativada (≤ Pequena, ND ≤ 1/4) como aliado; soma seu PB à CA, ataques, dano, TS e perícias proficientes dela; age na sua iniciativa sob seus comandos."
+            rules:
+              companion:
+                size_max: "Pequena"
+                cr_max: "1/4"
+                add_proficiency_bonus_to: ["CA","ataques","dano","testes de resistência","perícias proficientes"]
+                hp_max: "maior entre o total normal e 4× nível de druida"
+                command: "movimento por comando verbal (sem ação); ação bônus para Atacar/Disparada/Desengajar/Esquivar/Ajuda"
+                replace_if_dead: "8 horas para vincular outra planta"
+              scaling:
+                at_9: "besta Média ou menor de ND ≤ 1/2 como aliado verdejante"
+                at_13: "planta Grande ou menor de ND ≤ 1 como aliado verdejante"
+      - level: 6
+        features:
+          - name: "Forma de Planta"
+            description: "Pode usar Forma Selvagem para se transformar em uma planta com ND ≤ nível de druida ÷ 3 (arred. p/ baixo)."
+            rules:
+              cr_limit: "nível de druida ÷ 3 (arred. p/ baixo)"
+      - level: 10
+        features:
+          - name: "Crescimento Virente"
+            description: "Ação: faz brotar 1d4 árvores frutíferas em espaços desocupados a até 9 m; plenamente crescidas e carregadas de frutos ao fim do turno (cada uma alimenta até 4 criaturas Médias por dia)."
+            rules:
+              action: "1 ação"
+              range_m: 9
+              trees: "1d4 árvores frutíferas"
+              uses: "1/descanso longo"
+      - level: 14
+        features:
+          - name: "Chamado do Senhor Verdejante"
+            description: "Ação: anima uma árvore a até 18 m com estatísticas de ente (exceto INT e CAR = 1, sem fala e sem a ação Animar Árvores), amigável e sob seus comandos; dura enquanto você concentrar, até 1 h. No 20º nível, anima duas árvores com uma única ação."
+            rules:
+              action: "1 ação"
+              range_m: 18
+              statblock: "ente (Manual dos Monstros), com INT e CAR = 1, sem fala e sem a ação Animar Árvores"
+              command: "ação para ordenar (senão apenas se defende); permanece enquanto concentração, até 1 hora; depois se enraíza"
+              uses: "1/descanso longo"
+              at_20: "anima 2 árvores e comanda ambas com uma única ação"
 
 ranger:
   batedor:
@@ -2167,6 +2295,9 @@ ranger:
               reaction: true
               trigger: "ser alvo de ataque de um inimigo favorito"
               impose: "desvantagem no ataque"
+              level_13_reaction:
+                trigger: "ser alvo de magia ou efeito de um inimigo favorito visível que exija TR de Força, Destreza ou Sabedoria"
+                grants: "vantagem no teste de resistência"
       - level: 7
         features:
           - name: "Caçador de Inimigos"
@@ -2176,6 +2307,7 @@ ranger:
               once_per_turn: true
               advantage_first_attack_vs_favored: true
               extra_damage: "1d8"
+              extra_damage_if_surprised: "2d8"
       - level: 10
         features:
           - name: "Inimigo Favorito Adicional"
@@ -2475,9 +2607,9 @@ sorcerer:
       - level: 1
         features:
           - name: "Ancestral Dracônico"
-            description: "Escolhe um tipo de dragão; aprende Dracônico e define o tipo de dano associado às suas magias temáticas."
+            description: "Escolhe um tipo de dragão; aprende Dracônico e define o tipo de dano associado às suas magias temáticas. Ao fazer testes de Carisma interagindo com dragões, dobra o bônus de proficiência (se aplicável)."
           - name: "Resiliência Dracônica"
-            description: "CA base 13 + Des (sem armadura); +1 PV por nível de feiticeiro."
+            description: "CA base 13 + Des (sem armadura); máximo de PV +1 no 1º nível e +1 a cada nível de feiticeiro."
         grants:
           languages:
             fixed: ["Dracônico"]
@@ -2504,19 +2636,24 @@ sorcerer:
               spend_sp_for_resistance: { cost_sp: 1, duration: "1 h" }
       - level: 14
         features:
-          - name: "Asas Dracônicas"
-            description: "Ação bônus: manifesta asas por tempo indeterminado (até dispensar); ganha voo = desloc. de caminhada; não funciona com armaduras que impeçam."
+          - name: "Asas de Dragão"
+            description: "Ação bônus: manifesta asas por tempo indeterminado (até dispensar); ganha voo = desloc. de caminhada; não funciona com armaduras que não as acomodem."
             rules:
               bonus_action: true
               fly_speed_equals_walk: true
       - level: 18
         features:
           - name: "Presença Dracônica"
-            description: "Ação: gasta 5 SP para emitir aura de 18 m por 1 min; criaturas na área (sua escolha) fazem TS Sab (CD de magias) ou ficam amedrontadas ou enfeitiçadas (à sua escolha) enquanto na aura; repetem TS ao fim dos turnos."
+            description: "Ação: gasta 5 SP para emitir aura de medo ou admiração (sua escolha) em raio de 18 m por 1 min (concentração). Cada criatura hostil que COMEÇAR o turno na aura faz TS Sab (CD de magias) ou fica amedrontada (medo) ou enfeitiçada (admiração) até a aura terminar; sucesso → imune à aura por 24 h."
             rules:
               cost_sp: 5
+              action: true
+              concentration: true
+              duration: "1 min"
               area_radius_m: 18
+              trigger: "criatura hostil que começa o turno na aura"
               condition_choice: ["amedrontado","enfeitiçado"]
+              on_success_immune_hours: 24
 
   magia-selvagem:
     name: "Magia Selvagem"
@@ -2527,20 +2664,19 @@ sorcerer:
       - level: 1
         features:
           - name: "Surto de Magia Selvagem"
-            description: "Quando conjura magia de 1º+ nível, o mestre pode pedir um d20; com 1 (ou quando usar Marés do Caos), role na Tabela de Surto para um efeito aleatório."
-          - name: "Marés do Caos"
-            description: "1 vez (recupera quando o mestre força um Surto): ganha vantagem em 1 jogada de ataque, teste de habilidade ou TS."
+            description: "Quando conjura magia de 1º+ nível, o mestre pode pedir um d20; com 1 (ou quando usar Marés de Caos), role na Tabela de Surto para um efeito aleatório (no máximo 1 surto por turno)."
+          - name: "Marés de Caos"
+            description: "1 vez (recupera ao terminar um descanso longo, ou quando o mestre desencadeia um Surto em você): ganha vantagem em 1 jogada de ataque, teste de habilidade ou TS."
             rules:
               uses: 1
-              refresh: "quando o mestre desencadeia um Surto de Magia Selvagem em você"
+              refresh: "descanso longo, ou quando o mestre desencadeia um Surto de Magia Selvagem em você"
       - level: 6
         features:
-          - name: "Entortar a Sorte"
-            description: "Reação: gaste 2 SP para somar/subtrair 1d4 a uma jogada de uma criatura a até 9 m (após a rolagem, antes do resultado)."
+          - name: "Dobrar a Sorte"
+            description: "Reação: gaste 2 SP para somar/subtrair 1d4 a uma jogada de uma criatura que você possa ver (após a rolagem, antes do resultado)."
             rules:
               reaction: true
               cost_sp: 2
-              range_m: 9
       - level: 14
         features:
           - name: "Caos Controlado"
@@ -2548,7 +2684,7 @@ sorcerer:
       - level: 18
         features:
           - name: "Bombardeio de Magia"
-            description: "Quando rolar dano de magia e qualquer dado mostrar o valor máximo, role 1 dado adicional do mesmo tipo e adicione ao dano (uma vez por conjuração)."
+            description: "Quando rolar dano de magia e qualquer dado mostrar o valor máximo, role 1 dado adicional do mesmo tipo e adicione ao dano (apenas 1 vez por rodada)."
 
   feiticaria-da-espada:
     name: "Feitiçaria da Espada"
@@ -2559,7 +2695,14 @@ sorcerer:
       - level: 1
         features:
           - { name: "Treinamento Marcial", description: "Ganha proficiência com 1 arma marcial à sua escolha e pode usá-la como foco arcano." }
-          - { name: "Magia da Espada", description: "Pode substituir componentes somáticos segurando a arma; não sofre desvantagem para conjurar enquanto empunha a arma." }
+          - name: "Magia da Espada"
+            description: "Ação bônus: realiza um ataque corpo-a-corpo com arma e gasta um espaço de magia de 1º nível para adicionar 1d6 de dano de energia a todos os ataques corpo-a-corpo com arma até o fim do turno (incluindo o que desencadeou); +1d6 a cada 2 níveis de espaço acima do 1º. Enquanto tiver pelo menos 1 espaço de magia disponível, seus ataques corpo-a-corpo contam como mágicos."
+            rules:
+              bonus_action: true
+              cost_spell_slot: 1
+              damage: "1d6 de energia (por ataque corpo-a-corpo no turno)"
+              scaling: "+1d6 a cada 2 níveis de espaço acima do 1º"
+              attacks_count_as_magical: true
         grants:
           proficiencies:
             weapons:
@@ -2567,13 +2710,31 @@ sorcerer:
               options: ["espada curta","espada longa","cimitarra","florete","sabre","montante","lança"]
       - level: 6
         features:
-          - { name: "Dança das Lâminas", description: "Por 1 minuto: bônus de deslocamento, PVs temporários e +bônus no primeiro ataque/turno; reação: pode conjurar um truque contra quem o acerta em corpo-a-corpo (recarga em descanso curto/long)." }
+          - name: "Estilo Místico de Batalha"
+            description: "Ação bônus: entra na postura por 1 min. Enquanto durar: (1) bônus de dano no PRIMEIRO ataque corpo-a-corpo que acertar a cada rodada = mod. CAR (mín. +1); (2) ganha PV temporários = 1d10 + nível de feiticeiro; (3) quando um inimigo o acertar corpo-a-corpo, pode usar reação para conjurar um truque que conheça nele. 2 usos; recupera em descanso longo."
+            rules:
+              bonus_action: true
+              duration: "1 min"
+              uses: 2
+              recharge: "descanso longo"
       - level: 14
         features:
-          - { name: "Lâmina Encantada", description: "Vincula uma arma; seus ataques contam como mágicos e ganham propriedades arcanas definidas por você enquanto estiver vinculada." }
+          - name: "Lâmina Encantada"
+            description: "Ação, gasta 4 PF; mantém concentração por até 1 h; concede UMA propriedade à arma empunhada: +2 nas jogadas de ataque e dano; OU +1d8 de dano elemental (ácido, elétrico, fogo, frio ou trovejante); OU margem de crítico 19–20; OU arremesso (6/18) retornando à mão; OU +1d6 de dano necrótico e recupera PV = dano necrótico causado."
+            rules:
+              action: true
+              cost_sp: 4
+              concentration: true
+              duration: "1 h"
+              property_choice: 1
       - level: 18
         features:
-          - { name: "Duas Lâminas Mágicas", description: "Mantém dois vínculos de Lâmina Encantada ao mesmo tempo ou evoca lâmina espectral secundária por 1 minuto; pode alternar alvos de truques entre os golpes." }
+          - name: "Canalização Devastadora"
+            description: "Ao obter acerto crítico com arma corpo-a-corpo, pode usar reação para conjurar uma magia de 1º a 5º nível no alvo atingido."
+            rules:
+              reaction: true
+              trigger: "acerto crítico com arma corpo-a-corpo"
+              cast_spell_level: "1º a 5º"
 
   feiticaria-do-sangue:
     name: "Feitiçaria do Sangue"
@@ -2583,16 +2744,40 @@ sorcerer:
     levels:
       - level: 1
         features:
-          - { name: "Magia do Sangue", description: "Ao conjurar magia de 1º+ nível, pode sacrificar PVs (até 2 × nível da magia) para aumentar CD/ataque de magia em +1 a +3." }
+          - name: "Magia do Sangue"
+            description: "Truque de dano: logo antes de conjurar, aceita sofrer 2 de dano para aumentar o dano do truque em 1d6. Magia de 1º a 5º nível (ação bônus): logo antes de conjurar, sofre 1d6 de dano para conjurar a magia como se usasse um espaço um nível acima do gasto; cada +1d6 de dano = +1 nível de espaço (não pode elevar acima dos níveis de espaço acessíveis)."
+            rules:
+              cantrip_boost: "sofre 2 de dano → +1d6 no dano do truque"
+              spell_boost: "ação bônus; sofre 1d6 de dano → +1 nível de espaço (cada +1d6 = +1 nível)"
       - level: 6
         features:
-          - { name: "Energia Revigorante", description: "Ao reduzir criatura a 0 PV com magia, recupera PVs = nível da magia + mod. CAR (mín. 1)." }
+          - name: "Energia Revigorante"
+            description: "Ação, gasta 2 PF + um espaço de magia de 1º nível para recuperar 2d6 PV; +1d6 PV por nível de espaço acima do 1º."
+            rules:
+              action: true
+              cost_sp: 2
+              cost_spell_slot: 1
+              healing: "2d6 PV (+1d6 por nível acima do 1º)"
       - level: 14
         features:
-          - { name: "Fonte de Sangue", description: "1/descanso curto: ação bônus para converter até 5 PVs em igual número de Pontos de Feitiçaria." }
+          - name: "Fonte de Sangue"
+            description: "Ação: aceita sofrer 1d6 de dano para recuperar 1 PF; pode sofrer dados adicionais até 5d6, recuperando 1 PF por dado. Recarga em descanso curto ou longo."
+            rules:
+              action: true
+              effect: "1d6 de dano → 1 PF (até 5d6 / 5 PF)"
+              recharge: "descanso curto ou longo"
       - level: 18
         features:
-          - { name: "Ataque Vascular", description: "1/turno, quando um alvo falhar no TS da sua magia, causa dano necrótico adicional igual ao seu mod. CAR." }
+          - name: "Ataque Vascular"
+            description: "Ação, gasta 4 PF; alvo vivo a até 18 m faz TR de Constituição. Falha: 10d6 de dano + 2d6 de sangramento no fim de cada turno dele por 3 rodadas, e o máximo de PV é reduzido pelo total causado. Sucesso: metade do dano e sem sangramento. O alvo repete o TR no fim de cada turno (sucesso encerra o sangramento); cura mágica também encerra. +2 PF além dos 4 = +1d6 de sangramento (até 5d6 com 10 PF). Recarga em descanso longo."
+            rules:
+              action: true
+              cost_sp: 4
+              range_m: 18
+              save: "Constituição (CD de magias)"
+              damage: "10d6 (metade no sucesso)"
+              bleed: "2d6/turno por 3 rodadas; +1d6 por +2 PF (máx 5d6)"
+              recharge: "descanso longo"
 
   linhagem-elemental:
     name: "Linhagem Elemental"
@@ -2602,7 +2787,14 @@ sorcerer:
     levels:
       - level: 1
         features:
-          - { name: "Ancestral Elemental", description: "Escolha Água (frio), Ar (elétrico), Fogo (fogo) ou Terra (ácido). Pode converter o dano das suas magias para o elemento escolhido." }
+          - { name: "Ancestral Elemental", description: "Escolha Água (frio), Ar (elétrico), Fogo (fogo) ou Terra (ácido); o tipo de dano associado é usado por features posteriores. Aprende Primordial e, ao fazer testes de Carisma interagindo com elementais, dobra o bônus de proficiência (se aplicável)." }
+          - { name: "Despertar Poder Inerente", description: "Ganha resistência ao tipo de dano do ancestral. Ao conjurar uma magia de feiticeiro que cause dano, pode usar ação bônus para converter o dano dessa magia para o tipo do seu ancestral elemental." }
+        grants:
+          languages:
+            fixed: ["Primordial"]
+          defenses:
+            # resistência preenchida dinamicamente pelo elemento escolhido
+            # exemplo: { resistance: ["frio"] } para Água
         choices:
           element:
             choose: 1
@@ -2613,17 +2805,24 @@ sorcerer:
               - { id: "terra", name: "Terra (ácido)" }
       - level: 6
         features:
-          - { name: "Poder dos Elementos", description: "Quando conjura magia de 1º+ do seu elemento, como ação bônus entra em afinidade por 1 min: resistência ao elemento e um efeito adicional temático (1/descanso curto)." }
-        grants:
-          defenses:
-            # preenchido dinamicamente pelo elemento escolhido
-            # exemplo: { resistance: ["frio"] } para Água
+          - name: "Energia Penetrante"
+            description: "Adiciona o mod. CAR ao dano de qualquer magia de feiticeiro que cause dano do tipo do ancestral (a UMA rolagem de dano, não a várias). A partir do 9º nível, essas magias ignoram resistência ao tipo e causam metade do dano contra criaturas imunes."
+            rules:
+              add_cha_to_damage_once: true
+              from_level_9_ignore_resistance: true
+              from_level_9_half_vs_immune: true
       - level: 14
         features:
-          - { name: "Dádiva Elemental", description: "Benefícios permanentes ligados ao elemento (ex.: Água: natação 12 m e respiração aquática; Ar: voo 9 m sem armadura média/pesada; Fogo: imunidade a fogo e 1d6 em quem o atingir; Terra: escavação = caminhada e +1 CA natural)." }
+          - { name: "Dádiva Elemental", description: "Ao conjurar magia de 5º nível ou superior do tipo do ancestral, pode usar ação bônus para manifestar poderes elementais por 1 min: Água — natação = caminhada e respira ar/água; Ar — voo = caminhada; Fogo — imunidade a fogo e 1d6 de fogo em quem o atingir corpo-a-corpo a 1,5 m; Terra — escavação = caminhada e +1 de armadura natural na CA." }
       - level: 18
         features:
-          - { name: "Corpo Elemental", description: "Em afinidade, suas magias do elemento ignoram resistência; +mod. CAR 1/turno ao dano do elemento; pode poupar aliados de áreas do seu elemento." }
+          - name: "Corpo Elemental"
+            description: "Ação, gasta 5 PF; assume a forma de um elemental de ND 5 do seu tipo por 1 h (ou até cair a 0 PV, morrer ou reverter com ação bônus). Substitui estatísticas pelas do elemental, mas mantém INT/SAB/CAR, tendência e personalidade; assume os PV da forma. Em forma elemental: magias do seu elemento ignoram resistência; pode conjurar magias normalmente e conjurar truque de dano do seu elemento como ação bônus; equipamento mescla-se à forma (não utilizável)."
+            rules:
+              action: true
+              cost_sp: 5
+              duration: "1 h"
+              form: "elemental de ND 5 do tipo do ancestral"
 
   origem-aberrante:
     name: "Origem Aberrante"
@@ -2633,8 +2832,8 @@ sorcerer:
     levels:
       - level: 1
         features:
-          - { name: "Linhagem Aberrante", description: "Proficiência em Intuição; telepatia 9 m com criaturas que compreendem um idioma." }
-          - { name: "Vestígio Aberrante", description: "Apêndice vestigial para manipular objetos leves; ação bônus para ataque natural (1d4 concussão)." }
+          - { name: "Linhagem Aberrante", description: "Proficiência em Intuição; fala, lê e escreve o Dialeto Subterrâneo (Submerso). Ao fazer testes de Carisma interagindo com aberrações, dobra o bônus de proficiência (se aplicável)." }
+          - { name: "Vestígio Aberrante", description: "Desenvolve um longo tentáculo que serve como terceiro braço (pode segurar o foco arcano e conjurar com as duas mãos ocupadas; empunha arma leve ou de arremesso). Ação bônus: ataque corpo-a-corpo com o apêndice (1d4 de concussão, FOR ou DES à escolha)." }
         grants:
           languages:
             fixed: ["Subcomum"]
@@ -2643,15 +2842,23 @@ sorcerer:
               fixed: ["Intuição"]
       - level: 6
         features:
-          - { name: "Olhar Enlouquecedor", description: "Ação: alvo a 9 m faz TS SAB; falha: amedrontado e com loucura breve por 1 min (CD = 8 + prof. + CAR; 1/descanso curto)." }
+          - name: "Olhar Enlouquecedor"
+            description: "Ação: abre um terceiro olho e o aponta a um alvo visível a até 18 m, que faz TR de Sabedoria (CD de magias). Falha: efeito de loucura de curta duração por 1 min (alvo repete o TR no fim de cada turno, encerrando com sucesso). Sucesso: 4d6 de dano psíquico. Recarga em descanso curto ou longo."
+            rules:
+              action: true
+              range_m: 18
+              save: "Sabedoria (CD de magias)"
+              on_fail: "loucura de curta duração por 1 min"
+              on_success: "4d6 psíquico"
+              recharge: "descanso curto ou longo"
       - level: 14
         features:
-          - { name: "Mente Insondável", description: "Resistência a psíquico; não pode ser lido por detectar pensamentos; vantagem vs. encanto/medo." }
+          - { name: "Mente Insondável", description: "Não pode ser alvo de detectar pensamentos, localizar criatura ou vidência; resistência a dano psíquico. Criaturas têm desvantagem em testes de Sabedoria (Intuição) para compreender suas intenções, e você tem vantagem em TR para não ser enfeitiçado." }
         grants:
           defenses: { resistance: ["psíquico"] }
       - level: 18
         features:
-          - { name: "Ser do Reino Distante", description: "1/descanso longo: invoca uma aberração (ND até 10) por 1 min; inimigos próximos fazem TS SAB ao surgir ou ficam aterrorizados até o fim do próximo turno." }
+          - { name: "Ser do Reino Distante", description: "Ação: escolhe espaço desocupado a até 18 m; surge uma aberração de ND 10 ou inferior (sua escolha), amigável, por 10 min (ou até dispensá-la / cair a 0 PV). Comunicação telepática ilimitada no mesmo plano; obedece a comandos mentais. Recarga em descanso longo." }
 
   origem-abissal:
     name: "Origem Abissal"
@@ -2661,21 +2868,29 @@ sorcerer:
     levels:
       - level: 1
         features:
-          - { name: "Linhagem Demoníaca", description: "Aprende Abissal; vantagem social e presença intimidadora com infindes." }
+          - { name: "Linhagem Demoníaca", description: "Resistência a dano de fogo; fala, lê e escreve Abissal. Ao fazer testes de Carisma interagindo com corruptores (demônios/yugoloths), dobra o bônus de proficiência (se aplicável)." }
+          - name: "Influência Abissal"
+            description: "Vantagem em testes de Carisma (Intimidação) e Carisma (Persuasão). Adiciona enfeitiçar pessoa à lista de magias conhecidas e, no 5º nível de feiticeiro, adiciona medo; essas magias não contam no total de magias conhecidas."
+            rules:
+              bonus_known_spell_does_not_count_against_limit: true
         grants:
           languages:
             fixed: ["Abissal"]
           defenses:
             resistance: ["fogo"]
+          spells:
+            always_prepared:
+              1: ["charm-person"]
+              5: ["fear"]
       - level: 6
         features:
-          - { name: "Aura Flamejante", description: "Ação bônus (3 PF): emana chamas por 1 min; no início do seu turno, criaturas a 1,5 m sofrem 2d6 de fogo." }
+          - { name: "Aura de Fogo", description: "Ação bônus (3 PF): emana chamas por 1 min; no início do seu turno, criaturas a 1,5 m sofrem 2d6 de fogo." }
       - level: 14
         features:
           - { name: "Passo Dimensional", description: "Após conjurar magia de 1º+, ação bônus para se teleportar até 9 m para espaço desocupado visível." }
       - level: 18
         features:
-          - { name: "Resiliência Demoníaca", description: "Ação bônus (5 PF): por 1 min, resistência a concussão/cortante/perfurante de armas não mágicas e vantagem em TS contra magias (1/descanso longo)." }
+          - { name: "Resistência Demoníaca", description: "Ação bônus (5 PF): por 1 min, resistência a concussão/cortante/perfurante de armas não mágicas e vantagem em TS contra magias (1/descanso longo)." }
 
   origem-mutavel:
     name: "Origem Mutável"
@@ -2686,23 +2901,36 @@ sorcerer:
       - level: 1
         features:
           - { name: "Proficiência Adicional", description: "Ganha proficiência em Medicina e Sobrevivência." }
-          - { name: "Adaptação Climática", description: "Vantagem em testes/TS contra frio e calor extremos; ignora penalidades ambientais não mágicas por clima." }
+          - { name: "Adaptação Climática", description: "Após 1 h de exposição a um ambiente, faz teste de Sabedoria (Sobrevivência) CD 10. Sucesso: vantagem em TR contra efeitos climáticos/ambientais do local; não gasta movimento extra em terreno difícil típico desse ambiente; ganha resistência a frio (ambiente gelado) ou a fogo (ambiente quente). Mantém-se adaptado até gastar mais 1 h se adaptando a outro ambiente. Recarga em descanso longo." }
         grants:
           proficiencies:
             skills:
               fixed: ["Medicina","Sobrevivência"]
       - level: 6
         features:
-          - { name: "Pele Reflexiva", description: "Reação 1/descanso curto (2 usos a partir do 11º): reduz à metade dano ácido/frio/eletricidade/fogo e reflete 1d6 do mesmo tipo. Se <50% PV, pode gastar 2 PF (ação bônus) para recuperar 2d6 + CON PV." }
+          - name: "Pele Reflexiva"
+            description: "Reação ao sofrer dano de tipo diferente de concussão/cortante/perfurante: reduz esse dano à metade. Como parte da reação, pode gastar um espaço de magia de 1º nível para devolver dano (jogada de ataque à distância com magia; se acertar, 2d8 + mod. CAR do mesmo tipo sofrido, +1d8 por nível de espaço acima do 1º). Recarga em descanso curto ou longo (2 usos a partir do 11º). Adicionalmente, com menos da metade dos PV, pode usar ação bônus gastando 2 PF para recuperar 2d6 + mod. CON PV."
+            rules:
+              reaction: true
+              halves_damage: "tipo diferente de concussão/cortante/perfurante"
+              reflect: "espaço de 1º nível → ataque à distância 2d8 + CAR (+1d8 por nível acima do 1º)"
+              recharge: "descanso curto ou longo (2 usos a partir do 11º)"
+              self_heal: "ação bônus, 2 PF, abaixo de metade dos PV → 2d6 + CON"
       - level: 14
         features:
-          - { name: "Metabolismo Resistente", description: "Paralisa envelhecimento; imunidade a doenças/veneno; regenera 1 PV no início de cada turno se tiver ≥1 PV; pode religar membro perdido após 10 min (Medicina CD 15)." }
+          - { name: "Metabolismo Resistente", description: "Não envelhece mais; imunidade a doenças e a dano de veneno; não pode ser afetado pela condição envenenado." }
         grants:
           defenses:
             immunity: ["doenças","veneno"]
       - level: 18
         features:
-          - { name: "Mutação Sobrevivente", description: "1/descanso longo: quando cair a 0 PV, fica com 1 PV em vez disso e obtém vantagem em testes de CON por 1 min; resistência a dano físico não mágico durante o efeito." }
+          - name: "Mutação Sobrevivente"
+            description: "Qualquer acerto crítico contra você vira ataque normal; recupera 1 PV por rodada; pode reacoplar parte decepada (exceto a cabeça) com procedimento de 10 min e teste de Sabedoria (Medicina) CD 15; estabiliza automaticamente ao cair inconsciente com 0 PV. Sem limite de uso."
+            rules:
+              crit_becomes_normal_hit: true
+              regen_per_round: "1 PV"
+              reattach_limb: "10 min + Sabedoria (Medicina) CD 15"
+              auto_stabilize_at_0_hp: true
 
   
 fighter:
@@ -2781,11 +3009,17 @@ fighter:
                   - { id: "aparar",            name: "Aparar" }
                   - { id: "ameacador",         name: "Ataque Ameaçador" }
                   - { id: "encontrao",         name: "Ataque de Encontrão" }
+                  - { id: "finta",             name: "Ataque de Finta" }
+                  - { id: "manobra",           name: "Ataque de Manobra" }
                   - { id: "desarmar",          name: "Ataque Desarmante" }
+                  - { id: "estendido",         name: "Ataque Estendido" }
                   - { id: "trespassante",      name: "Ataque Trespassante" }
                   - { id: "provocante",        name: "Ataque Provocante" }
                   - { id: "derrubar",          name: "Derrubar" }
                   - { id: "distrativo",        name: "Golpe Distrativo" }
+                  - { id: "comandante",        name: "Golpe do Comandante" }
+                  - { id: "inspirar",          name: "Inspirar" }
+                  - { id: "passo_evasivo",     name: "Passo Evasivo" }
                   - { id: "ripostar",          name: "Contra-Atacar" }
                   - { id: "preciso",           name: "Ataque Preciso" }
           - name: "Estudioso da Guerra"
@@ -2797,11 +3031,12 @@ fighter:
                   options: ["Ferramentas de artesão"]
       - level: 7
         features:
-          - name: "Conhecer o Inimigo"
-            description: "Após 1 min. observando/estudando um alvo, compara traços (CA, PV, atributos, etc.)."
+          - name: "Conheça Seu Inimigo"
+            description: "Após gastar ao menos 1 min. observando/interagindo com uma criatura fora de combate, descobre se ela é igual, superior ou inferior a você em duas das características abaixo (à sua escolha)."
             rules:
               study_time: "1 minuto"
-              reveals: ["CA aproximada","PV aproximados","For/Des/Con","classe de armadura natural/mágica","nível/ND aproximado"]
+              choose: 2
+              reveals: ["Valor de Força","Valor de Destreza","Valor de Constituição","Classe de Armadura","Pontos de Vida atuais","nível total de classe","níveis de guerreiro"]
           - name: "Dado Adicional"
             description: "Ganha +1 dado de superioridade (total 5)."
             rules:
@@ -2815,11 +3050,17 @@ fighter:
                   - { id: "aparar",            name: "Aparar" }
                   - { id: "ameacador",         name: "Ataque Ameaçador" }
                   - { id: "encontrao",         name: "Ataque de Encontrão" }
+                  - { id: "finta",             name: "Ataque de Finta" }
+                  - { id: "manobra",           name: "Ataque de Manobra" }
                   - { id: "desarmar",          name: "Ataque Desarmante" }
+                  - { id: "estendido",         name: "Ataque Estendido" }
                   - { id: "trespassante",      name: "Ataque Trespassante" }
                   - { id: "provocante",        name: "Ataque Provocante" }
                   - { id: "derrubar",          name: "Derrubar" }
                   - { id: "distrativo",        name: "Golpe Distrativo" }
+                  - { id: "comandante",        name: "Golpe do Comandante" }
+                  - { id: "inspirar",          name: "Inspirar" }
+                  - { id: "passo_evasivo",     name: "Passo Evasivo" }
                   - { id: "ripostar",          name: "Contra-Atacar" }
                   - { id: "preciso",           name: "Ataque Preciso" }
       - level: 10
@@ -2837,11 +3078,17 @@ fighter:
                   - { id: "aparar",            name: "Aparar" }
                   - { id: "ameacador",         name: "Ataque Ameaçador" }
                   - { id: "encontrao",         name: "Ataque de Encontrão" }
+                  - { id: "finta",             name: "Ataque de Finta" }
+                  - { id: "manobra",           name: "Ataque de Manobra" }
                   - { id: "desarmar",          name: "Ataque Desarmante" }
+                  - { id: "estendido",         name: "Ataque Estendido" }
                   - { id: "trespassante",      name: "Ataque Trespassante" }
                   - { id: "provocante",        name: "Ataque Provocante" }
                   - { id: "derrubar",          name: "Derrubar" }
                   - { id: "distrativo",        name: "Golpe Distrativo" }
+                  - { id: "comandante",        name: "Golpe do Comandante" }
+                  - { id: "inspirar",          name: "Inspirar" }
+                  - { id: "passo_evasivo",     name: "Passo Evasivo" }
                   - { id: "ripostar",          name: "Contra-Atacar" }
                   - { id: "preciso",           name: "Ataque Preciso" }
       - level: 15
@@ -2863,11 +3110,17 @@ fighter:
                   - { id: "aparar",            name: "Aparar" }
                   - { id: "ameacador",         name: "Ataque Ameaçador" }
                   - { id: "encontrao",         name: "Ataque de Encontrão" }
+                  - { id: "finta",             name: "Ataque de Finta" }
+                  - { id: "manobra",           name: "Ataque de Manobra" }
                   - { id: "desarmar",          name: "Ataque Desarmante" }
+                  - { id: "estendido",         name: "Ataque Estendido" }
                   - { id: "trespassante",      name: "Ataque Trespassante" }
                   - { id: "provocante",        name: "Ataque Provocante" }
                   - { id: "derrubar",          name: "Derrubar" }
                   - { id: "distrativo",        name: "Golpe Distrativo" }
+                  - { id: "comandante",        name: "Golpe do Comandante" }
+                  - { id: "inspirar",          name: "Inspirar" }
+                  - { id: "passo_evasivo",     name: "Passo Evasivo" }
                   - { id: "ripostar",          name: "Contra-Atacar" }
                   - { id: "preciso",           name: "Ataque Preciso" }
       - level: 18
@@ -2987,7 +3240,7 @@ fighter:
             description: |
               A partir do 3° nível, você adquire os serviços de uma leal montaria. Sua montaria normalmente será um cavalo de guerra, se você for Médio ou um pônei, se você for Pequeno ou um anão. Você pode adquirir uma besta diferente como montaria, com nível de desafio igual ou inferior a 1/2 e sem deslocamento de voo, com a permissão do Mestre. O máximo de pontos de vida dela será igual ao seu total normal ou a cinco vezes seu nível de guerreiro, o que for maior. Como qualquer criatura, sua montaria pode gastar Dados de Vida durante um descanso curto e recupera todos os seus pontos de vida ao terminar um descanso longo.
                Sua montaria realiza o turno dela na sua iniciativa e obedece seus direcionamentos enquanto você estiver montando-a. No seu turno, você pode coordenar sua montaria para guiar seu movimento (sem ação necessária). Você pode usar uma ação bônus para direcionar sua montaria a realizar as ações de Ataque, Disparada ou Desengajar. Ela age por contra própria se você estiver incapacitado ou ausente, focando-se em defender você.
-               Se a montaria morrer, você pode obter outra montaria de formas tradicionais ou tentando adestrar uma nova besta selvagem apropriada que você encontrar, através de um teste de Carisma (Lidar com Animais) CD 15 que requer 8 horas para ser concluído.
+               Se a montaria morrer, você pode obter outra montaria de formas tradicionais ou tentando adestrar uma nova besta selvagem apropriada que você encontrar, através de um teste de Carisma (Adestrar Animais) CD 15 que requer 8 horas para ser concluído.
       - level: 7
         features:
           - name: "Montaria Incansável"
@@ -3086,11 +3339,11 @@ fighter:
           - name: "Busca da Autoperfeição"
             description: |
               No 7° nível, sua busca pelo constante aperfeiçoamento pessoal torna você um artesão capaz em todas as áreas possíveis. Você se torna proficiente em duas ferramentas de artesão, à sua escolha. Além disso, você adiciona metade do seu bônus de proficiência, arredondado para baixo, em qualquer teste de habilidade usando uma ferramenta de artesão, com a qual você não seja proficiente.
-        grants:
-          proficiencies:
-            tools:
-              choose: 2
-              options: ["Ferramentas de artesão"]
+            grants:
+              proficiencies:
+                tools:
+                  choose: 2
+                  options: ["Ferramentas de artesão"]
       - level: 10
         features:
           - name: "Meditação da Lâmina"
@@ -3350,6 +3603,10 @@ monk:
                     name: "Moldar o Rio Corrente"
                     effect: "Modela água/gelo em área para usos utilitários."
                     rules: { ki_cost: 1 }
+                  - id: "presas_serpente_fogo"
+                    name: "Presas da Serpente de Fogo"
+                    effect: "Na ação de Ataque, alcance dos golpes desarmados +3 m até o fim do turno e o dano vira fogo; +1d10 de fogo ao acertar gastando 1 Chi."
+                    rules: { ki_cost: 1, extra_fire_d10_on_hit_per_ki: 1 }
       - level: 6
         features:
           - name: "Disciplina Adicional"
@@ -3405,6 +3662,10 @@ monk:
                   - id: "onda_de_pedras_rolantes"
                     name: "Onda de Pedras Rolantes"
                     effect: "Conjura 'muralha de pedra'."
+                    rules: { ki_cost: 6, prereq_level: 17 }
+                  - id: "sopro_do_inverno"
+                    name: "Sopro do Inverno"
+                    effect: "Conjura 'cone de frio'."
                     rules: { ki_cost: 6, prereq_level: 17 }
       - level: 0
         features:
@@ -3564,12 +3825,45 @@ monk:
     rules:
       ki_save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
       spell_save_dc_cleric: "8 + bônus de proficiência + modificador de Sabedoria"
+      spellcasting:
+        type: "parcial"
+        ability: "Sabedoria"
+        save_dc: "8 + bônus de proficiência + modificador de Sabedoria"
+        attack_bonus: "bônus de proficiência + modificador de Sabedoria"
+        list: "clérigo"
+        preparation: "conhecidas"
+        spells_known_source: "majoritariamente dos dois Domínios Sagrados; as do 8º, 14º e 20º nível podem vir da lista geral de clérigo"
+        slots_recover_on: "descanso longo"
+        # Tabela "Conjuração de Punho Sagrado" (por nível de monge).
+        # Colunas: cantrips (truques), spells_known (magias conhecidas), 1/2/3/4 (espaços por nível de magia).
+        table:
+          "3":  { cantrips: 1, spells_known: 3,  "1": 2, "2": 0, "3": 0, "4": 0 }
+          "4":  { cantrips: 1, spells_known: 4,  "1": 3, "2": 0, "3": 0, "4": 0 }
+          "5":  { cantrips: 1, spells_known: 4,  "1": 3, "2": 0, "3": 0, "4": 0 }
+          "6":  { cantrips: 1, spells_known: 4,  "1": 3, "2": 0, "3": 0, "4": 0 }
+          "7":  { cantrips: 1, spells_known: 5,  "1": 4, "2": 2, "3": 0, "4": 0 }
+          "8":  { cantrips: 1, spells_known: 6,  "1": 4, "2": 2, "3": 0, "4": 0 }
+          "9":  { cantrips: 1, spells_known: 6,  "1": 4, "2": 2, "3": 0, "4": 0 }
+          "10": { cantrips: 2, spells_known: 7,  "1": 4, "2": 3, "3": 0, "4": 0 }
+          "11": { cantrips: 2, spells_known: 8,  "1": 4, "2": 3, "3": 0, "4": 0 }
+          "12": { cantrips: 2, spells_known: 8,  "1": 4, "2": 3, "3": 0, "4": 0 }
+          "13": { cantrips: 2, spells_known: 9,  "1": 4, "2": 3, "3": 2, "4": 0 }
+          "14": { cantrips: 2, spells_known: 10, "1": 4, "2": 3, "3": 2, "4": 0 }
+          "15": { cantrips: 2, spells_known: 10, "1": 4, "2": 3, "3": 2, "4": 0 }
+          "16": { cantrips: 2, spells_known: 11, "1": 4, "2": 3, "3": 3, "4": 0 }
+          "17": { cantrips: 2, spells_known: 11, "1": 4, "2": 3, "3": 3, "4": 0 }
+          "18": { cantrips: 2, spells_known: 11, "1": 4, "2": 3, "3": 3, "4": 0 }
+          "19": { cantrips: 2, spells_known: 12, "1": 4, "2": 3, "3": 3, "4": 1 }
+          "20": { cantrips: 2, spells_known: 13, "1": 4, "2": 3, "3": 3, "4": 1 }
     levels:
       - level: 3
         features:
           - name: "Conjuração (Punho Sagrado)"
             description: |
-              Quando você alcançar o 3° nível, você amplia sua versatilidade e autossuficiência com a capacidade de conjurar magias divinas. Truques: você aprende um truque, à sua escolha, da lista de magias de clérigo, além do truque chamas sagradas. Espaços de magia, magias conhecidas e progressão seguem a tabela “Conjuração de Punho Sagrado” do livro. Habilidade de conjuração: Sabedoria. CD = 8 + bônus de proficiência + modificador de Sabedoria; ataque de magia = bônus de proficiência + modificador de Sabedoria.
+              Quando você alcançar o 3° nível, você amplia sua versatilidade e autossuficiência com a capacidade de conjurar magias divinas. Truques: você aprende um truque, à sua escolha, da lista de magias de clérigo, além do truque chamas sagradas (aprende +1 truque adicional no 10° nível, totalizando 2). Espaços de magia, magias conhecidas e progressão seguem a tabela “Conjuração de Punho Sagrado” (ver rules.spellcasting.table). Habilidade de conjuração: Sabedoria. CD = 8 + bônus de proficiência + modificador de Sabedoria; ataque de magia = bônus de proficiência + modificador de Sabedoria.
+            grants:
+              cantrips: ["chamas sagradas"]
+              cantrips_progression: { at_3: 1, at_10: 2 }
           - name: "Domínios Sagrados"
             description: |
               No 3° nível, você deve escolher dois dentre os Domínios Divinos disponíveis para o clérigo. Você deve escolher as magias da tabela de magias desses domínios como suas magias conhecidas, conforme as regras do capítulo do Punho Sagrado no livro.
@@ -3683,12 +3977,12 @@ paladin:
             save_dc: "8 + bônus de proficiência + mod. Carisma"
       - level: 7
         features:
-          - name: "Aura de Proteção (Magias)"
+          - name: "Aura de Vigilância"
             description: "Você e aliados a até 3 m têm resistência ao dano de magias enquanto você estiver consciente."
             rules: { aura_radius_m: 3, improves_at_level_18_to_m: 9 }
       - level: 15
         features:
-          - { name: "Coração Imperecível", description: "Tenacidade ancestral (interprete com o tema; não sobrepõe a Aura)."}
+          - { name: "Sentinela Imortal", description: "Ao ser reduzido a 0 PV (sem morrer instantaneamente), pode optar por cair a 1 PV; 1/descanso longo. Além disso, não sofre efeitos de envelhecimento e não pode ser envelhecido magicamente." }
       - level: 20
         features:
           - name: "Campeão dos Anciões"
@@ -3731,194 +4025,194 @@ paladin:
   juramento-danacao:
     name: "Juramento de Danação"
     flavor: "Juramento Sagrado"
-    description: "Pune os indignos com implacável severidade."
+    description: "O medo como arma contra os injustos e infiéis; cavaleiros das trevas que derrotam adversários mentalmente."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Magias do Juramento", description: "Magias adicionais sempre preparadas (defina conforme o tema)." }
-          - { name: "Canalizar Divindade: Julgar", description: "Impõe medo/penalidade a inimigos (detalhes conforme módulo da mesa)." }
+          - { name: "Canalizar Divindade: Lâmina Amaldiçoada", description: "Ação; imbui sua arma com energia debilitante por 1 min. Ao acertar uma criatura, ela sofre 1d6 de penalidade nas jogadas de ataque e de dano com arma até o fim do seu próximo turno." }
+          - { name: "Canalizar Divindade: Medo Paralisante", description: "Ação; 1 criatura que veja você a até 3 m faz TS Sab (CD de magia) ou fica amedrontada por 1 min, com deslocamento 0. Repete o TS no fim de cada turno se estiver a mais de 3 m ou sem ver você; se for atacada, pode mover-se, mas o medo persiste." }
         grants:
           spells:
             always_prepared:
-              3:  ["perdição","comando"]
-              5:  ["imobilizar pessoa","cegueira/surdez"]
-              9:  ["amaldiçoar","dissipar magia"]
-              13: ["banimento","confusão"]
-              17: ["coluna de chamas","imobilizar monstro"]
+              3:  ["Perdição","Repreensão Infernal"]
+              5:  ["Coroa da Loucura","Imobilizar Pessoa"]
+              9:  ["Medo","Rogar Maldição"]
+              13: ["Assassino Fantasmagórico","Confusão"]
+              17: ["Imobilizar Monstro","Sonho"]
         rules:
-          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + prof. + mod. Carisma" }
+          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + bônus de proficiência + mod. Carisma" }
       - level: 7
         features:
-          - name: "Aura da Condenação"
-            description: "Hostis próximos sofrem penalidades persistentes."
+          - name: "Aura de Danação"
+            description: "Inimigos hostis a você e aliados a até 3 m não podem realizar reações e sofrem penalidade em TS contra medo = mod. Car (mín. −1). Criaturas imunes a amedrontar com ND ≤ seu nível de paladino perdem a imunidade dentro da aura (mas ganham vantagem nesses TS)."
             rules: { aura_radius_m: 3, improves_at_level_18_to_m: 9 }
       - level: 15
         features:
-          - { name: "Censura Ímpia", description: "Reações punitivas a violações/ataques contra seus preceitos." }
+          - { name: "Pesadelo Interior", description: "Ação; 1 criatura a até 18 m (e um aliado dela a até 9 m que ela veja) faz TS Sab ou sofre 4d10 psíquico e fica amedrontada em relação ao aliado por 1 min (sucesso: metade do dano, sem medo). Em falha, sofre 2d10 psíquico no início de cada turno e repete o TS no fim de cada turno (sucesso encerra o medo). 1/descanso curto ou longo." }
       - level: 20
         features:
-          - { name: "Avatar da Danação", description: "Forma poderosa com presença aterradora por tempo limitado." }
+          - { name: "Medo Recorrente", description: "Ação bônus; por 1 min assume forma apavorante (visível só por criaturas que já o temeram); essas criaturas sofrem desvantagem em jogadas de ataque e testes de habilidade. 1/descanso longo." }
 
   juramento-equilibrio:
     name: "Juramento de Equilíbrio"
     flavor: "Juramento Sagrado"
-    description: "Busca harmonia e neutralidade; impede excessos."
+    description: "Mantém a balança do multiverso entre bem e mal; impede que qualquer lado sobrepuje o outro."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Magias do Juramento", description: "Magias adicionais sempre preparadas (defina conforme o tema)." }
-          - { name: "Canalizar Divindade: Balança", description: "Equaliza confrontos; reduz vantagens extremas." }
+          - { name: "Canalizar Divindade: Combate Singular", description: "Ação; 1 criatura hostil que veja a até 18 m. Por 1 min, você e o alvo têm vantagem nos ataques um contra o outro, mas causam apenas metade do dano contra qualquer outra criatura; e todas as demais criaturas causam metade do dano contra vocês dois." }
+          - { name: "Canalizar Divindade: Sacrifício Glorioso", description: "Ação; ativa uma aura de fluxo vital de 9 m por 1 min. A cada fim de turno você perde 1d4 PV e cada companheiro na aura recupera 2 PV. Encerra como parte de qualquer ação; termina se ficar inconsciente." }
         grants:
           spells:
             always_prepared:
-              3:  ["bênção","perdição"]
-              5:  ["acalmar emoções","restauração menor"]
-              9:  ["dissipar magia","contra-magia"]
-              13: ["movimentação livre","pele de pedra"]
-              17: ["restauração maior","comunhão"]
+              3:  ["Detectar o Bem e Mal","Proteção contra o Bem e Mal"]
+              5:  ["Augúrio","Vínculo Protetor"]
+              9:  ["Espíritos Guardiões","Revivificar"]
+              13: ["Banimento","Guardião da Fé"]
+              17: ["Dissipar o Bem e Mal","Reviver os Mortos"]
         rules:
-          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + prof. + mod. Carisma" }
+          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + bônus de proficiência + mod. Carisma" }
       - level: 7
         features:
-          - name: "Aura de Equilíbrio"
-            description: "Mitiga extremos de dano/condições ao redor."
+          - name: "Aura de Equidade"
+            description: "Você e todas as criaturas a até 3 m (amigas e hostis) perdem resistências a dano e não podem ganhar resistência/imunidade enquanto estiverem na aura; imunidades viram resistência ao mesmo tipo."
             rules: { aura_radius_m: 3, improves_at_level_18_to_m: 9 }
       - level: 15
         features:
-          - { name: "Equilíbrio Inquebrável", description: "Bônus fortes contra controles e manipulações." }
+          - { name: "Destruição Igualitária", description: "Ao usar Destruição Divina, causa 3d8 de dano de energia ao gastar espaço de 1º nível, +1d8 por nível acima (máx. 6d8). Não causa dano extra contra corruptor ou morto-vivo." }
       - level: 20
         features:
-          - { name: "Ápice da Harmonia", description: "Estado que estabiliza o campo de batalha." }
+          - { name: "Trazer o Equilíbrio", description: "Ação (só com menos da metade do PV máximo); ataque corpo-a-corpo com magia contra criatura hostil. Ao acertar, seu PV atual sobe para metade do máximo e o alvo faz TS Con ou tem o PV máximo reduzido à metade; em sucesso, sofre 10d6 necrótico. 1/descanso longo." }
 
   juramento-liberdade:
     name: "Juramento de Liberdade"
     flavor: "Juramento Sagrado"
-    description: "Movimento e escolha acima de tudo; rompe grilhões."
+    description: "A liberdade como bem maior; paladinos libertadores que viajam, depõem tiranos e rompem grilhões."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Magias do Juramento", description: "Magias adicionais sempre preparadas (defina conforme o tema)." }
-          - { name: "Canalizar Divindade: Romper Correntes", description: "Quebra imobilizações e restringimentos." }
+          - { name: "Canalizar Divindade: Manto Anárquico", description: "Ação; por 1 min envolve-se em energia caótica. No início de cada turno role 1d6: ímpar → bônus na CA; par → bônus nas jogadas de ataque corpo-a-corpo, até o início do próximo turno. Encerra como parte de qualquer ação; termina se ficar inconsciente." }
+          - { name: "Canalizar Divindade: Toque Libertador", description: "Ação; toca uma criatura amigável e remove uma condição à escolha (amedrontado, atordoado, enfeitiçado, impedido ou paralisado), tornando-a imune àquela condição por 1 min. Pode usar em si mesmo mesmo que a condição normalmente impeça ações." }
         grants:
           spells:
             always_prepared:
-              3:  ["longstrider","feather-fall"]
-              5:  ["passo nebuloso","passos sem pegadas"]
-              9:  ["remover maldição","dissipar magia"]
-              13: ["movimentação livre","porta dimensional"]
-              17: ["caminhar em árvores","teleportation-circle"]
+              3:  ["Área Escorregadia","Recuo Acelerado"]
+              5:  ["Passos sem Pegadas","Patas de Aranha"]
+              9:  ["Andar na Água","Piscar"]
+              13: ["Movimentação Livre","Porta Dimensional"]
+              17: ["Criar Passagem","Despertar"]
         rules:
-          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + prof. + mod. Carisma" }
+          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + bônus de proficiência + mod. Carisma" }
       - level: 7
         features:
-          - name: "Aura de Mobilidade"
-            description: "Aliados ignoram terreno difícil e ganham bônus de deslocamento."
+          - name: "Aura de Libertação"
+            description: "Você e aliados a até 3 m têm vantagem em TS e testes para não serem agarrados, impedidos ou paralisados enquanto você estiver consciente."
             rules: { aura_radius_m: 3, improves_at_level_18_to_m: 9 }
       - level: 15
         features:
-          - { name: "Vontade Indomável", description: "Fortes vantagens contra aprisionamento/medo." }
+          - { name: "Espírito Livre", description: "Você está constantemente sob efeito de 'movimentação livre' e não pode ser enfeitiçado." }
       - level: 20
         features:
-          - { name: "Liberdade Suprema", description: "Teleporte curto e imunidades por tempo limitado." }
+          - { name: "Viajar pelos Mundos", description: "Pode gastar um espaço de 5º nível para conjurar 'teletransporte' e 'viagem planar'. Alternativamente, gasta um espaço de 5º nível para abrir um portal e clamar por ajuda: uma besta, celestial ou fada de ND ≤ 10 (à escolha do Mestre) surge, amigável, e obedece comandos verbais por 1 min (ou até ser dispensada / cair a 0 PV). 1/descanso longo." }
 
   juramento-misericordia:
     name: "Juramento de Misericórdia"
     flavor: "Juramento Sagrado"
-    description: "Cura, proteção e compaixão como armas sagradas."
+    description: "A vida acima de qualquer outro bem; cavaleiros que curam os vivos e exterminam a não-vida."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Magias do Juramento", description: "Magias adicionais sempre preparadas (defina conforme o tema)." }
-          - { name: "Canalizar Divindade: Amparo", description: "Concede cura/THP ou remove condições." }
+          - { name: "Canalizar Divindade: Ataque Misericordioso", description: "Ação; por 1 min envolve sua arma e a dos aliados a até 9 m com energia radiante não letal. O dano de arma vira radiante, com +1d6 radiante contra mortos-vivos; as armas emitem penumbra (3 m). Criatura que caia a 0 PV por esses ataques estabiliza automaticamente." }
+          - { name: "Canalizar Divindade: Guardião da Vida", description: "Ação; por 1 min dá a um aliado tocado resistência a concussão, cortante e perfurante — sempre que ele sofrer esse dano, você sofre quantidade igual. Alternativamente, toca um morto-vivo: TS Car ou ganha vulnerabilidade a concussão/cortante/perfurante por 1 min (repete o TS no fim de cada turno; sucesso encerra)." }
         grants:
           spells:
             always_prepared:
-              3:  ["curar ferimentos","bênção"]
-              5:  ["restauração menor","ajuda"]
-              9:  ["revivificar","sinal de esperança"]
-              13: ["proteção contra a morte","guardião da fé"]
-              17: ["curar ferimentos em massa","reviver os mortos"]
+              3:  ["Palavra Curativa","Santuário"]
+              5:  ["Cegueira/Surdez","Vínculo Protetor"]
+              9:  ["Palavra Curativa em Massa","Sinal de Esperança"]
+              13: ["Guardião da Fé","Pele de Pedra"]
+              17: ["Consagrar","Restauração Maior"]
         rules:
-          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + prof. + mod. Carisma" }
+          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + bônus de proficiência + mod. Carisma" }
       - level: 7
         features:
-          - name: "Aura da Misericórdia"
-            description: "Mitiga dano e melhora curas próximas."
+          - name: "Aura de Resiliência"
+            description: "Você e aliados a até 3 m têm resistência a dano de veneno e necrótico enquanto você estiver consciente; quem cair a 0 PV na aura estabiliza automaticamente."
             rules: { aura_radius_m: 3, improves_at_level_18_to_m: 9 }
       - level: 15
         features:
-          - { name: "Alívio Milagroso", description: "Respostas potentes a quedas de aliados." }
+          - { name: "Virtude da Vida", description: "Pode conjurar a magia 'cura completa' uma vez. 1/descanso longo." }
       - level: 20
         features:
-          - { name: "Anjo da Misericórdia", description: "Forma exaltada com grandes curas e imunidades." }
+          - { name: "Sacrifício do Mártir", description: "Ação; libera um pulso radiante em esfera de 9 m de raio. Todas as criaturas vivas amigáveis na área são curadas em 10d8 PV e você sofre 10d8 de dano. Corruptores e mortos-vivos na área fazem TS Des ou sofrem 10d8 radiante (metade em sucesso). 1/descanso longo." }
 
   juramento-ordenacao:
     name: "Juramento de Ordenação"
     flavor: "Juramento Sagrado"
-    description: "Ordem e obediência; disciplina aliada e coação inimiga."
+    description: "Lei e ordem; justiçares que cumprem ordens legítimas e caçam infratores para julgamento."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Magias do Juramento", description: "Magias adicionais sempre preparadas (defina conforme o tema)." }
-          - { name: "Canalizar Divindade: Mandato", description: "Comanda/estigmatiza infratores por breve período." }
+          - { name: "Canalizar Divindade: Incentivar o Grupo", description: "Ação; profere palavras animadoras a todas as criaturas amigáveis a até 9 m que o ouçam. Por 1 min, elas recebem bônus nas jogadas de dano com arma = mod. Car (mín. +1). Encerra como parte de qualquer ação; termina se ficar inconsciente." }
+          - { name: "Canalizar Divindade: Proibição Imperiosa", description: "Ação; 1 criatura que veja você a até 18 m faz TS Car ou sofre por 1 min um efeito à sua escolha: Calado (não fala/conjura com componente verbal), Parado (impedida) ou Quieto (não ataca/conjura com componente gestual). Repete o TS no fim de cada turno (sucesso encerra)." }
         grants:
           spells:
             always_prepared:
-              3:  ["comando","santuário"]
-              5:  ["zona da verdade","imobilizar pessoa"]
-              9:  ["dissipar magia","lentidão"]
-              13: ["guardião da fé","banimento"]
-              17: ["dominar pessoa","geas"]
+              3:  ["Comando","Perdição"]
+              5:  ["Acalmar Emoções","Zona da Verdade"]
+              9:  ["Glifo de Vigilância","Manto do Cruzado"]
+              13: ["Banimento","Localizar Criatura"]
+              17: ["Âncora Planar","Missão"]
         rules:
-          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + prof. + mod. Carisma" }
+          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + bônus de proficiência + mod. Carisma" }
       - level: 7
         features:
-          - name: "Aura da Ordem"
-            description: "Aliados testam melhor; inimigos sofrem por desobediência."
+          - name: "Aura de Autoridade"
+            description: "Criaturas hostis a até 3 m sofrem desvantagem em testes de Carisma e TS de Carisma."
             rules: { aura_radius_m: 3, improves_at_level_18_to_m: 9 }
       - level: 15
         features:
-          - { name: "Decreto Inapelável", description: "Impõe condicionamentos severos situacionais." }
+          - { name: "Vontade Indomável", description: "Imune à condição enfeitiçado; não pode ser alvo de magias/efeitos que controlem ou influenciem você a agir contra sua vontade (ex.: comando, confusão, coroa da loucura, dominar pessoa, riso histérico de Tasha)." }
       - level: 20
         features:
-          - { name: "Arquétipo da Lei", description: "Presença avassaladora que restringe hostis." }
+          - { name: "Sentença de Morte", description: "Ação; 1 criatura que veja a até 18 m e que você saiba ter cometido crime punível com a morte. Se estiver com 100 PV ou menos, faz TS Car ou cai a 0 PV. Criaturas com mais de 100 PV ou que não cometeram tal crime são imunes. 1/descanso longo." }
 
   juramento-pureza:
     name: "Juramento de Pureza"
     flavor: "Juramento Sagrado"
-    description: "Pureza contra corrupção: proteção, cura e expulsão."
+    description: "Castidade, sobriedade e abstinência; arqueiros puritanos que buscam ascender como seres de pura bondade e luz, combatendo à distância."
     choose_level: 3
     levels:
       - level: 3
         features:
-          - { name: "Magias do Juramento", description: "Magias adicionais sempre preparadas (defina conforme o tema)." }
-          - { name: "Canalizar Divindade: Expurgar", description: "Limpa corrupções e expulsa influências." }
+          - { name: "Canalizar Divindade: Golpes Longínquos", description: "Ação; por 1 min seus ataques corpo-a-corpo com arma passam a contar como ataques à distância com 9 m; o dano vira energia e você pode usar Destruição Divina ou magias de ataque corpo-a-corpo como ataque à distância. Armas de disparo mantêm o alcance normal se maior que 9 m. Encerra como parte de qualquer ação; termina se ficar inconsciente." }
+          - { name: "Canalizar Divindade: Manter a Pureza", description: "Ação; por 1 min qualquer magia benéfica com alcance de toque ou sua Cura pelas Mãos passa a ter alcance de 9 m. A partir do 6º nível, magias conjuradas em você ou em aliado sob este efeito recuperam +mod. Car PV (mín. 1), além dos efeitos normais." }
         grants:
           spells:
             always_prepared:
-              3:  ["proteção contra o bem e mal","purificar alimentos e bebidas"]
-              5:  ["restauração menor","proteção contra veneno"]
-              9:  ["remover maldição","dissipar magia"]
-              13: ["proteção contra a morte","banimento"]
-              17: ["dispel-evil-and-good","restauração maior"]
+              3:  ["Marca do Caçador","Palavra Curativa"]
+              5:  ["Cordão de Flechas","Levitação"]
+              9:  ["Flecha Relampejante","Palavra Curativa em Massa"]
+              13: ["Guardião da Fé","Movimentação Livre"]
+              17: ["Aljava Veloz","Curar Ferimentos em Massa"]
         rules:
-          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + prof. + mod. Carisma" }
+          channel_divinity: { uses: 1, recharge: "descanso curto ou longo", save_dc: "8 + bônus de proficiência + mod. Carisma" }
       - level: 7
         features:
-          - name: "Aura da Pureza"
-            description: "Resistências a condições/doenças para aliados próximos."
+          - name: "Aura de Integridade"
+            description: "Aura de 3 m: qualquer criatura (exceto aliados ou celestial) que tente entrar pela primeira vez no turno faz TS Car ou não pode se aproximar a menos de 3 m naquela rodada. Repete o TS a cada nova tentativa; em sucesso fica imune até você terminar um descanso curto. Corruptores e mortos-vivos têm desvantagem no TS."
             rules: { aura_radius_m: 3, improves_at_level_18_to_m: 9 }
       - level: 15
         features:
-          - { name: "Coração Imaculado", description: "Imunidades e vantagens a efeitos nefastos." }
+          - { name: "Ascensão Divina", description: "Enquanto estiver sob efeito de Golpes Longínquos, libera asas plumadas e adquire deslocamento de voo 15 m." }
       - level: 20
         features:
-          - { name: "Aspecto da Pureza", description: "Proteção absoluta por breve tempo." }
+          - { name: "Flecha Assassina", description: "Ação; ataque à distância com arco/besta empunhado contra criatura (exceto celestial). Ao acertar, o alvo faz TS Con ou cai a 0 PV automaticamente. Se passar, sofre o dano normal +6d10 radiante (8d10 se corruptor ou morto-vivo). 1/descanso longo." }
 
 rogue:
   ladrao:
@@ -3950,12 +4244,12 @@ rogue:
             description: "Ignora requisitos de classe/raça/nível de itens mágicos ao ativá-los."
       - level: 17
         features:
-          - name: "Reflexos do Ladrão"
-            description: "Duas jogadas de iniciativa e dois turnos na 1ª rodada (usa a menor iniciativa); não combina com efeitos que concedam turnos extras."
+          - name: "Reflexos de Ladrão"
+            description: "Realiza dois turnos durante o primeiro turno de cada combate: o 1º na sua iniciativa e o 2º na ordem da sua iniciativa menos 10. Não pode usar enquanto estiver surpreso."
             rules:
-              roll_initiative_twice_keep_lower: true
               two_turns_first_round: true
-              no_stack_extra_turn_effects: true
+              second_turn_initiative_offset: -10
+              cannot_use_while_surprised: true
 
   assassino:
     name: "Assassino"
@@ -3968,6 +4262,8 @@ rogue:
           proficiencies:
             tools: ["Kit de Disfarce","Kit de Venenos"]
         features:
+          - name: "Proficiência Adicional"
+            description: "Ganha proficiência com kit de disfarce e kit de venenos."
           - name: "Assassinar"
             description: "Vantagem nas jogadas de ataque contra criaturas que ainda não agiram; qualquer acerto contra um alvo surpreendido é crítico."
             rules:
@@ -3975,7 +4271,7 @@ rogue:
               auto_crit_vs_surprised_on_hit: true
       - level: 9
         features:
-          - name: "Perícia de Infiltração"
+          - name: "Especialização em Infiltração"
             description: "Cria uma identidade falsa funcional (≈7 dias e 25 po); não permite se passar por uma pessoa específica sem estudo prévio."
       - level: 13
         features:
@@ -4001,7 +4297,7 @@ rogue:
       - level: 3
         features:
           - name: "Conjuração (Trapaceiro Arcano)"
-            description: "Conjura como mago com INT (CD = 8 + prof. + INT; ataque mágico = prof. + INT). Foco em Ilusão/Encantamento."
+            description: "Conjura como mago com INT (CD = 8 + prof. + INT; ataque mágico = prof. + INT). Truques e magias da lista de mago, com foco em Ilusão/Encantamento. Pelo menos 2 das 3 magias iniciais devem ser de encantamento ou ilusão; toda nova magia aprendida deve ser dessas escolas, exceto as aprendidas no 8º, 14º e 20º nível, que podem ser de qualquer escola. Espaços recobrados em descanso longo."
             rules:
               spellcasting:
                 type: "third"
@@ -4009,9 +4305,31 @@ rogue:
                 save_dc: "8 + proficiência + mod. INT"
                 attack_bonus: "proficiência + mod. INT"
                 list: "wizard"
-                school_bias: ["Ilusão","Encantamento"]
+                school_restriction: ["Encantamento","Ilusão"]
+                min_starting_spells_in_school: 2
                 learn_any_school_levels: [8,14,20]
-          - name: "Mão Mágica Ladina"
+                slots_recover_on: "descanso longo"
+                progression:
+                  # nível de ladino → truques, magias conhecidas, espaços por nível de magia
+                  3:  { cantrips: 3, spells_known: 3,  slots: { 1: 2 } }
+                  4:  { cantrips: 3, spells_known: 4,  slots: { 1: 3 } }
+                  5:  { cantrips: 3, spells_known: 4,  slots: { 1: 3 } }
+                  6:  { cantrips: 3, spells_known: 4,  slots: { 1: 3 } }
+                  7:  { cantrips: 3, spells_known: 5,  slots: { 1: 4, 2: 2 } }
+                  8:  { cantrips: 3, spells_known: 6,  slots: { 1: 4, 2: 2 } }
+                  9:  { cantrips: 3, spells_known: 6,  slots: { 1: 4, 2: 2 } }
+                  10: { cantrips: 4, spells_known: 7,  slots: { 1: 4, 2: 3 } }
+                  11: { cantrips: 4, spells_known: 8,  slots: { 1: 4, 2: 3 } }
+                  12: { cantrips: 4, spells_known: 8,  slots: { 1: 4, 2: 3 } }
+                  13: { cantrips: 4, spells_known: 9,  slots: { 1: 4, 2: 3, 3: 2 } }
+                  14: { cantrips: 4, spells_known: 10, slots: { 1: 4, 2: 3, 3: 2 } }
+                  15: { cantrips: 4, spells_known: 10, slots: { 1: 4, 2: 3, 3: 2 } }
+                  16: { cantrips: 4, spells_known: 11, slots: { 1: 4, 2: 3, 3: 3 } }
+                  17: { cantrips: 4, spells_known: 11, slots: { 1: 4, 2: 3, 3: 3 } }
+                  18: { cantrips: 4, spells_known: 11, slots: { 1: 4, 2: 3, 3: 3 } }
+                  19: { cantrips: 4, spells_known: 12, slots: { 1: 4, 2: 3, 3: 3, 4: 1 } }
+                  20: { cantrips: 4, spells_known: 13, slots: { 1: 4, 2: 3, 3: 3, 4: 1 } }
+          - name: "Mãos Mágicas Malabaristas"
             description: "Sua Mãos Mágicas pode ser invisível e realizar tarefas finas (bater carteiras, abrir fechaduras, desarmar armadilhas) a até 9 m; pode controlá-la com ação bônus."
             rules:
               invisible_mage_hand: true
@@ -4032,11 +4350,15 @@ rogue:
       - level: 17
         features:
           - name: "Ladrão de Magia"
-            description: "Reação ao ser alvo/incluído por uma magia: teste do conjurador (mod. de conjuração) contra sua CD; falha → você ignora o efeito e aprende a magia por 8 h, podendo conjurá-la com seus espaços."
+            description: "Reação ao ser alvo/incluído por uma magia: o conjurador faz um teste com o modificador de habilidade de conjuração dele contra sua CD de magia. Numa falha, você ignora o efeito e rouba o conhecimento da magia (de pelo menos 1º nível e de um nível que você possa conjurar; não precisa ser de mago); por 8 horas você pode conjurá-la com seus espaços e a criatura não pode conjurá-la nesse período. 1 uso, recupera em descanso longo."
             rules:
               reaction_trigger: "ser alvo/incluído por magia"
               oppose_check: "mod. conjuração do alvo vs sua CD de magia"
-              on_fail: ["imunidade ao efeito","aprende a magia por 8h"]
+              on_fail: ["imunidade ao efeito","aprende a magia por 8h","alvo não pode conjurar a magia por 8h"]
+              stolen_spell_min_level: 1
+              stolen_spell_any_class: true
+              uses: 1
+              recharge: "descanso longo"
 
   # ——— OBRAS ORIGINAIS DA SUA MESA ———
   cacador-de-tesouros:
@@ -4103,6 +4425,9 @@ rogue:
               Ao atingir o 17° nível, você consegue se mesclar às trevas a um ponto em que é impossível distinguir o que é você e o que é escuridão. Com sua ação, você pode assumir uma forma sombria por 1 minuto que tem as seguintes características:
               • Você tem resistência a dano de concussão, cortante e perfurante de ataques não-mágicos.
               • Você pode usar a característica Viagem Umbral, uma vez por rodada, enquanto permanecer nessa forma.
+              • Você tem vantagem nas jogadas de ataque enquanto você e o alvo estiverem em escuridão ou penumbra.
+              • Sob luz plena, você tem desvantagem nas jogadas de ataque e nos testes de resistência.
+              Após usar essa característica, você precisa terminar um descanso longo para usá-la novamente.
 
   face-fantasmagorica:
     name: "Face Fantasmagórica"
@@ -4270,12 +4595,12 @@ wizard:
             - name: "Adivinhação Instruída (Especialista)"
               description: "Copiar magias de adivinhação custa metade do ouro e tempo."
               rules: { savant: { school: "adivinhação", copy_cost_multiplier: 0.5, copy_time_multiplier: 0.5 } }
-            - name: "Prodígio (Portento)"
+            - name: "Prodígio"
               description: "Rola 2d20 após um descanso longo e pode substituir jogadas (sua ou de criaturas) por esses resultados."
               rules: { portent_dice: 2 }
         - level: 6
           features:
-            - name: "Adivinhação Especialista"
+            - name: "Especialista em Adivinhação"
               description: "Ao conjurar adivinhação de 2º+ nível, recupera 1 espaço de magia de nível inferior."
         - level: 10
           features:
@@ -4310,7 +4635,7 @@ wizard:
               description: "Sua concentração em magias de conjuração não é quebrada por dano."
         - level: 14
           features:
-            - name: "Invocações Duráveis"
+            - name: "Invocações Resistentes"
               description: "Criaturas que você conjura ganham PV temporários significativos."
               rules: { temp_hp_summons: 30 }
 
@@ -4325,7 +4650,7 @@ wizard:
             - name: "Encantamento Instruído (Especialista)"
               description: "Copiar magias de encantamento custa metade do ouro e tempo."
               rules: { savant: { school: "encantamento", copy_cost_multiplier: 0.5, copy_time_multiplier: 0.5 } }
-            - name: "Olhar Hipnótico"
+            - name: "Olhar Hipnotizante"
               description: "Ação para hipnotizar criatura adjacente (TS Sab). Falha: enfeitiçada, incapacitada e deslocamento 0 enquanto sustentar; termina se levar dano."
         - level: 6
           features:
@@ -4364,7 +4689,11 @@ wizard:
         - level: 14
           features:
             - name: "Sobrecarga"
-              description: "Pode maximizar dano de magias de 1º–5º; repetir antes de um descanso longo causa dano necrótico cumulativo a você."
+              description: "Ao conjurar uma magia de mago de 1º–5º nível (exceto truques) que cause dano, ela causa dano máximo. A 1ª vez por descanso longo é gratuita; reusos antes do descanso longo causam a você 2d12 de dano necrótico por nível da magia (acumula +1d12 por reuso; ignora resistência/imunidade)."
+              rules:
+                first_use_per_long_rest_free: true
+                reuse_necrotic_damage: "2d12 por nível da magia (+1d12 por reuso adicional antes do descanso longo)"
+                ignores_resistance_immunity: true
 
     escola-de-ilusao:
       name: "Escola de Ilusão"
@@ -4381,11 +4710,11 @@ wizard:
               description: "Ganha o truque ilusão menor (se não tiver) e pode criar imagem + som no mesmo lançamento."
         - level: 6
           features:
-            - name: "Ilusão Maleável"
+            - name: "Ilusões Moldáveis"
               description: "Pode remodelar uma ilusão com duração enquanto ela durar."
         - level: 10
           features:
-            - name: "Duplicata Ilusória"
+            - name: "Eu Ilusório"
               description: "Reação para fazer um ataque contra você errar (consome a duplicata); 1/descanso curto ou longo."
         - level: 14
           features:
@@ -4408,11 +4737,15 @@ wizard:
         - level: 6
           features:
             - name: "Escravos Mortos-Vivos"
-              description: "animar mortos afeta +1 corpo; mortos-vivos criados por suas necromancias ficam mais fortes."
+              description: "Adiciona animar mortos ao grimório (se não tiver). animar mortos afeta +1 corpo; mortos-vivos criados por suas necromancias ficam mais fortes."
               rules:
                 undead_bonuses:
                   - "PV máximos + seu nível de mago"
                   - "Adicionam seu bônus de proficiência às jogadas de dano"
+          grants:
+            spells:
+              always_prepared:
+                6: ["animate-dead"]
         - level: 10
           features:
             - name: "Acostumado à Morte-Vida"
@@ -4437,7 +4770,7 @@ wizard:
               description: "Altera temporariamente material de um objeto não mágico (madeira/pedra/ferro/cobre/prata)."
         - level: 6
           features:
-            - name: "Pedra do Transmutador"
+            - name: "Pedra de Transmutador"
               description: "Cria uma pedra com um benefício ativo enquanto portada; troca o efeito ao conjurar transmutação de 1º+."
               rules:
                 options:
@@ -4448,7 +4781,11 @@ wizard:
         - level: 10
           features:
             - name: "Metamorfo"
-              description: "Adiciona metamorfose ao grimório; 1×/descanso (curto ou longo) pode conjurá-la sem espaço, em si, CR 1 ou menor."
+              description: "Adiciona metamorfose ao grimório (se não tiver); 1×/descanso (curto ou longo) pode conjurá-la sem espaço, em si, CR 1 ou menor."
+          grants:
+            spells:
+              always_prepared:
+                10: ["polymorph"]
         - level: 14
           features:
             - name: "Mestre Transmutador"
@@ -4458,97 +4795,149 @@ wizard:
     arquearia-arcana:
       name: "Arquearia Arcana"
       flavor: "Tradição Arcana"
-      description: "Combina arcos e magia de precisão."
+      description: "Mescla arco e magia arcana de precisão — herança élfica de arqueiros-magos. Exclusiva para elfos e meio-elfos (a critério do Mestre)."
       choose_level: 2
       levels:
         - level: 2
           features:
-            - name: "Tiro Encantado"
-              description: "Infunde flechas com efeitos mágicos menores (empurrar, ofuscar, marcar)."
+            - name: "Estilo de Arquearia"
+              description: "Ganha proficiência com arcos curtos e longos e proficiência em Percepção (se já não tiver)."
+            - name: "Tiro Arcano"
+              description: "Com espaço de magia de 1º+ disponível, usa ação bônus para imbuir o próximo ataque à distância com arco de poder mágico (conta como mágico para resistência/imunidade) e +dano igual ao nível do maior espaço disponível. No Nv 7, com espaço de 4º+ disponível, cria flechas de pura energia (dispensa munição mundana; todos os ataques de arco contam como mágicos)."
               rules:
-                weapons_proficiencies_granted: ["arco curto","arco longo"]
-                once_per_turn_on_hit_with_bow: "aplica 1 efeito arcano temático"
+                action: "ação bônus"
+                requires: "espaço de magia disponível"
+                bonus_damage: "nível do maior espaço de magia disponível"
+                level_7_upgrade: "com espaço 4º+ disponível, dispensa munição mundana e todos os ataques de arco contam como mágicos"
           grants:
             proficiencies:
               weapons: ["arco-curto","arco-longo"]
+              skills: ["Percepção"]
         - level: 6
           features:
-            - name: "Olho Místico"
-              description: "Vantagens situacionais para adquirir alvo; ignora cobertura leve."
+            - name: "Ataque Extra"
+              description: "Pode atacar duas vezes, em vez de uma, sempre que usar a ação de Ataque no seu turno."
+              rules: { attacks_per_attack_action: 2 }
         - level: 10
           features:
-            - name: "Voo da Flecha"
-              description: "Aumenta alcance e as flechas ignoram vento e desvantagens por distância longa."
+            - name: "Flecha Encantada"
+              description: "Ao usar a ação de Ataque com arco, usa ação bônus para imbuir o próximo ataque com uma magia de mago de alcance de toque que afete 1 criatura; se acertar, a magia é descarregada no alvo. Erro desperdiça a magia. 2 usos, recuperados em descanso curto ou longo."
+              rules:
+                action: "ação bônus"
+                uses: 2
+                recharge: "descanso curto ou longo"
         - level: 14
           features:
-            - name: "Pluie Arcana"
-              description: "Rajada de flechas encantadas sobre múltiplos alvos em área pequena."
+            - name: "Chuva de Flechas"
+              description: "Ação: gasta espaço de magia de 5º+ para 1 ataque de arco contra cada criatura no alcance; ou 5 ataques contra um único alvo. Sem desvantagem por distância longa. Recupera em descanso curto ou longo."
+              rules:
+                action: "ação"
+                slot_required: "5º+"
+                recharge: "descanso curto ou longo"
 
     iniciacao-demonologia:
       name: "Iniciação em Demonologia"
       flavor: "Tradição Arcana"
-      description: "Estudo e controle de entidades demoníacas."
+      description: "Especialista nos planos inferiores e nas criaturas que os habitam (demônios, diabos, yugoloths); estudo e controle do ocultismo."
       choose_level: 2
       levels:
         - level: 2
           features:
-            - name: "Círculo de Contenção"
-              description: "Ritualiza um círculo que inibe/contém invocações menores e teleporte planar dentro da área."
+            - name: "Conhecimento Obscuro"
+              description: "Vantagem em testes de Inteligência sobre o Inferno, o Abismo ou corruptores."
+            - name: "Ludibriar Corruptor"
+              description: "Ganha proficiência em Persuasão e Enganação; vantagem em Carisma (Persuasão/Enganação) ao lidar com corruptores. Corruptores têm desvantagem em TR para não serem enfeitiçados por você."
           grants:
             languages:
               choose: 1
               options: ["Abissal","Infernal"]
+            proficiencies:
+              skills: ["Persuasão","Enganação"]
         - level: 6
           features:
-            - name: "Olhar Abissal"
-              description: "Presença profana que assusta/fere mentalmente criaturas próximas (TS Sab)."
+            - name: "Convocação Vil"
+              description: "Ação: gasta espaço de magia de 3º nível e faz um ritual de 1 hora para invocar um corruptor de ND 4 ou inferior cujo nome verdadeiro conheça; ele fica sob seu controle (como dominar monstro) enquanto mantiver concentração, por até 8 horas. Sem o nome verdadeiro, o corruptor é indiferente e pode barganhar. Espaços superiores aumentam o ND máximo em +1 por nível acima do 3º. No Nv 13, um corruptor invocado e enfeitiçado revela seu nome verdadeiro voluntariamente."
+              rules:
+                action: "ação"
+                ritual: "1 hora"
+                slot_required: "3º"
+                max_cr: 4
+                higher_slots: "+1 no ND máximo por nível de espaço acima do 3º"
         - level: 10
           features:
-            - name: "Pacto Controlado"
-              description: "Invocações demoníacas ficam mais seguras; vantagem para impor comandos."
+            - name: "Resistir à Corrupção"
+              description: "Vantagem em TRs e testes de habilidade contra ataques, magias e efeitos mágicos de corruptores."
         - level: 14
           features:
-            - name: "Domínio Infernal"
-              description: "Pode subjugar temporariamente criaturas abissais poderosas (limites por ND/TS)."
+            - name: "Líder da Cabala"
+              description: "Adquire seguidores fanáticos (cultistas leais) em número igual ao nível de mago ÷ 3 (inicialmente 4). Pode liderar um círculo ritualístico com eles para potencializar a Convocação Vil: cada seguidor gasta um espaço de 2º e você um de 3º+; o ND máximo do corruptor sobe +1 por seguidor participante. Ao surgir o corruptor, cada seguidor faz TR de Constituição CD 15 ou morre."
+              rules:
+                followers: "nível de mago ÷ 3 (mín. 4)"
+                ritual_save: "TR de Constituição CD 15"
 
     maestria-alquimica:
       name: "Maestria Alquímica"
       flavor: "Tradição Arcana"
-      description: "Poções e transmutações práticas."
+      description: "Magos que dominam alquimia e transmutação da matéria — poções, bombas e itens exclusivos."
       choose_level: 2
       levels:
         - level: 2
           features:
-            - name: "Laboratório Portátil"
-              description: "Prepara poções com eficiência e menor custo; testes de alquimia com vantagem em condições ideais."
+            - name: "Experimentos Alquímicos"
+              description: "Proficiência (e vantagem) com suprimentos/ferramentas de alquimista. Cria itens alquímicos mais potentes que os de mercado: teste CD 15 e 1 dia de trabalho por 25 po do custo. Ex.: Ácido (2d6 + INT), Antídoto, Fogo Alquímico (1d4 + INT, CD 12), Veneno Básico (1d4 + INT, CD 12), e novos itens (Bastão de Fumaça, Bastão Solar, Bolsa de Cola, Pedra Trovão)."
+              rules:
+                tool_advantage: "vantagem em testes com ferramentas de alquimista"
+                craft_check: "CD 15, 1 dia por 25 po do custo"
+            - name: "Familiar Homúnculo"
+              description: "Constrói um homúnculo (via convocar familiar, usando o próprio sangue) que age como familiar inteligente, partilha sua proficiência em ferramentas de alquimista e reduz pela metade o tempo de criação dos seus itens. Se morrer, precisa de descanso longo para refazê-lo."
+              rules:
+                craft_time_multiplier: 0.5
+                recreate: "descanso longo se o homúnculo morrer"
           grants:
             proficiencies:
               tools: ["Kit de Alquimista"]
+            spells:
+              always_prepared:
+                2: ["find-familiar"]
         - level: 6
           features:
-            - name: "Catalisadores"
-              description: "Potencializa efeitos/alcances/durações de poções e transmutações leves."
+            - name: "Criar Fórmulas"
+              description: "Aprende fórmulas para criar poções mágicas (paga metade do custo da fórmula). Começa com 2 fórmulas (comum + incomum); ganha rara no Nv 9, muito rara no Nv 13 e lendária no Nv 17."
+              rules:
+                cost_multiplier: 0.5
+                formulas: "2 iniciais (comum + incomum); rara Nv 9, muito rara Nv 13, lendária Nv 17"
         - level: 10
           features:
-            - name: "Soluções Estáveis"
-              description: "Diminui falhas; amplia durações de mutagênicos e extratos."
+            - name: "Bombas Alquímicas"
+              description: "Cria bombas arcanas (1 hora cada; CD = CD das suas magias de mago): Pegajosa (impede, TR Des), Fumegante (escuridão/asfixia), Ácida (4d6+ ácido), Tóxica (6d6 veneno), Flamejante (8d6 fogo). Quantidade = mod. INT (mín. 1), recuperada em descanso longo."
+              rules:
+                save_dc: "CD das suas magias de mago"
+                uses: "mod. INT (mín. 1)"
+                recharge: "descanso longo"
         - level: 14
           features:
-            - name: "Pedra Filosofal"
-              description: "Acesso a transmutações poderosas e versáteis (dentro de limites seguros da mesa)."
+            - name: "Magnum Opus"
+              description: "Desvenda a fórmula da Pedra Filosofal (item lendário; criação trabalhosa, com componentes e condições a critério do Mestre). A pedra tem 4 cargas para transmutar metais (cobre→prata→ouro→platina)."
+              rules:
+                stone_charges: 4
 
     maestria-dos-automatos:
       name: "Maestria dos Autômatos"
       flavor: "Tradição Arcana"
-      description: "Construtos mecânicos e familiares artificiais."
+      description: "Dedica a arte arcana à criação e animação de autômatos — constructos de materiais mundanos similares a seres vivos."
       choose_level: 2
       levels:
         - level: 2
           features:
-            - name: "Engenheiro perspicaz"
-              description: "No 2º nível, adiciona o truque consertar (não conta no limite de truques) e adquire proficiência em Ferramentas de coureiro, entalhador, ferreiro e funileiro (Livro de Novos Arquétipos)."
-            - name: "Construir autômato"
-              description: "No 2º nível, fabrica autômato (ver ND, custo, espaço de magia e tabela de fabricação no material de campanha)."
+            - name: "Engenheiro Perspicaz"
+              description: "Adiciona o truque consertar (não conta no limite de truques) e ganha proficiência nas ferramentas de artesão: coureiro, entalhador, ferreiro e funileiro."
+            - name: "Construir Autômato"
+              description: "Fabrica um autômato (besta/humanoide/gigante/monstruosidade) de ND ≤ metade do nível de mago, gastando 1 dia por 50 po do custo e um espaço de magia do nível indicado na tabela para mantê-lo ativo (renovado a cada descanso longo). O autômato vira tipo Constructo (INT 3, SAB 11, CAR 5; imune a psíquico/veneno e a amedrontar/enfeitiçar/exausto/envenenado; visão no escuro 18 m). Apenas 1 autômato ativo por vez. Conserta-o com a magia consertar (1 po → 1 PV)."
+              rules:
+                max_cr: "metade do nível de mago"
+                craft_cost: "1 dia por 50 po do custo"
+                upkeep: "1 espaço de magia (renovado a cada descanso longo)"
+                active_limit: 1
           grants:
             proficiencies:
               tools:
@@ -4556,64 +4945,107 @@ wizard:
                 - "Ferramentas de Entalhador"
                 - "Ferramentas de Ferreiro"
                 - "Ferramentas de Funileiro"
+            spells:
+              always_prepared:
+                2: ["mending"]
         - level: 6
           features:
-            - name: "Engenharia Arcana"
-              description: "Modifica e reforça autômatos; upgrades modulares."
+            - name: "Reconstrução Mística"
+              description: "Ação: toca um constructo seu e gasta espaço de magia de 1º para curar 1d8 + mod. INT PV (+1d8 por nível de espaço acima do 1º)."
+              rules:
+                action: "ação"
+                slot_required: "1º"
+                healing: "1d8 + mod. INT (+1d8 por nível de espaço acima do 1º)"
         - level: 10
           features:
-            - name: "Rede Autômata"
-              description: "Coordena múltiplos ajudantes; ações coordenadas em sua ordem."
+            - name: "Reforçar Autômato"
+              description: "Seus autômatos ganham resistência a concussão/cortante/perfurante de ataques não-mágicos (não-adamante) e vantagem em TR contra magias e efeitos mágicos."
         - level: 14
           features:
-            - name: "Colosso Menor"
-              description: "Constrói um guardião avançado (ND apropriado) sob seu comando."
+            - name: "Convocar Constructo"
+              description: "Ação: gasta um espaço de magia um nível acima do necessário para manter o autômato para teletransportá-lo e ativá-lo a até 1,5 m de você (mesmo plano). O autômato anterior fica inativo e você passa a controlar o convocado."
+              rules:
+                action: "ação"
+                slot_required: "um nível acima do necessário para manter o autômato"
 
     navegacao-planar:
       name: "Navegação Planar"
       flavor: "Tradição Arcana"
-      description: "Transporte e percepção entre planos."
+      description: "Viajantes dos planos — magos que estudam e atravessam os outros planos de existência."
       choose_level: 2
       levels:
         - level: 2
           features:
-            - name: "Bússola Etérea"
-              description: "Sente portais e fendas planares próximos; vantagem em testes para navegação interplanar."
+            - name: "Estudioso dos Planos"
+              description: "Proficiência em Arcanismo (se já não tiver) e vantagem em testes de Inteligência (Arcanismo) sobre locais e criaturas de planos diferentes do Material."
+            - name: "Afinidade Planar"
+              description: "Vantagem em TRs para suportar efeitos adversos de outros planos (vento psíquico no Astral, ciclones de éter no Etéreo, calor extremo no Plano do Fogo, etc.)."
+          grants:
+            proficiencies:
+              skills: ["Arcanismo"]
         - level: 6
           features:
-            - name: "Âncora Planar"
-              description: "Estabiliza áreas contra distorções/teleportes planar por curto período."
+            - name: "Acesso Planar"
+              description: "Ritual de 10 min consumindo um espaço de 3º nível: envia você e até 4 criaturas voluntárias (de mãos dadas) a Faéria ou à Umbra por até 1 hora (+1 h por nível acima do 3º). O retorno ao Material atordoa todos até o fim do próximo turno. Recupera em descanso longo; no Nv 14, 2 usos por descanso longo."
+              rules:
+                ritual: "10 minutos"
+                slot_required: "3º"
+                targets: "você + até 4 criaturas voluntárias"
+                recharge: "descanso longo (2 usos no Nv 14)"
         - level: 10
           features:
-            - name: "Pulo Entre Planos"
-              description: "Saltos limitados entre planos/locais coterminantes (com custos/limites)."
+            - name: "Acesso Planar Maior"
+              description: "Pode usar o Acesso Planar para qualquer plano que conheça, gastando espaço de 5º nível (planos diferentes de Faéria/Umbra), aparecendo em local aleatório por 1 hora (+1 h por nível acima do 5º)."
+              rules:
+                slot_required: "5º"
         - level: 14
           features:
-            - name: "Caminho dos Mundos"
-              description: "Viagens seguras e precisas com escolta limitada; mitigação de riscos planares."
+            - name: "Viajante dos Planos"
+              description: "Resistência a todo dano de efeitos planares adversos (como os da Afinidade Planar). Ao viajar (por magia ou Acesso Planar), pode chegar ao local exato desejado mesmo sem nunca ter ido lá. Permanência ilimitada. Fora do Material: vantagem em TR contra magias/efeitos de criaturas nativas e resistência a concussão/cortante/perfurante não-mágico dessas criaturas."
 
     teurgia-mistica:
       name: "Teurgia Mística"
       flavor: "Tradição Arcana"
-      description: "Funde magia arcana e divina."
+      description: "Funde magia arcana e divina — magos devotos que ganham poderes de uma divindade."
       choose_level: 2
       levels:
         - level: 2
           features:
-            - name: "Ritos Teúrgicos"
-              description: "Acessa magias divinas temáticas de baixo nível (passam a contar como magias de mago)."
+            - name: "Proficiência Adicional"
+              description: "Ganha proficiência com armaduras leves e na perícia Religião."
+            - name: "Adepto Divino"
+              description: "Adota uma divindade e usa um símbolo sagrado como foco de conjuração. Escolhe 2 truques de clérigo como truques de mago. Magias de 1º a 5º nível da lista de clérigo passam a contar como magias de mago e podem ser copiadas ao grimório, até o limite de mod. SAB + metade do nível de mago (mín. 1)."
+              rules:
+                cleric_cantrips: 2
+                cleric_spells: "1º–5º da lista de clérigo contam como magias de mago"
+                spellbook_limit: "mod. SAB + metade do nível de mago (mín. 1)"
+          grants:
+            proficiencies:
+              armor: ["armadura leve"]
+              skills: ["Religião"]
         - level: 6
           features:
-            - name: "Simbiose Arcana"
-              description: "Sinergias entre listas arcana/divina (pequenos bônus de CD/alcance/duração)."
+            - name: "Canalizar Divindade: Misticismo Divino"
+              description: "Ao conjurar (no turno) uma magia de mago com espaço de até 2º nível, gasta Canalizar Divindade para conjurar, como ação bônus, uma magia adicional (de tempo de ação) com espaço de até 1º — desde que adicionada ao grimório via Adepto Divino. Escala: Nv 12 (até 4º + até 2º), Nv 18 (até 6º + até 3º). Recupera em descanso curto ou longo."
+              rules:
+                action: "ação bônus"
+                uses: 1
+                recharge: "descanso curto ou longo"
+                scaling: "Nv 12 (até 4º + até 2º), Nv 18 (até 6º + até 3º)"
         - level: 10
           features:
-            - name: "Favores Arcanos"
-              description: "Adaptações de Canalizar/orações curtas em moldes arcanos (usos limitados)."
+            - name: "Recuperação Divina"
+              description: "Ação bônus: gasta espaço de 3º+ para recuperar 1 uso de Canalizar Divindade."
+              rules:
+                action: "ação bônus"
+                slot_required: "3º+"
         - level: 14
           features:
-            - name: "Epifania"
-              description: "Magias híbridas potentes (ex.: cura/controle/banimento combinados) sob regras da mesa."
+            - name: "Intervenção Divina"
+              description: "Ação: roga à divindade (rola d100; ≤ nível de mago → ela intervém, com efeito escolhido pelo Mestre, geralmente uma magia de clérigo/domínio). Sucesso bloqueia o reuso por 7 dias; falha permite tentar de novo após descanso longo."
+              rules:
+                action: "ação"
+                success: "d100 ≤ nível de mago"
 
 warlock:
   # ——— REGRAS GERAIS DO BRUXO ———
@@ -4639,9 +5071,9 @@ warlock:
     expanded_spells:
       1: ["fogo das fadas","sono"]
       2: ["acalmar emoções","força fantasmagórica"]
-      3: ["piscar","crescimento de plantas"]
+      3: ["piscar","ampliar plantas"]
       4: ["dominar besta","invisibilidade maior"]
-      5: ["dominar pessoa","parecer"]
+      5: ["dominar pessoa","similaridade"]
     levels:
       - level: 1
         features:
@@ -4651,13 +5083,13 @@ warlock:
               uses: { per: "descanso curto/longo", value: 1 }
       - level: 6
         features:
-          - name: "Fuga Nebulosa"
+          - name: "Névoa de Fuga"
             description: "Reação ao sofrer dano: teleporta até 18 m e fica invisível até o início do seu próximo turno (ou até atacar/conjurar)."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
       - level: 10
         features:
-          - name: "Defesas Sedutoras"
+          - name: "Defesa Sedutora"
             description: "Imunidade a enfeitiçado; ao tentarem enfeitiçá-lo, reação: alvo faz TS Sab ou fica enfeitiçado por 1 min."
       - level: 14
         features:
@@ -4673,26 +5105,26 @@ warlock:
     choose_level: 1
     expanded_spells:
       1: ["mãos flamejantes","comando"]
-      2: ["cegueira/surdez","raio abrasador"]
-      3: ["bola de fogo","nuvem fétida"]
+      2: ["cegueira/surdez","raio ardente"]
+      3: ["bola de fogo","névoa fétida"]
       4: ["escudo de fogo","muralha de fogo"]
-      5: ["raio solar sagrado","solo consagrado"]
+      5: ["coluna de chamas","consagrar"]
     levels:
       - level: 1
         features:
-          - name: "Bênção do Diabo"
+          - name: "Bênção do Obscuro"
             description: "Ao reduzir uma criatura hostil a 0 PV: ganha PV temporários = CAR + nível de bruxo."
       - level: 6
         features:
-          - name: "Sorte do Diabo"
+          - name: "Sorte do Próprio Obscuro"
             description: "1/descanso: após rolar (antes do resultado), adiciona 1d10 a 1 teste de habilidade ou resistência."
       - level: 10
         features:
-          - name: "Resiliência Infernal"
+          - name: "Resistência Demoníaca"
             description: "Após um descanso, escolhe 1 tipo de dano (exceto físico não mágico); tem resistência até escolher outro."
       - level: 14
         features:
-          - name: "Arremessar ao Inferno"
+          - name: "Lançar no Inferno"
             description: "Ao acertar um ataque: bane o alvo até o fim do seu próximo turno; quando retorna, sofre 10d10 psíquico."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
@@ -4703,19 +5135,19 @@ warlock:
     description: "Entidades cósmicas insondáveis; telepatia e manipulação mental."
     choose_level: 1
     expanded_spells:
-      1: ["sussurros dissonantes","gargalhada horrível de Tasha"]
+      1: ["sussurros dissonantes","riso histérico de Tasha"]
       2: ["detectar pensamentos","força fantasmagórica"]
       3: ["clarividência","enviar mensagem"]
-      4: ["tentáculos negros de Evard","dominar besta"]
-      5: ["telecinesia","modificar memória"]
+      4: ["dominar besta","tentáculos negros de Evard"]
+      5: ["dominar pessoa","telecinésia"]
     levels:
       - level: 1
         features:
-          - name: "Mente Desperta"
-            description: "Telepatia com criatura que você vê a até 9 m (se entender um idioma)."
+          - name: "Despertar a Mente"
+            description: "Telepatia com criatura que você vê a até 18 m (se entender um idioma)."
       - level: 6
         features:
-          - name: "Distorção Entrópica"
+          - name: "Proteção Entrópica"
             description: "Reação ao ser alvo de ataque: impõe desvantagem; se errar, você tem vantagem no próximo ataque contra o alvo por até 1 min."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
@@ -4725,7 +5157,7 @@ warlock:
             description: "Resistência a psíquico; quando sofre psíquico, o agressor sofre a mesma quantidade."
       - level: 14
         features:
-          - name: "Criar Servo"
+          - name: "Criar Lacaio"
             description: "Ação: toque um humanóide incapacitado; fica enfeitiçado indefinidamente (até efeitos como Remover Maldição). Telepatia com ele no mesmo plano."
 
   # ——— PATRONOS (EXTRAS DA SUA MESA) ———
@@ -4735,11 +5167,11 @@ warlock:
     description: "Necromancia, mortos-vivos e toque fúnebre."
     choose_level: 1
     expanded_spells:
-      1: ["ray-of-sickness","false-life"]
-      2: ["ray-of-enfeeblement","gentle-repose"]
-      3: ["animate-dead","speak-with-dead"]
-      4: ["phantasmal-killer","blight"]
-      5: ["antilife-shell","cloudkill"]
+      1: ["raio adoecente","vitalidade falsa"]
+      2: ["raio do enfraquecimento","repouso tranquilo"]
+      3: ["animar mortos","falar com os mortos"]
+      4: ["assassino fantasmagórico","malogro"]
+      5: ["cúpula antivida","névoa mortal"]
     levels:
       - level: 1
         features:
@@ -4750,6 +5182,8 @@ warlock:
         features:
           - name: "Toque Mortal"
             description: "Toca humanóide vivo a 0 PV para matá-lo; ergue como zumbi sob comando (2 usos a partir do 12º)."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
       - level: 10
         features:
           - name: "Rigor Mortis"
@@ -4765,11 +5199,11 @@ warlock:
     description: "Justiça radiante e vingança sagrada."
     choose_level: 1
     expanded_spells:
-      1: ["detect-evil-and-good","guiding-bolt"]
-      2: ["branding-smite","zone-of-truth"]
-      3: ["blinding-smite","death-ward"]
-      4: ["staggering-smite","protection-from-death"]
-      5: ["dispel-evil-and-good","destructive-wave"]
+      1: ["detectar o bem e o mal","raio guiador"]
+      2: ["marca da punição","zona da verdade"]
+      3: ["destruição cegante","remover maldição"]
+      4: ["destruição estonteante","proteção contra a morte"]
+      5: ["dissipar o bem e o mal","onda destrutiva"]
     levels:
       - level: 1
         features:
@@ -4791,6 +5225,8 @@ warlock:
         features:
           - name: "Marca da Vingança"
             description: "Marca 1 min (TS CAR). Remove resistência/imunidade a radiante (pode torná-lo vulnerável) e bloqueia teleporte; penalidades extras vs corruptor/morto-vivo."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
 
   patrono-espirito-heroico:
     name: "O Espírito Heroico"
@@ -4798,16 +5234,18 @@ warlock:
     description: "Heroísmo ancestral emprestado; retaliação, tenacidade e avatar."
     choose_level: 1
     expanded_spells:
-      1: ["heroism","longstrider"]
-      2: ["enhance-ability","spiritual-weapon"]
-      3: ["spirit-guardians","beacon-of-hope"]
-      4: ["guardian-of-faith","freedom-of-movement"]
-      5: ["plane-shift-anchor","bigbys-hand"]
+      1: ["heroísmo","passos longos"]
+      2: ["aprimorar habilidade","arma espiritual"]
+      3: ["espíritos guardiões","sinal de esperança"]
+      4: ["guardião da fé","movimentação livre"]
+      5: ["âncora planar","mão de Bigby"]
     levels:
       - level: 1
         features:
           - name: "Retaliação Resoluta"
             description: "Reação a crítico ou a cair a 0 PV: reduz dano à metade ou fica com 1 PV; ganha vantagem e +1d8 contra o agressor até o fim do próximo turno."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
       - level: 6
         features:
           - name: "Vigor do Herói"
@@ -4820,6 +5258,8 @@ warlock:
         features:
           - name: "Avatar Espiritual"
             description: "1 h: resistência a físico não-mágico, vantagem em ataques, +1 ataque bônus/turno e +CAR em todos os TS."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
 
   patrono-supragenio:
     name: "O Supragênio"
@@ -4827,11 +5267,11 @@ warlock:
     description: "Intelecto cósmico e poder elemental dos gênios."
     choose_level: 1
     expanded_spells:
-      1: ["detect-evil-and-good","disguise-self"]
-      2: ["detect-thoughts","rope-trick"]
-      3: ["clairvoyance","blink"]
-      4: ["conjure-minor-elementals","hallucinatory-terrain"]
-      5: ["legend-lore","conjure-elemental"]
+      1: ["detectar o bem e o mal","disfarçar-se"]
+      2: ["detectar pensamentos","truque de corda"]
+      3: ["clarividência","piscar"]
+      4: ["conjurar elementais menores","terreno alucinógeno"]
+      5: ["conhecimento lendário","conjurar elemental"]
     choices:
       genie_lineage:
         choose: 1
@@ -4847,7 +5287,7 @@ warlock:
             grants:
               languages: ["Auran"]
               proficiencies: { skills: ["Acrobacia"] }
-              defenses: { resistance: ["relâmpago"] }
+              defenses: { resistance: ["elétrico"] }
           - id: "efreeti"
             name: "Efreeti (Ignan)"
             grants:
@@ -4858,7 +5298,7 @@ warlock:
             name: "Marid (Aquan)"
             grants:
               languages: ["Aquan"]
-              movement: { swim_ft: 30 }
+              traits: { amphibious: true }
               defenses: { resistance: ["frio"] }
     levels:
       - level: 1
@@ -4873,6 +5313,8 @@ warlock:
         features:
           - name: "Forma Prodigiosa"
             description: "Metade inferior enevoada; voo planar por 10 min; imunidade ao elemento do patrono."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
       - level: 14
         features:
           - name: "Seu Desejo é uma Ordem"
@@ -4884,11 +5326,11 @@ warlock:
     description: "Força primordial e ruína antiga; forma titânica temporária."
     choose_level: 1
     expanded_spells:
-      1: ["heroism","protection-from-evil-and-good"]
-      2: ["enlarge-reduce","pass-without-trace"]
-      3: ["water-walk","water-breathing"]
-      4: ["polymorph","dimension-door"]
-      5: ["commune","dispel-evil-and-good"]
+      1: ["heroísmo","proteção contra o bem e o mal"]
+      2: ["aumentar/reduzir","passos sem pegadas"]
+      3: ["andar na água","respirar na água"]
+      4: ["metamorfose","porta dimensional"]
+      5: ["comunhão","dissipar o bem e o mal"]
     levels:
       - level: 1
         features:
@@ -4906,6 +5348,8 @@ warlock:
         features:
           - name: "Pseudo-Titã"
             description: "1 min: tamanho Grande, For 21, +1d8 com armas, CON 15 pode atordoar; deslocamentos extras; Manipulação de Energia ilimitada."
+            rules:
+              uses: { per: "descanso longo", value: 1 }
 
   patrono-vazio:
     name: "O Vazio"
@@ -4913,11 +5357,11 @@ warlock:
     description: "Nada e entropia; silencia, apaga e consome."
     choose_level: 1
     expanded_spells:
-      1: ["inflict-wounds","fog-cloud"]
-      2: ["blindness-deafness","silence"]
-      3: ["nondetection","blink"]
-      4: ["phantasmal-killer","greater-invisibility"]
-      5: ["passwall","cloudkill"]
+      1: ["infligir ferimentos","névoa obscurecente"]
+      2: ["cegueira/surdez","silêncio"]
+      3: ["dificultar detecção","piscar"]
+      4: ["assassino fantasmagórico","invisibilidade maior"]
+      5: ["criar passagem","névoa mortal"]
     levels:
       - level: 1
         features:
@@ -4927,14 +5371,20 @@ warlock:
         features:
           - name: "Proteção do Vácuo"
             description: "Reação: anula totalmente o dano de uma fonte (1 uso; 13º: 2 usos)."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
       - level: 10
         features:
           - name: "Manto do Esquecimento"
             description: "Impõe amnésia (TS INT) a 18 m por 24 h."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
       - level: 14
         features:
           - name: "Esfera de Obliteração"
             description: "Cria esfera de antimatéria por até 1 min (concentração); dano de energia e sucção a 0 PV; move com ação bônus."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
 
   # ——— DÁDIVAS DE PACTO (nível 3) ———
   boons:
@@ -5124,6 +5574,10 @@ cozinheiro:
             rules:
               legendary_snack: "cerebro-de-macaco"
               prep_during: "long rest"
+              effect:
+                duration_minutes: 10
+                auto_success_saves: 1
+                save_choice: "alvo (após rolar, antes de saber o resultado)"
               uses:
                 per: "descanso longo"
                 value: 1
@@ -5229,6 +5683,21 @@ cozinheiro:
             rules:
               legendary_snack: "pilula-gasosa"
               prep_during: "long rest"
+              save:
+                ability: "Constituição"
+                on_fail: "envenenado e deslocamento pela metade até o fim do próximo turno"
+              explosion:
+                trigger: "alvo morre dentro de 1 hora (independente do TR inicial)"
+                radius_m: 3
+                save:
+                  ability: "Destreza"
+                  on_fail: "dano total"
+                  on_success: "metade do dano"
+                damage:
+                  type: "força"
+                  base: "10d6"
+                  base_size: "Médio ou menor"
+                  per_size_category_above: "5d6"
               uses:
                 per: "descanso longo"
                 value: 1
@@ -5260,6 +5729,9 @@ cozinheiro:
                 value: "Carisma (mín. 1)"
           - name: "Confeitaria Apaziguante"
             description: "Quando alguém consumir um de seus doces durante descanso curto, adiciona +1d6 à cura de Dados de Vida dessa criatura."
+            rules:
+              hit_die_heal_bonus: "1d6"
+              during: "short rest"
       - level: 6
         features:
           - name: "Guloseima Hipnótica"
@@ -5326,6 +5798,7 @@ cozinheiro:
               intoxication_duration: "1 minuto"
               intoxication_immunities: ["enfeitiçado", "amedrontado"]
               hangover_after: "não pode mover ou agir até fim do próximo turno"
+              once_per_rest: "descanso curto ou longo"
       - level: 6
         features:
           - name: "Andar Cambaleante"

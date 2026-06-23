@@ -1040,6 +1040,7 @@ class ClassRules
           circulo_fadas: { id: 'circulo-fadas', name: 'Círculo das Fadas' },
           circulo_feras: { id: 'circulo-feras', name: 'Círculo das Feras' },
           circulo_mundos: { id: 'circulo-mundos', name: 'Círculo dos Mundos' },
+          circulo_verdejante: { id: 'circulo-verdejante', name: 'Círculo Verdejante' },
         },
       },
       spellcasting: {
