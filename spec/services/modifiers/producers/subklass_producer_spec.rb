@@ -117,6 +117,136 @@ RSpec.describe Modifiers::Producers::SubklassProducer, type: :service do
     end
   end
 
+  # ─── R5: grants.defenses.* → resistências/imunidades ───────────────────
+  describe '#produce — grants.defenses (R5)' do
+    it 'emite resistências a partir de grants.defenses.resistance ANINHADO em feature (Bruxo patrono-morte)' do
+      sub = make_sub(
+        api_index: 'patrono-morte_prod', name: 'A Morte',
+        levels_json: [
+          {
+            'level' => 1,
+            'features' => [
+              {
+                'name' => 'Cria da Não-Vida',
+                'grants' => { 'defenses' => { 'resistance' => ['necrótico', 'veneno'] } },
+              },
+            ],
+          },
+        ],
+      )
+      sheet = make_sheet_at_level(sub: sub, level: 20)
+
+      mods = described_class.new(sheet).produce
+      res = mods.select { |m| m.target.start_with?('resistance.') }
+      expect(res.map(&:value)).to contain_exactly('necrótico', 'veneno')
+      expect(res).to all(have_attributes(op: :grant, source_kind: :subklass))
+      expect(res.first.source).to include('patrono-morte_prod', 'cria-da-nao-vida')
+    end
+
+    it 'emite resistência + (idioma fica para R4) a partir de feature (Bruxo arcanjo-vingador)' do
+      sub = make_sub(
+        api_index: 'arcanjo-vingador_prod', name: 'O Arcanjo Vingador',
+        levels_json: [
+          {
+            'level' => 1,
+            'features' => [
+              {
+                'name' => 'Servo dos Anjos',
+                'grants' => {
+                  'languages' => ['Celestial'],
+                  'defenses' => { 'resistance' => ['radiante'] },
+                  'proficiencies' => { 'skills' => ['Intuição'] },
+                },
+              },
+            ],
+          },
+        ],
+      )
+      sheet = make_sheet_at_level(sub: sub, level: 20)
+
+      mods = described_class.new(sheet).produce
+      expect(mods.select { |m| m.target == 'resistance.radiante' }.map(&:value)).to eq(['radiante'])
+      # languages/skills NÃO viram modifier aqui (são R4 em build_proficiencies)
+      expect(mods.map(&:target).any? { |t| t.include?('language') }).to be(false)
+      expect(mods.map(&:target).any? { |t| t.start_with?('skill.') }).to be(false)
+    end
+
+    it 'emite resistência a partir de grants.defenses no NÍVEL DA ROW (Feiticeiro origem-abissal)' do
+      sub = make_sub(
+        api_index: 'origem-abissal_prod', name: 'Origem Abissal',
+        levels_json: [
+          {
+            'level' => 1,
+            'features' => [{ 'name' => 'Linhagem Demoníaca' }],
+            'grants' => {
+              'languages' => { 'fixed' => ['Abissal'] },
+              'defenses' => { 'resistance' => ['fogo'] },
+            },
+          },
+        ],
+      )
+      sheet = make_sheet_at_level(sub: sub, level: 20)
+
+      mods = described_class.new(sheet).produce
+      expect(mods.select { |m| m.target == 'resistance.fogo' }.map(&:value)).to eq(['fogo'])
+    end
+
+    it 'emite imunidade de dano a partir de grants.defenses.immunity' do
+      sub = make_sub(
+        api_index: 'origem-mutavel_prod', name: 'Origem Mutável',
+        levels_json: [
+          {
+            'level' => 14,
+            'features' => [{ 'name' => 'Metabolismo Resistente' }],
+            'grants' => { 'defenses' => { 'immunity' => ['doenças', 'veneno'] } },
+          },
+        ],
+      )
+      sheet = make_sheet_at_level(sub: sub, level: 20)
+
+      mods = described_class.new(sheet).produce
+      imm = mods.select { |m| m.target.start_with?('damage_immunity.') }
+      expect(imm.map(&:value)).to contain_exactly('doenças', 'veneno')
+      expect(imm).to all(have_attributes(op: :grant, source_kind: :subklass))
+    end
+
+    it 'NAO emite defesas quando o personagem ainda nao alcancou o nivel' do
+      sub = make_sub(
+        api_index: 'origem-abissal_low', name: 'Origem Abissal',
+        levels_json: [
+          {
+            'level' => 6,
+            'features' => [{ 'name' => 'X', 'grants' => { 'defenses' => { 'resistance' => ['fogo'] } } }],
+          },
+        ],
+      )
+      sheet = make_sheet_at_level(sub: sub, level: 3)
+
+      mods = described_class.new(sheet).produce
+      expect(mods.select { |m| m.target.start_with?('resistance.') }).to be_empty
+    end
+  end
+
+  describe 'integration with ModifierResolver — resistências (R5)' do
+    it 'bag.granted("resistance") inclui necrótico/veneno (patrono-morte)' do
+      sub = make_sub(
+        api_index: 'patrono-morte_int', name: 'A Morte',
+        levels_json: [
+          {
+            'level' => 1,
+            'features' => [
+              { 'name' => 'Cria da Não-Vida', 'grants' => { 'defenses' => { 'resistance' => ['necrótico', 'veneno'] } } },
+            ],
+          },
+        ],
+      )
+      sheet = make_sheet_at_level(sub: sub, level: 20)
+
+      bag = Modifiers::ModifierResolver.new(sheet, producer_keys: %i[subklass]).call
+      expect(bag.granted('resistance')).to contain_exactly('necrótico', 'veneno')
+    end
+  end
+
   describe 'integration with ModifierResolver' do
     it 'subklass speed bonus aparece em bag.sum_for_kind(:subklass) e no agregado sum_for' do
       sub = make_sub(api_index: 'batedor_int', name: 'Batedor', levels_json: batedor_levels)

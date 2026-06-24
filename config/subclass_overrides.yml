@@ -2353,6 +2353,9 @@ ranger:
               duration_by_slot:
                 "4": "1 hora"
                 "5": "8 horas"
+              uses:
+                per: "descanso longo"
+                value: 1
 
   cacador:
     name: "Caçador"
@@ -2525,9 +2528,15 @@ ranger:
           - name: "Tiro de Misericórdia"
             description: |
               No 15° nível, você pode desferir um tiro devastador contra uma presa ferida. Com sua ação, realize um único ataque à distância com arco contra uma criatura no alcance. Se o alvo estiver com menos da metade do seu máximo de pontos de vida, ele deve ser bem sucedido num teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Sabedoria) ou sofrerá 10d8 de dano extra. Um sucesso na resistência reduz o dano extra à metade. Um alvo que caia para 0 pontos de vida por causa desse dano, morre instantaneamente. Após usar essa característica, você precisa terminar um descanso longo para usá-la novamente.
+            uses:
+              per: "descanso longo"
+              value: 1
           - name: "Flechas Perfeitas"
             description: |
               A partir do 15° nível, você consegue fabricar flechas impressionantes para seu arco. Você pode passar 8 horas num processo de fabricação tentando usar suas ferramentas de entalhador para fazer flechas obra-prima. Realize um teste de Destreza CD 20 usando suas ferramentas de entalhador. Se você for bem sucedido, você cria 2d10 flechas obra-prima. Essas flechas causam 1d10 de dano, se forem feitas para arcos longos, ou 1d8 de dano, se forem feitas para arcos curtos. Além disso, essas flechas atingem um acerto crítico numa rolagem 19 ou 20 no d20. Após usar essa característica, você precisa terminar um descanso longo para usá-la novamente.
+            uses:
+              per: "descanso longo"
+              value: 1
 
   guardiao_selvagem:
     name: "Guardião Selvagem"
@@ -2549,6 +2558,9 @@ ranger:
               • Você ganha vantagem em testes de Carisma (Intimidação).
               • Você pode usar a ação de Disparada com uma ação bônus.
               Enquanto estiver nesse estado, você não pode conjurar magias que não estejam na sua lista de magias de patrulheiro nem pode realizar ações que exijam concentração. A partir do 5° nível, quando você usar a ação de Ataques Múltiplos você pode realizar um ataque de mordida e três ataques com garra ou um ataque de mordida e dois ataques com arma. Após usar essa característica, você precisa terminar um descanso curto ou longo para usá-la novamente.
+            uses:
+              per: "descanso curto ou longo"
+              value: 1
       - level: 7
         features:
           - name: "Instinto Animal"

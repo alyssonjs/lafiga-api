@@ -123,6 +123,19 @@ class CharacterSheetSummaryService
       rescue => _e
         # best-effort enrichment only
       end
+
+      # R3 — Magias SEMPRE-PREPARADAS de subclasse (domínios do Clérigo,
+      # círculos/terrenos do Druida, juramentos do Paladino, patronos do Bruxo).
+      # Estas vêm resolvidas em `spells.prepared_by_level` (always_prepared:true)
+      # pelo KnownSpellsAggregator, mas NUNCA entravam em `available_by_level`,
+      # que era montado só a partir de `SpellSource(source_type:'Klass')`. Sem
+      # isto, os 14 domínios do Clérigo devolviam `available_by_level` idêntico.
+      begin
+        merge_subclass_always_prepared_spells!(spells)
+      rescue => _e
+        # best-effort enrichment only
+      end
+
       equipment = begin
         EquipmentProfileService.new(@sheet).call
       rescue => e
@@ -712,6 +725,11 @@ class CharacterSheetSummaryService
     armor = Array(cs['armor_proficiencies'] || [])
     weapons = Array(cs['weapon_proficiencies'] || [])
     per_level_choices = meta.dig('class_choices', 'per_level') || {}
+    # Perícias/expertise concedidas pela subclasse (ex.: Colégio da Quietude
+    # → Enganação/Furtividade; Domínio da Água → Atletismo). Vão para a
+    # sub-chave `skills.subclass` no retorno (R4).
+    subclass_skills = []
+    subclass_expertise = []
 
     # Mesclar proficiências da raça (armas/armaduras/ferramentas fixas) que vivem em
     # `race_summary.proficiencies` (populado pelo CharacterProvisioningService via RaceRules.apply).
@@ -744,29 +762,87 @@ class CharacterSheetSummaryService
         Array(rows).each do |row|
           rlevel = (row.is_a?(Hash) ? (row['level'] || row[:level]) : 0).to_i
           next if rlevel <= 0 || rlevel > lvl
-          grants = (row['grants'] || {})
-          prof = (grants['proficiencies'] || {})
-          a = prof['armor'] || prof[:armor] || []
-          w = prof['weapons'] || prof[:weapons] || []
-          tlist = prof['tools'] || prof[:tools] || []
-          armor |= resolve_proficiency_grant_values(
-            a,
-            per_level: per_level_choices,
-            level: rlevel,
-            choice_keys: %w[armor armors]
-          )
-          weapons |= resolve_proficiency_grant_values(
-            w,
-            per_level: per_level_choices,
-            level: rlevel,
-            choice_keys: %w[weapon weapons]
-          )
-          resolve_proficiency_grant_values(
-            tlist,
-            per_level: per_level_choices,
-            level: rlevel,
-            choice_keys: %w[tool tools instruments]
-          ).each { |t| tools << t.to_s if t.to_s.strip != '' }
+
+          # Coleta blocos de `grants` tanto no NÍVEL DA ROW quanto ANINHADOS em
+          # cada feature. ~20 level-rows guardam `grants.proficiencies` dentro de
+          # `row['features'][i]['grants']` (ex.: Colégio da Bravura L3
+          # "Proficiência Adicional" → armaduras médias/escudos/armas marciais),
+          # e não em `row['grants']`. Sem isto, essas proficiências eram
+          # silenciosamente descartadas na ficha.
+          grant_blocks = []
+          grant_blocks << row['grants'] if row['grants'].is_a?(Hash)
+          Array(row.is_a?(Hash) ? (row['features'] || row[:features]) : nil).each do |feat|
+            next unless feat.is_a?(Hash)
+            fg = feat['grants'] || feat[:grants]
+            grant_blocks << fg if fg.is_a?(Hash)
+          end
+
+          grant_blocks.each do |grants|
+            # ── Idiomas concedidos pela subclasse (R4) ──────────────────
+            # `grants.languages` aparece como Array (['Celestial']),
+            # { fixed:[...] } (draconic→Dracônico, abissal→Abissal) ou
+            # { choose, options } (colégio-virtuosismo). Antes, build_proficiencies
+            # nunca lia este nó → idiomas de subclasse sumiam da ficha.
+            langs_raw = grants['languages'] || grants[:languages]
+            if langs_raw
+              resolve_proficiency_grant_values(
+                langs_raw,
+                per_level: per_level_choices,
+                level: rlevel,
+                choice_keys: %w[language languages]
+              ).each { |l| languages << l.to_s if l.to_s.strip != '' }
+            end
+
+            prof = (grants['proficiencies'] || grants[:proficiencies] || {})
+            next unless prof.is_a?(Hash)
+            # Aceita armor/armors e weapon/weapons (singular E plural). O YAML
+            # usa ora `armor` (Array) ora `armors` ({add:[...]}) — idem weapons.
+            a = prof['armor'] || prof[:armor] || prof['armors'] || prof[:armors] || []
+            w = prof['weapons'] || prof[:weapons] || prof['weapon'] || prof[:weapon] || []
+            tlist = prof['tools'] || prof[:tools] || []
+            armor |= resolve_proficiency_grant_values(
+              a,
+              per_level: per_level_choices,
+              level: rlevel,
+              choice_keys: %w[armor armors]
+            )
+            weapons |= resolve_proficiency_grant_values(
+              w,
+              per_level: per_level_choices,
+              level: rlevel,
+              choice_keys: %w[weapon weapons]
+            )
+            resolve_proficiency_grant_values(
+              tlist,
+              per_level: per_level_choices,
+              level: rlevel,
+              choice_keys: %w[tool tools instruments]
+            ).each { |t| tools << t.to_s if t.to_s.strip != '' }
+
+            # ── Perícias + expertise concedidas pela subclasse (R4) ─────
+            # `grants.proficiencies.skills` em Array, { fixed:[...] },
+            # { add_or_replace:[...] } ou { choose, options }. O sentinel textual
+            # `:selected_from_class_skills` (Colégio do Conhecimento) é ignorado
+            # por resolve_proficiency_grant_values (R5/D6).
+            slist = prof['skills'] || prof[:skills]
+            if slist
+              resolve_proficiency_grant_values(
+                slist,
+                per_level: per_level_choices,
+                level: rlevel,
+                choice_keys: %w[skill skills]
+              ).each { |s| subclass_skills << s.to_s if s.to_s.strip != '' }
+            end
+            elist = prof['expertise'] || prof[:expertise]
+            if elist
+              resolve_proficiency_grant_values(
+                elist,
+                per_level: per_level_choices,
+                level: rlevel,
+                choice_keys: %w[expertise]
+              ).each { |s| subclass_expertise << s.to_s if s.to_s.strip != '' }
+            end
+          end
         end
       end
     rescue => _e
@@ -880,7 +956,10 @@ class CharacterSheetSummaryService
         class: class_cs_skills,
         background: to_arr.call(bg['skills']),
         race: (race_skills + to_arr.call(vh_skill) + race_choice_skills).uniq,
-        feat: feat_skills.uniq
+        feat: feat_skills.uniq,
+        subclass: subclass_skills.uniq,
+        # Expertise concedida por subclasse (raro; reservado p/ paridade futura).
+        expertise: subclass_expertise.uniq
       }
     }
   end
@@ -890,6 +969,10 @@ class CharacterSheetSummaryService
     when Hash
       h = raw.stringify_keys
       if h['choose'].to_i.positive?
+        # `options` pode ser um sentinel textual (ex.: ':selected_from_class_skills'
+        # do Colégio do Conhecimento) cuja resolução depende de choices.* —
+        # isso é R5/D6 (grant preso em choices), então não materializamos aqui.
+        return [] unless h['options'].is_a?(Array)
         selected = selected_proficiency_choices(per_level, level, choice_keys)
         allowed = Array(h['options']).map(&:to_s).reject(&:blank?)
         selected = selected.select do |choice|
@@ -897,7 +980,12 @@ class CharacterSheetSummaryService
         end
         return selected.first(h['choose'].to_i)
       end
+      # Formas `{ add: [...] }` / `{ add_or_replace: [...] }` (plural no YAML:
+      # `armors`/`weapons`/`skills`/`tools` com `{add:[...]}`). Tratadas como
+      # concessão fixa — todo o conteúdo do array é mesclado.
       return Array(h['fixed']).map(&:to_s).reject(&:blank?) if h['fixed'].is_a?(Array)
+      return Array(h['add']).map(&:to_s).reject(&:blank?) if h['add'].is_a?(Array)
+      return Array(h['add_or_replace']).map(&:to_s).reject(&:blank?) if h['add_or_replace'].is_a?(Array)
 
       []
     when Array
@@ -1183,6 +1271,75 @@ class CharacterSheetSummaryService
     @primary_sk ||= @sheet.sheet_klasses.order(level: :desc, id: :asc).first
   end
 
+  # R3 — Injeta as magias SEMPRE-PREPARADAS de subclasse em
+  # `spells[:available_by_level]` e marca `domain:`/`circle:` em
+  # `spells[:prepared_by_level]`.
+  #
+  # Fonte: `KnownSpellsAggregator` já resolve TODAS as magias always-prepared
+  # de subclasse (domínios do Clérigo via YAML `always_prepared`; círculos/
+  # terrenos do Druida via `always_prepared_by_terrain`; juramentos do Paladino
+  # via `SpellSource(SubKlass, always_prepared)`; patronos do Bruxo) dentro de
+  # `prepared_by_level`, marcando cada entrada com `always_prepared:true`. Como
+  # NÃO existe nenhuma `SpellSource(source_type:'Klass', always_prepared:true)`
+  # no banco, toda entrada always-prepared é, por construção, de SUBCLASSE.
+  # Por isso derivamos daqui em vez de re-resolver a partir do levels_json/YAML.
+  def merge_subclass_always_prepared_spells!(spells)
+    return unless spells.is_a?(Hash)
+    prepared = spells[:prepared_by_level]
+    return unless prepared.is_a?(Hash)
+
+    flag = subclass_spell_flag # :domain (clérigo) | :circle (druida) | nil
+    available = (spells[:available_by_level] ||= {})
+    spells[:catalog_by_id] ||= {}
+
+    prepared.each do |lvl, entries|
+      Array(entries).each do |e|
+        next unless e.is_a?(Hash)
+        next unless e[:always_prepared] || e['always_prepared']
+
+        # Marca a flag de origem (domínio do Clérigo / círculo do Druida) sem
+        # remover a já existente (`circle:true` posta pelo aggregator p/ terreno).
+        if flag == :domain
+          e[:domain] = true
+        elsif flag == :circle
+          e[:circle] = true
+        end
+
+        name = (e[:name] || e['name']).to_s
+        next if name.strip.empty?
+        spell_level = lvl.to_i
+
+        # `available_by_level` é a lista de magias preparáveis (nomes por nível).
+        # Magias de domínio são SEMPRE preparadas além do limite, então também
+        # devem constar como disponíveis para inspeção/UI.
+        bucket = (available[spell_level] ||= [])
+        unless bucket.any? { |n| n.to_s.casecmp?(name) }
+          bucket << name
+          available[spell_level] = bucket.uniq.sort
+        end
+
+        sid = (e[:id] || e['id'])
+        if sid && !spells[:catalog_by_id].key?(sid)
+          spells[:catalog_by_id][sid] = {
+            id: sid, name: name, level: spell_level,
+            desc: (e[:desc] || e['desc']), higher_level: (e[:higher_level] || e['higher_level'])
+          }
+        end
+      end
+    end
+  end
+
+  # Define qual flag de origem aplicar às magias sempre-preparadas da subclasse
+  # primária: :domain p/ Clérigo, :circle p/ Druida; nil p/ as demais (Paladino/
+  # Bruxo já usam `always_prepared` sem rótulo de domínio/círculo).
+  def subclass_spell_flag
+    pk = primary_sheet_klass
+    api = pk&.klass&.api_index.to_s.downcase
+    return :domain if api.include?('cleric') || api == 'clerigo'
+    return :circle if api.include?('druid')
+    nil
+  end
+
   # Emite tabela `resources` consolidada por classe primária + nível atual.
   # Front consome via `summary.resources.{sorcery_points|bardic_inspiration|rage|ki|wild_shape|...}`.
   #
@@ -1299,10 +1456,251 @@ class CharacterSheetSummaryService
       }
     end
 
+    # ─────────────────────────────────────────────────────────────────
+    # R1 — Generalização: recursos faltantes de classe e de SUBCLASSE.
+    # Mantém TODOS os branches acima (compat). As três passadas abaixo
+    # NUNCA sobrescrevem uma chave já emitida pela allowlist hardcoded.
+    # ─────────────────────────────────────────────────────────────────
+
+    # (R1.a) Recursos derivados centrais (ClassRules.derive_feature_rules) —
+    # captura o que a allowlist não cobre. Hoje materializa:
+    #   - Cozinheiro: snacks (usos=mod.CON mín.1, recarga SR/LR, dc=8+PB+CON)
+    #   - Bruxo: pact_slots (Magia de Pacto) — recarga SR
+    # Os recursos de classes já tratados acima (rage/ki/...) são ignorados via
+    # presence-check, então não há duplicação nem regressão.
+    merge_derived_class_resources!(out, sheet, abilities: abilities, used_for: used_for)
+
+    # (R1.b) Recursos centrais estruturados que não são `uses` simples.
+    #   - Guerreiro/Mestre de Batalha: superiority_dice (total/die/recharge).
+    #   - Bruxo: mystic_arcanum (1 magia 6º–9º, 1/descanso longo cada, L11/13/15/17).
+    #   - Ladino: stroke_of_luck (Golpe de Sorte, L20, 1/descanso curto-longo).
+    merge_structured_class_resources!(out, sk, api_idx, level, used_for: used_for, abilities: abilities)
+
+    # (R1.c) Recursos genéricos de feature de SUBCLASSE via bloco `uses` no
+    # levels_json. Cobre Canalizar Divindade da subclasse (Teurgia Mística),
+    # Estudar Inimigo (Ranger), Ladrão de Magia (Trapaceiro Arcano), e os
+    # recursos 1/descanso de patronos do Bruxo, entre outros.
+    merge_subclass_uses_resources!(out, sk, level, used_for: used_for)
+
     out
   rescue StandardError => e
     Rails.logger.warn("CharacterSheetSummaryService#build_resources: #{e.class}: #{e.message}")
     {}
+  end
+
+  # ── R1 helpers ──────────────────────────────────────────────────────
+
+  # Parseia o levels_json de uma SubKlass (coluna pode ser String JSON ou Array).
+  def subklass_levels_json(sub_klass)
+    return [] unless sub_klass.respond_to?(:levels_json)
+    raw = sub_klass.levels_json
+    raw = JSON.parse(raw) rescue nil if raw.is_a?(String)
+    raw.is_a?(Array) ? raw : []
+  rescue StandardError
+    []
+  end
+
+  # Chave estável (slug) derivada do id da feature, senão do nome.
+  # transliterate + downcase + underscore. Usada como chave de recurso
+  # e como key de `class_resources_used` (front grava o mesmo slug).
+  def resource_key_for_feature(feature)
+    raw = feature['id'].presence || feature['name'].presence
+    return nil unless raw
+    slug = ActiveSupport::Inflector.transliterate(raw.to_s)
+                                   .downcase
+                                   .gsub(/[^a-z0-9]+/, '_')
+                                   .gsub(/\A_+|_+\z/, '')
+    slug.presence
+  end
+
+  # Recarga a partir do texto do `per` ("descanso curto/longo", "descanso longo"...).
+  # Retorna 'SR/LR' (curto e longo), 'SR' (só curto) ou 'LR' (só longo).
+  def recharge_from_per(per)
+    txt = per.to_s.downcase
+    has_short = txt.include?('curto')
+    has_long  = txt.include?('longo')
+    if has_short && has_long then 'SR/LR'
+    elsif has_short then 'SR'
+    else 'LR'
+    end
+  end
+
+  # Normaliza o bloco `uses` de uma feature (vários formatos no levels_json):
+  #   - Hash { 'per' => '...', 'value' => N }   → { total: N, recharge: '..' }
+  #   - Integer/numeric N                        → { total: N, recharge: 'SR/LR' }
+  # Retorna nil quando não há valor numérico (ex.: "mod. INT (mín. 1)") → D5.
+  def normalize_uses_block(raw)
+    return nil if raw.nil?
+    if raw.is_a?(Hash)
+      val = (raw['value'] || raw[:value])
+      return nil unless val.is_a?(Numeric) || val.to_s =~ /\A\d+\z/
+      { total: val.to_i, recharge: recharge_from_per(raw['per'] || raw[:per]) }
+    elsif raw.is_a?(Numeric) || raw.to_s =~ /\A\d+\z/
+      { total: raw.to_i, recharge: 'SR/LR' }
+    end
+  end
+
+  # (R1.a) Mescla recursos de ClassRules.derive_feature_rules que a allowlist
+  # não emitiu. Converte o formato {uses:/count:/pool:, recharge:, ...} do
+  # derive para o formato do summary {total:, used:, recharge:, ...}.
+  def merge_derived_class_resources!(out, sheet, abilities:, used_for:)
+    pk = primary_sheet_klass
+    return unless pk&.klass
+
+    sc = abilities[:scores] || {}
+    ability_scores = {
+      'STR' => sc[:str].to_i, 'DEX' => sc[:dex].to_i, 'CON' => sc[:con].to_i,
+      'INT' => sc[:int].to_i, 'WIS' => sc[:wis].to_i, 'CHA' => sc[:cha].to_i,
+    }
+    derived = ClassRules.derive_feature_rules(
+      rule: ClassRules.find(pk.klass.api_index) || {},
+      level: pk.level.to_i.nonzero? || 1,
+      picks: {},
+      ability_scores: ability_scores,
+      equipment: {}
+    ) rescue {}
+    res = (derived || {})[:resources]
+    return unless res.is_a?(Hash)
+
+    res.each do |key, conf|
+      sym = key.to_sym
+      next if out.key?(sym) # nunca sobrescreve a allowlist
+      next unless conf.is_a?(Hash)
+
+      total = (conf[:uses] || conf['uses'] || conf[:count] || conf['count'] ||
+               conf[:pool] || conf['pool'])
+      next if total.nil?
+      next unless total.is_a?(Numeric) || total.to_s =~ /\A\d+\z/
+      total = total.to_i
+      # Recurso ainda não destravado no nível atual (ex.: indomitable < L9 vem
+      # com uses=0): não emitir, para não divergir da allowlist hardcoded.
+      next if total <= 0
+
+      entry = { total: total, used: [used_for.call(sym.to_s), total].min }
+      recharge = conf[:recharge] || conf['recharge']
+      entry[:recharge] = recharge if recharge.present?
+      %i[dc slot_level].each do |extra|
+        v = conf[extra] || conf[extra.to_s]
+        entry[extra] = v unless v.nil?
+      end
+      out[sym] = entry
+    end
+  end
+
+  # (R1.b) Recursos centrais estruturados que não vêm como `uses` simples.
+  def merge_structured_class_resources!(out, sk, api_idx, level, used_for:, abilities:)
+    # Dado de Superioridade (Guerreiro / Mestre de Batalha)
+    if !out.key?(:superiority_dice) && sk.sub_klass
+      sd = superiority_dice_for(sk.sub_klass, level)
+      if sd
+        out[:superiority_dice] = {
+          total: sd[:total], die: sd[:die], recharge: 'SR/LR',
+          used: [used_for.call('superiority_dice'), sd[:total]].min,
+        }
+      end
+    end
+
+    # Arcano Místico (Bruxo): 1 magia por nível de slot 6º–9º, 1/descanso longo.
+    if !out.key?(:mystic_arcanum) && (api_idx.include?('warlock') || api_idx == 'bruxo')
+      grants = mystic_arcanum_grants(sk, level)
+      if grants.any?
+        out[:mystic_arcanum] = {
+          total: grants.size, used: [used_for.call('mystic_arcanum'), grants.size].min,
+          recharge: 'LR', spell_levels: grants.sort,
+        }
+      end
+    end
+
+    # Golpe de Sorte (Ladino, L20, 1/descanso curto-longo).
+    if !out.key?(:stroke_of_luck) && (api_idx.include?('rogue') || api_idx == 'ladino') && level >= 20
+      out[:stroke_of_luck] = {
+        total: 1, used: [used_for.call('stroke_of_luck'), 1].min, recharge: 'SR/LR',
+      }
+    end
+  end
+
+  # Calcula o Dado de Superioridade do Mestre de Batalha a partir do levels_json
+  # da subclasse: base 4 dados (d8) no L3 + `superiority_dice_bonus` por feature
+  # (L7/L15) e tamanho via `superiority_die_size` (d10@L10, d12@L18).
+  def superiority_dice_for(sub_klass, level)
+    rows = subklass_levels_json(sub_klass)
+    return nil if rows.empty?
+
+    has_superiority = false
+    bonus = 0
+    die = 'd8'
+    rows.each do |row|
+      next unless (row['level'] || row[:level]).to_i <= level
+      Array(row['features'] || row[:features]).each do |f|
+        rules = f['rules'] || f[:rules] || {}
+        name = (f['name'] || f[:name]).to_s
+        has_superiority = true if name =~ /superioridade em combate/i || rules['superiority_dice_bonus'] || rules['superiority_die_size']
+        bonus += rules['superiority_dice_bonus'].to_i if rules['superiority_dice_bonus']
+        if (sz = rules['superiority_die_size']).present?
+          die = sz.to_s
+        end
+      end
+    end
+    return nil unless has_superiority
+    { total: 4 + bonus, die: die }
+  end
+
+  # Quantos Arcanos Místicos o Bruxo possui no nível atual (Klass rules).
+  # Lê feature_rules.mystic_arcanum.grants { 11=>{level:6}, 13=>{level:7}, ... }.
+  def mystic_arcanum_grants(sk, level)
+    rules = ClassRules.find(sk.klass.api_index) rescue nil
+    ma = rules&.dig(:feature_rules, :mystic_arcanum, :grants)
+    return [] unless ma.is_a?(Hash)
+    spell_levels = []
+    ma.each do |unlock_lvl, row|
+      next unless unlock_lvl.to_i <= level
+      sl = (row[:level] || row['level']).to_i
+      spell_levels << sl if sl.positive?
+    end
+    spell_levels
+  end
+
+  # (R1.c) Recursos genéricos de feature de subclasse: itera o levels_json da
+  # subclasse primária e materializa cada feature (nível ≤ nível do personagem)
+  # que carregue um bloco de usos (`feature['uses']` ou `feature['rules']['uses']`).
+  def merge_subclass_uses_resources!(out, sk, level, used_for:)
+    return unless sk.sub_klass
+    rows = subklass_levels_json(sk.sub_klass)
+    return if rows.empty?
+
+    rows.each do |row|
+      next unless (row['level'] || row[:level]).to_i <= level
+      Array(row['features'] || row[:features]).each do |f|
+        raw_uses = f['uses'] || f.dig('rules', 'uses')
+        next if raw_uses.nil?
+        norm = normalize_uses_block(raw_uses)
+        next if norm.nil? # sem valor numérico (formula textual) → D5
+
+        key = subclass_resource_key(f)
+        next if key.nil?
+        next if out.key?(key) # respeita recursos já emitidos (allowlist/estruturados)
+
+        total = norm[:total]
+        next if total <= 0
+
+        out[key] = {
+          total: total,
+          used: [used_for.call(key.to_s), total].min,
+          recharge: norm[:recharge],
+        }
+      end
+    end
+  end
+
+  # Deriva a chave do recurso de subclasse. Canaliza Divindade de subclasse
+  # (ex.: Teurgia Mística "Canalizar Divindade: Misticismo Divino") cai sob a
+  # chave canônica :channel_divinity para casar com o catálogo/front; demais
+  # features usam um slug estável.
+  def subclass_resource_key(feature)
+    name = (feature['name'] || feature[:name]).to_s
+    return :channel_divinity if name =~ /canalizar divindade/i
+    slug = resource_key_for_feature(feature)
+    slug&.to_sym
   end
 
   # Lookup hibrido (P2.13): runtime_state tem precedencia sobre legado.

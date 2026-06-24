@@ -481,6 +481,18 @@ namespace :dnd do
         )
         (lvl['features'] || []).each do |feat|
           api_idx = (feat['index'] || feat['slug'] || feat['name'].to_s.parameterize)
+
+          # Placeholders do SRD em níveis onde a SUBCLASSE (não a classe) concede
+          # uma característica — ex.: Feiticeiro L6/14/18 "Sorcerous Origin feature".
+          # Essas features já vêm de SubKlassLevel; ao nível de classe duplicam e
+          # contaminam a ficha (apareciam como "Recurso de origem sorrateira").
+          # Fonte canônica: .cursor/dnd-rules/classes/feiticeiro/feiticeiro.md
+          next if %w[
+            sorcerous-origin-improvement-1
+            sorcerous-origin-improvement-2
+            sorcerous-origin-improvement-3
+          ].include?(api_idx)
+
           fname   = tr_pt('features', api_idx, feat['name'])
           mark_missing('features', api_idx, feat['name']) if fname == feat['name']
 

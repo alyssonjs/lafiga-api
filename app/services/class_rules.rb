@@ -765,10 +765,10 @@ class ClassRules
       (sa[:dice_by_level] || {}).each { |lvl, n| dice = [dice, n.to_i].max if level >= lvl.to_i }
       out[:choices][:sneak_attack] = { dice:, die: (sa[:die] || 'd6') }
     end
-    out[:proficiency_overrides][:reliable_talent] = { d20_min_floor: 10 } if fr[:reliable_talent]&.dig(:available_at).to_i <= level
-    out[:proficiency_overrides][:slippery_mind] = { grant_save_proficiency: 'WIS' } if fr[:slippery_mind]&.dig(:available_at).to_i <= level
-    out[:proficiency_overrides][:uncanny_dodge] = true if fr[:uncanny_dodge]&.dig(:available_at).to_i <= level
-    out[:proficiency_overrides][:elusive] = true if fr[:elusive]&.dig(:available_at).to_i <= level
+    out[:proficiency_overrides][:reliable_talent] = { d20_min_floor: 10 } if (rt = fr[:reliable_talent]) && rt[:available_at].to_i <= level
+    out[:proficiency_overrides][:slippery_mind] = { grant_save_proficiency: 'WIS' } if (sm = fr[:slippery_mind]) && sm[:available_at].to_i <= level
+    out[:proficiency_overrides][:uncanny_dodge] = true if (ud = fr[:uncanny_dodge]) && ud[:available_at].to_i <= level
+    out[:proficiency_overrides][:elusive] = true if (el = fr[:elusive]) && el[:available_at].to_i <= level
 
     # --- Sorcerer ---
     if sp = fr[:sorcery_points]
@@ -1311,7 +1311,7 @@ class ClassRules
       armor_proficiencies: [], weapon_proficiencies: ['adagas','dardos','fundas','bordões','bestas leves'],
       tool_proficiencies: [],
       skill_proficiencies: { choose: 2, options: ['Arcanismo','Enganação','Intuição','Intimidação','Persuasão','Religião'] },
-      features_level1: ['Conjuração','Origem Feiticeira'],
+      features_level1: ['Conjuração','Origem de Feitiçaria'],
       # SRD: draconic / wild. Expandido: subclass_overrides.yml (ids = api_index pós-apply, exceto SRD mapeado em SUBCLASS_ALIASES).
       subclass: {
         choose_level: 1,

@@ -67,6 +67,23 @@ RSpec.describe ClassProfileService, type: :service do
     end
   end
 
+  describe 'subclass third-caster (Caminho do Punho Sagrado — Monge)' do
+    it 'usa SAB (não CHA) para spell DC e atk bonus em Monk Punho Sagrado L7' do
+      sheet = build_sheet(
+        klass_api: 'monk', klass_name: 'Monge',
+        sub_api: 'caminho_punho_sagrado', sub_name: 'Caminho do Punho Sagrado',
+        level: 7, abilities: { wis: 16, cha: 8 }
+      )
+      result = described_class.new(sheet).call
+
+      expect(result[:ability]).to eq('WIS'),
+        "Punho Sagrado deve usar SAB (subclass override em config/subclass_spellcasting.yml).\n" \
+        "  Bug pré-fix: sem entrada para monk → fallback 'CHA'."
+      expect(result[:spell_save_dc]).to eq(14)      # 8 + 3 (WIS 16) + 3 (prof L7)
+      expect(result[:spell_attack_bonus]).to eq(6)  # 3 + 3
+    end
+  end
+
   describe 'full caster (Wizard) ainda funciona' do
     it 'usa INT do klass.spellcasting_ability' do
       Klass.find_or_create_by!(api_index: 'wizard') do |k|

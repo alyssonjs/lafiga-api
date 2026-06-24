@@ -262,11 +262,11 @@ features:
   sorcerer-ability-score-improvement-3: Aumento de Valor de Atributo
   sorcerer-ability-score-improvement-4: Aumento de Valor de Atributo
   sorcerer-ability-score-improvement-5: Aumento de Valor de Atributo
-  sorcerous-origin: Origem Sorrateira
-  sorcerous-origin-improvement-1: Recurso de origem sorrateira
-  sorcerous-origin-improvement-2: Recurso de origem sorrateira
-  sorcerous-origin-improvement-3: Recurso de origem sorrateira
-  sorcerous-restoration: Restauração Sorrateira
+  sorcerous-origin: Origem de Feitiçaria
+  sorcerous-origin-improvement-1: Característica de Origem de Feitiçaria
+  sorcerous-origin-improvement-2: Característica de Origem de Feitiçaria
+  sorcerous-origin-improvement-3: Característica de Origem de Feitiçaria
+  sorcerous-restoration: Restauração Mística
   spell-mastery: Maestria Arcana
   spellcasting-bard: 'Conjuração: Bardo'
   spellcasting-cleric: 'Conjuração: Clérigo'
@@ -921,19 +921,19 @@ feature_descs:
   sorcerer-ability-score-improvement-4: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
   sorcerer-ability-score-improvement-5: Quando você atinge o 4º nível e novamente no 8º, 12º, 16º e 19º nível, você pode aumentar um valor de habilidade, à sua escolha, em 2, ou você pode aumentar dois valores de habilidade, à sua escolha, em 1. Como padrão, você não pode elevar um valor de habilidade acima de 20 com essa característica.
   sorcerous-origin: |-
-    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+    Escolha uma origem de feitiçaria, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
 
     Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
   sorcerous-origin-improvement-1: |-
-    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+    Escolha uma origem de feitiçaria, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
 
     Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
   sorcerous-origin-improvement-2: |-
-    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+    Escolha uma origem de feitiçaria, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
 
     Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
   sorcerous-origin-improvement-3: |-
-    Escolha uma origem sorrateira, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
+    Escolha uma origem de feitiçaria, que descreve a fonte do seu poder mágico inato, como Linhagem Dracônica.
 
     Sua escolha concede recursos quando a escolhe no 1º nível e novamente no 6º, 14º e 18º níveis.
   sorcerous-restoration: No 20º nível, você recupera 4 pontos de feitiçaria gastos sempre que terminar um descanso curto.

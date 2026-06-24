@@ -155,6 +155,63 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges subcla
     end
   end
 
+  let!(:bard) do
+    Klass.find_or_create_by!(api_index: 'bard') do |k|
+      k.name = 'Bardo'
+      k.hit_die = 8
+      k.subclass_level = 3
+    end
+  end
+
+  # SubKlass cujo grant de proficiência está ANINHADO dentro de uma feature
+  # (`row['features'][i]['grants']`) e NÃO em `row['grants']` — ~20 level-rows
+  # reais (Colégio da Bravura/Conhecimento/Comédia/..., Domínio da Água/Ar)
+  # usam esse formato. Antes do fix essas proficiências eram descartadas.
+  def build_bard_valor_sheet(level:)
+    sub = SubKlass.create!(
+      klass: bard,
+      api_index: "colegio-da-bravura-spec-#{SecureRandom.hex(3)}",
+      name: 'Colégio da Bravura (spec)',
+      levels_json: [
+        {
+          'level' => 3,
+          'features' => [
+            {
+              'name' => 'Proficiência Adicional',
+              'grants' => {
+                'proficiencies' => {
+                  'armor' => ['armaduras médias', 'escudos'],
+                  'weapons' => ['armas marciais'],
+                },
+              },
+            },
+          ],
+        },
+        {
+          # grant aninhado num nível ACIMA — só deve aparecer a partir do L14
+          'level' => 14,
+          'features' => [
+            {
+              'name' => 'Proficiência Tardia (spec)',
+              'grants' => { 'proficiencies' => { 'armor' => ['armadura pesada (spec L14)'] } },
+            },
+          ],
+        },
+      ].to_json
+    )
+    character = Character.create!(user: user, name: 'Bardo PC', background: 'Test')
+    sheet = Sheet.create!(
+      character: character,
+      race_id: human_race.id,
+      str: 8, dex: 14, con: 12, int: 10, wis: 12, cha: 16,
+      hp_max: 8, hp_current: 8,
+      class_summary: {},
+      metadata: { 'class_choices' => {} }
+    )
+    SheetKlass.create!(sheet: sheet, klass: bard, sub_klass: sub, level: level)
+    sheet
+  end
+
   it 'inclui tools concedidas pela subclasse (ex.: Maestria dos Autômatos) em proficiencies.tools' do
     sub = SubKlass.create!(
       klass: wizard,
@@ -238,5 +295,17 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges subcla
     expect(weapons).to include('Espada Longa')
     expect(weapons.join(' ')).not_to include('choose')
     expect(weapons.join(' ')).not_to include('options')
+  end
+
+  it 'mescla grants.proficiencies ANINHADOS em features (Colégio da Bravura L3) em armor/weapons' do
+    sheet = build_bard_valor_sheet(level: 5)
+    cmd = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+    expect(cmd.success?).to be(true), -> { cmd.errors.full_messages.join('; ') rescue cmd.inspect }
+    armor = Array(cmd.result.dig(:proficiencies, :armor)).map(&:to_s)
+    weapons = Array(cmd.result.dig(:proficiencies, :weapons)).map(&:to_s)
+    expect(armor).to include('armaduras médias', 'escudos')
+    expect(weapons).to include('armas marciais')
+    # guard de nível: o grant aninhado de L14 NÃO aparece num personagem L5
+    expect(armor).not_to include('armadura pesada (spec L14)')
   end
 end

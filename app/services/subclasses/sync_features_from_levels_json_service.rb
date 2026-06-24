@@ -81,12 +81,48 @@ module Subclasses
           end
           features_synced += 1
         end
+
+        # Pruning (evita recorrência de ghosts/legados em re-import): após anexar
+        # as canônicas deste nível, desassocia features de subclasse que NÃO casam
+        # com nenhum nome canônico do levels_json — mas SÓ quando há canônica
+        # presente E a remoção não esvazia o nível (mesmo critério seguro do
+        # rake dnd:cleanup_sheet_data D1). Sem critério seguro → não remove.
+        prune_orphan_features!(level_record, row)
       end
 
       result(:synced, levels_synced: levels_synced, features_synced: features_synced)
     end
 
     private
+
+    # Remove (desassocia) features de subclasse do nível que não estão no
+    # levels_json. Conservador: exige ≥1 canônica casada e nunca remove mais
+    # do que o nº de canônicas (1:1 ou menos) para não esvaziar o nível.
+    def prune_orphan_features!(level_record, row)
+      canon_names = Array(row['features']).map { |f| normalize_name(f['name'] || f[:name]) }
+                                          .reject(&:blank?)
+      return if canon_names.empty?
+
+      feats    = level_record.features.to_a
+      matched  = feats.select { |f| canon_names.include?(normalize_name(f.name)) }
+      nonmatch = feats.reject { |f| canon_names.include?(normalize_name(f.name)) }
+      return if nonmatch.empty?
+      return if matched.empty? || nonmatch.size > matched.size
+
+      nonmatch.each do |f|
+        level_record.features.delete(f)
+        CharactersFeature.where(feature_id: f.id).delete_all if defined?(CharactersFeature)
+        f.reload
+        f.destroy! if !f.class_levels.exists? && !f.sub_klass_levels.exists?
+      rescue ActiveRecord::InvalidForeignKey
+        # mantém a Feature se ainda referenciada; a associação já foi removida.
+      end
+    end
+
+    def normalize_name(s)
+      ActiveSupport::Inflector.transliterate(s.to_s).downcase
+        .gsub(/[^a-z0-9]+/, ' ').strip.gsub(/\s+/, ' ')
+    end
 
     def parse_levels_json
       raw = @sub.levels_json.presence
