@@ -12,6 +12,7 @@ class Schedule < ApplicationRecord
   belongs_to :date_dimension
   belongs_to :group
   belongs_to :battle_map, optional: true
+  belongs_to :created_by_user, class_name: 'User', optional: true
 
   has_many :schedule_characters, dependent: :destroy
   has_many :characters, through: :schedule_characters
@@ -57,6 +58,7 @@ class Schedule < ApplicationRecord
             allow_blank: true
   validate  :highlights_must_be_well_formed
   validate  :unique_active_slot_per_group
+  validate  :unique_active_slot_per_creator
   before_validation :normalize_highlights
 
   HIGHLIGHT_TYPES = %w[combat narrative discovery social].freeze
@@ -244,6 +246,21 @@ class Schedule < ApplicationRecord
                   .exists?
     if conflict
       errors.add(:base, "Este grupo já possui uma sessão ativa nesta data.")
+    end
+  end
+
+  # Um mesmo usuário não pode manter duas sessões não canceladas no mesmo dia,
+  # mesmo em grupos diferentes. Sessões canceladas liberam o dia.
+  def unique_active_slot_per_creator
+    return if cancelled?
+    return if created_by_user_id.blank? || date_dimension_id.blank?
+
+    conflict = self.class.active
+                  .where(created_by_user_id: created_by_user_id, date_dimension_id: date_dimension_id)
+                  .where.not(id: id)
+                  .exists?
+    if conflict
+      errors.add(:base, "Você já possui uma sessão ativa nesta data.")
     end
   end
 
