@@ -98,6 +98,10 @@ class CombatCombatant < ApplicationRecord
     self.conditions   = []                       if conditions.nil?
     self.actions_used = RESET_ACTIONS.dup        if actions_used.blank?
     self.death_saves  = RESET_DEATH_SAVES.dup    if death_saves.blank?
+    # turn_state é OPACO de propósito (válvula genérica de persistência de
+    # estado de turno do front). Sem validação de schema — qualquer JSON.
+    # Não é zerado em reset_turn_actions! nesta fase: o front gerencia a limpeza.
+    self.turn_state   = {}                       if turn_state.blank?
   end
 
   # G15 — Auto-resolve baseado em death_saves. Garante que UI/back nunca

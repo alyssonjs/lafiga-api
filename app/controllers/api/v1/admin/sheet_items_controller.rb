@@ -14,11 +14,10 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # POST /api/v1/admin/sheet_items
   def create
     item = SheetItem.new(item_params)
-    if item.save
-      render json: { sheet_item: item.as_inventory_json }, status: :created
-    else
-      render json: { errors: item.errors.full_messages }, status: :unprocessable_entity
-    end
+    record, created = SheetItem.stack_or_create!(item)
+    render json: { sheet_item: record.as_inventory_json }, status: (created ? :created : :ok)
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   # PUT /api/v1/admin/sheet_items/:id
@@ -75,7 +74,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
     item = nil
     SheetItem.transaction do
       if raw[:item_index].present?
-        existing = SheetItem.where(sheet_id: sheet.id, item_index: raw[:item_index], source: 'dm_grant').order(:id).first
+        existing = SheetItem.where(sheet_id: sheet.id, item_index: raw[:item_index], source: 'dm_grant').order(:id).lock(true).first
         if existing
           existing.update!(quantity: existing.quantity + qty)
           item = existing

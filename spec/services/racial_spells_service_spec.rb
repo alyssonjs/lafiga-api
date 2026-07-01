@@ -59,6 +59,41 @@ RSpec.describe RacialSpellsService, type: :service do
       end
     end
 
+    # D2/R3b — truque racial à ESCOLHA (Alto Elfo). O front coleta em
+    # race_choices.chosenCantrip / race_choices.traitOptions[<trait_key>]; antes
+    # NENHUM serviço do backend consumia e o truque sumia da ficha.
+    context 'Alto Elfo — truque de Mago à escolha' do
+      let!(:fire_bolt) { create(:spell, name: 'Raio de Fogo', api_index: 'fire-bolt', level: 0) }
+      let(:race_rule) do
+        {
+          race_id: 'elf', subrace_id: 'high',
+          traits: [{ key: 'high_elf_cantrip', options: { choose: 1, ability: 'INT', spell_list: 'wizard' } }],
+          innate_spells: []
+        }
+      end
+
+      it 'materializa o truque escolhido via chosenCantrip' do
+        sheet.update!(metadata: { 'race_choices' => { 'chosenCantrip' => 'fire-bolt' } })
+        expect(described_class.call(sheet: sheet, race_rule: race_rule, character_level: 1)).to be_success
+
+        ks = SheetKnownSpell.find_by(sheet_klass: sheet_klass, spell: fire_bolt)
+        expect(ks).to be_present
+        expect(ks.source).to eq('race')
+      end
+
+      it 'materializa o truque escolhido via traitOptions[trait_key]' do
+        sheet.update!(metadata: { 'race_choices' => { 'traitOptions' => { 'high_elf_cantrip' => 'fire-bolt' } } })
+        expect(described_class.call(sheet: sheet, race_rule: race_rule, character_level: 1)).to be_success
+        expect(SheetKnownSpell.find_by(sheet_klass: sheet_klass, spell: fire_bolt)).to be_present
+      end
+
+      it 'sem escolha persistida → não cria truque racial' do
+        sheet.update!(metadata: { 'race_choices' => {} })
+        described_class.call(sheet: sheet, race_rule: race_rule, character_level: 1)
+        expect(SheetKnownSpell.where(sheet_klass: sheet_klass, source: 'race')).to be_empty
+      end
+    end
+
     context 'quando sync de progressão gravou a magia inata como class primeiro' do
       let(:race_rule) do
         {

@@ -31,6 +31,7 @@ class KnownSpellsAggregator
       row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
       row[:sheet_known_spell_id] = ks.id
       row[:known_source] = src if src
+      apply_usage_columns!(row, ks) # D6 — uses_per_rest / uses_remaining (magias raciais 1/LDesc)
       by_level[sp.level.to_i] << row
       catalog[sp.id] ||= { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
     end
@@ -68,6 +69,7 @@ class KnownSpellsAggregator
                   row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
                   row[:sheet_known_spell_id] = ks_row.id if ks_row
                   row[:known_source] = chip if chip
+                  apply_usage_columns!(row, ks_row) if ks_row # D6
                   new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
                 end
@@ -111,6 +113,7 @@ class KnownSpellsAggregator
                   row = { id: sp.id, name: sp.name, desc: sp.desc, higher_level: sp.higher_level, description: sp.desc }
                   row[:sheet_known_spell_id] = ks.id
                   row[:known_source] = chip if chip
+                  apply_usage_columns!(row, ks) # D6
                   new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
                 end
@@ -482,6 +485,20 @@ class KnownSpellsAggregator
     merge_mystic_arcanum_into_catalog!(@sheet, catalog)
 
     { known_by_level: by_level, prepared_by_level: prepared_by_level, catalog_by_id: catalog }
+  end
+
+  # D6 — Propaga as colunas de uso limitado do SheetKnownSpell para a linha do
+  # summary. Magias raciais 1/LDesc (Tiefling/Drow: legado, Fogo das Fadas,
+  # Escuridão…) gravam `uses_per_rest='LR'`/`uses_remaining`, mas antes a row de
+  # `known_by_level` não carregava esses campos (apareciam como null na ficha).
+  # Só adiciona quando presentes — magias de classe (uses_per_rest nil) ficam
+  # inalteradas.
+  def apply_usage_columns!(row, ks)
+    return row unless ks
+
+    row[:uses_per_rest] = ks.uses_per_rest if ks.uses_per_rest.present?
+    row[:uses_remaining] = ks.uses_remaining unless ks.uses_remaining.nil?
+    row
   end
 
   # Arcano místico do bruxo vive em metadata (mystic_arcanum_6…), muitas vezes só como spell_id

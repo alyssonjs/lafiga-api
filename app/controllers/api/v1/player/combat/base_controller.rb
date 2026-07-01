@@ -72,11 +72,25 @@ module Api::V1::Player::Combat
   end
 
   def editing_movement_ledger_for_own_pc_turn?
-    return false unless @schedule
-    cs = @schedule.combat_state
-    return false unless cs&.active?
+    current_turn_belongs_to_user?
+  end
 
-    cc = cs.combat_combatants.find_by(position: cs.current_turn_index, is_dead: false)
+  # O combatente em jogo no TURNO ATUAL (combate ativo): o registro em
+  # `position: current_turn_index, is_dead: false`. Retorna nil se não houver
+  # combate ativo / combatente nessa posição. Fonte única usada por
+  # `current_turn_belongs_to_user?` e pela guarda de teste de morte.
+  def current_turn_combatant
+    return nil unless @schedule
+    cs = @schedule.combat_state
+    return nil unless cs&.active?
+
+    cs.combat_combatants.find_by(position: cs.current_turn_index, is_dead: false)
+  end
+
+  # O combatente do TURNO ATUAL (combate ativo) é um PC do usuário autenticado.
+  # Base para liberar ações do JOGADOR DO TURNO (movimento, efeitos de combate).
+  def current_turn_belongs_to_user?
+    cc = current_turn_combatant
     return false unless cc&.combatable_type == Character.name
 
     cc.combatable&.user_id == @current_user.id

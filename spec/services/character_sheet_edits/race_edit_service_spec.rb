@@ -37,7 +37,9 @@ RSpec.describe CharacterSheetEdits::RaceEditService do
         languages: %w[Comum Anao],
         proficiencies: { 'tools' => { 'fixed' => ['Ferramentas de ferreiro'] } },
         darkvision: 60,
-        ability: { con: 2 },
+        # Shape REAL de RaceRules.apply (antes o stub usava {con:2} plano, que
+        # mascarava o bug R7: a iteração antiga só funcionava com hash plano).
+        ability: { type: 'fixed', increases: [{ ability: 'CON', amount: 2 }] },
         traits: [], innate_spells: [], requires: []
       )
       # Stub traits via association (factory padrao nao popula base_traits/sub_race traits).
@@ -71,9 +73,9 @@ RSpec.describe CharacterSheetEdits::RaceEditService do
       # Stub: Anao da CON+2, Halfling da DEX+1.
       allow(RaceRules).to receive(:apply) do |args|
         if args[:race_id].to_s.include?('halfling')
-          { speed: 25, languages: %w[Comum], proficiencies: {}, darkvision: 0, ability: { dex: 1 }, traits: [], innate_spells: [], requires: [] }
+          { speed: 25, languages: %w[Comum], proficiencies: {}, darkvision: 0, ability: { type: 'fixed', increases: [{ ability: 'DEX', amount: 1 }] }, traits: [], innate_spells: [], requires: [] }
         else
-          { speed: 25, languages: %w[Comum Anao], proficiencies: {}, darkvision: 60, ability: { con: 2 }, traits: [], innate_spells: [], requires: [] }
+          { speed: 25, languages: %w[Comum Anao], proficiencies: {}, darkvision: 60, ability: { type: 'fixed', increases: [{ ability: 'CON', amount: 2 }] }, traits: [], innate_spells: [], requires: [] }
         end
       end
       allow(dwarf).to receive(:base_traits).and_return([])
@@ -134,9 +136,9 @@ RSpec.describe CharacterSheetEdits::RaceEditService do
       #   2. ZE2 detectar sheet.con (14) != old_con (16) e disparar recompute_hp_max!
       allow(RaceRules).to receive(:apply) do |args|
         if args[:subrace_id].to_s.include?('hill') || args[:subrace_id].to_s.include?('colina')
-          { speed: 25, languages: %w[Comum Anao], proficiencies: {}, darkvision: 60, ability: { wis: 1 }, traits: [], innate_spells: [], requires: [] }
+          { speed: 25, languages: %w[Comum Anao], proficiencies: {}, darkvision: 60, ability: { type: 'fixed', increases: [{ ability: 'WIS', amount: 1 }] }, traits: [], innate_spells: [], requires: [] }
         else
-          { speed: 25, languages: %w[Comum Anao], proficiencies: {}, darkvision: 60, ability: { con: 2 }, traits: [], innate_spells: [], requires: [] }
+          { speed: 25, languages: %w[Comum Anao], proficiencies: {}, darkvision: 60, ability: { type: 'fixed', increases: [{ ability: 'CON', amount: 2 }] }, traits: [], innate_spells: [], requires: [] }
         end
       end
       allow(dwarf).to receive(:base_traits).and_return([])

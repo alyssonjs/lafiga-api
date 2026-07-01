@@ -220,7 +220,7 @@ RSpec.describe 'FeatRules — efeitos passivos na ficha (Fase 4B)', type: :servi
       expect(ini_mod.value).to eq(5)
     end
 
-    it 'Maestria em Armadura Pesada — converte em damage_resistance.bps_nonmagical -3 (predicate wearing_heavy_armor)' do
+    it 'Maestria em Armadura Pesada — converte em damage_resistance.bps_nonmagical -3 (consumível no summary)' do
       sheet = build_sheet
       FeatAssignmentService.call(
         sheet: sheet, feat_id: 'maestria_em_armadura_pesada', level_gained: 1, choices: {}
@@ -230,7 +230,10 @@ RSpec.describe 'FeatRules — efeitos passivos na ficha (Fase 4B)', type: :servi
       dr_mod = mods.find { |m| m.target == 'damage_resistance.bps_nonmagical' && m.source == 'feat:maestria_em_armadura_pesada' }
       expect(dr_mod).to be_present
       expect(dr_mod.value).to eq(3)
-      expect(dr_mod.predicate).to include('condition' => 'wearing_heavy_armor')
+      # F11 — SEM predicate: o summary soma via `sum_for('damage_resistance.
+      # bps_nonmagical')` SEM `predicate_match`; com o predicate `wearing_heavy_armor`
+      # o valor nunca chegava ao consumidor (efeito-assinatura invisível na ficha).
+      expect(dr_mod.predicate).to be_blank
     end
 
     it 'Mestre do Escudo — gera save.dex modifier APENAS quando escudo equipado' do

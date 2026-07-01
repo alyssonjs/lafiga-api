@@ -150,6 +150,12 @@ Rails.application.routes.draw do
               put :update_movement_ledger
             end
 
+            # Interação de combate activa (Fase 1 — disputa Empurrar/Agarrar).
+            # Vive em CombatState#active_interaction; sync via state_changed.
+            put    'combat/active_interaction',         to: 'interactions#upsert'
+            post   'combat/active_interaction/respond', to: 'interactions#respond'
+            delete 'combat/active_interaction',         to: 'interactions#clear'
+
             resources :combat_combatants, only: [:index, :create, :update, :destroy] do
               member do
                 post :apply_damage

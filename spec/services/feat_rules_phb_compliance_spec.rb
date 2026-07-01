@@ -88,10 +88,13 @@ RSpec.describe 'FeatRules — Conformidade PHB', type: :service do
       expect(bonuses[:str] || bonuses['str']).to eq(1)
 
       pb = feat[:proficiency_bonuses] || {}
-      armor = Array(pb[:armor] || pb['armor']).map(&:to_s)
+      # D5 — vocabulário padronizado para `armors` (plural), que é a chave lida
+      # por build_proficiencies. Antes a RULE usava `armor` (singular) e a
+      # proficiência de armadura pesada deste feat não materializava na ficha.
+      armor = Array(pb[:armors] || pb['armors'] || pb[:armor] || pb['armor']).map(&:to_s)
       expect(armor.any? { |a| a.match?(/pesad|heavy/i) }).to be(true),
         'Heavily Armored deve dar proficiência em armadura pesada. ' \
-        "Atual proficiency_bonuses.armor: #{armor.inspect}"
+        "Atual proficiency_bonuses.armors: #{armor.inspect}"
     end
   end
 

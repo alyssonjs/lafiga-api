@@ -92,6 +92,14 @@ class RacialSpellsService
   def collect_innate_spells
     results = []
 
+    # D2/R3b — Truque(s) RACIAL(is) À ESCOLHA (ex.: Alto Elfo → 1 truque de
+    # Mago). O front coleta em `race_choices.chosenCantrip` /
+    # `race_choices.traitOptions.<trait_key>`, mas NENHUM serviço do backend lia
+    # isso: o truque era perdido na ficha persistida. Aqui resolvemos a escolha
+    # do jogador para os trait_defs de ESCOLHA (`options.choose`) e criamos o
+    # SheetKnownSpell(source:'race').
+    collect_chosen_cantrips(results)
+
     # Legado: grupos `{ level:, spells: [...] }` (ex.: specs, alguns YAML antigos)
     process_innate_spells_array(@race_rule[:innate_spells], results)
 
@@ -118,6 +126,54 @@ class RacialSpellsService
     end
 
     results
+  end
+
+  # D2/R3b — Resolve truques raciais à escolha do jogador.
+  #
+  # Trait de ESCOLHA = trait ref com `options.choose` (e `spell_list`/`filters`)
+  # — ex.: high_elf_cantrip. A escolha persistida vive em
+  # `metadata.race_choices.traitOptions[<trait_key>]` (preferencial, preciso) ou
+  # `metadata.race_choices.chosenCantrip` (fallback quando há 1 só escolha).
+  # Cada valor pode ser slug/api_index, nome ou Hash {id/name}.
+  def collect_chosen_cantrips(results)
+    choices = (@sheet.metadata || {})['race_choices'] || (@sheet.metadata || {})[:race_choices] || {}
+    choices = choices.deep_stringify_keys if choices.is_a?(Hash)
+    return unless choices.is_a?(Hash)
+
+    trait_opts = choices['traitOptions'] || {}
+    trait_opts = trait_opts.is_a?(Hash) ? trait_opts.deep_stringify_keys : {}
+    fallback   = normalize_choice_value(choices['chosenCantrip'])
+
+    Array(@race_rule[:traits]).each do |ref|
+      next unless ref.is_a?(Hash)
+
+      opts = ref[:options] || ref['options']
+      next unless opts.is_a?(Hash) && (opts[:choose] || opts['choose']).to_i.positive?
+
+      key = (ref[:key] || ref['key']).to_s
+      picked = normalize_choice_value(trait_opts[key]) || fallback
+      next if picked.blank?
+
+      ability = (opts[:ability] || opts['ability'] || 'INT').to_s
+      results << {
+        name: picked,
+        ability: ability,
+        uses: nil,                # truque = à vontade
+        unlocked_at_level: 1
+      }
+    end
+  end
+
+  # Extrai o identificador (slug/nome) de um valor de escolha que pode vir como
+  # String, Hash {id/name} ou Array (usa o 1º).
+  def normalize_choice_value(raw)
+    case raw
+    when String then raw.strip.presence
+    when Array  then normalize_choice_value(raw.first)
+    when Hash
+      h = raw.deep_stringify_keys
+      (h['id'] || h['name'] || h['api_index']).to_s.strip.presence
+    end
   end
 
   def process_innate_spells_array(innate_spells_array, results)

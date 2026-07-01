@@ -91,7 +91,17 @@ class AsiFeatApplier
   def build_choices(asi)
     base = (asi['choices'] || asi[:choices]).is_a?(Hash) ? (asi['choices'] || asi[:choices]).deep_dup : {}
     base = base.deep_stringify_keys
-    base['ability'] ||= (asi['featAbility'] || asi[:featAbility]).to_s if (asi['featAbility'] || asi[:featAbility]).present?
+    feat_ability = (asi['featAbility'] || asi[:featAbility]).to_s
+    base['ability'] ||= feat_ability if feat_ability.present?
+
+    # F9 — Resiliente concede save no atributo escolhido. O front resolve o save
+    # client-side mas não envia `saving_throws` no payload; aqui populamos a
+    # chave a partir de `featAbility` para o `FeatProducer#resiliente_save_grant`
+    # (e qualquer recálculo server-side) não perder a proficiência.
+    feat_id = (asi['featId'] || asi[:featId]).to_s
+    if feat_id == 'resiliente' && feat_ability.present?
+      base['saving_throws'] ||= feat_ability
+    end
     base
   end
 end

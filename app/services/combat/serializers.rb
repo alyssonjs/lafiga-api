@@ -17,6 +17,11 @@ module Combat
         ended_at: cs.ended_at,
         updated_at: cs.updated_at,
         movement_ledger: Array.wrap(cs.movement_ledger),
+        # Interação de combate activa (Fase 1 — disputa Empurrar/Agarrar).
+        # `nil` quando não há nada pendente. Shape livre (jsonb): o cliente do
+        # defensor filtra `pending_responders` localmente para decidir se mostra
+        # o prompt de rolagem (padrão `pendingInitiativeEntry`).
+        active_interaction: cs.respond_to?(:active_interaction) ? cs.active_interaction : nil,
       }
     end
 
@@ -48,6 +53,9 @@ module Combat
         is_dead: c.is_dead,
         conditions: Array(c.conditions),
         actions_used: Hash(c.actions_used),
+        # turn_state (válvula genérica): estado de turno opaco gerenciado pelo
+        # front. Defensivo p/ CombatCombatant legado sem a coluna persistida.
+        turn_state: c.respond_to?(:turn_state) ? Hash(c.turn_state) : {},
         death_saves: Hash(c.death_saves),
         updated_at: c.updated_at,
       }

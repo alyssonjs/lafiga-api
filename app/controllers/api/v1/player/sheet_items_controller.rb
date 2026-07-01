@@ -16,11 +16,10 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # body: { sheet_item: { sheet_id, item_index?, item_name, category?, quantity?, equipped?, slot?, source?, props_json? } }
   def create
     item = SheetItem.new(item_params)
-    if item.save
-      render json: { sheet_item: item.as_inventory_json }, status: :created
-    else
-      render json: { errors: item.errors.full_messages }, status: :unprocessable_entity
-    end
+    record, created = SheetItem.stack_or_create!(item)
+    render json: { sheet_item: record.as_inventory_json }, status: (created ? :created : :ok)
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   # PUT /api/v1/player/sheet_items/:id

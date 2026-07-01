@@ -137,6 +137,44 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
             params: { combatant: { initiative: 99 } }, headers: player_headers, as: :json
       expect(response).to have_http_status(:forbidden)
     end
+
+    # Efeito de combate (dano/cura) aplicado pelo JOGADOR DONO do combatente do
+    # TURNO ATUAL em QUALQUER combatente — habilita poção/ataque/magia do jogador
+    # (a regra "curado de 0 volta à batalha" envia a transição de morte derivada).
+    context 'efeito de combate do jogador no próprio turno' do
+      let!(:npc) { create(:combat_npc, schedule: schedule, hp_current: 0, hp_max: 5) }
+      let!(:npc_combatant) do
+        create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 1, hp_current: 0, hp_max: 5)
+      end
+
+      before { cs.update_column(:current_turn_index, combatant.position) } # turno do PC do player
+
+      it 'permite curar um NPC (hp + transição de morte) quando é o turno do jogador' do
+        payload = {
+          combatant: {
+            hp_current: 5, is_dead: false, is_stabilized: false,
+            conditions: [], death_saves: { successes: 0, failures: 0 },
+          }
+        }
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
+              params: payload, headers: player_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(npc_combatant.reload.hp_current).to eq(5)
+      end
+
+      it '403 quando NÃO é o turno do jogador' do
+        cs.update_column(:current_turn_index, npc_combatant.position)
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
+              params: { combatant: { hp_current: 5 } }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it '403 quando o jogador do turno tenta mutar campo fora do efeito (name)' do
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
+              params: { combatant: { name: 'Hackeado' } }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe 'DELETE destroy' do
@@ -266,6 +304,37 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
       post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/record_death_save",
            params: { kind: 'critical' }, headers: dm_headers, as: :json
       expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    # Jogador DONO do PC pode gravar o PRÓPRIO teste de morte quando é o turno
+    # dele. NPC e fora-do-turno continuam só-DM (espelha efeito de combate).
+    context 'jogador gravando o próprio teste de morte no próprio turno' do
+      let!(:npc) { create(:combat_npc, schedule: schedule) }
+      let!(:npc_combatant) do
+        create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 1, hp_current: 0)
+      end
+
+      it 'permite ao dono do PC gravar o teste de morte no seu próprio turno' do
+        cs.update_column(:current_turn_index, combatant.position)
+        post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/record_death_save",
+             params: { kind: 'success' }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(combatant.reload.death_saves['successes']).to eq(1)
+      end
+
+      it '403 quando o jogador tenta gravar o teste de morte de OUTRO combatente (NPC)' do
+        cs.update_column(:current_turn_index, combatant.position) # é o turno do PC do player
+        post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}/record_death_save",
+             params: { kind: 'failure' }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it '403 quando NÃO é o turno do jogador' do
+        cs.update_column(:current_turn_index, npc_combatant.position)
+        post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/record_death_save",
+             params: { kind: 'success' }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
     end
   end
 end

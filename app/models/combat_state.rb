@@ -116,6 +116,25 @@ class CombatState < ApplicationRecord
     self
   end
 
+  # --- Interação de combate (Fase 1 — disputa Empurrar/Agarrar) ---------------
+  # `active_interaction` é um jsonb livre (ver `Combat::InteractionService`). Os
+  # helpers abaixo encapsulam as escritas mantendo o domínio testável sem
+  # depender de ActionCable (broadcasts ficam no controller, como nos demais
+  # fluxos). A persistência é simples (uma única interação activa por combate).
+
+  # Substitui/cria a interação activa. `payload` é o hash já normalizado.
+  def set_active_interaction!(payload)
+    update!(active_interaction: payload)
+    self
+  end
+
+  # Limpa a interação activa (estado de repouso). Idempotente.
+  def clear_active_interaction!
+    return self if active_interaction.nil?
+    update!(active_interaction: nil)
+    self
+  end
+
   private
 
   def round_consistent_with_active

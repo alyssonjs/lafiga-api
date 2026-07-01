@@ -113,7 +113,10 @@ RSpec.describe 'FeatRules — integração na ficha (Fase 4 surfaces 1-4)', type
       metadata: {
         'class_summary' => {
           'spellcasting' => { 'ability' => 'INT', 'preparation' => 'prepared' },
-          'armor_proficiencies' => ['leve'],
+          # D2 — prereq de armadura agora é REALMENTE checado (armors plural):
+          # a uber sheet precisa ser proficiente em todas as categorias para que
+          # Proteção/Maestria Média/Pesada (prereq leve/média/pesada) sejam aceitos.
+          'armor_proficiencies' => ['leve', 'média', 'pesada'],
           'weapon_proficiencies' => ['arma_simples'],
           'skills' => [],
           'tools' => []

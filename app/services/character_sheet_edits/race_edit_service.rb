@@ -190,13 +190,18 @@ module CharacterSheetEdits
       # `race_bonuses_applied` e a fonte da verdade para `inc_race` em
       # `character_sheet_summary_service.rb#build_abilities`. Sem atualizar aqui,
       # ability scores ficam stale apos troca de raca (bug B2.3).
+      #
+      # R7 — Bug concreto: a iteração antiga esperava `applied[:ability]` como
+      # hash plano {con:2}, mas `RaceRules.apply` devolve `{increases:[{ability:
+      # 'CON',amount:2}]}` (ou {type:halfElf,fixed,choose} / {type:variantHuman,
+      # chooseAbilities}). A iteração encontrava `k=:increases` (fora de
+      # ABILITY_KEYS) → `ability_bonuses={}` → trocar de raça ZERAVA os bônus de
+      # atributo. Agora delega ao helper autoritativo type-aware.
+      chosen_abilities = Array(choices['chosenAbilities'] || choices[:chosenAbilities])
       meta = (sheet.metadata || {}).deep_stringify_keys
-      ability_bonuses = (applied[:ability] || {}).each_with_object({}) do |(k, v), h|
-        ks = k.to_s.downcase
-        next unless ABILITY_KEYS.include?(ks)
-        h[ks] = v.to_i if v.to_i != 0
-      end
-      meta['race_bonuses_applied'] = ability_bonuses
+      meta['race_bonuses_applied'] = RaceRules.ability_bonuses(
+        applied[:ability], chosen_abilities: chosen_abilities
+      )
       sheet.metadata = meta
       sheet.save!
     rescue StandardError => e

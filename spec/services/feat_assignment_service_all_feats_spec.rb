@@ -58,7 +58,20 @@ RSpec.describe FeatAssignmentService, 'todos os 41 talentos do catalogo' do
         return { 'skills' => Array(choices['proficiencies']) }
       end
 
-      pb.deep_stringify_keys
+      # D4 — `choose` ANINHADO por categoria (weapons/armors/tools/languages) é
+      # resolvido por FeatRules.resolve_nested_proficiency_choice para um Array
+      # plano lido de `choices[<categoria>]` (contrato flat do front). Espelhamos
+      # essa resolução aqui (antes o spec esperava o sub-hash {choose:{...}} cru,
+      # que era justamente o lixo que vazava na ficha).
+      out = pb.deep_stringify_keys
+      %w[weapons armor armors tools languages].each do |cat|
+        block = out[cat]
+        next unless block.is_a?(Hash) && block['choose'].is_a?(Hash)
+        amount = block['choose']['amount'].to_i.nonzero? || 1
+        picks = Array(choices[cat]).map(&:to_s).first(amount)
+        out[cat] = picks
+      end
+      out
     end
 
     # Espelha expected_resolved_ability_bonuses do feat_rules_all_feats_shape_spec.
@@ -110,6 +123,17 @@ RSpec.describe FeatAssignmentService, 'todos os 41 talentos do catalogo' do
         opts = Array(pb['choose']['options']).first(amount)
         choices['proficiencies'] = opts if opts.any?
       end
+      # D4 — picks por categoria flat (Especialista em Armas → choices['weapons']),
+      # simulando o que o front envia para `choose` aninhado.
+      if pb.is_a?(Hash)
+        %w[weapons armor armors tools languages].each do |cat|
+          block = pb[cat]
+          next unless block.is_a?(Hash) && block['choose'].is_a?(Hash)
+          amount = block['choose']['amount'].to_i.nonzero? || 1
+          opts = Array(block['choose']['options']).first(amount)
+          choices[cat] = opts if opts.any?
+        end
+      end
       if ca.is_a?(Hash) && ca['choose'].is_a?(Hash)
         amount = ca['choose']['amount'].to_i.nonzero? || 1
         choices['cantrips'] = Array.new(amount) { |i| "cantrip_default_#{i}" }
@@ -141,7 +165,10 @@ RSpec.describe FeatAssignmentService, 'todos os 41 talentos do catalogo' do
       sheet = Sheet.create!(
         character: character,
         race: race, sub_race: sub_race,
-        str: 20, dex: 20, con: 20, int: 20, wis: 20, cha: 20,
+        # Base 15 (não 20): satisfaz qualquer prereq de atributo (máx. 13) e ainda
+        # deixa o +1 dos half-feats VISÍVEL sem esbarrar no teto 20 (F6). Antes,
+        # com base 20, o teste esperava 21 — comportamento que o cap agora proíbe.
+        str: 15, dex: 15, con: 15, int: 15, wis: 15, cha: 15,
         hp_max: 100, hp_current: 100,
         metadata: {
           'class_summary' => {

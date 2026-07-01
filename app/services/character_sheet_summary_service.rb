@@ -3,6 +3,9 @@ require 'set'
 class CharacterSheetSummaryService
   prepend SimpleCommand
 
+  # Teto de atributo (D&D 5e): ASIs e half-feats não passam de 20 (F6).
+  ABILITY_SCORE_CAP = 20
+
   def initialize(sheet_id:, sync: true)
     @sheet = Sheet.includes(
       :character,
@@ -21,7 +24,16 @@ class CharacterSheetSummaryService
     inst = new(sheet_id: sheet.id, sync: false)
     abilities = inst.send(:build_abilities, sheet, ignore_authoritative_flag: true)
     scores = abilities[:scores] || {}
-    meta = sheet.metadata || {}
+    base   = abilities[:base] || {}
+    meta = (sheet.metadata.is_a?(Hash) ? sheet.metadata.dup : {})
+           .merge('ability_scores_include_all_increments' => true)
+    # Preserva a base ("Dado/Base") para o breakdown autoritativo conseguir
+    # SUBTRAIR os incrementos. Sem isto, fichas autoritativas sem
+    # `base_ability_scores` usam as próprias colunas (já somadas) como base e o
+    # build_abilities re-soma o feat → falso "Ajuste manual -1" (F5).
+    if !meta['base_ability_scores'].is_a?(Hash) || meta['base_ability_scores'].keys.empty?
+      meta = meta.merge('base_ability_scores' => base.transform_keys(&:to_s))
+    end
     sheet.update!(
       str: scores[:str].to_i,
       dex: scores[:dex].to_i,
@@ -29,7 +41,7 @@ class CharacterSheetSummaryService
       int: scores[:int].to_i,
       wis: scores[:wis].to_i,
       cha: scores[:cha].to_i,
-      metadata: meta.merge('ability_scores_include_all_increments' => true)
+      metadata: meta
     )
   end
 
@@ -43,7 +55,14 @@ class CharacterSheetSummaryService
       prof = CharacterRules.proficiency_bonus(total_level)
 
       abilities = build_abilities(@sheet)
-      movement  = RaceProfileService.new(@sheet).call.slice(:speed_ft, :speed_m)
+      # R1 — antes: `RaceProfileService...call.slice(:speed_ft, :speed_m)` jogava
+      # fora a darkvision já calculada e nunca modelava voo/escalada. Agora
+      # preservamos a darkvision em `senses` e dobramos os deslocamentos
+      # especiais (voo do Aarakocra, escalada do Tabaxi) em `movement`.
+      race_profile = RaceProfileService.new(@sheet).call
+      movement  = race_profile.slice(:speed_ft, :speed_m)
+      senses    = build_race_senses(race_profile)
+      apply_race_special_speeds!(movement, @sheet)
       klasses   = build_klasses(@sheet)
 
       conj = ClassProfileService.new(@sheet).call
@@ -348,6 +367,8 @@ class CharacterSheetSummaryService
         avatar_customization: @sheet.avatar_customization || {},
         abilities: abilities,
         movement: movement,
+        senses: senses,
+        natural_weapons: build_natural_weapons(@sheet, abilities: abilities),
         prof_bonus: prof,
         klasses: klasses,
         proficiencies: build_proficiencies(@sheet),
@@ -382,6 +403,10 @@ class CharacterSheetSummaryService
             # para que feats como Alerta (+5) cheguem ao combatant.
             initiative_bonus: modifier_bag.sum_for('initiative'),
             feat_initiative_bonus: modifier_bag.sum_for_kind('initiative', source_kind: :feat),
+            # F11 — Redução de dano físico não-mágico em armadura pesada (Maestria
+            # em Armadura Pesada / Heavy Armor Master). O modifier era produzido
+            # mas não tinha consumidor na saída → efeito-assinatura invisível.
+            damage_reduction_nonmagical_bps: modifier_bag.sum_for('damage_resistance.bps_nonmagical'),
             # ── Itens equipados: efeitos consolidados (Fase 2) ──
             resistances:            modifier_bag.granted('resistance'),
             damage_immunities:      modifier_bag.granted('damage_immunity'),
@@ -403,6 +428,7 @@ class CharacterSheetSummaryService
               ac:    modifier_bag.to_breakdown('ac'),
               speed: modifier_bag.to_breakdown('speed'),
               hp_per_level: modifier_bag.to_breakdown('hp.max_per_level'),
+              damage_reduction_nonmagical_bps: modifier_bag.to_breakdown('damage_resistance.bps_nonmagical'),
             },
           },
         } : {}),
@@ -558,11 +584,15 @@ class CharacterSheetSummaryService
     # Final scores: quando `authoritative`, as colunas ja sao a fonte de verdade
     # (somadas previamente por `sync_ability_columns_from_metadata!`); caso contrario
     # somamos `base + inc_total` para o caminho legado.
+    # F6 — teto 20 (regra D&D 5e). Half-feat em atributo no máximo (ex.: DEX 20 +
+    # Especialista em Armas) não pode chegar a 21. O front capa na criação, mas o
+    # sync/build server-side não capava.
+    cap = ->(v) { [v.to_i, ABILITY_SCORE_CAP].min }
     scores = if authoritative
-               { str: sheet.str.to_i, dex: sheet.dex.to_i, con: sheet.con.to_i,
-                 int: sheet.int.to_i, wis: sheet.wis.to_i, cha: sheet.cha.to_i }
+               { str: cap.call(sheet.str), dex: cap.call(sheet.dex), con: cap.call(sheet.con),
+                 int: cap.call(sheet.int), wis: cap.call(sheet.wis), cha: cap.call(sheet.cha) }
              else
-               base.each_with_object({}) { |(k, v), acc| acc[k] = v.to_i + inc_total[k].to_i }
+               base.each_with_object({}) { |(k, v), acc| acc[k] = cap.call(v.to_i + inc_total[k].to_i) }
              end
     mods = scores.transform_values { |v| CharacterRules.modifier(v) }
 
@@ -577,7 +607,9 @@ class CharacterSheetSummaryService
       # Drift-check: se o breakdown nao bate com a coluna autoritativa,
       # acrescenta linha de ajuste para o usuario nao ficar com soma quebrada.
       if authoritative
-        breakdown_total = base[k].to_i + inc_total[k].to_i
+        # Clampa o total do breakdown no mesmo teto (F6) para que o cap de 20 não
+        # gere um falso "Ajuste manual -1". Drift real (coluna ≠ metadata) ainda aparece.
+        breakdown_total = [base[k].to_i + inc_total[k].to_i, ABILITY_SCORE_CAP].min
         delta = scores[k].to_i - breakdown_total
         arr << { label: 'Ajuste manual', val: (delta.positive? ? "+#{delta}" : delta.to_s) } if delta != 0
       end
@@ -900,6 +932,10 @@ class CharacterSheetSummaryService
         # Weapons: array of strings (e.g., 'armas marciais') or categories
         w = pb['weapons'] || pb[:weapons]
         weapons |= Array(w).map(&:to_s)
+        # D3 — Idiomas concedidos por feat (Poliglota). O loop de feats nunca lia
+        # `languages`; FeatRules.apply agora resolve `languages_choose` → `languages`.
+        langs = pb['languages'] || pb[:languages]
+        Array(langs).each { |l| languages << l.to_s if l.to_s.strip != '' }
       end
     rescue => _e
       # ignore feat merge errors
@@ -946,6 +982,15 @@ class CharacterSheetSummaryService
     rescue StandardError
       []
     end
+
+    # D4 — Minotauro: o FE oferecia escolha de 1 perícia (Intimidação/Persuasão),
+    # mas a regra (race_rules.yml) FIXA Intimidação ("Ameaçador", PDF Lafiga).
+    # Sem teto, escolher Persuasão gravava 2 perícias (fixa + escolha). A regra é
+    # AUTORITATIVA: limitamos `chosenSkills` à cota REAL de escolha de perícia da
+    # raça — `proficiencies.skills.choiceCount` (Meio-Elfo=2) + `ability.skillChoices`
+    # (Humano Variante=1). Raça sem cota (Minotauro/Tabaxi/Meio-Orc, só fixas) →
+    # nenhuma chosenSkill é aceita.
+    race_choice_skills = cap_race_choice_skills(race_choice_skills, race_skill_choice_allowance(sheet))
 
     {
       armor: armor,
@@ -1020,6 +1065,80 @@ class CharacterSheetSummaryService
          .gsub(/\p{Mn}/, '')
          .downcase
          .strip
+  end
+
+  # D4 — Cota de escolha de perícia da raça (autoritativa, da regra canônica).
+  # Soma `proficiencies.skills.choiceCount` (Meio-Elfo=2) + `ability.skillChoices`
+  # (Humano Variante=1). `options` = lista permitida (Meio-Elfo) ou nil (Variante,
+  # qualquer perícia). Resolve direto da raça/sub-raça do sheet (não do snapshot).
+  def race_skill_choice_allowance(sheet)
+    applied = race_applied(sheet)
+    return { count: 0, options: nil } unless applied.is_a?(Hash)
+
+    skills = (applied[:proficiencies] || {})
+    skills = skills[:skills] || skills['skills'] || {}
+    count = 0
+    options = nil
+    if skills.is_a?(Hash)
+      count += (skills[:choiceCount] || skills['choiceCount']).to_i
+      options = skills[:choices] || skills['choices']
+    end
+    ability = applied[:ability]
+    count += (ability[:skillChoices] || ability['skillChoices']).to_i if ability.is_a?(Hash)
+
+    { count: count, options: (options if options.is_a?(Array) && options.any?) }
+  rescue StandardError => e
+    Rails.logger.warn("CharacterSheetSummaryService#race_skill_choice_allowance: #{e.class}: #{e.message}")
+    { count: 0, options: nil }
+  end
+
+  # Aplica o teto/filtro de `chosenSkills` segundo a cota da raça (D4).
+  def cap_race_choice_skills(picks, allowance)
+    return [] if picks.blank?
+
+    count = allowance[:count].to_i
+    return [] unless count.positive?
+
+    options = allowance[:options]
+    filtered = picks
+    if options.is_a?(Array) && options.any?
+      allowed = options.map { |o| normalized_proficiency_token(o) }
+      filtered = picks.select { |s| allowed.include?(normalized_proficiency_token(s)) }
+    end
+    filtered.first(count)
+  end
+
+  # R1 — Sentidos raciais. Hoje só darkvision (já computada por
+  # RaceProfileService a partir do race_summary / RaceRules.apply). Antes era
+  # descartada pelo `.slice(:speed_ft,:speed_m)` no `call` e só sobrevivia como
+  # texto em traits[]. Devolve `{}` quando a raça não tem visão no escuro.
+  def build_race_senses(race_profile)
+    dv = race_profile[:darkvision].to_i
+    return {} unless dv.positive?
+
+    { darkvision_ft: dv, darkvision_m: (dv * 0.3048).round(1) }
+  end
+
+  # R1 — Dobra deslocamentos especiais (voo/escalada/natação/escavação) no hash
+  # de movement. Fonte canônica: `RaceRules.apply[:movement]`, derivado de
+  # `grants.movement.*` nos trait_defs (voo 50 ft do Aarakocra, escalada 20 ft
+  # do Tabaxi). Resolve a regra direto da raça/sub-raça do sheet (não depende do
+  # snapshot persistido), então funciona em fichas legadas sem re-provisão.
+  def apply_race_special_speeds!(movement, sheet)
+    applied = race_applied(sheet)
+    special = (applied.is_a?(Hash) && applied[:movement]) || {}
+
+    { fly_ft: :fly_m, climb_ft: :climb_m, swim_ft: :swim_m, burrow_ft: :burrow_m }.each do |ft_key, m_key|
+      ft = (special[ft_key] || special[ft_key.to_s]).to_i
+      next unless ft.positive?
+
+      movement[ft_key] = ft
+      movement[m_key]  = (ft * 0.3048).round(1)
+    end
+    movement
+  rescue StandardError => e
+    Rails.logger.warn("CharacterSheetSummaryService#apply_race_special_speeds!: #{e.class}: #{e.message}")
+    movement
   end
 
   def apply_feat_movement_bonuses(sheet)
@@ -1482,10 +1601,188 @@ class CharacterSheetSummaryService
     # recursos 1/descanso de patronos do Bruxo, entre outros.
     merge_subclass_uses_resources!(out, sk, level, used_for: used_for)
 
+    # (F1) Recursos de uso limitado concedidos por TALENTO (lidos de
+    # metadata['feats'][].special_rules + metadata['luck_points']). A allowlist
+    # acima nunca olhava feats → Sortudo (pontos de sorte), Adepto Marcial (dado
+    # de superioridade) ficavam órfãos. Roda por último para poder ACUMULAR sobre
+    # o superiority_dice de classe/subclasse (Mestre de Batalha + Adepto Marcial).
+    merge_feat_resources!(out, sheet, used_for: used_for)
+
+    # (R4) Recursos RACIAIS de uso limitado, via `grants.uses`/`grants.dc` nos
+    # trait_defs (race_rules.yml): Sopro do Dragão (1×/SR-LR, CD 8+Prof+CON),
+    # Perseverança Implacável (Meio-Orc, 1×/LR), Carga (Centauro, 1×/SR-LR).
+    # Antes, `build_resources` era allowlist por classe e nunca emitia recursos
+    # raciais — só sobreviviam como texto em traits[]. NUNCA sobrescreve uma
+    # chave de classe/subclasse/feat homônima já emitida.
+    merge_race_resources!(out, sheet, abilities: abilities, used_for: used_for)
+
     out
   rescue StandardError => e
     Rails.logger.warn("CharacterSheetSummaryService#build_resources: #{e.class}: #{e.message}")
     {}
+  end
+
+  # (R4) Materializa recursos raciais de uso limitado a partir de
+  # `grants.uses`/`grants.dc` dos trait_defs (RaceRules). Resolve a regra direto
+  # da raça/sub-raça do sheet (não do snapshot), igual aos demais helpers raciais.
+  def merge_race_resources!(out, sheet, abilities:, used_for:)
+    applied = race_applied(sheet)
+    return unless applied.is_a?(Hash)
+
+    trait_defs = RaceRules.trait_definitions
+    prof = CharacterRules.proficiency_bonus(CharacterRules.total_level(sheet))
+    mods = abilities[:mods] || {}
+
+    Array(applied[:traits]).each do |trait_ref|
+      key = trait_ref.is_a?(Hash) ? (trait_ref[:key] || trait_ref['key']) : trait_ref
+      next if key.blank?
+
+      td = trait_defs[key.to_sym] || trait_defs[key.to_s]
+      next unless td.is_a?(Hash)
+
+      grants = td[:grants] || td['grants']
+      next unless grants.is_a?(Hash)
+
+      uses = grants[:uses] || grants['uses']
+      next unless uses.is_a?(Hash)
+
+      total = (uses[:value] || uses['value']).to_i
+      next unless total.positive?
+
+      sym = key.to_sym
+      next if out.key?(sym) # nunca sobrescreve recurso de classe/subclasse/feat homônimo
+
+      entry = {
+        total: total,
+        used: [used_for.call(key.to_s), total].min,
+        recharge: recharge_from_per(uses[:per] || uses['per']),
+        source: 'race',
+      }
+
+      dc = grants[:dc] || grants['dc']
+      if dc.is_a?(Hash)
+        base = (dc[:base] || dc['base'] || 8).to_i
+        pb = (dc[:prof] || dc['prof']) ? prof.to_i : 0
+        ab_key = CharacterRules.normalize_ability_key((dc[:ability] || dc['ability']).to_s)
+        ab_mod = ab_key ? (mods[ab_key.to_sym] || 0).to_i : 0
+        entry[:dc] = base + pb + ab_mod
+      end
+
+      out[sym] = entry
+    end
+  end
+
+  # (R5) Ataques naturais raciais estruturados, via `grants.natural_weapon` nos
+  # trait_defs: Garras (Aarakocra/Tabaxi), Cascos (Centauro), Chifres (Minotauro).
+  # Antes só existiam como texto em traits[]. Calcula bônus de ataque (mod +
+  # proficiência) e de dano (mod do atributo) a partir do atributo do trait_def.
+  def build_natural_weapons(sheet, abilities:)
+    applied = race_applied(sheet)
+    return [] unless applied.is_a?(Hash)
+
+    trait_defs = RaceRules.trait_definitions
+    prof = CharacterRules.proficiency_bonus(CharacterRules.total_level(sheet))
+    mods = abilities[:mods] || {}
+    seen = Set.new
+    out = []
+
+    Array(applied[:traits]).each do |trait_ref|
+      key = trait_ref.is_a?(Hash) ? (trait_ref[:key] || trait_ref['key']) : trait_ref
+      next if key.blank?
+
+      td = trait_defs[key.to_sym] || trait_defs[key.to_s]
+      next unless td.is_a?(Hash)
+
+      nw = td.dig(:grants, :natural_weapon) || td.dig('grants', 'natural_weapon')
+      next unless nw.is_a?(Hash)
+
+      name = (nw[:name] || nw['name']).to_s
+      next if name.blank? || seen.include?(name.downcase)
+
+      seen.add(name.downcase)
+      ability = (nw[:ability] || nw['ability']).to_s
+      ab_key = CharacterRules.normalize_ability_key(ability)
+      ab_mod = ab_key ? (mods[ab_key.to_sym] || 0).to_i : 0
+
+      out << {
+        name: name,
+        dice: (nw[:dice] || nw['dice']).to_s,
+        damage_type: (nw[:damage_type] || nw['damage_type']).to_s,
+        ability: ab_key ? ab_key.upcase : ability.upcase,
+        attack_bonus: ab_mod + prof.to_i,
+        damage_bonus: ab_mod,
+        proficient: true,
+      }
+    end
+    out
+  end
+
+  # Resolve a regra racial canônica (RaceRules.apply) a partir da raça/sub-raça
+  # do sheet — taxonomia idêntica a RaceProfileService. Não depende do snapshot
+  # persistido, então funciona em fichas legadas. Compartilhado por R1/D4/R4/R5.
+  def race_applied(sheet)
+    return nil if sheet.race_id.blank?
+
+    raw_race = sheet.race&.api_index.presence || sheet.race&.name&.parameterize&.underscore
+    return nil if raw_race.blank?
+
+    raw_sub = sheet.sub_race&.api_index.presence || sheet.sub_race&.name&.parameterize&.underscore
+    race = RaceRules.normalize_race_key(raw_race)
+    sub  = RaceRules.canonical_subrace_key(race, raw_sub)
+    RaceRules.apply(race_id: race, subrace_id: sub, choices: {})
+  rescue StandardError
+    nil
+  end
+
+  # (F1) Mescla recursos de TALENTO. Lê o bloco `special_rules` achatado por
+  # FeatSpecialRulesService (agora "total" após F2) e o `metadata['luck_points']`.
+  # NUNCA sobrescreve uma chave de classe/subclasse já emitida — só acumula no
+  # caso explícito do dado de superioridade (Adepto Marcial soma +1 ao do Mestre
+  # de Batalha, conforme PHB).
+  def merge_feat_resources!(out, sheet, used_for:)
+    meta = sheet.metadata || {}
+    feats = Array(meta['feats'])
+    return if feats.empty?
+
+    feats.each do |f|
+      next unless f.is_a?(Hash)
+      sr = f['special_rules'] || f[:special_rules] || {}
+      sr = {} unless sr.is_a?(Hash)
+
+      # Sortudo — pontos de sorte (recarga descanso longo).
+      luck = sr.dig('dice', 'luck_points') || sr.dig(:dice, :luck_points)
+      if luck.is_a?(Hash) && !out.key?(:luck_points)
+        points = (luck['points'] || luck[:points]).to_i
+        points = meta['luck_points'].to_i if points <= 0
+        if points.positive?
+          out[:luck_points] = {
+            total: points, used: [used_for.call('luck_points'), points].min, recharge: 'LR',
+          }
+        end
+      end
+
+      # Adepto Marcial — dado de superioridade do feat (top-level `superiority_die`,
+      # preservado cru pela passada de "preservação total" do F2).
+      sd = sr['superiority_die'] || sr[:superiority_die]
+      if sd.is_a?(Hash)
+        params = sd['parameters'] || sd[:parameters] || sd
+        count = (params['count'] || params[:count]).to_i
+        die   = (params['die'] || params[:die]).to_s.presence || 'd6'
+        if count.positive?
+          if out[:superiority_dice].is_a?(Hash)
+            # Acumula sobre o dado de superioridade de classe/subclasse.
+            new_total = out[:superiority_dice][:total].to_i + count
+            out[:superiority_dice][:total] = new_total
+            out[:superiority_dice][:used]  = [used_for.call('superiority_dice'), new_total].min
+          else
+            out[:superiority_dice] = {
+              total: count, die: die, recharge: 'SR/LR',
+              used: [used_for.call('superiority_dice'), count].min,
+            }
+          end
+        end
+      end
+    end
   end
 
   # ── R1 helpers ──────────────────────────────────────────────────────

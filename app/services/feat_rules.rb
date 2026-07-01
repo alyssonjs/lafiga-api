@@ -143,7 +143,10 @@ class FeatRules
       description: 'Você se especializou em armaduras mais pesadas que sua categoria atual.',
       prerequisites: { proficiencies: { armors: ['média'] } },
       ability_bonuses: { str: 1 },
-      proficiency_bonuses: { armor: ['pesada'] },
+      # D5 — `armors` (plural). `build_proficiencies` lê só `pb['armors']`; com
+      # `armor` (singular) a proficiência de armadura pesada deste feat não
+      # materializava. Alinhado a protecao_pesada (canônico).
+      proficiency_bonuses: { armors: ['pesada'] },
       features: {
         name: 'Especialista em Armadura',
         desc: '+1 STR. Você ganha proficiência com armaduras pesadas (PHB Heavily Armored — equivalente a `protecao_pesada`).'
@@ -1239,6 +1242,13 @@ class FeatRules
     elsif proficiency_bonuses[:choose]
       chosen_proficiencies = choices[:proficiencies] || choices['proficiencies'] || []
       proficiency_bonuses = { 'skills' => chosen_proficiencies } if chosen_proficiencies.any?
+    elsif proficiency_bonuses[:languages_choose]
+      # D3 — Poliglota: `{ languages_choose: 3 }` é um escalar (quantidade), não
+      # um nó `choose:` aninhado, então o resolver genérico abaixo o ignorava e
+      # `proficiency_bonuses` vazava cru. O front grava `choices.languages` (flat).
+      n = proficiency_bonuses[:languages_choose].to_i
+      chosen_langs = Array(choices[:languages] || choices['languages']).map(&:to_s).reject(&:empty?)
+      proficiency_bonuses = { 'languages' => chosen_langs.first(n) } if chosen_langs.any?
     else
       # Resolver `choose:` ANINHADO em sub-categorias (Fase 5D).
       # Exemplo: `proficiency_bonuses: { weapons: { choose: { amount: 4, options: [...] } } }`
@@ -1371,9 +1381,24 @@ class FeatRules
         weapons = Array(cs['weapon_proficiencies']).map(&:to_s).map(&:downcase)
         skills = Array(cs['skills']).map(&:to_s).map(&:downcase)
         tools = Array(cs['tools']).map(&:to_s).map(&:downcase)
-        if required[:armor]
-          Array(required[:armor]).each do |a|
-            unless armor.any? { |x| x.include?(a.to_s.downcase) }
+        # D2 — As RULES declaram o prereq de armadura como `armors` (plural):
+        # `prerequisites.proficiencies.armors: ['média']` (Maestria Média/Pesada,
+        # Proteção Pesada/Moderada). Lia-se só `required[:armor]` (singular) → nil
+        # → checagem pulada → feat aceito SEM a proficiência exigida. Lemos ambos.
+        # E normalizamos EN↔PT (D5): class_summary grava 'heavy'/'medium'/'light'
+        # ou 'pesada'/'média'/'leve' conforme a origem; comparar por categoria
+        # canônica evita falso-negativo (ex.: heavy ≠ pesada por substring).
+        armor_req = required[:armors] || required[:armor]
+        if armor_req
+          owned = armor.map { |x| canonical_armor_category(x) }.compact
+          Array(armor_req).each do |a|
+            want = canonical_armor_category(a)
+            ok = if want
+                   owned.include?(want)
+                 else
+                   armor.any? { |x| x.include?(a.to_s.downcase) }
+                 end
+            unless ok
               Rails.logger.error "Prerequisite failed: armor proficiency #{a}"
               return false
             end
@@ -1415,23 +1440,29 @@ class FeatRules
   def self.sheet_has_spellcasting?(sheet)
     return false unless sheet
 
+    # D9 — Sinal forte: spellcasting denormalizado no class_summary (populado pelo
+    # provisioning para classe/subclasse conjuradora). Mantido como atalho.
     begin
       meta = (sheet.metadata || {}).deep_stringify_keys
       cs = meta['class_summary'] || {}
       return true if cs['spellcasting'].present? || cs['conjuration'].present?
-
-      sel = meta['spell_selections'] || {}
-      return true if %w[cantrips known spellbook prepared].any? { |k| Array(sel[k]).any? }
-
-      per_level = meta.dig('class_choices', 'per_level') || {}
-      per_level.each_value do |row|
-        next unless row.is_a?(Hash)
-
-        return true if %w[cantrips spells spellbook prepared].any? { |k| Array(row[k]).any? }
-      end
     rescue StandardError
-      # continue with relational checks
+      # cai para a checagem relacional
     end
+
+    # D9 — Antes, QUALQUER linha de `spell_selections`/`class_choices.per_level`
+    # com cantrips/spells/spellbook/prepared retornava true, mesmo num Guerreiro
+    # com dados de magia semeados (falso-positivo no prereq `spellcasting:true`
+    # de Adepto Elemental/Sniper/Conjurador de Batalha/Ritual). Agora exigimos uma
+    # CLASSE CONJURADORA REAL (com spellcasting_ability/SpellRules), não só linhas.
+    sheet_has_caster_class?(sheet)
+  end
+
+  # Verdadeiro só quando a ficha tem ao menos uma classe/subclasse com
+  # conjuração real (coluna denormalizada `spellcasting` OU klass.spellcasting_ability
+  # OU SpellRules de classe/subclasse). Não considera linhas de magia semeadas.
+  def self.sheet_has_caster_class?(sheet)
+    return false unless sheet
 
     begin
       if SheetKlass.column_names.include?('spellcasting')
@@ -1470,8 +1501,13 @@ class FeatRules
   def self.resolve_nested_proficiency_choice(pb, choices)
     return pb unless pb.is_a?(Hash)
 
-    chosen = Array(choices[:proficiencies] || choices['proficiencies'])
-    return pb if chosen.empty?
+    choices ||= {}
+    # D4 — Contrato: o front persiste picks por CATEGORIA flat (Especialista em
+    # Armas → `choices.weapons`), enquanto o contrato legado usava
+    # `choices.proficiencies`. Aceitamos AMBOS: a chave específica da categoria
+    # tem prioridade, caindo para `proficiencies`. Antes, ler só `proficiencies`
+    # deixava o sub-hash `{choose:{...}}` vazar como lixo em prof.weapons.
+    generic = Array(choices[:proficiencies] || choices['proficiencies'])
 
     # Normalizar chaves para string e operar sobre hash plano (RULES vem com
     # `with_indifferent_access`, mas `deep_dup` pode perder isso e operações
@@ -1487,10 +1523,12 @@ class FeatRules
 
       choose_meta = block_str['choose']
       amount = (choose_meta['amount']).to_i.nonzero? || 1
-      picks = chosen.first(amount).map(&:to_s)
+      per_key = Array(choices[key] || choices[key.to_sym]).map(&:to_s).reject(&:empty?)
+      source = per_key.presence || generic
       # Substitui o subhash por um Array plano (mesmo formato esperado pelo
-      # summary em proficiency_bonuses.weapons / .armors / etc).
-      out[key] = picks
+      # summary em proficiency_bonuses.weapons / .armors / etc). Mesmo sem picks,
+      # substituímos por [] para nunca vazar o `{choose:{...}}` cru.
+      out[key] = source.first(amount).map(&:to_s)
     end
     out
   end
@@ -1515,5 +1553,18 @@ class FeatRules
 
   def self.fold_key(value)
     value.to_s.unicode_normalize(:nfd).gsub(/\p{Mn}/, '').downcase.strip
+  end
+
+  # Categoria canônica de armadura a partir de um token PT ou EN. Usada no
+  # prereq de armadura (D2) para comparar 'pesada'↔'heavy', 'média'↔'medium',
+  # 'leve'↔'light', 'escudo(s)'↔'shield(s)'. Retorna nil para tokens desconhecidos.
+  def self.canonical_armor_category(token)
+    t = fold_key(token)
+    return nil if t.empty?
+    return :light  if t.include?('leve')   || t.include?('light')
+    return :medium if t.include?('media')  || t.include?('medium')
+    return :heavy  if t.include?('pesada') || t.include?('heavy')
+    return :shield if t.include?('escudo') || t.include?('shield')
+    nil
   end
 end

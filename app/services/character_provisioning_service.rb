@@ -285,6 +285,22 @@ class CharacterProvisioningService
           Rails.logger.warn("[CharacterProvisioningService] race_rules apply: #{e.class}: #{e.message}")
         end
 
+        # R7 — Rede de segurança server-side para `race_bonuses_applied`.
+        # O caminho normal usa `race['abilityBonuses']` (linha ~146). Quando o
+        # front envia `baseAttributes` (base PRÉ-racial) mas OMITE `abilityBonuses`,
+        # antes não havia rede: `race_bonuses_applied={}` e o breakdown perdia a
+        # linha "Raça". Derivamos da regra canônica (RaceRules.ability_bonuses,
+        # fixos + chosenAbilities). Gatilho conservador (só quando há base
+        # pré-racial E o payload não trouxe bônus) → NÃO sobrescreve o caminho
+        # atual; evita double-count quando `attributes` já vem pós-racial.
+        if pb_hash && applied.is_a?(Hash) && metadata['race_bonuses_applied'].blank?
+          rule_bonuses = RaceRules.ability_bonuses(
+            applied[:ability],
+            chosen_abilities: Array(rc['chosenAbilities'] || rc[:chosenAbilities])
+          )
+          metadata['race_bonuses_applied'] = rule_bonuses if rule_bonuses.present?
+        end
+
         # Speed: preferir applied[:speed] (sub-raça pode sobrescrever — ex.: Wood Elf 35 ft).
         # Fallback: coluna na DB (não existe hoje), depois 30.
         applied_speed = applied.is_a?(Hash) ? applied[:speed].to_i : 0
@@ -612,35 +628,42 @@ class CharacterProvisioningService
       begin
         cleanup_non_feat_asi_levels!(sheet: sheet, per_level: per_level, max_level: level)
 
-        # Human Variant feat
+        # Human Variant feat — D1: robusto a payloads variados. Aceita o feat em:
+        #   1. raceChoices.variantHumanASI {mode:'feat', featId, choices}  (canônico)
+        #   2. raceChoices.variantHumanASI {featId, ...} SEM mode (mode opcional)
+        #   3. raceChoices.selectedFeat / featId / featName top-level (cliente alt.)
+        # Antes, só (1) aplicava; (2)/(3) descartavam o talento silenciosamente.
+        # `mode` explícito de ASI ('attributes'/'asi') NUNCA vira feat.
         rc = race['raceChoices'] || race[:raceChoices] || {}
         hv = rc['variantHumanASI'] || rc[:variantHumanASI]
-        if hv.is_a?(Hash) && (hv['mode'] || hv[:mode]) == 'feat'
-          feat_id = hv['featId'] || hv[:featId] || hv['featName'] || hv[:featName]
-          if feat_id.present?
-            raw = hv['choices'] || hv[:choices] || {}
-            choices = raw.is_a?(ActionController::Parameters) ? raw.to_unsafe_h : raw.dup
-            # normalize some fields like frontend does
-            begin
-              if choices['ability'] || choices[:ability]
-                v = (choices['ability'] || choices[:ability]).to_s.downcase
-                choices['ability'] = v
-              end
-              if choices['saving_throws'] || choices[:saving_throws]
-                v = (choices['saving_throws'] || choices[:saving_throws]).to_s.downcase
-                choices['saving_throws'] = v
-              end
-              # ensure arrays of names for cantrips/spells if objects were sent
-              %w[cantrips spells maneuvers manobras].each do |key|
-                val = choices[key] || choices[key.to_sym]
-                next unless val
-                arr = Array(val).map { |x| x.is_a?(Hash) ? (x['name'] || x[:name] || x['id'] || x[:id]) : x }.compact
-                choices[key] = arr
-              end
-            rescue => _e
+        hv = {} unless hv.is_a?(Hash)
+        hv_mode = (hv['mode'] || hv[:mode]).to_s
+        feat_id = hv['featId'] || hv[:featId] || hv['featName'] || hv[:featName] ||
+                  rc['selectedFeat'] || rc[:selectedFeat] || rc['featId'] || rc[:featId] ||
+                  rc['featName'] || rc[:featName]
+        if feat_id.present? && (hv_mode == 'feat' || hv_mode.blank?)
+          raw = hv['choices'] || hv[:choices] || rc['featChoices'] || rc[:featChoices] || {}
+          choices = raw.is_a?(ActionController::Parameters) ? raw.to_unsafe_h : (raw.is_a?(Hash) ? raw.dup : {})
+          # normalize some fields like frontend does
+          begin
+            if choices['ability'] || choices[:ability]
+              v = (choices['ability'] || choices[:ability]).to_s.downcase
+              choices['ability'] = v
             end
-            FeatAssignmentService.call(sheet: sheet, feat_id: feat_id, level_gained: 1, choices: choices)
+            if choices['saving_throws'] || choices[:saving_throws]
+              v = (choices['saving_throws'] || choices[:saving_throws]).to_s.downcase
+              choices['saving_throws'] = v
+            end
+            # ensure arrays of names for cantrips/spells if objects were sent
+            %w[cantrips spells maneuvers manobras].each do |key|
+              val = choices[key] || choices[key.to_sym]
+              next unless val
+              arr = Array(val).map { |x| x.is_a?(Hash) ? (x['name'] || x[:name] || x['id'] || x[:id]) : x }.compact
+              choices[key] = arr
+            end
+          rescue => _e
           end
+          FeatAssignmentService.call(sheet: sheet, feat_id: feat_id, level_gained: 1, choices: choices)
         end
 
         # Per-level ASI feats

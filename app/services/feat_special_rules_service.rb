@@ -76,10 +76,46 @@ class FeatSpecialRulesService
       applied_rules[:equipment] = apply_equipment_modifiers(equipment_rules)
     end
 
+    # F2 — Preservação total: qualquer família FORA da allowlist acima
+    # (healing_modifiers, temporary_hp_modifiers, social_modifiers,
+    # exploration_modifiers, utility_modifiers, unarmed_modifiers) e qualquer
+    # chave top-level que não seja `*_modifiers` (maneuvers/superiority_die do
+    # Adepto Marcial) era silenciosamente descartada e `special_rules` persistia
+    # `{}`. Agora preservamos o sub-hash cru sob a chave normalizada para que
+    # build_resources / FeatProducer / front possam ler. Não sobrescreve nenhuma
+    # família já processada acima.
+    special_rules.each do |fam_key, fam_val|
+      key_s = fam_key.to_s
+      next if KNOWN_FAMILY_KEYS.include?(key_s)
+      next if fam_val.nil?
+
+      norm = key_s.sub(/_modifiers\z/, '').to_sym
+      next if applied_rules.key?(norm)
+
+      applied_rules[norm] = fam_val.respond_to?(:deep_stringify_keys) ? fam_val.deep_stringify_keys : fam_val
+    end
+
     applied_rules
   end
 
   private
+
+  # Famílias com handler dedicado (transformam a estrutura). Tudo o que estiver
+  # fora desta lista é preservado cru pela passada de "preservação total" acima.
+  KNOWN_FAMILY_KEYS = %w[
+    movement_modifiers combat_modifiers defense_modifiers
+    dice_modifiers magic_modifiers skill_modifiers equipment_modifiers
+  ].freeze
+
+  # Valor de fallback para um `modifier_type` sem `when` explícito: preserva os
+  # `parameters` crus (Hash/Array/String) ou `true` quando não houver. Evita que
+  # chaves novas (Alerta initiative_bonus, Adepto Elemental elemental_focus,
+  # Conjurador de Ritual ritual_book, Maestria Média dex_cap, etc.) caiam no vazio.
+  def passthrough_value(config)
+    return config unless config.is_a?(Hash)
+    params = config['parameters'] || config[:parameters]
+    params.nil? ? true : params
+  end
 
   def apply_movement_modifiers(modifiers)
     result = {}
@@ -152,6 +188,10 @@ class FeatSpecialRulesService
         result[:attempt_pin_grappled_target] = params
       when 'missed_ranged_attack_does_not_reveal'
         result[:stay_hidden_on_missed_ranged_attack] = true
+      else
+        # F2 — Alerta (initiative_bonus/surprise_immunity/ignore_hidden_attacker_advantage),
+        # Matador de Conjuradores (reaction_attack_on_cast/...), etc.: preserva cru.
+        result[modifier_type.to_sym] = params.presence || true
       end
     end
 
@@ -164,6 +204,15 @@ class FeatSpecialRulesService
     return {} unless config.is_a?(Hash)
     raw = config['parameters'] || config[:parameters] || {}
     raw.is_a?(Hash) ? raw : {}
+  end
+
+  # Como `params_for`, mas NÃO descarta `parameters` que não sejam Hash. Usado
+  # nos handlers cujo valor é exposto cru (skill_advantage com Array de perícias,
+  # reaction_ac_bonus com String 'proficiency_bonus', damage_resistance com
+  # Array de condições). Devolve nil quando não houver `parameters` (F3).
+  def raw_params(config)
+    return config unless config.is_a?(Hash)
+    config['parameters'] || config[:parameters]
   end
 
   # Helper: leitura agnostica de simbolo/string.
@@ -179,7 +228,11 @@ class FeatSpecialRulesService
     result = {}
 
     modifiers.each do |modifier_type, config|
-      params = params_for(config)
+      # F3 — `parameters` pode ser Hash (Maestria Pesada {reduce:3,...}), Array
+      # (Explorador de Cavernas ['armadilhas']) ou String (Duelista Defensivo
+      # 'proficiency_bonus'). `params_for` descartava Array/String → {}. Aqui
+      # preservamos o valor cru.
+      params = raw_params(config)
       case modifier_type.to_s
       when 'reaction_ac_bonus'
         result[:reaction_ac_bonus] = params
@@ -187,6 +240,9 @@ class FeatSpecialRulesService
         result[:shield_master_reaction] = true
       when 'damage_resistance'
         result[:damage_resistance] = params
+      else
+        # F2 — Maestria em Armadura Média (medium_armor_dex_cap / stealth_*), etc.
+        result[modifier_type.to_sym] = params.nil? ? true : params
       end
     end
 
@@ -215,6 +271,9 @@ class FeatSpecialRulesService
           bonus_per_level: pv(params, :bonus_per_level).to_i,
           retroactive: pv(params, :retroactive)
         }
+      else
+        # F2 — Durável (hit_dice_minimum_heal), etc.
+        result[modifier_type.to_sym] = params.presence || true
       end
     end
 
@@ -239,6 +298,11 @@ class FeatSpecialRulesService
           type: pv(params, :type),
           class_choice: pv(params, :class_choice)
         }
+      else
+        # F2 — Adepto Elemental (elemental_focus), Conjurador de Ritual
+        # (ritual_book/ritual_copying/ritual_casting): preserva cru. F7 consome
+        # learn_cantrip/ritual_book em apply_feat_spells.
+        result[modifier_type.to_sym] = raw_params(config).nil? ? true : raw_params(config)
       end
     end
 
@@ -249,7 +313,9 @@ class FeatSpecialRulesService
     result = {}
 
     modifiers.each do |modifier_type, config|
-      params = params_for(config)
+      # F3 — skill_advantage vem como Array de perícias (Ator: ['Atuação',
+      # 'Enganação']); preservar cru em vez de zerar via params_for.
+      params = raw_params(config)
       case modifier_type.to_s
       when 'skill_advantage'
         result[:skill_advantage] = params
@@ -257,6 +323,8 @@ class FeatSpecialRulesService
         result[:saving_throw_advantage] = params
       when 'lip_reading'
         result[:lip_reading] = params
+      else
+        result[modifier_type.to_sym] = params.nil? ? true : params
       end
     end
 
@@ -283,6 +351,8 @@ class FeatSpecialRulesService
         result[:remove_weapon_restriction] = params
       when 'dual_wield_draw'
         result[:dual_wield_draw] = params
+      else
+        result[modifier_type.to_sym] = params.presence || true
       end
     end
 

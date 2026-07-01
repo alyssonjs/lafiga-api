@@ -3,9 +3,21 @@ class FeatAssignmentService
 
   def initialize(sheet:, feat_id:, level_gained:, choices: {})
     @sheet = sheet
-    @feat_id = feat_id
+    # D1 — normaliza featId. FeatRules.find espera SLUG (api_index). Um cliente
+    # que enviar o DB id numérico (ex.: Humano Variante por outro fluxo) caía em
+    # "feat não encontrado". Resolvemos o slug a partir do Feat persistido.
+    @feat_id = normalize_feat_id(feat_id)
     @level_gained = level_gained
     @choices = choices.is_a?(ActionController::Parameters) ? choices.to_unsafe_h : (choices || {})
+  end
+
+  # Numérico (DB id) → api_index do Feat; slug → inalterado; nil → nil.
+  def normalize_feat_id(raw)
+    s = raw.to_s.strip
+    return raw if s.empty?
+    return s unless s.match?(/\A\d+\z/)
+
+    (Feat.find_by(id: s.to_i)&.api_index).presence || s
   end
 
   def call
@@ -79,13 +91,31 @@ class FeatAssignmentService
       # Update sheet metadata with feat information
       update_sheet_metadata(sheet_feat)
 
-      # Apply cantrips and spells if any
-      apply_feat_spells(sheet_feat) if feat_rule[:cantrips] || feat_rule[:spells]
+      # Apply cantrips and spells if any. F7: além de `cantrips:`/`spells:`,
+      # também rodamos quando a magia vive em special_rules.magic_modifiers
+      # (Sniper Mágico learn_cantrip, Conjurador de Ritual ritual_book).
+      apply_feat_spells(sheet_feat) if feat_rule[:cantrips] || feat_rule[:spells] || feat_has_spell_special_rules?(feat_rule)
 
       # Apply special rules if any. Para Robusto (`hit_points_bonus`) o caminho
       # `handle_immediate_special_rules` JÁ aplica +N×nível retroativamente em
       # sheet.hp_max — não precisa duplicar aqui. Cobertura: spec/services/feat_hp_bonus_spec.rb.
       apply_special_rules(sheet_feat) if feat_rule[:special_rules]
+
+      # F5 — half-feats (Durável, Resiliente, Atleta, Proteção*, Sentinela, etc.)
+      # gravam o +1/+2 apenas em metadata['feats'][].ability_bonuses. Em fichas
+      # AUTORITATIVAS (colunas str..cha como fonte de verdade — criadas pelo
+      # front/provisioning), o summary reconcilia com uma linha "Ajuste manual -1"
+      # que cancela o bônus (net 0) porque as colunas não foram atualizadas.
+      # `level_up_service`/`provisioning` já chamam o sync, mas o FeatAssignmentService
+      # isolado (admin/API) não — então materializamos aqui.
+      #
+      # Restrito a fichas já autoritativas: fichas legadas (sem flag/base) já
+      # mostram o bônus via `base + inc_total` e NÃO devem ser flipadas para o
+      # modo autoritativo aqui (evita duplicar incrementos sem `base_ability_scores`).
+      if feat_grants_ability_score?(feat_rule) && sheet_uses_authoritative_scores?(@sheet)
+        CharacterSheetSummaryService.sync_ability_columns_from_metadata!(@sheet)
+        @sheet.reload
+      end
     end
     sheet_feat
   rescue StandardError => e
@@ -94,6 +124,25 @@ class FeatAssignmentService
   end
 
   private
+
+  # True quando o feat concede bônus de atributo (half-feat fixo `{con:1}` ou
+  # com escolha `{choose:{...}}`). Usado para decidir se materializamos as
+  # colunas autoritativas via sync (F5).
+  def feat_grants_ability_score?(feat_rule)
+    ab = feat_rule && (feat_rule[:ability_bonuses] || feat_rule['ability_bonuses'])
+    ab = FeatRules.parse_jsonish(ab) if ab.is_a?(String)
+    ab.is_a?(Hash) && ab.present?
+  end
+
+  # A ficha já trata as colunas str..cha como fonte autoritativa? (flag setada
+  # pelo provisioning/level-up, OU `base_ability_scores` presente). Só nesse caso
+  # o artefato "Ajuste manual -1" aparece e precisamos sincronizar as colunas (F5).
+  def sheet_uses_authoritative_scores?(sheet)
+    meta = sheet.metadata || {}
+    return true if meta['ability_scores_include_all_increments']
+    base = meta['base_ability_scores']
+    base.is_a?(Hash) && base.keys.any?
+  end
 
   def update_sheet_metadata(sheet_feat)
     Rails.logger.info "=== update_sheet_metadata Debug ==="
@@ -150,46 +199,87 @@ class FeatAssignmentService
     # Sem rescue silencioso (ver comentario em update_sheet_metadata): se
     # FeatRules.apply lancar, deixa subir para o rescue de toplevel do call.
     feat_summary = FeatRules.apply(@feat_id, @choices)
-    
-    # Apply cantrips
-    if feat_summary[:cantrips] && feat_summary[:cantrips][:cantrips]
-      cantrips = feat_summary[:cantrips][:cantrips]
-      cantrips.each do |cantrip_name|
-        # Find or create cantrip spell
-        cantrip = Spell.find_by(name: cantrip_name, level: 0)
-        if cantrip
-          # Add to sheet's known cantrips
-          sheet_klass = @sheet.sheet_klasses.first
-          if sheet_klass
-            SheetKnownSpell.find_or_create_by(
-              sheet_klass: sheet_klass,
-              spell: cantrip,
-              source: 'feat'
-            )
-          end
-        end
-      end
+    feat_rule    = FeatRules.find(@feat_id)
+
+    # F8 — acesso INDIFERENTE a símbolo/string. `FeatRules.apply` monta o
+    # sub-hash com chave STRING (`{ 'cantrips' => [...] }`); ler por símbolo
+    # (`feat_summary[:cantrips][:cantrips]`) devolvia nil e NENHUM
+    # SheetKnownSpell era criado (Mágico Iniciante: 0 magias).
+    cantrip_tokens = extract_spell_tokens(feat_summary[:cantrips], 'cantrips')
+    spell_tokens   = extract_spell_tokens(feat_summary[:spells], 'spells')
+
+    # F7 — magias de feat que vivem em special_rules.magic_modifiers (não em
+    # `cantrips:`/`spells:`). Sniper Mágico (learn_cantrip → choices.cantrips) e
+    # Conjurador de Ritual (ritual_book → choices.spells). Sem isto, o pick da
+    # criação era descartado e nada virava SheetKnownSpell.
+    mm = feat_spell_special_rules(feat_rule)
+    if mm['learn_cantrip']
+      cantrip_tokens |= Array(@choices['cantrips'] || @choices[:cantrips]).map(&:to_s)
+    end
+    if mm['ritual_book']
+      spell_tokens |= Array(@choices['spells'] || @choices[:spells]).map(&:to_s)
     end
 
-    # Apply spells
-    if feat_summary[:spells] && feat_summary[:spells][:spells]
-      spells = feat_summary[:spells][:spells]
-      spells.each do |spell_name|
-        # Find or create spell
-        spell = Spell.find_by(name: spell_name)
-        if spell
-          # Add to sheet's known spells
-          sheet_klass = @sheet.sheet_klasses.first
-          if sheet_klass
-            SheetKnownSpell.find_or_create_by(
-              sheet_klass: sheet_klass,
-              spell: spell,
-              source: 'feat'
-            )
-          end
-        end
+    sheet_klass = @sheet.sheet_klasses.first
+    return unless sheet_klass
+
+    # Mágico Iniciante: a magia de 1º nível é 1/descanso longo, SEM slot.
+    one_per_long_rest = @feat_id.to_s == 'magico_iniciante'
+
+    # O índice único é [sheet_klass_id, spell_id] (SEM source). Buscamos por essa
+    # chave e só setamos source no INSERT — assim, se a magia já é conhecida (via
+    # classe), não tentamos um segundo INSERT que violaria a unique e quebraria
+    # todo o assignment (RecordNotUnique → rollback → 0 magias).
+    cantrip_tokens.each do |token|
+      cantrip = find_feat_spell(token, level: 0)
+      next unless cantrip
+      SheetKnownSpell.find_or_create_by(sheet_klass: sheet_klass, spell: cantrip) { |row| row.source = 'feat' }
+    end
+
+    spell_tokens.each do |token|
+      spell = find_feat_spell(token)
+      next unless spell
+      sks = SheetKnownSpell.find_or_create_by(sheet_klass: sheet_klass, spell: spell) { |row| row.source = 'feat' }
+      # 'LR' = 1/descanso longo (vocabulário do model SheetKnownSpell, que valida
+      # uses_per_rest ∈ {LR, SR}). A magia de 1º nível do Mágico Iniciante não usa slot.
+      if one_per_long_rest && sks.source == 'feat' && sks.uses_per_rest.blank?
+        sks.update(uses_per_rest: 'LR', uses_remaining: 1)
       end
     end
+  end
+
+  # Extrai a lista de tokens (nomes OU ids) de um sub-hash {cantrips:[...]} /
+  # {spells:[...]} aceitando chave símbolo ou string (F8).
+  def extract_spell_tokens(block, key)
+    return [] unless block.is_a?(Hash)
+    Array(block[key] || block[key.to_sym]).map(&:to_s).reject(&:blank?)
+  end
+
+  # Resolve um token de magia (nome do catálogo PT, api_index/slug do front, ou
+  # id numérico) para um Spell, de forma tolerante. O front grava IDs/slugs em
+  # `choices.cantrips/spells`; a verificação in-transaction usa nomes.
+  def find_feat_spell(token, level: nil)
+    t = token.to_s.strip
+    return nil if t.empty?
+    scope = level ? Spell.where(level: level) : Spell.all
+    scope.find_by(name: t) ||
+      scope.find_by(api_index: t) ||
+      scope.where('LOWER(name) = ?', t.downcase).first ||
+      (t.match?(/\A\d+\z/) ? scope.find_by(id: t.to_i) : nil)
+  end
+
+  # Bloco magic_modifiers do feat (HashWithIndifferentAccess-friendly).
+  def feat_spell_special_rules(feat_rule)
+    sr = feat_rule && (feat_rule[:special_rules] || feat_rule['special_rules'])
+    sr = FeatRules.parse_jsonish(sr) if sr.is_a?(String)
+    return {} unless sr.is_a?(Hash)
+    mm = sr[:magic_modifiers] || sr['magic_modifiers'] || {}
+    mm.is_a?(Hash) ? mm.deep_stringify_keys : {}
+  end
+
+  def feat_has_spell_special_rules?(feat_rule)
+    mm = feat_spell_special_rules(feat_rule)
+    mm.key?('learn_cantrip') || mm.key?('ritual_book')
   end
 
   def apply_special_rules(sheet_feat)

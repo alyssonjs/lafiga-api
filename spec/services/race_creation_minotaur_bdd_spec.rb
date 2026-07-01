@@ -130,6 +130,23 @@ RSpec.describe 'Criação de Personagem Minotauro (Houserules Lafiga)', type: :s
       race_skills = Array(summary.result.dig(:proficiencies, :skills, :race)).map(&:to_s)
       expect(race_skills).to include('Intimidação')
     end
+
+    # D4 — double-grant: o FE oferecia Intimidação/Persuasão, mas a regra FIXA
+    # Intimidação. Escolher Persuasão gravava 2 perícias. A cota da raça
+    # (choiceCount nil → 0) é autoritativa: chosenSkills é descartado.
+    it 'ignora chosenSkills (Persuasão) — Minotauro não tem cota de escolha (só Intimidação fixa)' do
+      cmd = CharacterProvisioningService.call(
+        user: user,
+        payload: build_payload(race_choices: { 'chosenSkills' => ['Persuasão'] })
+      )
+      expect(cmd.success?).to be(true)
+      sheet = Sheet.order(:id).last
+
+      race_skills = Array(CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+                            .result.dig(:proficiencies, :skills, :race)).map(&:to_s)
+      expect(race_skills).to eq(['Intimidação']),
+        "Minotauro deve ter SÓ Intimidação (fixa); Persuasão escolhida no FE é descartada. Veio: #{race_skills.inspect}"
+    end
   end
 
   # =====================================================================

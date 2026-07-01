@@ -13,11 +13,12 @@ module Api::V1::Player::Combat
   # Leitura: membro do grupo OU DM.
   # Mutação: APENAS DM.
   class CombatCombatantsController < BaseController
-    before_action :authorize_write!, except: [:index, :update]
+    before_action :authorize_write!, except: [:index, :update, :record_death_save]
     before_action :ensure_combat_state!, only: [:create, :reorder]
     before_action :set_combatant,
                   only: [:update, :destroy, :apply_damage, :heal, :record_death_save]
     before_action :authorize_combatant_update!, only: [:update]
+    before_action :authorize_record_death_save!, only: [:record_death_save]
 
     def index
       cs = @schedule.combat_state
@@ -230,6 +231,14 @@ module Api::V1::Player::Combat
         p[:conditions] = p[:conditions].map { |c| c.to_h.transform_keys(&:to_s) } if p[:conditions]
         p[:actions_used] = p[:actions_used].to_h.transform_keys(&:to_s) if p[:actions_used]
         p[:death_saves]  = p[:death_saves].to_h.transform_keys(&:to_s)  if p[:death_saves]
+
+        # turn_state — válvula genérica OPACA: aceita JSON aninhado arbitrário.
+        # `permit(turn_state: {})` só liberaria um nível, então puxamos o hash
+        # cru via to_unsafe_h (espelha o tratamento dos demais jsonb acima).
+        if params.dig(:combatant, :turn_state)
+          ts = params[:combatant][:turn_state]
+          p[:turn_state] = ts.respond_to?(:to_unsafe_h) ? ts.to_unsafe_h : ts
+        end
       end
     end
 
@@ -340,17 +349,60 @@ module Api::V1::Player::Combat
       raw.to_i
     end
 
+    # Campos de ESTADO DE TURNO que o DONO do PC pode mutar no próprio
+    # combatente. São válvulas controladas pelo front (gasto de ação/bônus/
+    # movimento/reação e estado opaco de turno). NÃO inclui campos sensíveis
+    # (hp, ac, temp_hp, conditions, death_saves, is_dead, ...) — esses
+    # continuam exclusivos do DM.
+    PLAYER_TURN_STATE_FIELDS = %w[actions_used turn_state].freeze
+
+    # Campos de EFEITO DE COMBATE (dano/cura + transição de morte derivada) que o
+    # JOGADOR DO TURNO ATUAL pode aplicar em QUALQUER combatente — habilita
+    # poção/ataque/magia do jogador. A regra "curado de 0 volta à batalha" exige
+    # a transição completa (hp + condições + death saves + estabilizado + morto),
+    # toda derivada no front por `deriveHpTransition`. Escopo: só no turno do
+    # próprio PC e combate ativo; auditável pelo log de combate.
+    COMBAT_EFFECT_FIELDS = %w[
+      hp_current hp_max temp_hp conditions death_saves is_stabilized is_dead
+      is_concentrating concentration_spell
+    ].freeze
+
     def authorize_combatant_update!
       return if site_or_table_dm?
       return if player_setting_own_initiative_only?
+      return if player_updating_own_turn_state?
+      return if player_applying_combat_effect_on_own_turn?
 
       render json: { error: 'apenas o DM da mesa ou o mestre da plataforma pode mutar combatentes' }, status: :forbidden
     end
 
+    # Teste de morte: DM sempre; jogador só grava o teste do PRÓPRIO combatente
+    # (PC dele) e só quando é o turno desse combatente. Espelha o padrão de
+    # efeitos de combate no próprio turno. NPC fica exclusivamente com o DM.
+    def authorize_record_death_save!
+      return if site_or_table_dm?
+      # Jogador só grava o teste de morte do PRÓPRIO combatente, e só quando é o turno dele.
+      return if current_turn_belongs_to_user? && current_turn_combatant&.id == @combatant&.id
+
+      render json: { error: 'apenas o DM ou o dono do PC no próprio turno pode gravar teste de morte' }, status: :forbidden
+    end
+
+    # Jogador DONO do combatente do TURNO ATUAL pode aplicar efeitos de combate
+    # (dano/cura) em qualquer combatente. Conservador: valida a lista EXATA de
+    # chaves enviadas contra COMBAT_EFFECT_FIELDS (nada fora disso passa).
+    def player_applying_combat_effect_on_own_turn?
+      return false unless current_turn_belongs_to_user?
+
+      p = combatant_update_params.to_h
+      keys = p.keys.map(&:to_s)
+      return false if keys.empty?
+
+      (keys - COMBAT_EFFECT_FIELDS).empty?
+    end
+
     # Jogador só pode definir iniciativa no próprio PC, uma vez (de nil → valor).
     def player_setting_own_initiative_only?
-      return false unless @combatant.combatable_type == Character.name
-      return false unless @combatant.combatable&.user_id == @current_user.id
+      return false unless player_owns_combatant?
       return false unless @combatant.initiative.nil?
 
       p = combatant_update_params.to_h
@@ -358,6 +410,28 @@ module Api::V1::Player::Combat
       return false unless keys == ['initiative']
 
       p.key?('initiative') && !p['initiative'].nil?
+    end
+
+    # Dono do PC pode atualizar APENAS os campos de estado de turno do próprio
+    # combatente (allowlist em PLAYER_TURN_STATE_FIELDS). Qualquer chave fora
+    # da allowlist (hp, ac, conditions, is_dead, etc.) cai fora e o jogador
+    # recebe 403 — só o DM toca nesses. Conservador por design: validamos a
+    # lista EXATA de chaves enviadas, não apenas a presença das permitidas.
+    def player_updating_own_turn_state?
+      return false unless player_owns_combatant?
+
+      p = combatant_update_params.to_h
+      keys = p.keys.map(&:to_s)
+      return false if keys.empty?
+
+      (keys - PLAYER_TURN_STATE_FIELDS).empty?
+    end
+
+    # O combatente é um PC cujo personagem pertence ao usuário autenticado.
+    def player_owns_combatant?
+      return false unless @combatant.combatable_type == Character.name
+
+      @combatant.combatable&.user_id == @current_user.id
     end
   end
 end

@@ -214,13 +214,26 @@ class CharacterDraftPayloadBuilder
   end
 
   def race_bonuses
-    raw = draft.dig('raceChoices', 'abilityBonuses') ||
-          dig_field('selectedRace', 'abilityBonuses') ||
-          {}
-    raw = {} unless raw.is_a?(Hash)
-    ABILITY_KEYS.each_with_object({}) do |k, h|
-      h[k] = (raw[k] || 0).to_i
+    # 1) Forma explícita: cliente que já manda `abilityBonuses` no draft.
+    raw = draft.dig('raceChoices', 'abilityBonuses') || dig_field('selectedRace', 'abilityBonuses')
+    if raw.is_a?(Hash) && raw.present?
+      return ABILITY_KEYS.each_with_object({}) { |k, h| h[k] = (raw[k] || 0).to_i }
     end
+
+    # 2) D3 — derivar da REGRA canônica (fixos) + `chosenAbilities` (escolhidos),
+    # em paridade com `buildProvisionPayload`/`parseRacialBonuses` do front. O
+    # `RaceChoices` do FE NÃO preenche `abilityBonuses` (usa `chosenAbilities:
+    # string[]`); sem isto, o caminho server-draft perdia o +1/+1 escolhido do
+    # Meio-Elfo / Humano Variante e os bônus fixos de qualquer raça.
+    chosen = Array(draft.dig('raceChoices', 'chosenAbilities'))
+    derived = begin
+      applied = RaceRules.apply(race_id: race_api_index, subrace_id: sub_race_api_index, choices: {})
+      RaceRules.ability_bonuses(applied[:ability], chosen_abilities: chosen)
+    rescue StandardError => e
+      Rails.logger.warn("CharacterDraftPayloadBuilder#race_bonuses: #{e.class}: #{e.message}")
+      {}
+    end
+    ABILITY_KEYS.each_with_object({}) { |k, h| h[k] = (derived[k] || 0).to_i }
   end
 
   def race_api_index

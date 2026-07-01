@@ -539,10 +539,14 @@ trait_definitions:
     name: "Carga"
     description: "Se mover ≥ 6 m em linha reta até um alvo e acertar ataque corpo-a-corpo no mesmo turno: role o dano da arma duas vezes e some. Recarga após um Descanso Curto ou Longo."
     sheet_impact: "Criar ação especial (1x/SR ou LR): ‘Carga’ — dobra dados de dano da arma no acerto após corrida de 6 m."
+    grants:
+      uses: { value: 1, per: "descanso curto ou longo" }
   hooves_1d6_strike:
     name: "Cascos"
     description: "Ataques naturais (contundente) 1d6 + STR; você é proficiente com seus cascos."
     sheet_impact: "Adicionar ataque natural: ‘Cascos’ (1d6 contundente, atq: STR, prof.)."
+    grants:
+      natural_weapon: { name: "Cascos", dice: "1d6", damage_type: "contundente", ability: STR }
   equine_build:
     name: "Corpo Equino"
     description: "Conta como uma categoria maior para carga/empurrar/puxar; vantagem em STR (Atletismo) para puxar/empurrar. Escalar com mãos é difícil: cada 1,5 m de escalada custa +6 m (em vez de +1,5 m). Uma criatura Média ou menor pode montá-lo se você permitir (você age independentemente)."
@@ -560,6 +564,8 @@ trait_definitions:
     name: "Chifres"
     description: "Ataques naturais (perfurante) 1d6 + STR; você é proficiente com seus chifres."
     sheet_impact: "Adicionar ataque natural: ‘Chifres’ (1d6 perfurante, atq: STR, prof.)."
+    grants:
+      natural_weapon: { name: "Chifres", dice: "1d6", damage_type: "perfurante", ability: STR }
 
   goring_rush:
     name: "Arremetida Escornada"
@@ -581,6 +587,9 @@ trait_definitions:
     name: "Voo (15 m)"
     description: "Deslocamento de voo 15 m; não funciona usando armadura média ou pesada."
     sheet_impact: "Adicionar deslocamento ‘voo 15 m’; regra de restrição por armadura."
+    grants:
+      movement:
+        fly_ft: 50   # 15 m ≈ 50 ft
 
   flight_medium_ok:
     name: "Voo com Armadura Média"
@@ -591,6 +600,8 @@ trait_definitions:
     name: "Garras"
     description: "Ataques desarmados com garras: 1d4 cortante; proficiente."
     sheet_impact: "Adicionar ataque ‘Garras’ (1d4 cortante, atq: DEX ou STR, prof.)."
+    grants:
+      natural_weapon: { name: "Garras", dice: "1d4", damage_type: "cortante", ability: DEX }
 
   natural_singers:
     name: "Cantores Natos"
@@ -611,6 +622,11 @@ trait_definitions:
     name: "Resiliência Anã"
     description: "Vantagem em testes de resistência contra veneno e resistência a dano de veneno."
     sheet_impact: "Marcar vantagem (CON/veneno) e `resistência: veneno`."
+    grants:
+      defenses:
+        resistance: [veneno]
+      advantages:
+        saves: [Veneno]
 
   stonecunning:
     name: "Conhecimento da Pedra"
@@ -638,6 +654,11 @@ trait_definitions:
     name: "Ancestralidade Feérica"
     description: "Vantagem em testes de resistência contra Enfeitiçado; magia não pode induzir sono."
     sheet_impact: "Marcar vantagem (WIS/CHA/CON conforme origem do efeito) vs ‘charm’; imunidade a sono mágico."
+    grants:
+      advantages:
+        saves: [Enfeitiçado]
+      defenses:
+        conditions_immunity: ["Sono mágico"]
 
   trance:
     name: "Transe"
@@ -700,6 +721,9 @@ trait_definitions:
     name: "Bravura"
     description: "Vantagem em testes de resistência contra Amedrontado."
     sheet_impact: "Marcar vantagem vs ‘frightened’."
+    grants:
+      advantages:
+        saves: [Amedrontado]
 
   halfling_nimbleness:
     name: "Agilidade Halfling"
@@ -715,6 +739,11 @@ trait_definitions:
     name: "Resiliência dos Robustos"
     description: "Vantagem em testes vs veneno e resistência a dano de veneno."
     sheet_impact: "Igual a Resiliência Anã (aplicar à linhagem Halfling Robusto)."
+    grants:
+      defenses:
+        resistance: [veneno]
+      advantages:
+        saves: [Veneno]
 
   feline_agility:
     name: "Agilidade Felina"
@@ -725,6 +754,10 @@ trait_definitions:
     name: "Garras de Gato"
     description: "Você tem deslocamento de escalada de 6 m. Suas garras são armas naturais: ataques desarmados causam 1d4 + modificador de FOR de dano cortante."
     sheet_impact: "Adicionar deslocamento de escalada 6 m e ataque natural ‘Garras’ (1d4 cortante + FOR, prof.)."
+    grants:
+      movement:
+        climb_ft: 20   # 6 m ≈ 20 ft
+      natural_weapon: { name: "Garras de Gato", dice: "1d4", damage_type: "cortante", ability: STR }
 
   cats_talent:
     name: "Talento Felino"
@@ -735,6 +768,9 @@ trait_definitions:
     name: "Astúcia Gnômica"
     description: "Vantagem em todos os testes de resistência de INT, SAB e CAR contra magia."
     sheet_impact: "Marcar vantagem global (INT/SAB/CAR saves vs magia)."
+    grants:
+      advantages:
+        saves: ["Magia (INT, SAB, CAR)"]
 
   speak_with_small_beasts:
     name: "Falar com Pequenas Criaturas"
@@ -771,6 +807,8 @@ trait_definitions:
     name: "Perseverança Implacável"
     description: "Quando cair a 0 PV e não morrer, fica em 1 PV 1x por Descanso Longo."
     sheet_impact: "Adicionar reação/uso 1x/LDesc que define PV para 1 (logar uso)."
+    grants:
+      uses: { value: 1, per: "descanso longo" }
 
   savage_attacks:
     name: "Golpes Selvagens"
@@ -824,13 +862,25 @@ trait_definitions:
 
   breath_weapon:
     name: "Arma de Sopro"
-    description: "Ação: efeito em cone/linha baseado na ancestralidade; CD = 8 + Prof + CON; dano escala com nível; usos por Descanso Curto/Longo (PHB)."
-    sheet_impact: "Adicionar ação ‘Sopro’: `CD = 8 + Prof + CON`, área conforme tipo, dano conforme nível."
+    description: "Ação: sopro de <dano> em <area>, conforme a ancestralidade; CD = 8 + Prof + CON; dano escala com nível; usos por Descanso Curto/Longo (PHB)."
+    sheet_impact: "Adicionar ação ‘Sopro’ (<dano>, <area>): `CD = 8 + Prof + CON`, dano conforme nível."
+    grants:
+      # R4 — recurso racial: usado 1×, recarrega em Descanso Curto ou Longo.
+      # CD do teste de resistência do alvo = 8 + Prof + mod. CON (materializado
+      # por CharacterSheetSummaryService#merge_race_resources!).
+      uses: { value: 1, per: "descanso curto ou longo" }
+      dc: { base: 8, prof: true, ability: CON }
 
   damage_resistance_from_ancestry:
     name: "Resistência Elemental (Ancestralidade)"
-    description: "Resistência ao mesmo tipo de dano da ancestralidade."
-    sheet_impact: "Marcar `resistência: <tipo>`."
+    description: "Resistência a dano de <dano>, conforme a ancestralidade."
+    sheet_impact: "Marcar `resistência: <dano>`."
+    grants:
+      defenses:
+        # "<damage>" é interpolado pelo RaceProducer a partir do campo `damage`
+        # do trait ref na sub-raça (ex.: { key: damage_resistance_from_ancestry,
+        # damage: "Veneno" }). Permite um único trait_def servir as 10 cores.
+        resistance: ["<damage>"]
 
   thaumaturgy_cantrip:
     name: "Presença Sobrenatural"
@@ -847,27 +897,60 @@ trait_definitions:
     name: "Resistência de Legado (Veneno)"
     description: "Resistência a dano de veneno."
     sheet_impact: "Marcar Resistência: veneno."
+    grants:
+      defenses:
+        resistance: [veneno]
 
   legacy_resistance_necrotic:
     name: "Resistência de Legado (Necrótico)"
     description: "Resistência a dano necrótico."
     sheet_impact: "Marcar Resistência: necrótico."
+    grants:
+      defenses:
+        resistance: [necrótico]
 
   legacy_resistance_fire:
     name: "Resistência de Legado (Fogo)"
     description: "Resistência a dano de fogo."
     sheet_impact: "Marcar Resistência: fogo."
+    grants:
+      defenses:
+        resistance: [fogo]
 
   abyssal_legacy:
     name: "Legado Abissal"
     description: "3º: Raio Adoecente 1/LDesc; 5º: Cativar 1/LDesc (CAR para CD/ataque de magia)."
     sheet_impact: "Adicionar magias inatas: ‘Raio Adoecente’ (3º), ‘Cativar’ (5º), 1/LDesc, conjuração por CAR."
+    grants:
+      spells:
+        - spell: ray-of-sickness
+          level: 1
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 3
+        - spell: charm-person
+          level: 1
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 5
 
   chthonic_legacy:
     name: "Legado Ctônico"
     description: "3º: Vitalidade Falsa 1/LDesc; 5º: Raio do Enfraquecimento 1/LDesc (CAR)."
     sheet_impact: "Adicionar magias inatas: ‘Vitalidade Falsa’ (3º), ‘Raio do Enfraquecimento’ (5º), 1/LDesc, CAR."
-    
+    grants:
+      spells:
+        - spell: false-life
+          level: 1
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 3
+        - spell: ray-of-enfeeblement
+          level: 2
+          ability: CHA
+          usage: per_long_rest
+          minimum_level: 5
+
   infernal_legacy_variant:
     name: "Legado Infernal"
     description: "3º: Repreensão Infernal 1/LDesc; 5º: Escuridão 1/LDesc (CAR)."

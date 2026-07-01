@@ -22,6 +22,11 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges race p
   let!(:hill_subrace) do
     SubRace.find_or_create_by!(race_id: dwarf_race.id, api_index: 'hill') { |s| s.name = 'Anão da Colina' }
   end
+  # Meio-Elfo: usado pelos testes de `chosenSkills` (tem cota racial de 2 perícias
+  # à escolha). Sob a regra de raças `cap_race_choice_skills`, picks só contam até
+  # a cota REAL da raça — Anão da Colina tem 0, então o fixture desses testes
+  # precisa de uma raça com escolha de perícia de fato.
+  let!(:half_elf_race) { Race.find_or_create_by!(api_index: 'half_elf') { |r| r.name = 'Meio-Elfo' } }
   let!(:klass) do
     Klass.find_or_create_by!(api_index: 'fighter') do |k|
       k.name = 'Guerreiro'
@@ -30,8 +35,10 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges race p
     end
   end
 
-  def build_sheet(meta_overrides: {}, race_summary_overrides: {})
+  def build_sheet(meta_overrides: {}, race_summary_overrides: {}, race_id: nil, sub_race_id: :default)
     character = Character.create!(user: user, name: 'Spec PC', background: 'Test')
+    race_id ||= dwarf_race.id
+    sub_race_id = hill_subrace.id if sub_race_id == :default
     race_summary = {
       'name' => 'Anão',
       'race_name' => 'Anão',
@@ -54,8 +61,8 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges race p
 
     sheet = Sheet.create!(
       character: character,
-      race_id: dwarf_race.id,
-      sub_race_id: hill_subrace.id,
+      race_id: race_id,
+      sub_race_id: sub_race_id,
       str: 14, dex: 12, con: 16, int: 10, wis: 14, cha: 8,
       hp_max: 12, hp_current: 12,
       race_summary: race_summary,
@@ -106,7 +113,8 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges race p
   end
 
   it 'inclui race_choices.chosenSkills em proficiencies.skills.race (Meio-Elfo / Humano Variante)' do
-    sheet = build_sheet(meta_overrides: {
+    # Meio-Elfo: 2 perícias à escolha (dentro da cota → cap permite ambas).
+    sheet = build_sheet(race_id: half_elf_race.id, sub_race_id: nil, meta_overrides: {
       'race_choices' => {
         'chosenTools' => [],
         'chosenLanguages' => [],
@@ -120,7 +128,7 @@ RSpec.describe CharacterSheetSummaryService, '.build_proficiencies merges race p
   end
 
   it 'aceita race_choices.chosen_skills (snake_case) para proficiencies.skills.race' do
-    sheet = build_sheet(meta_overrides: {
+    sheet = build_sheet(race_id: half_elf_race.id, sub_race_id: nil, meta_overrides: {
       'race_choices' => {
         'chosenTools' => [],
         'chosen_skills' => ['História']

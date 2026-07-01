@@ -69,10 +69,18 @@ module Modifiers
       end
 
       # ─── Resiliente ────────────────────────────────────────────────
+      # F9 — `choices['saving_throws']` é o contrato do front (string escalar).
+      # Mas o fluxo server-side de level-up (`AsiFeatApplier.build_choices`)
+      # envia só `choices['ability']`, e um Array `['wis']` não casava. Aqui
+      # derivamos o save de `ability` quando `saving_throws` falta/inválido,
+      # toleramos Array e abreviações PT (for/des/sab/car).
+      PT_TO_EN_ABILITY = { 'for' => 'str', 'des' => 'dex', 'con' => 'con',
+                           'int' => 'int', 'sab' => 'wis', 'car' => 'cha' }.freeze
+
       def resiliente_save_grant(choices)
-        ability = (choices['saving_throws'] || choices[:saving_throws]).to_s.downcase
-        return nil if ability.empty?
-        return nil unless %w[str dex con int wis cha].include?(ability)
+        ability = normalize_save_key(choices['saving_throws'] || choices[:saving_throws])
+        ability = normalize_save_key(choices['ability'] || choices[:ability]) unless ability
+        return nil unless ability
         mod(
           target: "save.#{ability}",
           op: :grant,
@@ -80,6 +88,15 @@ module Modifiers
           source: 'feat:resiliente',
           note: "Resiliente concede proficiência em salvaguarda de #{ability.upcase}",
         )
+      end
+
+      # Normaliza um valor (String, Symbol ou Array de 1) para uma chave de save
+      # válida em inglês ('str'..'cha'), ou nil.
+      def normalize_save_key(raw)
+        raw = raw.first if raw.is_a?(Array)
+        key = raw.to_s.strip.downcase
+        key = PT_TO_EN_ABILITY[key] || key
+        %w[str dex con int wis cha].include?(key) ? key : nil
       end
 
       # ─── Robusto ───────────────────────────────────────────────────
@@ -140,6 +157,11 @@ module Modifiers
       # equipamento atual; `EquipmentProfileService` já marca isso.
       def mestre_armas_duplas_ac_bonus(_entry)
         return [] unless dual_wielding?
+        # F4 — SEM predicate. A produção já é gated por `dual_wielding?` (lê o
+        # equipamento via context). O predicate `dual_wielding` era redundante e
+        # ativamente derrubava o +1: `sum_for('ac')`/`sum_for_kind('ac',:feat)`
+        # são chamados SEM `predicate_match` no summary, e `predicate_satisfied?`
+        # retorna false para predicate com query blank → o +1 nunca somava.
         [
           mod(
             target: 'ac',
@@ -147,7 +169,6 @@ module Modifiers
             value: 1,
             source: 'feat:mestre_de_armas_duplas',
             stacking_type: 'untyped',
-            predicate: { 'condition' => 'dual_wielding' },
             note: '+1 CA empunhando duas armas (Mestre de Armas Duplas)',
           ),
         ]
@@ -179,13 +200,17 @@ module Modifiers
       # genérico do summary), o modifier ainda é emitido — o resolver final
       # decide se aplica ou não baseado em `predicate`.
       def maestria_armadura_pesada_damage_resistance(_entry)
+        # F11 — SEM predicate. O summary consome via `sum_for('damage_resistance.
+        # bps_nonmagical')` SEM `predicate_match`; com o predicate `wearing_heavy_armor`
+        # o valor nunca somava (mesma armadilha do F4). O efeito-assinatura é
+        # exposto como redução condicional à armadura pesada (a UI/combate aplica
+        # a condição); aqui apenas garantimos que o valor 3 chegue ao consumidor.
         mod(
           target: 'damage_resistance.bps_nonmagical',
           op: :add,
           value: 3,
           source: 'feat:maestria_em_armadura_pesada',
           stacking_type: 'untyped',
-          predicate: { 'condition' => 'wearing_heavy_armor' },
           note: 'Reduz em 3 dano físico não-mágico em armadura pesada (Heavy Armor Master)'
         )
       end
