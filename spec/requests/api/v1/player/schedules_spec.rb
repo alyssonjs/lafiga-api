@@ -569,6 +569,63 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(response.parsed_body['error'].to_s).to include('indisponível')
     end
 
+    it 'rejeita segunda sessão ativa do mesmo usuário no mesmo dia, mesmo em outro grupo' do
+      d = Date.tomorrow
+      dd = DateDimension.find_or_create_by!(date: d) do |dim|
+        dim.assign_attributes(
+          year: d.year, month: d.month, day: d.day,
+          day_of_week: d.wday, day_name: d.strftime('%A'),
+          is_weekend: false, available: true,
+        )
+      end
+      other_group = create(:group)
+      create(:character, user: user, group: other_group)
+      create(:schedule, group: other_group, date_dimension: dd, status: :waiting, created_by_user: user)
+
+      payload = {
+        schedule: {
+          group_id: group.id,
+          title: 'Conflito no calendario',
+          date: d.iso8601,
+        },
+      }
+
+      expect {
+        post '/api/v1/player/schedules', params: payload, headers: headers, as: :json
+      }.not_to change { Schedule.where(title: 'Conflito no calendario').count }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['errors'].join(' ')).to include('sessão ativa nesta data')
+    end
+
+    it 'permite criar no mesmo dia quando a sessão anterior do usuário foi cancelada' do
+      d = Date.tomorrow
+      dd = DateDimension.find_or_create_by!(date: d) do |dim|
+        dim.assign_attributes(
+          year: d.year, month: d.month, day: d.day,
+          day_of_week: d.wday, day_name: d.strftime('%A'),
+          is_weekend: false, available: true,
+        )
+      end
+      other_group = create(:group)
+      create(:character, user: user, group: other_group)
+      create(:schedule, group: other_group, date_dimension: dd, status: :cancelled, created_by_user: user)
+
+      payload = {
+        schedule: {
+          group_id: group.id,
+          title: 'Nova apos cancelada',
+          date: d.iso8601,
+        },
+      }
+
+      post '/api/v1/player/schedules', params: payload, headers: headers, as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(Schedule.last.title).to eq('Nova apos cancelada')
+      expect(Schedule.last.created_by_user_id).to eq(user.id)
+    end
+
     it 'DM pode criar sessão em grupo em que não participa com personagem' do
       foreign_group = create(:group)
       create(:character, user: other_user, group: foreign_group)

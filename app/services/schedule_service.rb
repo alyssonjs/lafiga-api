@@ -55,6 +55,7 @@ class ScheduleService
       end
 
       self.class.assert_bookable_date_dimension!(attrs[:date_dimension_id] || attrs['date_dimension_id'])
+      attrs[:created_by_user_id] ||= @current_user&.id
 
       unless Schedule.supports_linked_npc_sheet_ids?
         attrs.delete(:linked_npc_character_ids)
