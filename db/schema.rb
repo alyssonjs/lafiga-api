@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_01_123000) do
+ActiveRecord::Schema.define(version: 2026_07_08_091300) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -538,9 +538,9 @@ ActiveRecord::Schema.define(version: 2026_07_01_123000) do
     t.bigint "created_by_user_id"
     t.index ["battle_map_id"], name: "index_schedules_on_battle_map_id"
     t.index ["campaign_name"], name: "index_schedules_on_campaign_name"
-    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_active_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status <> 4))"
+    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_open_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])))"
     t.index ["created_by_user_id"], name: "index_schedules_on_created_by_user_id"
-    t.index ["group_id", "date_dimension_id"], name: "idx_schedules_active_per_group_date", unique: true, where: "((group_id IS NOT NULL) AND (status <> 4))"
+    t.index ["group_id"], name: "idx_schedules_open_per_group", unique: true, where: "((group_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])))"
     t.index ["group_id"], name: "index_schedules_on_group_id"
     t.index ["highlights"], name: "index_schedules_on_highlights", using: :gin
     t.index ["status"], name: "index_schedules_on_status"

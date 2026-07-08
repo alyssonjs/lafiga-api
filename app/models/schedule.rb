@@ -26,6 +26,7 @@ class Schedule < ApplicationRecord
 
   LINKED_NPC_CHARACTER_IDS_COL = 'linked_npc_character_ids'.freeze
   DM_TEMP_NPC_CHARACTER_IDS_COL = 'dm_temp_npc_character_ids'.freeze
+  SCHEDULING_BLOCKING_STATUSES = %w[reserved waiting in_progress].freeze
 
   # Coluna JSONB opcional até `db:migrate`; evita NoMethodError se o deploy
   # adiantar o código sem o schema.
@@ -104,6 +105,7 @@ class Schedule < ApplicationRecord
   # Sessões cronologicamente ordenadas (ASC) — usado pela timeline da campanha.
   scope :chronological, -> { joins(:date_dimension).order('date_dimensions.date ASC, schedules.scheduled_time ASC NULLS LAST') }
   scope :active,        -> { where.not(status: :cancelled) }
+  scope :blocking_new_schedule, -> { where(status: SCHEDULING_BLOCKING_STATUSES) }
   scope :concluded,     -> { where(status: :completed) }
 
   # Marca a sessão como em andamento e registra o início.
@@ -232,30 +234,28 @@ class Schedule < ApplicationRecord
     end
   end
 
-  # Garante que o mesmo grupo não pode ter duas sessões ATIVAS no mesmo dia.
-  # Sessões canceladas liberam o slot. Reforço em código além do partial index
-  # do banco — o índice protege contra race condition; a validação dá mensagem
-  # amigável ao cliente.
+  # Garante que o mesmo grupo não pode ter duas sessões marcadas para acontecer.
+  # Sessões concluídas ou canceladas liberam o grupo para uma nova marcação.
   def unique_active_slot_per_group
-    return if cancelled?
-    return if group_id.blank? || date_dimension_id.blank?
+    return unless SCHEDULING_BLOCKING_STATUSES.include?(status)
+    return if group_id.blank?
 
-    conflict = self.class.active
-                  .where(group_id: group_id, date_dimension_id: date_dimension_id)
+    conflict = self.class.blocking_new_schedule
+                  .where(group_id: group_id)
                   .where.not(id: id)
                   .exists?
     if conflict
-      errors.add(:base, "Este grupo já possui uma sessão ativa nesta data.")
+      errors.add(:base, "Este grupo já possui uma sessão marcada para acontecer.")
     end
   end
 
   # Um mesmo usuário não pode manter duas sessões não canceladas no mesmo dia,
   # mesmo em grupos diferentes. Sessões canceladas liberam o dia.
   def unique_active_slot_per_creator
-    return if cancelled?
+    return unless SCHEDULING_BLOCKING_STATUSES.include?(status)
     return if created_by_user_id.blank? || date_dimension_id.blank?
 
-    conflict = self.class.active
+    conflict = self.class.blocking_new_schedule
                   .where(created_by_user_id: created_by_user_id, date_dimension_id: date_dimension_id)
                   .where.not(id: id)
                   .exists?
