@@ -161,6 +161,26 @@ RSpec.describe CombatCombatant, type: :model do
       c.reset_turn_actions!
       expect(c.reload.actions_used).to include('action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false)
     end
+
+    # turn_state é opaco: só as chaves POR-TURNO (PER_TURN_TURN_STATE_KEYS)
+    # são removidas na virada de turno; o resto do hash é preservado intacto.
+    it 'remove só as chaves por-turno do turn_state, preservando o resto' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 actions_used: { 'action' => true, 'bonus_action' => true, 'movement' => true, 'reaction' => true },
+                 turn_state: { 'attacksMade' => 2, 'outraChave' => 'fica' })
+      c.reset_turn_actions!
+
+      c.reload
+      expect(c.turn_state).not_to have_key('attacksMade')
+      expect(c.turn_state).to eq('outraChave' => 'fica')
+      expect(c.actions_used).to include('action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false)
+    end
+
+    it 'é seguro quando turn_state está vazio' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0)
+      expect { c.reset_turn_actions! }.not_to raise_error
+      expect(c.reload.turn_state).to eq({})
+    end
   end
 
   describe 'G15 — auto_resolve_death_saves' do

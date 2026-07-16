@@ -122,6 +122,18 @@ RSpec.describe CombatState, type: :model do
       )
     end
 
+    # Extensão do G7 — na virada, remove SÓ as chaves por-turno do turn_state
+    # do combatente que ganhou o turno (budget de ataques não fica sujo se
+    # nenhum cliente estiver aberto). Chaves fora de PER_TURN_TURN_STATE_KEYS
+    # são preservadas (turn_state é opaco).
+    it 'limpa as chaves por-turno do turn_state do combatente que ganhou o turno' do
+      next_combatant = cs.combat_combatants.find_by(position: 1)
+      next_combatant.update!(turn_state: { 'attacksMade' => 2, 'outraChave' => 'fica' })
+
+      cs.advance_turn!  # 0 -> 1
+      expect(next_combatant.reload.turn_state).to eq('outraChave' => 'fica')
+    end
+
     it 'nao decrementa turns_left no meio da rodada (só ao fechar o ciclo da iniciativa)' do
       pc = cs.combat_combatants.find_by(position: 0)
       npc = cs.combat_combatants.find_by(position: 1)

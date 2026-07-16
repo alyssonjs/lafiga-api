@@ -5,6 +5,16 @@ class CombatCombatant < ApplicationRecord
   RESET_ACTIONS = { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false }.freeze
   RESET_DEATH_SAVES = { 'successes' => 0, 'failures' => 0 }.freeze
 
+  # Chaves POR-TURNO do `turn_state`. O `turn_state` é OPACO por design
+  # (válvula genérica do front — chaves futuras podem durar vários turnos,
+  # ex.: buffs), então NUNCA zeramos o hash inteiro na virada de turno.
+  # Esta lista é a exceção documentada à opacidade: apenas chaves
+  # comprovadamente por-turno entram aqui e são removidas em
+  # `reset_turn_actions!`; todo o resto do hash é preservado intacto.
+  # Chaves por-turno futuras (ex.: budget de ataques extra) devem ser
+  # adicionadas a esta lista.
+  PER_TURN_TURN_STATE_KEYS = %w[attacksMade].freeze
+
   belongs_to :combat_state
   belongs_to :combatable, polymorphic: true
 
@@ -59,8 +69,15 @@ class CombatCombatant < ApplicationRecord
   end
 
   # Reseta as ações usadas no início do turno deste combatente.
+  # Também remove do `turn_state` APENAS as chaves por-turno
+  # (PER_TURN_TURN_STATE_KEYS), preservando o resto do hash — garante que o
+  # budget de ataques não fica sujo quando nenhum cliente está aberto na
+  # virada (o front continua zerando defensivamente; a operação é idempotente).
   def reset_turn_actions!
-    update!(actions_used: RESET_ACTIONS.dup)
+    update!(
+      actions_used: RESET_ACTIONS.dup,
+      turn_state: Hash(turn_state).except(*PER_TURN_TURN_STATE_KEYS),
+    )
   end
 
   # Decrementa `turns_left` no fim da rodada (ciclo completo da iniciativa), PHB.
@@ -100,7 +117,8 @@ class CombatCombatant < ApplicationRecord
     self.death_saves  = RESET_DEATH_SAVES.dup    if death_saves.blank?
     # turn_state é OPACO de propósito (válvula genérica de persistência de
     # estado de turno do front). Sem validação de schema — qualquer JSON.
-    # Não é zerado em reset_turn_actions! nesta fase: o front gerencia a limpeza.
+    # Na virada de turno, `reset_turn_actions!` remove SÓ as chaves listadas
+    # em PER_TURN_TURN_STATE_KEYS; o restante é gerenciado pelo front.
     self.turn_state   = {}                       if turn_state.blank?
   end
 

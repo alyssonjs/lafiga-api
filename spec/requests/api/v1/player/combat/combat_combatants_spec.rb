@@ -138,6 +138,51 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
       expect(response).to have_http_status(:forbidden)
     end
 
+    # turn_state — válvula genérica OPACA de estado de turno. O contrato é
+    # round-trip: o backend persiste e devolve QUALQUER JSON aninhado sem
+    # conhecer as chaves (espelho do teste de contrato do front). Dono do PC
+    # pode mutar o do PRÓPRIO combatente (PLAYER_TURN_STATE_FIELDS); o de
+    # terceiros continua exclusivo do DM (turn_state ∉ COMBAT_EFFECT_FIELDS).
+    context 'turn_state (válvula opaca) round-trip' do
+      let(:opaque_turn_state) { { attacksMade: 2, minhaChaveFutura: { x: 1 } } }
+      let(:expected_turn_state) { { 'attacksMade' => 2, 'minhaChaveFutura' => { 'x' => 1 } } }
+
+      it 'dono do PC grava turn_state com chave arbitrária aninhada e o hash volta intacto' do
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { turn_state: opaque_turn_state } }, headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['combatant']['turn_state']).to eq(expected_turn_state)
+        expect(combatant.reload.turn_state).to eq(expected_turn_state)
+
+        # GET devolve o mesmo hash (round-trip completo pela serialização)
+        get "/api/v1/player/schedules/#{schedule.id}/combat_combatants", headers: player_headers
+        expect(response).to have_http_status(:ok)
+        row = response.parsed_body['combatants'].find { |c| c['id'] == combatant.id }
+        expect(row['turn_state']).to eq(expected_turn_state)
+      end
+
+      it '403 quando o jogador tenta mutar turn_state de combatente de OUTRO (NPC), mesmo no próprio turno' do
+        npc = create(:combat_npc, schedule: schedule)
+        npc_combatant = create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 1)
+        cs.update_column(:current_turn_index, combatant.position) # turno do PC do player
+
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
+              params: { combatant: { turn_state: opaque_turn_state } }, headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(npc_combatant.reload.turn_state).to eq({})
+      end
+
+      it 'DM grava turn_state de qualquer combatente' do
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { turn_state: opaque_turn_state } }, headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(combatant.reload.turn_state).to eq(expected_turn_state)
+      end
+    end
+
     # Efeito de combate (dano/cura) aplicado pelo JOGADOR DONO do combatente do
     # TURNO ATUAL em QUALQUER combatente — habilita poção/ataque/magia do jogador
     # (a regra "curado de 0 volta à batalha" envia a transição de morte derivada).
