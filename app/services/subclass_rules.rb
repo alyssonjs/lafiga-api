@@ -231,13 +231,14 @@ class SubclassRules
         description: 'Bardos que usam silêncio e tranquilidade como ferramentas artísticas.',
         features: {
           3 => {
-            'Silêncio Musical' => 'Você pode criar zonas de silêncio mágico.'
+            'Menestrel Silencioso' => 'Proficiência em Enganação e Furtividade; aprende a magia silêncio (não conta no limite de magias conhecidas).',
+            'Inspiração Subconsciente' => 'Concede Inspiração por vibração (aliado a até 9 m, sem precisar ouvir). Reação: penaliza (= dado) o TS/teste de quem você/aliado influencia a 9 m; alvo faz Sabedoria (Percepção) CD 20 ou não percebe.'
           },
           6 => {
-            'Paz Interior' => 'Você pode acalmar emoções e conflitos.'
+            'Magia Imperceptível' => 'Conjura magia verbal silenciosamente (teste de Carisma (Enganação) vs Percepção passiva). 1/descanso curto ou longo.'
           },
           14 => {
-            'Meditação Coletiva' => 'Você pode guiar outros em meditação profunda.'
+            'Voz Além do Som' => 'Ação: silêncio centrado em si que o acompanha; dentro dela você ainda conjura magias verbais e concede Inspiração a aliados. 1/descanso longo.'
           }
         }
       },

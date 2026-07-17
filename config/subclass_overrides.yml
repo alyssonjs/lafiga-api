@@ -800,21 +800,24 @@ bard:
       - level: 6
         features:
           - name: "Magia Imperceptível"
-            description: "Conjura sem ser percebido (teste de Enganação para mascarar gestos/falas)."
+            description: "Conjura magia verbal sem ser percebido: teste de Carisma (Enganação); criatura com Percepção passiva inferior ao resultado não percebe (sentido sísmico não é enganado)."
             rules:
               once_per_rest: true
-              check: { skill: "Enganação", dc: "definida pela cena" }
+              uses:
+                per: "descanso curto ou longo"
+                value: 1
+              check: { skill: "Carisma (Enganação)", vs: "Percepção passiva" }
       - level: 14
         features:
           - name: "Voz Além do Som"
-            description: "silêncio centrado em si que o acompanha; você ainda conjura e inspira dentro da área."
+            description: "silêncio centrado em si que o acompanha; você ainda conjura magias verbais e concede Inspiração a aliados dentro da área."
             rules:
               action: true
               self_centered_silence_aura: true
               you_ignore_your_own_silence: true
               duration: "1 minuto"
               uses:
-                per: "dia"
+                per: "descanso longo"
                 value: 1
 
   colegio-pavor:
