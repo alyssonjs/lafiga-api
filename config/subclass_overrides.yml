@@ -373,7 +373,7 @@ barbarian:
       - level: 14
         features:
           - name: "Fortitude Instintiva"
-            description: "Morre após 5 falhas de morte. Se cair a 0 PV e tiver Fúria disponível, Reação para entrar em Fúria, ficar com 1 PV e ativar Fúria Implacável; vantagem em testes de CON enquanto em Fúria."
+            description: "Morre após 5 falhas de morte. Se cair a 0 PV e tiver Fúria disponível, Reação para entrar em Fúria, ficar com 1 PV e ativar Fúria Implacável; vantagem em TR de Constituição enquanto em Fúria."
             rules:
               death_saves_to_die: 5
               reaction_on_drop_to_0:
@@ -381,7 +381,7 @@ barbarian:
                 set_hp_to: 1
                 trigger_relentless_rage: true
               while_raging:
-                con_checks_advantage: true
+                con_saves_advantage: true
 
   guerreiro-urso:
     name: "Caminho do Guerreiro Urso"
@@ -567,7 +567,7 @@ barbarian:
           - name: "Ira Primitiva"
             description: "Efeito adicional por elemento ao atingir."
             rules:
-              water:  { on_hit: { save: { ability: "Con", on_fail: "impedido (contido) até o fim do seu próximo turno" } } }
+              water:  { on_hit: { save: { ability: "Con", on_fail: "impedido (contido) até o início do seu próximo turno" } } }
               air:    { on_hit: { effect: "alvo não pode realizar reações até o fim do seu próximo turno" } }
               fire:   { on_hit: { save: { ability: "Des", on_fail: "incendeia: sofre 1d4 de fogo no início de cada turno; repete o TR no fim de cada turno para apagar, ou usa uma ação para apagar automaticamente", ongoing_damage: "1d4 fogo", extinguish: "repete TR no fim de cada turno, ou ação para apagar" } } }
               earth:  { on_hit: { save: { ability: "Con", on_fail: "desvantagem em ataques até o início do seu próximo turno" } } }

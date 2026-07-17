@@ -77,13 +77,13 @@ class SubclassRules
             'Conjuração' => 'Você descobre uma energia selvagem dentro de si próprio que você pode despertar mesmo em fúria.'
           },
           6 => {
-            'Runas de Poder' => 'Você aprende a canalizar poder arcano através de suas runas.'
+            'Ritual de Misticismo' => 'Você aprende a canalizar poder arcano através de suas runas.'
           },
           10 => {
-            'Runas de Proteção' => 'Suas runas podem absorver e refletir magia.'
+            'Magia Instintiva' => 'Suas runas podem absorver e refletir magia.'
           },
           14 => {
-            'Runas de Destruição' => 'Você pode usar suas runas para causar devastação mágica.'
+            'Cicatriz Ritualística' => 'Você pode usar suas runas para causar devastação mágica.'
           }
         }
       },
@@ -95,7 +95,7 @@ class SubclassRules
             'Aversão à Magia' => 'Sua repulsa ao misticismo cria uma crescente descrença em você a tudo que não compreende ou considera antinatural.'
           },
           6 => {
-            'Revigorante Natural' => 'Quando você concluir um descanso curto, você recupera uma quantidade de pontos de vida igual ao seu modificador de Constituição + seu nível de bárbaro.'
+            'Descanso Revigorante' => 'Quando você concluir um descanso curto, você recupera uma quantidade de pontos de vida igual ao seu modificador de Constituição + seu nível de bárbaro.'
           },
           10 => {
             'Supersticioso Revoltado' => 'Sua raiva pela magia leva você a crer que ela é responsável pela destruição do mundo.'
@@ -128,16 +128,16 @@ class SubclassRules
         description: 'Bárbaros que seguem este caminho se conectam com o espírito do urso, um dos animais mais ferozes e resistentes da natureza.',
         features: {
           3 => {
-            'Forma do Urso' => 'Você pode se transformar em um urso feroz.'
+            'Forma de Urso' => 'Você pode se transformar em um urso feroz.'
           },
           6 => {
-            'Instinto Selvagem' => 'Você desenvolve sentidos aguçados como os de um urso.'
+            'Traços Ferais' => 'Ganha traços de urso (sentidos, garras/mordida).'
           },
           10 => {
-            'Fúria do Urso' => 'Sua fúria se torna ainda mais devastadora, como a de um urso enraivecido.'
+            'Abraço Esmagador' => 'Ao acertar com a garra, agarra (e impede) o alvo; pode espremer como ação bônus.'
           },
           14 => {
-            'Mestre dos Ursos' => 'Você pode convocar e comandar ursos para lutar ao seu lado.'
+            'Vigor do Urso' => 'PV temporários = 2× nível ao entrar em fúria + vantagem em testes de FOR/CON.'
           }
         }
       },
@@ -146,16 +146,16 @@ class SubclassRules
         description: 'Bárbaros que dedicam suas vidas a proteger suas tribos e comunidades.',
         features: {
           3 => {
-            'Proteção Tribal' => 'Você pode usar sua fúria para proteger aliados próximos.'
+            'Fúria Protetora' => 'Em fúria, +2 CA e vantagem em TR de FOR/DES.'
           },
           6 => {
-            'Vigilância Constante' => 'Você desenvolve sentidos aguçados para detectar perigos.'
+            'Ligação com a Terra Natal' => 'Vantagem em TR de FOR/DES no seu terreno natal.'
           },
           10 => {
-            'Defesa Inabalável' => 'Você se torna um bastião de proteção para sua tribo.'
+            'Defensor da Tribo' => 'Reação para se mover até um aliado caído e protegê-lo.'
           },
           14 => {
-            'Líder Tribal' => 'Você pode inspirar e liderar sua tribo em batalha.'
+            'Bastião Incansável' => 'Em fúria, ação: hostis a 18m TR SAB (CD 8+prof+CAR) ou desvantagem contra outros.'
           }
         }
       },
@@ -164,16 +164,16 @@ class SubclassRules
         description: 'Bárbaros que canalizam a fúria dos elementos através de sua raiva.',
         features: {
           3 => {
-            'Fúria Elemental' => 'Você pode canalizar poder elemental através de sua fúria.'
+            'Despertar do Elemento' => 'Escolhe um elemento; resistência ao dano associado. Fúria Elemental: dado elemental substitui o bônus de dano de fúria.'
           },
           6 => {
-            'Resistência Elemental' => 'Você desenvolve resistência a dano elemental.'
+            'Trilha Primordial' => 'Benefício de mobilidade conforme o elemento.'
           },
           10 => {
-            'Tempestade de Fúria' => 'Você pode criar tempestades elementais com sua raiva.'
+            'Ira Primitiva' => 'Ao acertar melee em fúria, aplica efeito elemental no alvo (TR conforme o elemento).'
           },
           14 => {
-            'Avatar Elemental' => 'Você pode se transformar em um avatar elemental.'
+            'Apogeu Elemental' => 'Em fúria, reação ao ser atingido a 1,5m: 2d6+CON de dano elemental (TR DES CD 8+prof+CON p/ metade).'
           }
         }
       }
@@ -528,7 +528,7 @@ class SubclassRules
             'Círculo das Formas: Infestação' => 'Você pode criar infestações em áreas.'
           },
           8 => {
-            'Resistência Elemental' => 'Você desenvolve resistência a dano elemental.'
+            'Trilha Primordial' => 'Benefício de mobilidade conforme o elemento.'
           },
           10 => {
             'Círculo das Formas: Infestação Maior' => 'Você pode criar infestações devastadoras.'
@@ -564,7 +564,7 @@ class SubclassRules
             'Círculo das Formas: Vida' => 'Você pode criar zonas de vida abundante.'
           },
           8 => {
-            'Resistência Elemental' => 'Você desenvolve resistência a dano elemental.'
+            'Trilha Primordial' => 'Benefício de mobilidade conforme o elemento.'
           },
           10 => {
             'Círculo das Formas: Vida Maior' => 'Você pode criar florestas instantâneas.'
@@ -600,7 +600,7 @@ class SubclassRules
             'Círculo das Formas: Fada' => 'Você pode criar portais para o reino das fadas.'
           },
           8 => {
-            'Resistência Elemental' => 'Você desenvolve resistência a dano elemental.'
+            'Trilha Primordial' => 'Benefício de mobilidade conforme o elemento.'
           },
           10 => {
             'Círculo das Formas: Fada Maior' => 'Você pode convocar fadas poderosas.'
@@ -636,7 +636,7 @@ class SubclassRules
             'Círculo das Formas: Fera' => 'Você pode convocar feras para lutar.'
           },
           8 => {
-            'Resistência Elemental' => 'Você desenvolve resistência a dano elemental.'
+            'Trilha Primordial' => 'Benefício de mobilidade conforme o elemento.'
           },
           10 => {
             'Círculo das Formas: Fera Maior' => 'Você pode convocar feras lendárias.'
@@ -672,7 +672,7 @@ class SubclassRules
             'Círculo das Formas: Mundo' => 'Você pode criar portais para outros mundos.'
           },
           8 => {
-            'Resistência Elemental' => 'Você desenvolve resistência a dano elemental.'
+            'Trilha Primordial' => 'Benefício de mobilidade conforme o elemento.'
           },
           10 => {
             'Círculo das Formas: Mundo Maior' => 'Você pode viajar entre mundos.'
@@ -708,7 +708,7 @@ class SubclassRules
             'Círculo das Formas: Verdejante' => 'Você pode criar florestas instantâneas.'
           },
           8 => {
-            'Resistência Elemental' => 'Você desenvolve resistência a dano elemental.'
+            'Trilha Primordial' => 'Benefício de mobilidade conforme o elemento.'
           },
           10 => {
             'Círculo das Formas: Verdejante Maior' => 'Você pode criar jardins mágicos.'
