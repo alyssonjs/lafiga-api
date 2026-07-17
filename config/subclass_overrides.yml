@@ -862,9 +862,10 @@ bard:
       - level: 14
         features:
           - name: "Música Mística Atormentadora"
-            description: "Ao conjurar magia de alvo único, gasta Inspiração para impor penalidade (seu dado) ao próximo TS do alvo."
+            description: "Ao conjurar magia que afete um único inimigo, com uma ação bônus gasta Inspiração para impor penalidade (seu dado) ao próximo TS do alvo, além dos efeitos normais da magia."
             rules:
               trigger: "você conjura magia de alvo único"
+              bonus_action: true
               spend:
                 bardic_inspiration_die: 1
               apply_debuff:

@@ -247,13 +247,14 @@ class SubclassRules
         description: 'Bardos que usam música para incutir medo e terror nos corações dos inimigos.',
         features: {
           3 => {
-            'Música do Terror' => 'Você pode usar música para causar medo.'
+            'Proficiência Adicional' => 'Proficiência em Enganação e Intimidação (ou substitui por outra perícia se já tiver).',
+            'Melodia Lamuriante' => 'Ação (18 m): gasta Inspiração; alvo fica desanimado (sem ação bônus/reação) e com penalidade (= dado) no próximo ataque. Imune se não puder ouvir ou ser enfeitiçado.'
           },
           6 => {
-            'Sinfonia do Horror' => 'Você pode criar ilusões aterrorizantes.'
+            'Canção Assustadora' => 'Ação (18 m): gasta Inspiração; TR Sabedoria com penalidade (= dado) ou amedrontado por 1 min (repete TR no fim do turno).'
           },
           14 => {
-            'Concerto do Pânico' => 'Você pode causar pânico em massa.'
+            'Música Mística Atormentadora' => 'Ao conjurar magia de alvo único: ação bônus + Inspiração impõe penalidade (= dado) ao próximo TS do alvo.'
           }
         }
       },
