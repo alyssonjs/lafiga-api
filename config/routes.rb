@@ -300,5 +300,10 @@ Rails.application.routes.draw do
   end
 
 
-  get '/*a', to: 'application#not_found'
+  # Catch-all p/ rotas de API desconhecidas → 404 JSON. Exclui /rails/* para
+  # NÃO sombrear as rotas de engine do Active Storage (blobs/disk), que são
+  # anexadas DEPOIS das rotas do app e, sem esta constraint, perdem a
+  # prioridade para o catch-all (o request cai em application#not_found e a
+  # imagem 404a). Ver Active Storage: /rails/active_storage/blobs/*.
+  get '/*a', to: 'application#not_found', constraints: ->(req) { !req.path.start_with?('/rails/') }
 end
