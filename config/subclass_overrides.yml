@@ -680,7 +680,7 @@ bard:
               save:
                 ability: "Sabedoria"
                 dc_formula: "8 + prof + Car"
-                on_fail: "incapacitado (riso incontrolável) até o fim do seu próximo turno"
+                on_fail: "incapacitado (riso incontrolável) até o início do seu próximo turno"
               extend:
                 action: true
                 max_extra_rounds: "valor do seu dado de Inspiração"
@@ -870,7 +870,7 @@ bard:
                 bardic_inspiration_die: 1
               apply_debuff:
                 target_next_save_penalty: "−seu dado de Inspiração"
-                expires: "início do seu próximo turno"
+                applies_to: "o próximo TR que o alvo fizer (sem limite de tempo)"
 
   colegio-virtuosismo:
     name: "Colégio do Virtuosismo"
@@ -908,7 +908,8 @@ bard:
               save:
                 ability: "Sabedoria (do conjurador)"
                 dc_formula: "8 + prof + Car"
-                on_fail: "a magia falha (espaço gasto)"
+                save_penalty: "−seu dado de Inspiração"
+                on_fail: "perde a concentração e a magia falha (espaço gasto)"
       - level: 14
         features:
           - name: "Música de Revelação"
