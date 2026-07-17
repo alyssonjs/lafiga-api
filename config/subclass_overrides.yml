@@ -647,10 +647,10 @@ bard:
             rules:
               performance_checks_to_entertain: { advantage: true }
           - name: "Satirizar"
-            description: "Gasta Inspiração para irritar um alvo por 1 min (TR Sab). Penaliza INT/SAB, piora concentração e remove ação bônus."
+            description: "Gasta Inspiração: alvo a 9 m (TR Sab) fica irritado por 1 min — desvantagem em INT/SAB, sem ação bônus, e teste de Arcanismo (CD 10 + dado) para manter concentração."
             rules:
               action: true
-              range_m: 18
+              range_m: 9
               spend:
                 bardic_inspiration_die: 1
               save:
@@ -684,13 +684,16 @@ bard:
               extend:
                 action: true
                 max_extra_rounds: "valor do seu dado de Inspiração"
+              expire_on_damage: true
+              lockout_on_success: "24 horas"
+              immune_if: ["não puder ser enfeitiçada"]
       - level: 14
         features:
           - name: "A Piada Mortal"
-            description: "Gasta Inspiração: 1 alvo a 18 m faz TR Sab; se tiver ≤ 50 PV e falhar, cai a 0 PV; caso contrário sofre 5d10 psíquico."
+            description: "Gasta Inspiração: 1 alvo vivo a 9 m faz TR Sab (CD soma o dado); se tiver ≤ 50 PV e falhar, cai a 0 PV (inconsciente); se for bem-sucedido, ainda sofre 5d10 psíquico."
             rules:
               action: true
-              range_m: 18
+              range_m: 9
               spend:
                 bardic_inspiration_die: 1
               threshold_hp: 50
@@ -698,8 +701,7 @@ bard:
                 ability: "Sabedoria"
                 dc_formula: "8 + prof + Car + dado de Inspiração"
                 on_fail_if_leq_threshold: "cai a 0 PV (inconsciente)"
-                on_fail_if_gt_threshold: "5d10 psíquico"
-                on_success: "nenhum efeito"
+                on_success: "5d10 psíquico"
               immune_if: ["não puder ser enfeitiçada"]
               uses:
                 per: "descanso longo"

@@ -199,13 +199,14 @@ class SubclassRules
         description: 'Bardos que usam humor e comédia para entreter e inspirar.',
         features: {
           3 => {
-            'Riso Contagioso' => 'Você pode usar humor para afetar o estado emocional dos outros.'
+            'Artista da Comédia' => 'Proficiência em Atuação e Persuasão; vantagem em Atuação/Persuasão para influenciar uma plateia.',
+            'Satirizar' => 'Ação: gasta Inspiração; alvo a 9 m (TR Sab) fica irritado por 1 min (desvantagem INT/SAB, sem ação bônus, Arcanismo CD 10+dado para manter concentração).'
           },
           6 => {
-            'Comédia de Situação' => 'Você pode usar comédia para criar vantagens táticas.'
+            'Faça-os Rir' => 'Ação: gasta Inspiração; inimigos a 6 m (TR Sab) ficam incapacitados; termina se sofrer dano; imune por 24 h ao passar.'
           },
           14 => {
-            'Show de Stand-up' => 'Você pode realizar um show que afeta todos os presentes.'
+            'A Piada Mortal' => 'Ação, 1/descanso longo: gasta Inspiração; alvo vivo a 9 m (TR Sab, CD soma o dado); ≤ 50 PV e falha → 0 PV; sucesso → 5d10 psíquico.'
           }
         }
       },
