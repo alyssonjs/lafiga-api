@@ -891,10 +891,11 @@ bard:
                   choose: 3
                   options: ["Instrumento musical"]
           - name: "Personalidade Forte"
-            description: "Vantagem em Persuasão/Intimidação; ao resistir a medo, pode desmoralizar o agressor."
+            description: "Vantagem em Persuasão/Intimidação; ao resistir a medo (passar no TS), usa a AÇÃO para desmoralizar o agressor (desvantagem nos ataques dele contra você e vantagem nos seus contra ele até o fim do próximo turno dele)."
             rules:
               advantage_on: ["Carisma (Persuasão)","Carisma (Intimidação)"]
               on_pass_fear_save_demoralize_attacker: true
+              demoralize_uses_action: true
       - level: 6
         features:
           - name: "Acorde Distrativo"
@@ -911,12 +912,15 @@ bard:
       - level: 14
         features:
           - name: "Música de Revelação"
-            description: "Sentido sísmico 18 m por até 1 min; mantém com ação bônus."
+            description: "Sentido sísmico 18 m por até 1 min; mantém com ação bônus. 1/descanso curto ou longo."
             rules:
               action: true
               tremorsense_m: 18
               duration: "1 minuto"
               sustain_with_bonus_action: true
+              uses:
+                per: "descanso curto ou longo"
+                value: 1
 
   colegio-do-conhecimento:
     name: "Colégio do Conhecimento"

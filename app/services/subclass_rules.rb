@@ -263,13 +263,14 @@ class SubclassRules
         description: 'Bardos que buscam a perfeição técnica em sua arte musical.',
         features: {
           3 => {
-            'Perfeição Técnica' => 'Você domina completamente sua arte musical.'
+            'Proficiência Adicional' => 'Proficiência em 3 instrumentos musicais e 2 idiomas à escolha.',
+            'Personalidade Forte' => 'Vantagem em Persuasão/Intimidação; ao resistir a medo, usa a ação para desmoralizar o agressor.'
           },
           6 => {
-            'Virtuosismo Instrumental' => 'Você pode tocar qualquer instrumento com maestria.'
+            'Acorde Distrativo' => 'Reação: gasta Inspiração quando criatura a 18 m conjura (TR Sabedoria com penalidade ou perde a concentração).'
           },
           14 => {
-            'Concerto Perfeito' => 'Você pode realizar performances perfeitas que afetam todos os presentes.'
+            'Música de Revelação' => 'Ação, 1/descanso curto ou longo: sentido sísmico 18 m por até 1 min (mantém com ação bônus).'
           }
         }
       }
