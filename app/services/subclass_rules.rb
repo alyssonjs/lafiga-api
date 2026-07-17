@@ -215,13 +215,14 @@ class SubclassRules
         description: 'Bardos que canalizam a sorte e a fortuna através de sua arte.',
         features: {
           3 => {
-            'Sorte do Bardo' => 'Você pode influenciar a sorte dos outros.'
+            'Bon Vivant' => 'Proficiência em Persuasão e em 2 kits de jogo à escolha.',
+            'Sorte no Jogo, Sorte no Amor' => 'Vantagem em testes com kit de jogo e em Carisma (Persuasão); ação bônus para aplicar o dado de Inspiração discretamente ao próprio teste.'
           },
           6 => {
-            'Fortuna Favorece' => 'Você pode dar sorte a aliados ou azar a inimigos.'
+            'Manipular a Sorte' => 'Reação: você ou aliado a 9 m rerrola o d20 (ataque/teste/TR) e fica com o 2º resultado. Usos = mod. Carisma por descanso longo.'
           },
           14 => {
-            'Destino Manipulado' => 'Você pode alterar o destino de forma limitada.'
+            'Roda do Infortúnio' => 'Ação, 1/descanso curto ou longo: gasta Inspiração; alvo hostil a 18 m (TR Carisma) sofre efeito da tabela do infortúnio por 1 min.'
           }
         }
       },
