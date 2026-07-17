@@ -602,28 +602,27 @@ bard:
                 spell_slot: "1º+"
               effect_family: ["ofensivo (raio/cone)","suporte (cura)","controle (antimagia móvel)","mobilidade (teleporte em grupo)"]
               scaling: "melhora com o nível do espaço e o tamanho do dado de Inspiração"
+      - level: 6
+        features:
           - name: "Refrão de Desbravador"
-            description: "Ação bônus: concede resistências/benefícios vinculados à canção ativa por 1 minuto."
+            description: "Ação bônus, ao iniciar uma canção de desbravador: concede a você ou a um aliado a até 9 m um benefício conforme a canção (resistência a um tipo de dano, imunidade a condição, bônus de deslocamento) por 1 minuto. Trocar o refrão numa criatura extingue o anterior."
             rules:
               bonus_action: true
               duration: "1 minuto"
+              range_m: 9
               benefits_examples: ["resistência a um tipo de dano","Vantagem em testes/TS temáticos","bônus de deslocamento"]
               uses:
-                per: "dia"
+                per: "descanso longo"
                 value: "Carisma (mín. 1)"
-      - level: 6
-        features:
-          - name: "Refrão de Desbravador Aprimorado"
-            description: "Amplia os benefícios do refrão e alcance aos aliados a até 9 m."
-            rules:
-              range_m: 9
       - level: 14
         features:
           - name: "Combinar Canções"
-            description: "Pode acionar 2 canções no mesmo turno, gastando os custos de cada uma. Recarga com descanso curto ou longo."
+            description: "Ao usar uma canção de desbravador, ativa uma 2ª canção diferente (espaço de magia de no máximo 5º nível) como ação bônus no mesmo turno, gastando os custos de ambas. Recarga com descanso curto ou longo."
             rules:
-              activation: "ação"
+              activation: "ação bônus"
               combine_two_songs: true
+              max_second_song_slot: 5
+              different_songs: true
               spend:
                 bardic_inspiration_die: 2
                 spell_slots: "conforme cada canção"

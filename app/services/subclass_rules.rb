@@ -184,13 +184,13 @@ class SubclassRules
         description: 'Bardos que dedicam suas vidas à busca de canções perdidas e conhecimentos musicais antigos.',
         features: {
           3 => {
-            'Busca Musical' => 'Você pode usar sua música para encontrar objetos e pessoas perdidas.'
+            'Canções de Desbravador' => 'Gasta Inspiração de Bardo + um espaço de magia para produzir efeitos musicais (raio flamejante, cone gélido, cura em área, antimagia móvel, teleporte em grupo etc.).'
           },
           6 => {
-            'Canção da Memória' => 'Você pode preservar memórias através de suas canções.'
+            'Refrão de Desbravador' => 'Ação bônus, ao iniciar uma canção: concede a você ou a um aliado a até 9 m um benefício conforme a canção por 1 minuto. Usos = mod. Carisma (mín. 1), recupera em descanso longo.'
           },
           14 => {
-            'Canção da Verdade' => 'Sua música pode revelar verdades ocultas.'
+            'Combinar Canções' => 'Ativa uma 2ª canção diferente (espaço de no máx. 5º nível) como ação bônus no mesmo turno da 1ª. 1 uso por descanso curto ou longo.'
           }
         }
       },
