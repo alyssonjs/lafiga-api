@@ -192,17 +192,55 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
   end
 
   describe 'PATCH /api/v1/player/groups/:id' do
-    it 'bloqueia jogador comum mesmo com personagem no grupo (403)' do
-      group = create(:group, name: 'Antigo')
+    it 'permite a um MEMBRO (dono de personagem no grupo) editar a descrição' do
+      group = create(:group, name: 'Antigo', description: 'Velha')
       create(:character, user: user, group: group)
 
       patch "/api/v1/player/groups/#{group.id}",
-            params: { group: { name: 'Hackeado' } },
+            params: { group: { description: 'Nova descrição do membro' } },
             headers: headers,
             as: :json
 
-      expect(response).to have_http_status(:forbidden)
-      expect(group.reload.name).to eq('Antigo')
+      expect(response).to have_http_status(:ok)
+      expect(group.reload.description).to eq('Nova descrição do membro')
+    end
+
+    it 'permite a um MEMBRO trocar a capa (upload de cover_image)' do
+      group = create(:group, name: 'ComCapaMembro')
+      create(:character, user: user, group: group)
+      upload = Rack::Test::UploadedFile.new(
+        StringIO.new('fake-png-bytes'),
+        'image/png',
+        original_filename: 'capa.png',
+      )
+
+      patch "/api/v1/player/groups/#{group.id}",
+            params: { group: { cover_image: upload } },
+            headers: headers.except('CONTENT_TYPE')
+
+      expect(response).to have_http_status(:ok)
+      expect(group.reload.cover_image).to be_attached
+      expect(response.parsed_body['group']['cover_image_url']).to include('rails/active_storage/blobs')
+    end
+
+    it 'MEMBRO não consegue alterar nome/estação/dia/ano (strong params filtram)' do
+      group = create(:group, name: 'Antigo', description: 'Velha', season: 'verao', day: 5, year: 1)
+      create(:character, user: user, group: group)
+
+      patch "/api/v1/player/groups/#{group.id}",
+            params: { group: { name: 'Hackeado', season: 'inverno', day: 99, year: 999, description: 'Nova' } },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      group.reload
+      # Campos do mestre inalterados…
+      expect(group.name).to eq('Antigo')
+      expect(group.season).to eq('verao')
+      expect(group.day).to eq(5)
+      expect(group.year).to eq(1)
+      # …mas a descrição (permitida ao membro) foi aplicada.
+      expect(group.description).to eq('Nova')
     end
 
     it 'permite ao mestre atualizar campos basicos' do
@@ -217,16 +255,16 @@ RSpec.describe 'Api::V1::Player::GroupsController', type: :request do
       expect(group.reload.name).to eq('Renomeado')
     end
 
-    it 'bloqueia update por jogador em grupo alheio (403 — só o mestre edita)' do
-      foreign = create(:group, name: 'Foreign', dm_user_id: other_user.id)
+    it 'bloqueia update por NÃO-membro (sem personagem e não-dono) — 403' do
+      foreign = create(:group, name: 'Foreign', description: 'Original', dm_user_id: other_user.id)
 
       patch "/api/v1/player/groups/#{foreign.id}",
-            params: { group: { name: 'Hackeado' } },
+            params: { group: { description: 'Hackeado' } },
             headers: headers,
             as: :json
 
       expect(response).to have_http_status(:forbidden)
-      expect(foreign.reload.name).to eq('Foreign')
+      expect(foreign.reload.description).to eq('Original')
     end
   end
 
