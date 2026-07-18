@@ -41,8 +41,10 @@
     spell: Eldritch Blast
 
 - slug: ei-eldritch-spear
-  name_pt: Lança Eldritch
+  name_pt: Lança Mística
   name_en: Eldritch Spear
+  aliases:
+    - Lança Eldritch
   description: |
     Quando conjurar Rajada Mística, o alcance da magia aumenta para 90 metros.
   mechanical_summary: Rajada Mística com alcance 90m
@@ -52,10 +54,11 @@
     spell: Eldritch Blast
 
 - slug: ei-devils-sight
-  name_pt: Visão do Demônio
+  name_pt: Visão Diabólica
   name_en: Devil's Sight
   aliases:
     - Visão do Diabo
+    - Visão do Demônio
   description: |
     Você pode ver normalmente em escuridão, tanto mágica quanto não-mágica, até uma distância de 36 metros.
   mechanical_summary: "Darkvision 36m (ignora escuridão mágica)"
@@ -99,8 +102,10 @@
     - warlock
 
 - slug: ei-beguiling-influence
-  name_pt: Influência Sedutora
+  name_pt: Influência Enganadora
   name_en: Beguiling Influence
+  aliases:
+    - Influência Sedutora
   description: |
     Você ganha proficiência nas perícias Enganação e Persuasão.
   mechanical_summary: Proficiência em Enganação + Persuasão
@@ -140,6 +145,15 @@
   description: |
     Você pode conjurar Imagem Silenciosa à vontade, sem gastar um espaço de magia ou componentes materiais.
   mechanical_summary: Imagem Silenciosa à vontade
+  classes:
+    - warlock
+
+- slug: ei-larceny-of-five-fates
+  name_pt: Larápio dos Cinco Destinos
+  name_en: Larceny of Five Fates
+  description: |
+    Você pode conjurar Perdição uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
+  mechanical_summary: Perdição 1x por descanso longo
   classes:
     - warlock
 
@@ -221,8 +235,10 @@
 # === REQUER NÍVEL MÍNIMO ===
 
 - slug: ei-sign-of-ill-omen
-  name_pt: Signo de Danação
+  name_pt: Sinal de Mau Agouro
   name_en: Sign of Ill Omen
+  aliases:
+    - Signo de Danação
   description: |
     Você pode conjurar Rogar Maldição uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
   mechanical_summary: Rogar Maldição 1x por descanso longo
@@ -230,6 +246,28 @@
     - warlock
   prereqs:
     level: 5
+
+- slug: ei-one-with-shadows
+  name_pt: Uno com as Sombras
+  name_en: One with Shadows
+  description: |
+    Quando estiver em uma área de penumbra ou escuridão, você pode usar sua ação para ficar invisível até se mover ou realizar uma ação ou reação.
+  mechanical_summary: Invisível em penumbra/escuridão até se mover/agir
+  classes:
+    - warlock
+  prereqs:
+    level: 5
+
+- slug: ei-whispers-of-aspect
+  name_pt: Sussurros Sedutores
+  name_en: Beguiling Whispers
+  description: |
+    Você pode conjurar Compulsão uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
+  mechanical_summary: Compulsão 1x por descanso longo
+  classes:
+    - warlock
+  prereqs:
+    level: 7
 
 - slug: ei-mire-the-mind
   name_pt: Atolar a Mente
@@ -309,10 +347,11 @@
     level: 9
 
 - slug: ei-master-of-myriad-forms
-  name_pt: Mestre das Inúmeras Formas
+  name_pt: Mestre das Infindáveis Formas
   name_en: Master of Myriad Forms
   aliases:
     - Mestre das Miríades de Formas
+    - Mestre das Inúmeras Formas
   description: |
     Você pode conjurar Alterar-Se à vontade, sem gastar um espaço de magia.
   mechanical_summary: Alterar-Se à vontade
