@@ -5037,7 +5037,7 @@ warlock:
       - level: 1
         features:
           - name: "Presença Feérica"
-            description: "Ação: cubo 3 m; criaturas fazem TS Sab (CD magias). Falha: enfeitiçado ou amedrontado (sua escolha) até o fim do seu próximo turno."
+            description: "Ação: cubo 3 m; criaturas fazem TS Sab (CD magias). Falha: enfeitiçado ou amedrontado (sua escolha) até o início do seu próximo turno."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
       - level: 6
