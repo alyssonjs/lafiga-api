@@ -5107,7 +5107,7 @@ warlock:
       - level: 6
         features:
           - name: "Proteção Entrópica"
-            description: "Reação ao ser alvo de ataque: impõe desvantagem; se errar, você tem vantagem no próximo ataque contra o alvo por até 1 min."
+            description: "Reação ao ser alvo de ataque: impõe desvantagem; se errar, você tem vantagem no próximo ataque contra o alvo até o fim do seu próximo turno."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
       - level: 10
