@@ -5072,7 +5072,7 @@ warlock:
       - level: 1
         features:
           - name: "Bênção do Obscuro"
-            description: "Ao reduzir uma criatura hostil a 0 PV: ganha PV temporários = CAR + nível de bruxo."
+            description: "Ao reduzir uma criatura hostil a 0 PV: ganha PV temporários = CAR + nível de bruxo (mínimo 1)."
       - level: 6
         features:
           - name: "Sorte do Próprio Obscuro"
@@ -5080,11 +5080,11 @@ warlock:
       - level: 10
         features:
           - name: "Resistência Demoníaca"
-            description: "Após um descanso, escolhe 1 tipo de dano (exceto físico não mágico); tem resistência até escolher outro."
+            description: "Após um descanso curto ou longo, escolhe 1 tipo de dano; tem resistência a ele até escolher outro. Dano de armas mágicas ou de prata ignora essa resistência."
       - level: 14
         features:
           - name: "Lançar no Inferno"
-            description: "Ao acertar um ataque: bane o alvo até o fim do seu próximo turno; quando retorna, sofre 10d10 psíquico."
+            description: "Ao acertar um ataque: bane o alvo até o fim do seu turno (retorna ao espaço que ocupava ou ao desocupado mais próximo); se não for um corruptor, sofre 10d10 psíquico ao retornar."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
 
