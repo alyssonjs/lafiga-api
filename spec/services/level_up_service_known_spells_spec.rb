@@ -93,6 +93,29 @@ RSpec.describe LevelUpService, "persist_known_spells! via metadata per_level" do
       expect(cantrips).to be >= sc.cantrips_known.to_i
       expect(leveled).to be >= sc.spells_known.to_i
     end
+
+    it 'com allow_spell_auto_fill: false (interativo) NÃO sorteia magias sem picks' do
+      warlock = Klass.find_by(api_index: 'warlock')
+      skip 'Klass warlock ausente' unless warlock
+
+      sc = SpellRules.sc_for(warlock, 1)
+      skip 'spellcasting L1 ausente' unless sc && sc.spells_known.to_i.positive?
+
+      character = Character.create!(user: user, name: "WL nofill #{SecureRandom.hex(2)}", background: 'Test')
+      sheet = Sheet.create!(
+        character: character, race_id: race.id,
+        str: 10, dex: 10, con: 12, int: 10, wis: 10, cha: 16, hp_max: 10, hp_current: 10,
+        metadata: { 'class_choices' => { 'per_level' => { '1' => { 'skills' => %w[Arcanismo Enganação] } } } }
+      )
+      sk = SheetKlass.create!(sheet: sheet, klass: warlock, level: 1)
+
+      # Fluxo interativo: sem picks e com auto-fill OFF → guard bloquearia, e aqui
+      # persist_known_spells! não cria NENHUMA magia (nunca sorteia).
+      svc = LevelUpService.new(sheet_id: sheet.id, klass_id: warlock.id, levels: 1, allow_spell_auto_fill: false)
+      svc.send(:persist_known_spells!, sk, from_level: 1, to_level: 1)
+
+      expect(SheetKnownSpell.where(sheet_klass_id: sk.id).count).to eq(0)
+    end
   end
 
   describe 'auto-heal de string crua / typo via SpellResolver' do
