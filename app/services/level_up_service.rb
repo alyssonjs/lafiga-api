@@ -391,8 +391,73 @@ class LevelUpService
       @sheet.update_column(:metadata, meta_to_save)
       Rails.logger.info "LevelUpService: auto-healed spell entries em metadata sheet=#{@sheet.id} sk=#{sk.id}"
     end
+
+    # Fix magias-fantasma: espelha os SheetKnownSpell (escolhas + auto-fill) de
+    # volta em metadata.spell_selections, para a progressão mostrar o MESMO que a
+    # ficha (sem magias invisíveis) e o jogador poder vê-las/trocá-las.
+    mirror_known_spells_into_selections!(sk)
   rescue => e
     Rails.logger.warn("Known spells persist skipped: #{e.message}")
+  end
+
+  # Sync REVERSO known → metadata.spell_selections. Complementa o
+  # progression_edit_service#sync_sheet_known_spells_from_spell_selections!
+  # (que vai selections → known ao editar no wizard): aqui, após o auto-fill do
+  # provisionamento/level-up criar SheetKnownSpell, refletimos essas magias nas
+  # seleções para que NÃO fiquem "fantasma" (na ficha, mas fora da progressão).
+  # Mesma regra de classe do sync direto: 'known'/'spellbook' só para conjuradores
+  # com lista de conhecidas (bardo/feiticeiro/patrulheiro/bruxo) e Mago; prepared
+  # não-mago (clérigo/druida/paladino) prepara da lista toda — para esses só
+  # espelhamos 'cantrips' (que são escolhidos). União idempotente (não duplica).
+  def mirror_known_spells_into_selections!(sk)
+    k = sk.klass
+    return unless k
+
+    known = SheetKnownSpell.where(sheet_klass_id: sk.id).includes(:spell).to_a
+    return if known.empty?
+
+    rules = k.api_index.present? ? (ClassRules.find(k.api_index) || {}) : {}
+    prep = (rules.dig(:feature_rules, :spellcasting, :mode) ||
+            rules.dig(:spellcasting, :preparation)).to_s
+    is_wizard = k.api_index.to_s == 'wizard'
+
+    meta = (@sheet.metadata || {}).deep_stringify_keys
+    sel = (meta['spell_selections'] ||= {})
+    resolver = SpellResolver.new
+    resolve_id = lambda do |tok|
+      id = selection_token_id(tok)
+      next id if id
+
+      (resolver.resolve(tok)&.id rescue nil)
+    end
+    add_to_bucket = lambda do |bucket, spell_ids|
+      existing = Array(sel[bucket])
+      have = existing.map { |t| resolve_id.call(t) }.compact.to_set
+      fresh = spell_ids.reject { |sid| have.include?(sid) }.map(&:to_s)
+      sel[bucket] = existing + fresh unless fresh.empty?
+    end
+
+    cantrip_ids = known.select { |r| r.spell&.level.to_i.zero? }.map(&:spell_id)
+    leveled_ids = known.reject { |r| r.spell&.level.to_i.zero? }.map(&:spell_id)
+
+    add_to_bucket.call('cantrips', cantrip_ids)
+    unless prep == 'prepared' && !is_wizard
+      add_to_bucket.call('known', leveled_ids)
+      add_to_bucket.call('spellbook', leveled_ids) if is_wizard
+    end
+
+    @sheet.update_column(:metadata, meta)
+    @sheet.reload
+  rescue StandardError => e
+    Rails.logger.warn("mirror_known_spells_into_selections! skipped: #{e.message}")
+  end
+
+  def selection_token_id(tok)
+    case tok
+    when Integer then tok
+    when String then (tok =~ /\A\d+\z/ ? tok.to_i : nil)
+    when Hash then (tok['id'] || tok[:id]).to_i.nonzero?
+    end
   end
 
   # Best-effort auto-pick para evitar bloqueios triviais quando metadados existem mas escolhas faltam
@@ -513,6 +578,10 @@ class LevelUpService
     end
 
     @sheet.update!(metadata: meta)
+
+    # Fix magias-fantasma: reflete o que o auto-fill acima criou (SheetKnownSpell)
+    # nas seleções, antes do guard, para ficha e progressão baterem.
+    mirror_known_spells_into_selections!(sk)
   rescue => e
     Rails.logger.debug("ensure_level_requirements! skipped: #{e.message}")
   end
