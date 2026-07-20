@@ -17,10 +17,11 @@
 # === SEM PRÉ-REQUISITO (apenas spell para os Eldritch Blast) ===
 
 - slug: ei-agonizing-blast
-  name_pt: Explosão Agônica
+  name_pt: Explosão Agonizante
   name_en: Agonizing Blast
   aliases:
     - Rajada Agonizante
+    - Explosão Agônica
   description: |
     Quando conjurar Rajada Mística, adicione seu modificador de Carisma ao dano que ela causa em um acerto.
   mechanical_summary: Rajada Mística + mod. CAR no dano
@@ -30,8 +31,10 @@
     spell: Eldritch Blast
 
 - slug: ei-repelling-blast
-  name_pt: Explosão Repulsora
+  name_pt: Explosão Repulsiva
   name_en: Repelling Blast
+  aliases:
+    - Explosão Repulsora
   description: |
     Quando acertar uma criatura com Rajada Mística, pode empurrá-la até 3 metros em linha reta para longe de você.
   mechanical_summary: Rajada Mística empurra 3m por acerto
@@ -66,8 +69,10 @@
     - warlock
 
 - slug: ei-eldritch-sight
-  name_pt: Visão Eldritch
+  name_pt: Visão Mística
   name_en: Eldritch Sight
+  aliases:
+    - Visão Eldritch
   description: |
     Você pode conjurar Detectar Magia à vontade, sem gastar um espaço de magia.
   mechanical_summary: Detectar Magia à vontade
@@ -93,8 +98,10 @@
     - warlock
 
 - slug: ei-beast-speech
-  name_pt: Fala das Bestas
+  name_pt: Idioma Bestial
   name_en: Beast Speech
+  aliases:
+    - Fala das Bestas
   description: |
     Você pode conjurar Falar com Animais à vontade, sem gastar um espaço de magia.
   mechanical_summary: Falar com Animais à vontade
@@ -122,8 +129,10 @@
     - warlock
 
 - slug: ei-fiendish-vigor
-  name_pt: Vigor Demoníaco
+  name_pt: Vigor Abissal
   name_en: Fiendish Vigor
+  aliases:
+    - Vigor Demoníaco
   description: |
     Você pode conjurar Vida Falsa em si mesmo à vontade como magia de 1º nível, sem gastar slot ou componentes materiais.
   mechanical_summary: "Vida Falsa à vontade (1d4+4 PV temp)"
@@ -140,8 +149,10 @@
     - warlock
 
 - slug: ei-misty-visions
-  name_pt: Visões Nebulosas
+  name_pt: Visões nas Brumas
   name_en: Misty Visions
+  aliases:
+    - Visões Nebulosas
   description: |
     Você pode conjurar Imagem Silenciosa à vontade, sem gastar um espaço de magia ou componentes materiais.
   mechanical_summary: Imagem Silenciosa à vontade
@@ -160,8 +171,10 @@
 # === REQUER PACTO DA CORRENTE ===
 
 - slug: ei-voice-of-chain-master
-  name_pt: Voz do Mestre da Corrente
+  name_pt: Voz do Mestre das Correntes
   name_en: Voice of the Chain Master
+  aliases:
+    - Voz do Mestre da Corrente
   description: |
     Você pode se comunicar telepaticamente com seu familiar e perceber através dos sentidos dele enquanto estiverem no mesmo plano. Além disso, pode falar através do familiar com sua própria voz.
   mechanical_summary: Comunicação telepática + sentidos do familiar
@@ -182,8 +195,10 @@
     pact: chain
 
 - slug: ei-chains-of-carceri
-  name_pt: Correntes de Carceri
+  name_pt: Correntes de Cárceri
   name_en: Chains of Carceri
+  aliases:
+    - Correntes de Carceri
   description: |
     Você pode conjurar Imobilizar Monstro à vontade contra celestiais, corruptores e elementais, sem gastar slot. Deve terminar descanso longo antes de usar na mesma criatura.
   mechanical_summary: "Imobilizar Monstro à vontade (celestial/corruptor/elemental)"
@@ -196,8 +211,10 @@
 # === REQUER PACTO DA LÂMINA ===
 
 - slug: ei-thirsting-blade
-  name_pt: Sede da Lâmina
+  name_pt: Lâmina Sedenta
   name_en: Thirsting Blade
+  aliases:
+    - Sede da Lâmina
   description: |
     Você pode atacar com sua arma do pacto duas vezes, em vez de uma, quando usar a ação Atacar no seu turno.
   mechanical_summary: Ataque Extra com arma do pacto
@@ -208,8 +225,10 @@
     level: 5
 
 - slug: ei-lifedrinker
-  name_pt: Bebedor de Vida
+  name_pt: Sorvedor de Vida
   name_en: Lifedrinker
+  aliases:
+    - Bebedor de Vida
   description: |
     Quando acertar uma criatura com sua arma do pacto, a criatura sofre dano necrótico extra igual ao seu modificador de Carisma (mínimo 1).
   mechanical_summary: "+mod. CAR dano necrótico (arma do pacto)"
@@ -222,8 +241,10 @@
 # === REQUER PACTO DO TOMO ===
 
 - slug: ei-book-of-ancient-secrets
-  name_pt: Livro dos Segredos Antigos
+  name_pt: Livro de Segredos Antigos
   name_en: Book of Ancient Secrets
+  aliases:
+    - Livro dos Segredos Antigos
   description: |
     Você pode inscrever rituais mágicos em seu Livro das Sombras. Escolha duas magias de 1º nível com a tag ritual de qualquer lista de classe. Com o livro em mãos, pode conjurá-las como rituais. Pode copiar mais rituais encontrados.
   mechanical_summary: Rituais de qualquer lista no Livro das Sombras
@@ -270,8 +291,10 @@
     level: 7
 
 - slug: ei-mire-the-mind
-  name_pt: Atolar a Mente
+  name_pt: Encharcar a Mente
   name_en: Mire the Mind
+  aliases:
+    - Atolar a Mente
   description: |
     Você pode conjurar Lentidão uma vez usando um espaço de magia de bruxo. Não pode fazê-lo novamente até completar um descanso longo.
   mechanical_summary: Lentidão 1x por descanso longo
@@ -303,8 +326,10 @@
     level: 7
 
 - slug: ei-ascendant-step
-  name_pt: Ascender às Alturas
+  name_pt: Passo Ascendente
   name_en: Ascendant Step
+  aliases:
+    - Ascender às Alturas
   description: |
     Você pode conjurar Levitar em si mesmo à vontade, sem gastar um espaço de magia ou componentes materiais.
   mechanical_summary: Levitar à vontade
@@ -314,8 +339,10 @@
     level: 9
 
 - slug: ei-otherworldly-leap
-  name_pt: Salto Transmundano
+  name_pt: Salto Transcendental
   name_en: Otherworldly Leap
+  aliases:
+    - Salto Transmundano
   description: |
     Você pode conjurar Salto em si mesmo à vontade, sem gastar um espaço de magia ou componentes materiais.
   mechanical_summary: "Salto à vontade (3x distância)"
@@ -372,8 +399,10 @@
     level: 15
 
 - slug: ei-visions-of-distant-realms
-  name_pt: Visões do Distante
+  name_pt: Visões de Reinos Distantes
   name_en: Visions of Distant Realms
+  aliases:
+    - Visões do Distante
   description: |
     Você pode conjurar Olho Arcano à vontade, sem gastar um espaço de magia.
   mechanical_summary: Olho Arcano à vontade
