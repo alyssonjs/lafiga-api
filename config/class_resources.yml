@@ -71,6 +71,8 @@ arcane_recovery:
 # zera no descanso curto E longo; long = só no longo.
 divine_intervention:
   recharge: long
+war_priest:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
