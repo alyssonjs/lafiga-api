@@ -94,7 +94,7 @@ RSpec.describe LevelUpService, "persist_known_spells! via metadata per_level" do
       expect(leveled).to be >= sc.spells_known.to_i
     end
 
-    it 'com allow_spell_auto_fill: false (interativo) NÃO sorteia magias sem picks' do
+    it 'com allow_auto_fill: false (interativo) NÃO sorteia magias sem picks' do
       warlock = Klass.find_by(api_index: 'warlock')
       skip 'Klass warlock ausente' unless warlock
 
@@ -111,7 +111,7 @@ RSpec.describe LevelUpService, "persist_known_spells! via metadata per_level" do
 
       # Fluxo interativo: sem picks e com auto-fill OFF → guard bloquearia, e aqui
       # persist_known_spells! não cria NENHUMA magia (nunca sorteia).
-      svc = LevelUpService.new(sheet_id: sheet.id, klass_id: warlock.id, levels: 1, allow_spell_auto_fill: false)
+      svc = LevelUpService.new(sheet_id: sheet.id, klass_id: warlock.id, levels: 1, allow_auto_fill: false)
       svc.send(:persist_known_spells!, sk, from_level: 1, to_level: 1)
 
       expect(SheetKnownSpell.where(sheet_klass_id: sk.id).count).to eq(0)

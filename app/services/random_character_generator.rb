@@ -165,7 +165,7 @@ class RandomCharacterGenerator
           pick_required_for_level!(sheet, klass, lvl)
           sk = sheet.sheet_klasses.find_by(klass_id: klass.id)
           pass_sub = (chosen_sub_id && sk.sub_klass_id.blank? && threshold > 0 && lvl >= threshold) ? chosen_sub_id : nil
-          LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1, sub_klass_id: pass_sub, allow_spell_auto_fill: true)
+          LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1, sub_klass_id: pass_sub, allow_auto_fill: true)
         end
 
         created << char
@@ -215,7 +215,7 @@ class RandomCharacterGenerator
           pick_required_for_level!(sheet, klass, lvl)
           sk = sheet.sheet_klasses.find_by(klass_id: klass.id)
           pass_sub = (sub_id && sk.sub_klass_id.blank? && threshold > 0 && lvl >= threshold) ? sub_id : nil
-          LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1, sub_klass_id: pass_sub, allow_spell_auto_fill: true)
+          LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1, sub_klass_id: pass_sub, allow_auto_fill: true)
         end
 
         created << sheet

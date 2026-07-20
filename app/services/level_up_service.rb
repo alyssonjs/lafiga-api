@@ -8,18 +8,18 @@ class LevelUpService
   # - levels: quantos níveis subir (default 1)
   # - sub_klass_id: definir subclasse (opcional; respeita o threshold)
   # - hp_rolls: array/num para HP ganho (opcional). Se ausente, usa média fixa (round up).
-  # - allow_spell_auto_fill: quando true, completa a cota de magias conhecidas
+  # - allow_auto_fill: quando true, completa a cota de magias conhecidas
   #   com magias da lista de classe (DETERMINÍSTICO, nunca aleatório) se o
   #   jogador não escolheu o suficiente. Fluxo INTERATIVO (criação/progressão via
   #   sheet_klasses_controller) usa `false` (default): o jogador escolhe e o guard
   #   bloqueia se faltar — sem sorteio. Import/gerador aleatório passam `true`.
-  def initialize(sheet_id:, klass_id:, levels: 1, sub_klass_id: nil, hp_rolls: nil, allow_spell_auto_fill: false)
+  def initialize(sheet_id:, klass_id:, levels: 1, sub_klass_id: nil, hp_rolls: nil, allow_auto_fill: false)
     @sheet = Sheet.find(sheet_id)
     @klass = Klass.find(klass_id)
     @levels = levels.to_i
     @sub_klass_id = sub_klass_id
     @hp_rolls = hp_rolls
-    @allow_spell_auto_fill = allow_spell_auto_fill
+    @allow_auto_fill = allow_auto_fill
   end
 
   # Pré-materializa truques/magias conhecidas exigidas em Spellcasting@L1 antes do
@@ -35,7 +35,7 @@ class LevelUpService
     return unless sk
 
     # Seed é chamado só pelo provisionamento (import) — habilita o fallback.
-    inst = new(sheet_id: sheet.id, klass_id: klass.id, levels: 1, allow_spell_auto_fill: true)
+    inst = new(sheet_id: sheet.id, klass_id: klass.id, levels: 1, allow_auto_fill: true)
     inst.send(:persist_known_spells!, sk, from_level: 1, to_level: 1)
   end
 
@@ -340,9 +340,9 @@ class LevelUpService
 
       # Fallback de cota de magias conhecidas — SÓ no modo auto-fill (import/
       # gerador) e DETERMINÍSTICO (nunca `sample`). No fluxo INTERATIVO
-      # (@allow_spell_auto_fill == false) nada é sorteado: o jogador escolhe e o
+      # (@allow_auto_fill == false) nada é sorteado: o jogador escolhe e o
       # guard bloqueia se faltar.
-      if @allow_spell_auto_fill
+      if @allow_auto_fill
         # Cantrips até a cota
         if limits[:cantrips]
           need = [limits[:cantrips].to_i - counts[:cantrips].to_i, 0].max
@@ -520,8 +520,10 @@ class LevelUpService
                     end
           # Só preenchemos root quando per_level['1'] também estiver vazio — evita criar
           # discrepância entre per_level['1'].skills e class_choices.skills_selected.
+          # Auto-fill de perícias DETERMINÍSTICO (nunca sorteia). Roda como fallback
+          # quando o wizard não gravou perícias no per_level['1'].
           if per_lvl1_skills.blank?
-            meta['class_choices']['skills_selected'] = options.sample(need_sk)
+            meta['class_choices']['skills_selected'] = Array(options).first(need_sk)
           end
         end
       end
@@ -530,7 +532,7 @@ class LevelUpService
         pick_src = (meta['class_choices']['instruments_selected'] || meta['class_choices']['instruments'] || [])
         arr = Array(pick_src).map { |x| x.is_a?(Hash) ? (x['name'] || x[:name]) : x }.compact
         if arr.size < inst_need
-          meta['class_choices']['instruments_selected'] = ClassRules.dictionaries[:instruments].sample(inst_need)
+          meta['class_choices']['instruments_selected'] = Array(ClassRules.dictionaries[:instruments]).first(inst_need)
         end
       end
     end
@@ -547,11 +549,14 @@ class LevelUpService
         Rails.logger.warn(
           "[autochoice-levelup] would-have-filled key=#{key} klass=#{@klass.api_index} level=#{current_level} strict=#{strict}"
         )
-        next if strict
+        # Sorteio de features (fighting_style/metamagic/invocations/pact_boon) só no
+        # fallback de import/gerador (allow_auto_fill) e DETERMINÍSTICO. Interativo
+        # não preenche — o guard força a escolha (mesma regra das magias).
+        next if strict || !@allow_auto_fill
 
         options = conf[:options]
         list = resolve_choice_options_for_autofill(options)
-        row[key.to_s] = list.sample(count)
+        row[key.to_s] = Array(list).first(count)
         # propaga top-level fighting_style para compatibilidade
         if key.to_s == 'fighting_style' && meta['class_choices']['fighting_style'].blank?
           meta['class_choices']['fighting_style'] = row[key.to_s]
@@ -562,7 +567,7 @@ class LevelUpService
     # 3) Cota mínima de cantrips/magias conhecidas — SÓ no modo auto-fill
     #    (import/gerador) e DETERMINÍSTICO. Interativo não sorteia (guard bloqueia).
     sc = SpellRules.sc_for(@klass, current_level)
-    if @allow_spell_auto_fill && sc
+    if @allow_auto_fill && sc
       # cantrips
       can_need = sc.cantrips_known.to_i
       if can_need > 0
