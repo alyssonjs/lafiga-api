@@ -5269,7 +5269,7 @@ warlock:
       - level: 6
         features:
           - name: "Conjuração Elemental"
-            description: "Converte o tipo de dano das suas magias para o do patrono e adiciona +1d6 no primeiro acerto (12º: +2d6)."
+            description: "Ao conjurar magia/truque que cause dano, ação bônus para converter o tipo de dano para o do patrono e adicionar +1d6 no primeiro acerto (12º: +2d6)."
       - level: 10
         features:
           - name: "Forma Prodigiosa"
@@ -5279,7 +5279,7 @@ warlock:
       - level: 14
         features:
           - name: "Seu Desejo é uma Ordem"
-            description: "Tenta invocar o patrono para realizar 1 desejo (riscos e limites). No 20º, invoca automaticamente."
+            description: "Ação: role d100; se ≤ nível de bruxo + mod. CAR, o patrono surge e concede 1 desejo (como a magia Desejo; alvo a 18 m). Indisponível por 7 dias após conceder; efeito além de copiar magia = 33% de nunca mais invocar. No 20º, invoca automaticamente."
 
   patrono-tita-caido:
     name: "O Titã Caído"
