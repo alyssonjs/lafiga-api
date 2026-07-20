@@ -81,6 +81,10 @@ ice_lance:
   recharge: long
 acid_rain:
   recharge: long
+minor_creation:
+  recharge: long
+adamantine_body:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
