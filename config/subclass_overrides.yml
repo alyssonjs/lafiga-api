@@ -5296,11 +5296,15 @@ warlock:
       - level: 1
         features:
           - name: "Manipulação de Energia"
-            description: "Quando uma magia sua causaria dano elemental, pode trocar o tipo e adicionar +1d8 (2 usos/descanso)."
+            description: "Ao conjurar truque/magia com ataque de magia e dano elemental, ação bônus para trocar o tipo e adicionar +1d8 se atingir (só o primeiro ataque)."
+            rules:
+              uses: { per: "descanso curto/longo", value: 2 }
       - level: 6
         features:
           - name: "Incentivo Titânico"
-            description: "Ação: aliados a 18 m não podem ser amedrontados/encantados e têm vantagem em testes/TS até seu próximo turno."
+            description: "Ação: aliados a 18 m que ouçam você não podem ser amedrontados/enfeitiçados e têm vantagem em testes/TS até o final do seu próximo turno."
+            rules:
+              uses: { per: "descanso curto/longo", value: 1 }
       - level: 10
         features:
           - name: "Bênção do Empírico"
@@ -5308,7 +5312,7 @@ warlock:
       - level: 14
         features:
           - name: "Pseudo-Titã"
-            description: "1 min: tamanho Grande, For 21, +1d8 com armas, CON 15 pode atordoar; deslocamentos extras; Manipulação de Energia ilimitada."
+            description: "Ação bônus: por 1 min, tamanho Grande, For 21, +1d8 com armas; ao acertar corpo-a-corpo o alvo faz TR de CON CD 15 ou fica atordoado; voo e natação = deslocamento; Manipulação de Energia ilimitada."
             rules:
               uses: { per: "descanso longo", value: 1 }
 
