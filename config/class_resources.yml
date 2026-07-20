@@ -73,6 +73,8 @@ divine_intervention:
   recharge: long
 war_priest:
   recharge: long
+warding_flare:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
