@@ -1337,13 +1337,13 @@ cleric:
                   7: ["blink","dimension-door"]
                   9: ["teleportation-circle","hold-monster"]
           - name: "Surto Temporal"
-            description: "Reação no início do turno de alguém: concede um uso extra da próxima Ação Bônus do alvo (truque/ataque/Desengajar/Esquivar)."
+            description: "Reação no início do SEU turno ou do turno de uma criatura a 9 m que você veja: concede usos adicionais à próxima ação bônus do alvo (conjurar truque, atacar, Desengajar ou Esquivar)."
             rules:
               reaction: true
-              trigger: "início do turno de uma criatura em até 9 m"
+              trigger: "início do seu turno ou do turno de uma criatura em até 9 m"
               range_m: 9
               grant: "uso extra da próxima Ação Bônus (limites: truque, 1 ataque, Disengage, Dodge)"
-              uses: { per: "dia", value: "Sabedoria (mín. 1)" }
+              uses: { per: "descanso longo", value: "Sabedoria (mín. 1)" }
       - level: 2
         features:
           - name: "Canalizar Divindade: Aceleração Súbita"
@@ -1355,10 +1355,11 @@ cleric:
       - level: 6
         features:
           - name: "Canalizar Divindade: Vórtice Temporal"
-            description: "Por 1 min, Reação: devolve criatura ao espaço inicial do turno (Sab ST a cada uso)."
+            description: "Ação: criatura a 18 m faz TR de Sabedoria ou fica em vórtice temporal por 1 min; ao sair de um espaço, reação para teletransportá-la de volta ao espaço inicial do turno. Repete o TR ao fim de cada turno; sucesso a imuniza até um descanso longo."
             rules:
-              reaction: true
-              duration: "1 minuto (concentração)"
+              action: true
+              range_m: 18
+              duration: "1 minuto"
               save: { ability: "Sabedoria", dc: "CD de magia do clérigo" }
       - level: 8
         features:
@@ -1367,10 +1368,10 @@ cleric:
       - level: 17
         features:
           - name: "Voltar no Tempo"
-            description: "Reação no fim do seu turno: refaz seu turno, desfazendo efeitos/dano do anterior."
+            description: "Reação no fim do seu turno: refaz o turno — volta ao espaço inicial e desfaz dano causado/sofrido, cura recebida, magias e usos gastos; então repete o turno."
             rules:
               reaction: true
-              uses: { per: "dia", value: 1 }
+              uses: { per: "descanso longo", value: 1 }
 
   # ======== DOMÍNIOS PHB (e variantes alinhadas) ========
 

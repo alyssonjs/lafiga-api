@@ -93,6 +93,10 @@ enchanted_stone:
   recharge: long
 deflecting_breath:
   recharge: long
+temporal_surge:
+  recharge: long
+rewind_time:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
