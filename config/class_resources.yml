@@ -89,6 +89,8 @@ psychic_surge:
   recharge: long
 mind_over_body:
   recharge: short
+enchanted_stone:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:

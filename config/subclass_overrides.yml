@@ -1252,6 +1252,7 @@ cleric:
             description: "1/turno, +1d8 ácido (2d8 no 14º) em ataque com arma."
             rules:
               once_per_turn: true
+              damage: { type: "acido", dice: "1d8 (14º: 2d8)" }
       - level: 17
         features:
           - name: "Deslizar na Terra"
