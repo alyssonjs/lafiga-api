@@ -91,6 +91,8 @@ mind_over_body:
   recharge: short
 enchanted_stone:
   recharge: long
+deflecting_breath:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
