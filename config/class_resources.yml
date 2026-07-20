@@ -85,6 +85,10 @@ minor_creation:
   recharge: long
 adamantine_body:
   recharge: long
+psychic_surge:
+  recharge: long
+mind_over_body:
+  recharge: short
 mystic_master:
   recharge: long
 fey_presence:
