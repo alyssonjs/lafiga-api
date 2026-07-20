@@ -69,6 +69,8 @@ arcane_recovery:
 # ── Bruxo (warlock) — Mestre Místico (L20, 1/LR) + gates de subclasse ──
 # (Patronos; front: usageStateToRuntime.ts NUMERIC_MAP). recharge short =
 # zera no descanso curto E longo; long = só no longo.
+divine_intervention:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:

@@ -1159,7 +1159,7 @@ cleric:
                   3: ["detect-thoughts","suggestion"]
                   5: ["tongues","fear"]
                   7: ["confusion","dominate-beast"]
-                  9: ["rarys-telepathic-bond","modify-memory"]
+                  9: ["telepathic-bond","modify-memory"]
           - name: "Surto Psíquico"
             description: "Ação: ataque à distância com magia (18 m), 2d6 psíquico. Se deixar alvo < metade dos PV, TS INT ou fica atordoado até o fim do seu próximo turno."
             rules:
@@ -1645,7 +1645,7 @@ cleric:
               spells:
                 always_prepared:
                   1: ["enfeitiçar pessoa","disfarçar-se"]
-                  3: ["imagem espelhada","passo sem pegadas"]
+                  3: ["mirror-image","pass-without-trace"]
                   5: ["piscar","dissipar magia"]
                   7: ["porta dimensional","metamorfose"]
                   9: ["dominar pessoa","modificar memória"]
