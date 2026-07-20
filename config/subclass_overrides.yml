@@ -5331,7 +5331,7 @@ warlock:
       - level: 1
         features:
           - name: "Toque do Vazio"
-            description: "Ataque corpo-a-corpo: 1d8 frio + CAR; TS CON ou alvo fica impedido brevemente."
+            description: "Ação: ataque corpo-a-corpo com magia; se atingir, 1d8 de frio + CAR; se criatura, TR CON ou impedido até o fim do próximo turno. No 8º: ação bônus para anexar os efeitos a uma magia acertada."
       - level: 6
         features:
           - name: "Proteção do Vácuo"
@@ -5341,13 +5341,13 @@ warlock:
       - level: 10
         features:
           - name: "Manto do Esquecimento"
-            description: "Impõe amnésia (TS INT) a 18 m por 24 h."
+            description: "Ação: alvo a 18 m faz TR INT ou esquece todos os eventos das últimas 24 horas."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
       - level: 14
         features:
           - name: "Esfera de Obliteração"
-            description: "Cria esfera de antimatéria por até 1 min (concentração); dano de energia e sucção a 0 PV; move com ação bônus."
+            description: "Ação: esfera de antimatéria a 18 m por até 1 min (concentração). No espaço/ao terminar turno nele: 4d6 de energia; adjacentes: 4d6 (TR DES, metade). 0 PV = sugado. Move 9 m com ação bônus. Imune à própria esfera."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
 
