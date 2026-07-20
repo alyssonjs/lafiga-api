@@ -1411,7 +1411,11 @@ cleric:
       - level: 6
         features:
           - name: "Canalizar Divindade: Ler Pensamentos"
-            description: "Ao usar CD, lê pensamentos e pode conjurar 'sugestão' sem espaço."
+            description: "Ação (Canalizar Divindade): criatura visível a 18 m faz TR de Sabedoria; em falha, você lê os pensamentos superficiais por 1 min e pode usar ação para encerrar o efeito e conjurar sugestão sem gastar espaço (o alvo falha automaticamente). Em sucesso, não pode reusar contra ela até um descanso longo."
+            rules:
+              action: true
+              range_m: 18
+              save: "Sabedoria"
       - level: 8
         features:
           - name: "Conjuração Poderosa"
@@ -1419,7 +1423,7 @@ cleric:
       - level: 17
         features:
           - name: "Visões do Passado"
-            description: "Medita em objeto/área para visões históricas (usos limitados por descanso)."
+            description: "Medita ao menos 1 min (mantendo concentração, até Sabedoria minutos) sobre um objeto (dono anterior + como o adquiriu/perdeu) ou o ambiente até 15 m³ (eventos recentes), recebendo visões de até Sabedoria dias atrás. Recarrega em descanso curto ou longo."
 
   dominio-da-vida:
     name: "Domínio da Vida"
