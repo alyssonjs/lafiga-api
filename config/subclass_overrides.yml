@@ -5355,7 +5355,7 @@ warlock:
   boons:
     corrente:
       id: "pact_of_the_chain"
-      name: "Dádiva da Corrente"
+      name: "Pacto da Corrente"
       choose_level: 3
       description: "Um familiar especial serve como agente e espião; pode atacar."
       features:
@@ -5363,7 +5363,7 @@ warlock:
           description: "Aprende 'encontrar familiar'; formas especiais (diabrete, pseudodragão, quasit, duende). Pode atacar e entregar magias de toque."
     lamina:
       id: "pact_of_the_blade"
-      name: "Dádiva da Lâmina"
+      name: "Pacto da Lâmina"
       choose_level: 3
       description: "Cria/vence uma arma de pacto mágica, sempre à mão."
       features:
@@ -5371,7 +5371,7 @@ warlock:
           description: "Ação: cria arma corpo a corpo que você domina; conta como mágica. Pode vincular 1 arma mágica (ritual 1 h) e invocá-la."
     tomo:
       id: "pact_of_the_tome"
-      name: "Dádiva do Tomo"
+      name: "Pacto do Tomo"
       choose_level: 3
       description: "Um Livro das Sombras com 3 truques de qualquer lista."
       features:
