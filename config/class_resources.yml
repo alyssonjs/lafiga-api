@@ -97,6 +97,8 @@ temporal_surge:
   recharge: long
 rewind_time:
   recharge: long
+corona_of_light:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
