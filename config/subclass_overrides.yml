@@ -5212,7 +5212,9 @@ warlock:
       - level: 10
         features:
           - name: "Salvaguarda Heróica"
-            description: "Reação: conjura truque/magia ofensiva no atacante ou defensiva no aliado a 9 m."
+            description: "Reação quando uma criatura a até 9 m ataca um aliado seu: conjura truque/magia ofensiva no atacante ou defensiva no aliado atacado. 2 usos por descanso curto ou longo."
+            rules:
+              uses: { per: "descanso curto/longo", value: 2 }
       - level: 14
         features:
           - name: "Avatar Espiritual"
