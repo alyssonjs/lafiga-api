@@ -77,6 +77,10 @@ warding_flare:
   recharge: long
 wrath_of_storm:
   recharge: long
+ice_lance:
+  recharge: long
+acid_rain:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:

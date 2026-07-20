@@ -1048,14 +1048,14 @@ cleric:
       - level: 2
         features:
           - name: "Canalizar Divindade: Bolha Protetora"
-            description: "Engolfa um aliado a 18 m numa bolha de água móvel por 1 min; dentro respira normalmente mas o deslocamento cai à metade; concede resistências (ácido, fogo, frio, trovejante, e concussão/corte/perf não-mágicos)."
+            description: "Engolfa um aliado a 18 m numa bolha de água móvel por 1 min; dentro respira normalmente mas o deslocamento cai à metade; concede resistências (ácido, fogo, frio, trovejante, e concussão/cortante não-mágicos)."
             rules:
               action: true
               duration: "1 minuto (concentração)"
               range_m: 18
               aura_m: 3
               movement_penalty: "deslocamento à metade dentro da bolha"
-              grants_resistance: ["acido","fogo","frio","trovejante","contundente (não-mágico)","cortante (não-mágico)","perfurante (não-mágico)"]
+              grants_resistance: ["acido","fogo","frio","trovejante","contundente (não-mágico)","cortante (não-mágico)"]
       - level: 6
         features:
           - name: "Água Revigorante"
