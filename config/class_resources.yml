@@ -75,6 +75,8 @@ war_priest:
   recharge: long
 warding_flare:
   recharge: long
+wrath_of_storm:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
