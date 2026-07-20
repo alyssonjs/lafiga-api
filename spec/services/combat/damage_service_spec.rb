@@ -128,9 +128,13 @@ RSpec.describe Combat::DamageService, type: :service do
   # =====================================================================
   describe 'Heavy Armor Master (redução -3 BPS não-mágico em armadura pesada)' do
     it 'PC com HAM em armadura pesada sofre dano - 3 (mínimo 0)' do
-      character, sheet = build_pc(hp: 30, feat_id: 'maestria_em_armadura_pesada')
-      # Marca que está usando armadura pesada (predicate do modifier).
-      sheet.update!(metadata: sheet.metadata.merge('wearing_heavy_armor' => true))
+      character, sheet = build_pc(hp: 30)
+      # DamageService lê metadata['feats'] + wearing_heavy_armor direto (o
+      # pré-requisito de proficiência do FeatAssignmentService não é o foco aqui).
+      sheet.update!(metadata: sheet.metadata.merge(
+        'wearing_heavy_armor' => true,
+        'feats' => [{ 'feat_id' => 'maestria_em_armadura_pesada' }]
+      ))
       combatant = build_combatant(character, hp_max: 30)
 
       result = described_class.call(combatant: combatant, amount: 10, damage_type: 'cortante', magical: false)
@@ -141,8 +145,11 @@ RSpec.describe Combat::DamageService, type: :service do
     end
 
     it 'HAM NÃO reduz dano MÁGICO físico' do
-      character, sheet = build_pc(hp: 30, feat_id: 'maestria_em_armadura_pesada')
-      sheet.update!(metadata: sheet.metadata.merge('wearing_heavy_armor' => true))
+      character, sheet = build_pc(hp: 30)
+      sheet.update!(metadata: sheet.metadata.merge(
+        'wearing_heavy_armor' => true,
+        'feats' => [{ 'feat_id' => 'maestria_em_armadura_pesada' }]
+      ))
       combatant = build_combatant(character, hp_max: 30)
 
       result = described_class.call(combatant: combatant, amount: 10, damage_type: 'cortante', magical: true)
@@ -151,8 +158,11 @@ RSpec.describe Combat::DamageService, type: :service do
     end
 
     it 'HAM NÃO reduz dano NÃO-FÍSICO (ex.: fogo)' do
-      character, sheet = build_pc(hp: 30, feat_id: 'maestria_em_armadura_pesada')
-      sheet.update!(metadata: sheet.metadata.merge('wearing_heavy_armor' => true))
+      character, sheet = build_pc(hp: 30)
+      sheet.update!(metadata: sheet.metadata.merge(
+        'wearing_heavy_armor' => true,
+        'feats' => [{ 'feat_id' => 'maestria_em_armadura_pesada' }]
+      ))
       combatant = build_combatant(character, hp_max: 30)
 
       result = described_class.call(combatant: combatant, amount: 10, damage_type: 'fogo', magical: false)
@@ -166,10 +176,11 @@ RSpec.describe Combat::DamageService, type: :service do
   # =====================================================================
   describe 'combinações (PHB: resistência aplicada DEPOIS de reduções fixas)' do
     it 'aplica HAM (-3) ANTES da resistência (½)' do
-      character, sheet = build_pc(hp: 50, feat_id: 'maestria_em_armadura_pesada')
+      character, sheet = build_pc(hp: 50)
       sheet.update!(metadata: sheet.metadata.merge(
         'wearing_heavy_armor' => true,
-        'resistances' => ['cortante']
+        'resistances' => ['cortante'],
+        'feats' => [{ 'feat_id' => 'maestria_em_armadura_pesada' }]
       ))
       combatant = build_combatant(character, hp_max: 50)
 
