@@ -390,7 +390,7 @@ RSpec.describe LevelUpGuardService do
       SheetKlass.create!(sheet: sheet, klass: klass, level: 2)
       result = LevelUpGuardService.call(sheet: sheet, klass: klass)
       # Kit 1.invocations: erro usa name_pt do catálogo
-      expect(result.errors.full_messages.join).to match(/Explos[ãa]o Ag[oô]nica.*Eldritch Blast/i)
+      expect(result.errors.full_messages.join).to match(/Explos[ãa]o Agonizante.*Eldritch Blast/i)
     end
 
     # Kit 1.invocations: invocações enviadas em PT (front) ou via slug (`ei-*`)
@@ -405,7 +405,7 @@ RSpec.describe LevelUpGuardService do
       })
       SheetKlass.create!(sheet: sheet, klass: klass, level: 2)
       result = LevelUpGuardService.call(sheet: sheet, klass: klass)
-      expect(result.errors.full_messages.join).to match(/Explos[ãa]o Ag[oô]nica.*Eldritch Blast/i)
+      expect(result.errors.full_messages.join).to match(/Explos[ãa]o Agonizante.*Eldritch Blast/i)
     end
 
     it 'fails when ei-agonizing-blast (slug) escolhida sem Eldritch Blast — Kit 1.invocations' do
@@ -418,7 +418,7 @@ RSpec.describe LevelUpGuardService do
       })
       SheetKlass.create!(sheet: sheet, klass: klass, level: 2)
       result = LevelUpGuardService.call(sheet: sheet, klass: klass)
-      expect(result.errors.full_messages.join).to match(/Explos[ãa]o Ag[oô]nica.*Eldritch Blast/i)
+      expect(result.errors.full_messages.join).to match(/Explos[ãa]o Agonizante.*Eldritch Blast/i)
     end
 
     # ---------------------------------------------------------
@@ -720,7 +720,7 @@ RSpec.describe LevelUpGuardService do
       SheetKlass.create!(sheet: sheet, klass: klass, level: 2)
       result = LevelUpGuardService.call(sheet: sheet, klass: klass)
       msg = result.errors.full_messages.join
-      expect(msg).to match(/Sede da L[âa]mina.*n[íi]vel 5/i).or match(/Sede da L[âa]mina.*Pacto/i)
+      expect(msg).to match(/L[âa]mina Sedenta.*n[íi]vel 5/i).or match(/L[âa]mina Sedenta.*Pacto/i)
     end
   end
 end
