@@ -65,3 +65,41 @@ sorcery_points:
 arcane_recovery:
   recharge: long
   classes: [wizard]
+
+# ── Bruxo (warlock) — Mestre Místico (L20, 1/LR) + gates de subclasse ──
+# (Patronos; front: usageStateToRuntime.ts NUMERIC_MAP). recharge short =
+# zera no descanso curto E longo; long = só no longo.
+mystic_master:
+  recharge: long
+fey_presence:
+  recharge: short
+misty_escape:
+  recharge: short
+dark_delirium:
+  recharge: short
+dark_ones_own_luck:
+  recharge: short
+hurl_through_hell:
+  recharge: short
+entropic_ward:
+  recharge: short
+void_protection:
+  recharge: short
+vengeance_mark:
+  recharge: short
+spirit_avatar:
+  recharge: short
+prodigious_form:
+  recharge: short
+pseudo_titan:
+  recharge: long
+mantle_of_oblivion:
+  recharge: short
+obliteration_sphere:
+  recharge: short
+death_touch:
+  recharge: short
+titanic_incentive:
+  recharge: short
+heroic_safeguard:
+  recharge: short
