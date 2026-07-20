@@ -5140,7 +5140,7 @@ warlock:
       - level: 6
         features:
           - name: "Toque Mortal"
-            description: "Toca humanóide vivo a 0 PV para matá-lo; ergue como zumbi sob comando (2 usos a partir do 12º)."
+            description: "Ação: toca um humanoide vivo inconsciente a 0 PV, matando-o; ele se ergue como zumbi sob seu comando (até 2 zumbis; comando por ação bônus). 2 usos a partir do 12º."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
       - level: 10
@@ -5150,7 +5150,7 @@ warlock:
       - level: 14
         features:
           - name: "Dança da Morte"
-            description: "Seu tipo muda para morto-vivo; imunidades amplas; pode influenciar/comandar mortos-vivos com Persuasão."
+            description: "Seu tipo muda para morto-vivo (não envelhece); imune a dano necrótico e de veneno e às condições enfeitiçado, envenenado e exausto. Ação bônus: comanda um morto-vivo com teste de Persuasão (CAR) CD 10 + ND (mín. 1), como a magia Comando."
 
   patrono-arcanjo-vingador:
     name: "O Arcanjo Vingador"
