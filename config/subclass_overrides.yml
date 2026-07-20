@@ -5183,7 +5183,7 @@ warlock:
       - level: 14
         features:
           - name: "Marca da Vingança"
-            description: "Marca 1 min (TS CAR). Remove resistência/imunidade a radiante (pode torná-lo vulnerável) e bloqueia teleporte; penalidades extras vs corruptor/morto-vivo."
+            description: "Ação (alvo a 18 m): marca por 1 min (TR CAR). Remove resistência/imunidade a radiante E o torna vulnerável a radiante, bloqueia teleporte; TR no fim de cada turno para encerrar (corruptor/morto-vivo faz com desvantagem)."
             rules:
               uses: { per: "descanso curto/longo", value: 1 }
 
