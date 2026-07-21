@@ -1975,8 +1975,8 @@ druid:
     levels:
       - level: 2
         features:
-          - { name: "Linguagem Feérica", description: "Fala Silvestre; magias feéricas sempre preparadas." }
-          - { name: "Personalidade Feérica", description: "Vantagem em testes de Carisma e em TS contra fadas/bestas/plantas." }
+          - { name: "Linguagem Feérica", description: "Fala, lê e escreve em Silvestre; as magias do círculo são sempre preparadas e não contam no limite (se não estiver na lista de druida, ainda é magia de druida para você)." }
+          - { name: "Personalidade Feérica", description: "Vantagem em testes de Carisma ao lidar com criaturas do tipo besta, fada e planta; e vantagem em testes de resistência contra magias e habilidades dessas criaturas." }
         grants:
           languages: { fixed: ["Silvestre"] }
           spells:
@@ -1989,20 +1989,21 @@ druid:
       - level: 6
         features:
           - name: "Companheiro Feérico"
-            description: "Um pixie o acompanha; age no seu turno e obedece seus comandos; se cair a 0 PV, volta à Faéria."
+            description: "Um pixie tímido o acompanha; fica invisível a maior parte do tempo e o ajuda como pode, mas não arrisca a própria vida para defendê-lo. Em combate, você pode usar sua ação para pedir que ele conjure uma magia específica; caso contrário, ele só se move ou fala com você. Só conjura Metamorfose como último recurso, se a própria vida estiver em risco. Se cair a 0 PV, volta à Faéria; pode ser reconvocado após um descanso longo."
             rules:
-              command: "ação para ordenar Ataque/Ajuda/Desengajar/Esquivar/Disparada; movimento com comando verbal"
-              return_to_feywild: "ao cair a 0 PV; reaparece após descanso longo"
+              action_to_cast: "use sua ação para pedir que o pixie conjure uma magia específica"
+              polymorph_last_resort: "só conjura Metamorfose como último recurso e apenas se a própria vida estiver em risco"
+              return_to_feywild: "ao cair a 0 PV; reconvocado após descanso longo"
       - level: 10
         features:
-          - { name: "Encontrar Encruzilhada", description: "Ritual de 10 min: detecta encruzilhadas para Faéria em 10 km e como acessá-las." }
+          - { name: "Encontrar Encruzilhada", description: "Ritual de 10 min (1/descanso longo): descobre a localização de quaisquer encruzilhadas que levem à Faéria num raio de 10 km e como acessá-las." }
       - level: 14
         features:
           - name: "Criatura de Faéria"
-            description: "Forma feérica 1 h: vantagem vs magia; atravessa árvores; invisibilidade à vontade em florestas. 1/descanso longo."
+            description: "Assume uma forma feérica similar a uma dríade por 1 h (1/descanso longo): vantagem em TS contra magias e efeitos mágicos; 1×/turno usa 3 m do deslocamento para entrar numa árvore viva ao alcance e surgir de outra a até 18 m (ambas de categoria de tamanho superior à sua), a 1,5 m dela; e, com ação bônus, conjura Invisibilidade à vontade em floresta ou terreno natural similar."
             rules:
               uses: "1/descanso longo"
-              benefits: ["vantagem em TS contra magias","mover-se entre árvores adjacentes","invisibilidade à vontade em florestas (como a magia)"]
+              benefits: ["vantagem em TS contra magias e efeitos mágicos","1×/turno: teleporte entre árvores vivas maiores que você, até 18 m","ação bônus: Invisibilidade à vontade em floresta/terreno natural"]
 
   circulo-feras:
     name: "Círculo das Feras"
