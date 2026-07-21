@@ -101,6 +101,10 @@ corona_of_light:
   recharge: long
 natural_recovery:
   recharge: long
+drain_energy:
+  recharge: short
+corrupt_nature:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
