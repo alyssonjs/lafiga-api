@@ -33,7 +33,7 @@ features:
   song-of-rest-d12: Canção de Descanso (d12)
   countercharm: Contracanto
   font-of-inspiration: Fonte de Inspiração
-  expertise: Perícia
+  expertise: Especialização
   fighting-style-defense: 'Estilo de Luta: Defesa'
   fighting-style-archery: 'Estilo de Luta: Arquearia'
   fighting-style-dueling: 'Estilo de Luta: Duelo'
@@ -323,7 +323,7 @@ features:
   supreme-sneak: Furtividade Suprema
   survivor: Sobrevivente
   thiefs-reflexes: Reflexos de Ladrão
-  thieves-cant: Gíria dos Ladrões
+  thieves-cant: Gíria de Ladrão
   tongue-of-the-sun-and-moon: Língua do Sol e da Lua
   tranquility: Tranquilidade
   unarmored-movement-1: Movimento sem Armadura
