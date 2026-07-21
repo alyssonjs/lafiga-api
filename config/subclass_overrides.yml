@@ -4571,7 +4571,7 @@ wizard:
         - level: 10
           features:
             - name: "O Terceiro Olho"
-              description: "Ativa 1 sentido extra até o próximo descanso longo (ex.: visão no escuro, ver invisível, ler emoções)."
+              description: "Ação: ativa 1 benefício de percepção até ficar incapacitado ou terminar um descanso curto/longo (reusa após descanso longo): visão no escuro 18 m, visão etérea 18 m, ler qualquer idioma, ou ver invisibilidade a 3 m."
         - level: 14
           features:
             - name: "Prodígio Maior"
