@@ -1949,24 +1949,24 @@ druid:
         features:
           - { name: "Proficiência Adicional", description: "Medicina e Sobrevivência." }
           - name: "Ervas Curativas"
-            description: "Durante um descanso curto, trata até SAB criaturas (1d8 + SAB cada) usando kit de herbalismo."
+            description: "Durante um descanso curto, usando um kit de herbalismo, trata até seu mod. de Sabedoria criaturas (mín. 1); cada uma recupera 1d8 + mod. Sabedoria PV. Um kit trata 5 criaturas ao todo antes de se esgotar."
             rules:
               uses_per_rest: "até seu mod. de Sabedoria (mín. 1)"
               heal_amount: "1d8 + mod. Sabedoria"
-              requires: "Kit de Herbalismo"
+              requires: "Kit de Herbalismo (trata 5 criaturas por kit)"
         grants:
           proficiencies:
             skills:
               fixed: ["Medicina","Sobrevivência"]
       - level: 6
         features:
-          - { name: "Ritual de Fartura", description: "Ritual de 1 h: por 24 h, participantes têm vantagem para forragear/caçar e dobram resultados em sucesso." }
+          - { name: "Ritual de Fartura", description: "Ritual de 1 h (1×/descanso longo): por 24 h, você e os participantes têm vantagem em testes de Sabedoria (Sobrevivência) para forragear/caçar e encontram o dobro do normal em sucesso." }
       - level: 10
         features:
-          - { name: "Renovação do Ciclo", description: "Ritual de 8 h + foco material da criatura: renasce como criança; cresce até a idade original em 1 semana; penalidades temporárias por 7 dias." }
+          - { name: "Renovação do Ciclo", description: "Ritual de 8 h + foco material de uma criatura morta há no máx. 1 dia por nível de druida: você dá à luz a criatura renascida como criança 24 h depois (cresce até a idade da morte em 1 semana). O parto é extenuante: -4 em jogadas de ataque, TRs e testes de habilidade, reduzido em 1 a cada descanso longo até desaparecer. Não pode reutilizar enquanto a penalidade estiver ativa." }
       - level: 14
         features:
-          - { name: "Celebração da Vida", description: "Festa de 8 h conta como descanso longo; por 24 h: vantagem ampla e recuperação de PV por minuto (a critério da mesa; sem abusos éticos)." }
+          - { name: "Celebração da Vida", description: "Festa de 8 h (1×/descanso longo): você e as criaturas amigáveis participantes recebem os benefícios de um descanso longo e, por 24 h, ganham vantagem em testes e TRs de Constituição e recuperam 1 PV por minuto. Perde-se os benefícios de Constituição/recuperação se a criatura tirar a vida de outra criatura viva." }
   circulo-fadas:
     name: "Círculo das Fadas"
     flavor: "Círculo Druídico"
