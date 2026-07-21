@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_08_091300) do
+ActiveRecord::Schema.define(version: 2026_07_20_130000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -99,6 +99,25 @@ ActiveRecord::Schema.define(version: 2026_07_08_091300) do
     t.index ["group_id"], name: "index_battle_maps_on_group_id"
     t.index ["user_id", "updated_at"], name: "index_battle_maps_on_user_id_and_updated_at"
     t.index ["user_id"], name: "index_battle_maps_on_user_id"
+  end
+
+  create_table "bug_reports", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.text "description", null: false
+    t.text "steps_to_reproduce"
+    t.integer "severity", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.jsonb "context", default: {}, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "kind", default: 0, null: false
+    t.index ["kind"], name: "index_bug_reports_on_kind"
+    t.index ["severity"], name: "index_bug_reports_on_severity"
+    t.index ["status"], name: "index_bug_reports_on_status"
+    t.index ["user_id", "created_at"], name: "index_bug_reports_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_bug_reports_on_user_id"
   end
 
   create_table "campaign_notes", force: :cascade do |t|
@@ -857,6 +876,7 @@ ActiveRecord::Schema.define(version: 2026_07_08_091300) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "battle_maps", "groups"
   add_foreign_key "battle_maps", "users"
+  add_foreign_key "bug_reports", "users"
   add_foreign_key "campaign_notes", "groups"
   add_foreign_key "campaign_notes", "schedules"
   add_foreign_key "campaign_notes", "users"

@@ -46,6 +46,7 @@ Rails.application.routes.draw do
           resources :campaign_notes, only: [:index, :create]
         end
         resources :campaign_notes, only: [:show, :update, :destroy]
+        resources :bug_reports, only: [:index, :show, :update]
         resources :schedules, only: [:index, :show, :create, :update, :destroy]
         resources :magic_items, only: [:index, :show, :create, :update, :destroy] do
           collection do
@@ -188,6 +189,7 @@ Rails.application.routes.draw do
           resources :campaign_notes, only: [:index, :create]
         end
         resources :campaign_notes, only: [:show, :update, :destroy]
+        resources :bug_reports, only: [:index, :create]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
           member do
             get :summary
