@@ -2022,16 +2022,16 @@ druid:
               cr_limit: "≤ nível/3 (arred. p/ baixo)"
               uses: "recobra em descanso curto ou longo"
               types_at_8: ["besta","fada","elemental","planta"]
-          - { name: "Empatia com a Natureza", description: "Vantagem em Lidar com Animais para influenciar besta/elemental/fada/planta." }
+          - { name: "Empatia com a Natureza", description: "Teste de Sabedoria (Lidar com Animais) para influenciar a atitude de qualquer besta, elemental, fada ou planta, sem precisar partilhar um idioma; vantagem no teste se a atitude inicial da criatura não for hostil." }
       - level: 6
         features:
           - name: "Vínculo Selvagem"
-            description: "Ação bônus dá vantagem no próximo ataque de uma criatura sob seu comando; magias em você ecoam em 1 invocado a 9 m."
+            description: "Ação bônus dá vantagem na próxima jogada de ataque de uma criatura sob seu comando (até o início do seu próximo turno); ao conjurar uma magia com alvo 'você', pode fazer o efeito também afetar 1 criatura sob seu comando que possa ver a até 9 m."
             rules:
-              bonus_action_mark: "1 criatura invocada sua a até 9 m ganha vantagem no próximo ataque até o fim do turno"
+              bonus_action_mark: "1 criatura sob seu comando ganha vantagem na próxima jogada de ataque até o início do seu próximo turno"
               spell_echo:
                 range_m: 9
-                targets: "uma criatura invocada que você controla"
+                targets: "uma criatura sob seu comando que você possa ver"
                 limits: "apenas magias com alvo 'você'"
       - level: 10
         features:
