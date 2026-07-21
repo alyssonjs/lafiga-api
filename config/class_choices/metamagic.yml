@@ -29,10 +29,11 @@
     - sorcerer
 
 - slug: mm-empowered
-  name_pt: Magia Elevada
+  name_pt: Magia Potencializada
   name_en: Empowered Spell
   aliases:
     - Potencializar Magia
+    - Magia Elevada
   description: |
     Quando rolar dano para uma magia, gaste 1 ponto de feitiçaria para rolar novamente até um número de dados de dano igual ao seu modificador de Carisma (mínimo 1). Deve usar os novos resultados. Pode ser combinada com outra metamagia.
   mechanical_summary: Re-rola até mod. CAR dados de dano
@@ -53,10 +54,11 @@
     - sorcerer
 
 - slug: mm-heightened
-  name_pt: Magia Intensificada
+  name_pt: Magia Aumentada
   name_en: Heightened Spell
   aliases:
     - Expandir Magia
+    - Magia Intensificada
   description: |
     Quando conjurar uma magia que obriga uma criatura a fazer um teste de resistência, gaste 3 pontos de feitiçaria para dar a um alvo da magia desvantagem no primeiro teste de resistência contra ela.
   mechanical_summary: 1 alvo tem desvantagem no 1º TR
@@ -89,10 +91,11 @@
     - sorcerer
 
 - slug: mm-twinned
-  name_pt: Magia Gêmea
+  name_pt: Magia Duplicada
   name_en: Twinned Spell
   aliases:
     - Transmutar Magia
+    - Magia Gêmea
   description: |
     Quando conjurar uma magia que mire apenas uma criatura e não tenha alcance pessoal, gaste pontos de feitiçaria iguais ao nível da magia (1 para cantrips) para mirar uma segunda criatura ao alcance.
   mechanical_summary: Segundo alvo grátis (custo = nível da magia)

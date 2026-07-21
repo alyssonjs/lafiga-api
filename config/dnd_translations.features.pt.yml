@@ -155,9 +155,9 @@ features:
   martial-archetype-improvement-3: Recurso de arquétipo marcial
   martial-archetype-improvement-4: Recurso de arquétipo marcial
   martial-arts: Artes marciais
-  metamagic-1: Metamagia
-  metamagic-2: Metamagia
-  metamagic-3: Metamagia
+  metamagic-1: Metamágica
+  metamagic-2: Metamágica
+  metamagic-3: Metamágica
   mindless-rage: Fúria Irracional
   monastic-tradition: Tradição Monástica
   monastic-tradition-improvement-1: Recurso de tradição monástica
@@ -648,17 +648,17 @@ feature_descs:
 
     Certos mosteiros usam formas especializadas de armas de monge. Por exemplo, pode usar um porrete de duas hastes ligadas por corrente curta (nunchaku) ou uma foice com lâmina mais curta e reta (kama). Seja qual for o nome da arma de monge, use as estatísticas de jogo fornecidas para a arma.
   metamagic-1: |-
-    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamagia à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
+    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamágica à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
 
-    Só pode usar uma opção de Metamagia em uma magia ao conjurá-la, salvo indicação em contrário.
+    Só pode usar uma opção de Metamágica em uma magia ao conjurá-la, salvo indicação em contrário.
   metamagic-2: |-
-    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamagia à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
+    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamágica à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
 
-    Só pode usar uma opção de Metamagia em uma magia ao conjurá-la, salvo indicação em contrário.
+    Só pode usar uma opção de Metamágica em uma magia ao conjurá-la, salvo indicação em contrário.
   metamagic-3: |-
-    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamagia à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
+    No 3º nível, você ganha a habilidade de retorcer suas magias conforme a necessidade. Você recebe duas opções de Metamágica à sua escolha entre as listadas a seguir. Ganha outra no 10º e no 17º níveis.
 
-    Só pode usar uma opção de Metamagia em uma magia ao conjurá-la, salvo indicação em contrário.
+    Só pode usar uma opção de Metamágica em uma magia ao conjurá-la, salvo indicação em contrário.
   monastic-tradition: Quando alcança o 3º nível, você se dedica a uma tradição monástica, como o Caminho da Palma Aberta. Sua tradição concede recursos no 3º nível e novamente no 6º, 11º e 17º níveis.
   monastic-tradition-improvement-1: Quando alcança o 3º nível, você se dedica a uma tradição monástica, como o Caminho da Palma Aberta. Sua tradição concede recursos no 3º nível e novamente no 6º, 11º e 17º níveis.
   monastic-tradition-improvement-2: Quando alcança o 3º nível, você se dedica a uma tradição monástica, como o Caminho da Palma Aberta. Sua tradição concede recursos no 3º nível e novamente no 6º, 11º e 17º níveis.
