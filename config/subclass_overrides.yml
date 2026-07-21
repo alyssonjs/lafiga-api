@@ -4190,7 +4190,7 @@ rogue:
       - level: 3
         features:
           - name: "Mãos Rápidas"
-            description: "Usa Ação Ardilosa para Usar Objeto, desarmar armadilhas e abrir fechaduras com ferramentas de ladrão."
+            description: "Usa a ação bônus da Ação Ardilosa para um teste de Destreza (Prestidigitação), usar as ferramentas de ladrão (desarmar armadilha/abrir fechadura) ou realizar a ação de Usar um Objeto."
             rules:
               cunning_action_expands_to: ["Usar Objeto","Ferramentas de Ladrão: desarmar armadilhas/abrir fechaduras"]
           - name: "Andarilho de Telhados"
