@@ -2914,15 +2914,15 @@ fighter:
               crit_range: [19,20]
       - level: 7
         features:
-          - name: "Atleta Extraordinário"
-            description: "Metade da proficiência (arred. para cima) em testes de For/Des/Con sem prof.; melhora salto em corrida."
+          - name: "Atletismo Extraordinário"
+            description: "Soma metade do bônus de proficiência (arred. para cima) a testes de Força/Destreza/Constituição em que já não aplique proficiência. Além disso, o alcance do salto em distância com corrida aumenta em 0,3 × mod. de Força (metros)."
             rules:
               half_proficiency_to_checks:
                 abilities: ["Força","Destreza","Constituição"]
                 applies_when_not_proficient: true
                 rounding: "para cima"
               running_long_jump_bonus:
-                feet: "modificador de Força (em pés)"
+                meters: "0,3 × modificador de Força"
                 note: "Some esse valor à distância total de salto em corrida."
       - level: 10
         features:
