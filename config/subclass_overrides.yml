@@ -2064,23 +2064,23 @@ druid:
               3: ["misty-step","moonbeam"]
               5: ["blink","protection-from-energy"]
               7: ["banishment","dimension-door"]
-              9: ["plane-shift-anchor","contact-other-plane"]
+              9: ["planar-binding","contact-other-plane"]
       - level: 6
         features:
           - name: "Atalho Planar"
-            description: "Ritual (1 h + espaço 3º): encontra o portal mais próximo para um plano conhecido (teste de Arcanismo). 1/descanso longo."
+            description: "Ritual (1 h + espaço de 3º nível): teste de Inteligência (Arcanismo) CD 15 para localizar o portal mais próximo que leva a um plano que você já estudou e o que é preciso para acessá-lo; fracassa se não houver portal para esse plano onde você está. 1/descanso longo."
             rules:
               cost: "1 espaço de 3º nível"
-              check: "Arcanismo (CD a critério da mesa)"
+              check: "Inteligência (Arcanismo) CD 15"
               uses: "1/descanso longo"
       - level: 10
         features:
           - name: "Forma Nativa"
-            description: "Em outro plano, pode assumir forma nativa do local (ND ≤ metade do nível) por até 1 h."
+            description: "Estando em outro plano, ao conjurar Metamorfose em si mesmo pode assumir a forma de uma criatura de qualquer tipo nativa daquele plano (ND ≤ metade do nível); segue as regras de Metamorfose."
             rules:
-              duration: "até 1 hora"
+              duration: "como Metamorfose (até 1 hora)"
               cr_limit: "≤ metade do nível"
-              notes: "não requer Form a Selvagem; equipamento se adapta como em Polimorfar (a critério da mesa)"
+              notes: "usa a magia Metamorfose (não a Forma Selvagem); o Mestre decide quais criaturas são nativas do plano"
       - level: 14
         features:
           - name: "Protetor dos Mundos"
