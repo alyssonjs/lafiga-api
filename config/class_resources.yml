@@ -99,6 +99,8 @@ rewind_time:
   recharge: long
 corona_of_light:
   recharge: long
+natural_recovery:
+  recharge: long
 mystic_master:
   recharge: long
 fey_presence:
