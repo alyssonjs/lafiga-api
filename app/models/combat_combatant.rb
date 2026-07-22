@@ -170,6 +170,17 @@ class CombatCombatant < ApplicationRecord
 
     case combatable_type
     when 'Character'
+      # Sessões-fantasma de teste (sandbox) não têm grupo e servem para
+      # exercitar combate com qualquer ficha — sem restrição de grupo.
+      return if schedule.respond_to?(:sandbox) && schedule.sandbox
+
+      # Fichas explicitamente vinculadas à mesa pelo DM (aba NPCs →
+      # linked_npc_character_ids, ou PC tratado como NPC só nesta sessão) podem
+      # ser de outro grupo por desenho — o DM as adicionou de propósito.
+      linked_ids = Array(schedule.linked_npc_sheet_ids_normalized) +
+                   Array(schedule.dm_temp_npc_character_ids_normalized)
+      return if linked_ids.include?(combatable.id)
+
       group_id = combatable.group_id
       if group_id.present? && group_id != schedule.group_id
         errors.add(:combatable, 'pertence a outro grupo')
