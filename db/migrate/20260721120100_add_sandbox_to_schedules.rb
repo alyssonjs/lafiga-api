@@ -4,20 +4,14 @@ class AddSandboxToSchedules < ActiveRecord::Migration[6.0]
   # criador/data) das sessões reais — assim o DM pode abrir várias para testar
   # combate sem colidir com a agenda real.
   def change
-    add_column :schedules, :sandbox, :boolean, null: false, default: false
-    add_index :schedules, :sandbox, where: '(sandbox = true)', name: 'index_schedules_on_sandbox_true'
-
-    # Recriar os índices parciais únicos excluindo sandbox do slot único.
-    remove_index :schedules, name: 'idx_schedules_active_per_group_date'
-    add_index :schedules, %i[group_id date_dimension_id],
-              unique: true,
-              where: '((group_id IS NOT NULL) AND (status <> 4) AND (sandbox = false))',
-              name: 'idx_schedules_active_per_group_date'
-
-    remove_index :schedules, name: 'idx_schedules_active_per_creator_date'
-    add_index :schedules, %i[created_by_user_id date_dimension_id],
-              unique: true,
-              where: '((created_by_user_id IS NOT NULL) AND (status <> 4) AND (sandbox = false))',
-              name: 'idx_schedules_active_per_creator_date'
+    add_column :schedules, :sandbox, :boolean, null: false, default: false unless column_exists?(:schedules, :sandbox)
+    unless index_exists?(:schedules, :sandbox, name: 'index_schedules_on_sandbox_true')
+      add_index :schedules, :sandbox, where: '(sandbox = true)', name: 'index_schedules_on_sandbox_true'
+    end
+    # NOTA: a reconciliação dos índices de "slot único" (excluir sandbox) foi
+    # movida para 20260723120000_reconcile_schedule_open_slot_indexes. A versão
+    # anterior desta migração fazia `remove_index 'idx_schedules_active_per_*'`,
+    # que CRASHAVA em bancos (prod/main) onde esses índices foram renomeados para
+    # `idx_schedules_open_per_*`. A reconciliação é defensiva (DROP IF EXISTS).
   end
 end

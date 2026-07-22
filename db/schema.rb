@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_22_120000) do
+ActiveRecord::Schema.define(version: 2026_07_23_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -78,6 +78,7 @@ ActiveRecord::Schema.define(version: 2026_07_22_120000) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.jsonb "walls", default: [], null: false
+    t.string "fog_mode", default: "hidden_cells", null: false
     t.jsonb "measurements", default: [], null: false
     t.jsonb "drawings", default: [], null: false
     t.jsonb "player_permissions", default: {"pencil"=>false, "measure"=>true}, null: false
@@ -86,7 +87,6 @@ ActiveRecord::Schema.define(version: 2026_07_22_120000) do
     t.string "distance_display_unit", default: "m", null: false
     t.decimal "cell_world_ft", precision: 6, scale: 2, default: "5.0", null: false
     t.jsonb "aoe_placements", default: [], null: false
-    t.string "fog_mode", default: "hidden_cells", null: false
     t.integer "background_image_pixel_width"
     t.integer "background_image_pixel_height"
     t.jsonb "layers", default: [], null: false
@@ -369,7 +369,6 @@ ActiveRecord::Schema.define(version: 2026_07_22_120000) do
     t.string "cover_image_url"
     t.bigint "dm_user_id"
     t.index ["dm_user_id"], name: "index_groups_on_dm_user_id"
-    t.index ["dm_user_id"], name: "index_groups_on_dm_user_id_not_null", where: "(dm_user_id IS NOT NULL)"
   end
 
   create_table "items", force: :cascade do |t|
@@ -561,9 +560,9 @@ ActiveRecord::Schema.define(version: 2026_07_22_120000) do
     t.jsonb "combat_groups", default: {}, null: false
     t.index ["battle_map_id"], name: "index_schedules_on_battle_map_id"
     t.index ["campaign_name"], name: "index_schedules_on_campaign_name"
-    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_active_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status <> 4) AND (sandbox = false))"
+    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_open_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])) AND (sandbox = false))"
     t.index ["created_by_user_id"], name: "index_schedules_on_created_by_user_id"
-    t.index ["group_id", "date_dimension_id"], name: "idx_schedules_active_per_group_date", unique: true, where: "((group_id IS NOT NULL) AND (status <> 4) AND (sandbox = false))"
+    t.index ["group_id"], name: "idx_schedules_open_per_group", unique: true, where: "((group_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])) AND (sandbox = false))"
     t.index ["group_id"], name: "index_schedules_on_group_id"
     t.index ["highlights"], name: "index_schedules_on_highlights", using: :gin
     t.index ["sandbox"], name: "index_schedules_on_sandbox_true", where: "(sandbox = true)"
@@ -636,8 +635,6 @@ ActiveRecord::Schema.define(version: 2026_07_22_120000) do
     t.bigint "klass_id", null: false
     t.bigint "sub_klass_id"
     t.integer "level", limit: 2
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
     t.index ["klass_id"], name: "index_sheet_klasses_on_klass_id"
     t.index ["sheet_id", "klass_id"], name: "idx_sheet_klasses_unique_sheet_klass", unique: true
     t.index ["sheet_id"], name: "index_sheet_klasses_on_sheet_id"
@@ -681,7 +678,6 @@ ActiveRecord::Schema.define(version: 2026_07_22_120000) do
     t.datetime "last_long_rest_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.jsonb "active_effects", default: [], null: false
     t.index ["sheet_id"], name: "index_sheet_runtime_states_on_sheet_id", unique: true
   end
 
@@ -713,8 +709,6 @@ ActiveRecord::Schema.define(version: 2026_07_22_120000) do
     t.jsonb "avatar_customization", default: {}, null: false
     t.integer "experience_points", default: 0, null: false
     t.jsonb "coins", default: {"cp"=>0, "ep"=>0, "gp"=>0, "pp"=>0, "sp"=>0}, null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
     t.jsonb "coin_pouches", default: [], null: false
     t.index ["alignment_id"], name: "index_sheets_on_alignment_id"
     t.index ["background_id"], name: "index_sheets_on_background_id"

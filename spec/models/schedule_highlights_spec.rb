@@ -3,6 +3,30 @@
 require 'rails_helper'
 
 RSpec.describe Schedule, type: :model do
+  describe 'scheduling availability by group' do
+    let(:group) { create(:group) }
+    let(:other_group) { create(:group) }
+    let(:date_a) { create(:date_dimension, date: Date.current + 10.days) }
+    let(:date_b) { create(:date_dimension, date: Date.current + 15.days) }
+
+    it 'blocks a second open session for the same group even on another date' do
+      create(:schedule, group: group, date_dimension: date_a, status: :waiting)
+
+      schedule = build(:schedule, group: group, date_dimension: date_b, status: :waiting)
+
+      expect(schedule).not_to be_valid
+      expect(schedule.errors[:base]).to include('Este grupo já possui uma sessão marcada para acontecer.')
+    end
+
+    it 'allows scheduling after prior sessions are completed or cancelled' do
+      create(:schedule, group: group, date_dimension: date_a, status: :completed)
+      create(:schedule, group: other_group, date_dimension: date_b, status: :cancelled)
+
+      expect(build(:schedule, group: group, date_dimension: date_b, status: :waiting)).to be_valid
+      expect(build(:schedule, group: other_group, date_dimension: date_a, status: :waiting)).to be_valid
+    end
+  end
+
   describe 'highlights normalization (passo 5)' do
     # Construímos um Schedule sem persistir para focar na normalização do
     # atributo `highlights`. Save real exigiria DateDimension/Group disponíveis
