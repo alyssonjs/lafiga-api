@@ -10,7 +10,10 @@ class Schedule < ApplicationRecord
   }
 
   belongs_to :date_dimension
-  belongs_to :group
+  # Opcional no nível da associação para permitir sessões-fantasma de teste
+  # (sandbox) sem grupo; sessões reais continuam exigindo grupo via a validação
+  # condicional `group presence unless sandbox_session?` abaixo.
+  belongs_to :group, optional: true
   belongs_to :battle_map, optional: true
   belongs_to :created_by_user, class_name: 'User', optional: true
 
@@ -52,6 +55,8 @@ class Schedule < ApplicationRecord
   end
 
   validates :status, :date_dimension_id, :title, presence: true
+  # Sessão real exige grupo; sandbox (teste do DM) pode nascer sem grupo.
+  validates :group, presence: true, unless: :sandbox_session?
   validates :xp_awarded, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :scheduled_time,
             format: { with: /\A([01]?\d|2[0-3]):[0-5]\d\z/, message: "deve estar no formato HH:MM" },
@@ -79,7 +84,7 @@ class Schedule < ApplicationRecord
   # Para visão completa de DM, usar o endpoint admin.
   def self.for_player_index(user)
     gids = user.characters.where.not(group_id: nil).distinct.pluck(:group_id)
-    gids.any? ? where(group_id: gids) : none
+    gids.any? ? non_sandbox.where(group_id: gids) : none
   end
 
   # Hub / GET index (jogador não-DM global, escopo amplo — usado em autorizações
@@ -105,6 +110,17 @@ class Schedule < ApplicationRecord
   scope :chronological, -> { joins(:date_dimension).order('date_dimensions.date ASC, schedules.scheduled_time ASC NULLS LAST') }
   scope :active,        -> { where.not(status: :cancelled) }
   scope :concluded,     -> { where(status: :completed) }
+
+  # Sessões-fantasma de teste do DM. Guard de coluna (como os jsonb) evita erro
+  # se o deploy adiantar o código sem o `db:migrate` da coluna `sandbox`.
+  def self.supports_sandbox?
+    column_names.include?('sandbox')
+  end
+
+  # Só sessões reais (exclui as sandbox). No-op se a coluna ainda não existe.
+  scope :non_sandbox, -> { supports_sandbox? ? where(sandbox: false) : all }
+  # Sessões de teste de um DM específico (usadas na lista "Sessões de teste").
+  scope :sandbox_of,  ->(user) { supports_sandbox? && user ? where(sandbox: true, created_by_user_id: user.id) : none }
 
   # Marca a sessão como em andamento e registra o início.
   # Idempotente: chamadas repetidas não sobrescrevem `started_at`.
@@ -236,7 +252,13 @@ class Schedule < ApplicationRecord
   # Sessões canceladas liberam o slot. Reforço em código além do partial index
   # do banco — o índice protege contra race condition; a validação dá mensagem
   # amigável ao cliente.
+  # true se esta é uma sessão-fantasma de teste (coluna presente + flag on).
+  def sandbox_session?
+    self.class.supports_sandbox? && sandbox?
+  end
+
   def unique_active_slot_per_group
+    return if sandbox_session?
     return if cancelled?
     return if group_id.blank? || date_dimension_id.blank?
 
@@ -252,6 +274,7 @@ class Schedule < ApplicationRecord
   # Um mesmo usuário não pode manter duas sessões não canceladas no mesmo dia,
   # mesmo em grupos diferentes. Sessões canceladas liberam o dia.
   def unique_active_slot_per_creator
+    return if sandbox_session?
     return if cancelled?
     return if created_by_user_id.blank? || date_dimension_id.blank?
 

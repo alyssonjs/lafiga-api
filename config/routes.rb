@@ -21,6 +21,9 @@ Rails.application.routes.draw do
       # Front consome após boot/login para derivar `role`/`permissions` em vez
       # de confiar em localStorage. Ver `Api::V1::MeController`.
       get 'me', to: 'me#show'
+      # Preferências de UI da própria conta (hoje só `combat_hotbar`). Ativação,
+      # por DM, do novo hotbar de combate — persistida na conta (segue o DM).
+      patch 'me/ui_preferences', to: 'me#update_ui_preferences'
 
       namespace :admin do
         get 'dm_user_picker', to: 'dm_user_picker#index'
@@ -46,6 +49,7 @@ Rails.application.routes.draw do
           resources :campaign_notes, only: [:index, :create]
         end
         resources :campaign_notes, only: [:show, :update, :destroy]
+        resources :bug_reports, only: [:index, :show, :update]
         resources :schedules, only: [:index, :show, :create, :update, :destroy]
         resources :magic_items, only: [:index, :show, :create, :update, :destroy] do
           collection do
@@ -131,6 +135,11 @@ Rails.application.routes.draw do
           end
         end
         resources :schedules, only: [:index, :show, :create, :update, :destroy] do
+          # Sessões-fantasma de teste (só DM): criar e listar as próprias.
+          collection do
+            get  'sandbox', action: :sandbox_index
+            post 'sandbox', action: :create_sandbox
+          end
           member do
             post :start
             post :complete
@@ -194,6 +203,7 @@ Rails.application.routes.draw do
           resources :campaign_notes, only: [:index, :create]
         end
         resources :campaign_notes, only: [:show, :update, :destroy]
+        resources :bug_reports, only: [:index, :create]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
           member do
             get :summary
@@ -306,5 +316,8 @@ Rails.application.routes.draw do
   end
 
 
-  get '/*a', to: 'application#not_found'
+  # O catch-all não pode sombrear as rotas de ENGINE do Active Storage
+  # (`/rails/active_storage/*`), senão os blobs (capas, anexos de bug report)
+  # dão 404. Mesmo fix já aplicado na main (api f2662e3).
+  get '/*a', to: 'application#not_found', constraints: ->(req) { !req.path.start_with?('/rails/') }
 end

@@ -92,6 +92,48 @@ class Api::V1::Player::SchedulesController < ApplicationController
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
+  # POST /player/schedules/sandbox — cria uma sessão-fantasma de teste (só DM).
+  # Não exige grupo nem data reservável e entra direto como `in_progress`, para o
+  # DM cair no /play e exercitar combate. Só o criador a vê (fora das listagens
+  # de player). `group_id` opcional: se um grupo próprio for passado, a party vem
+  # junto; caso contrário a sessão nasce vazia (DM adiciona NPCs/combatentes).
+  def create_sandbox
+    return render json: { error: 'Acesso restrito ao Mestre.' }, status: :forbidden unless Group.user_is_dm?(@current_user)
+
+    gid = params[:group_id].presence
+    if gid && !(Group.user_is_dm?(@current_user) || @current_user.groups.exists?(id: gid))
+      return render json: { error: 'Grupo inválido para este usuário' }, status: :forbidden
+    end
+
+    attrs = {
+      title: params[:title].presence || 'Sessão de teste',
+      status: :in_progress,
+      sandbox: true,
+      group_id: gid,
+      date: Date.current.iso8601,
+    }
+    result = ScheduleService.new(attrs, current_user: @current_user).call
+    if result.success?
+      render json: { schedule: ScheduleSerializer.serialize(result.result, include_dm_notes: true) }, status: :created
+    else
+      render json: { errors: result.errors.full_messages }, status: :unprocessable_entity
+    end
+  rescue ArgumentError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # GET /player/schedules/sandbox — lista as sessões de teste do próprio DM.
+  def sandbox_index
+    return render json: { error: 'Acesso restrito ao Mestre.' }, status: :forbidden unless Group.user_is_dm?(@current_user)
+
+    scheds = Schedule.sandbox_of(@current_user)
+                     .includes(:date_dimension)
+                     .order(created_at: :desc)
+    render json: { schedules: ScheduleSerializer.serialize_collection(scheds, viewer: @current_user) }, status: 200
+  end
+
   def update
     attrs = schedule_params.to_h.deep_dup
     unless schedule_dm_notes_visible_to?(@current_user, @schedule)

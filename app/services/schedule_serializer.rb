@@ -32,6 +32,7 @@ class ScheduleSerializer
       highlights: Array(schedule.highlights),
       created_at: schedule.created_at,
       updated_at: schedule.updated_at,
+      sandbox: (Schedule.supports_sandbox? ? schedule.sandbox : false),
       group_id: schedule.group_id,
       group: schedule.group&.as_json(only: [:id, :name]),
       battle_map_id: schedule.battle_map_id,

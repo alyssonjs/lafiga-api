@@ -28,11 +28,26 @@ module Api
       # mesma constante usada em `AuthenticationController#login`/`#signup`
       # depois do PR C.
       def show
-        render json: {
+        render json: me_payload, status: :ok
+      end
+
+      # PATCH /api/v1/me/ui_preferences  { combat_hotbar: true|false }
+      # Grava preferências de UI da própria conta. `combat_hotbar` ativa o novo
+      # hotbar de combate; é inócua para não-DM (o front nunca renderiza o hotbar
+      # sem `role === 'dm'`), então qualquer usuário autenticado pode gravá-la.
+      def update_ui_preferences
+        @current_user.set_combat_hotbar_pref!(params[:combat_hotbar]) if params.key?(:combat_hotbar)
+        render json: me_payload, status: :ok
+      end
+
+      private
+
+      def me_payload
+        {
           user_infos: @current_user.as_json(except: User::SENSITIVE_API_FIELDS),
           role: serialize_role(@current_user.role.name),
           permissions: @current_user.role.permissions
-        }, status: :ok
+        }
       end
     end
   end

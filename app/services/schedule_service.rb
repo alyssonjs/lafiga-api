@@ -54,7 +54,18 @@ class ScheduleService
         raise ArgumentError, 'data é obrigatória (use date em ISO ou date_dimension_id)'
       end
 
-      self.class.assert_bookable_date_dimension!(attrs[:date_dimension_id] || attrs['date_dimension_id'])
+      # Sessões-fantasma de teste (sandbox) do DM não se sujeitam a dia vetado
+      # nem ocupam slot no calendário — servem só para exercitar combate.
+      is_sandbox = ActiveModel::Type::Boolean.new.cast(attrs[:sandbox] || attrs['sandbox'])
+      unless Schedule.respond_to?(:supports_sandbox?) && Schedule.supports_sandbox?
+        attrs.delete(:sandbox)
+        attrs.delete('sandbox')
+        is_sandbox = false
+      end
+
+      unless is_sandbox
+        self.class.assert_bookable_date_dimension!(attrs[:date_dimension_id] || attrs['date_dimension_id'])
+      end
       attrs[:created_by_user_id] ||= @current_user&.id
 
       unless Schedule.supports_linked_npc_sheet_ids?

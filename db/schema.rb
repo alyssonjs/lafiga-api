@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_07_01_123000) do
+ActiveRecord::Schema.define(version: 2026_07_21_120100) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -99,6 +99,25 @@ ActiveRecord::Schema.define(version: 2026_07_01_123000) do
     t.index ["group_id"], name: "index_battle_maps_on_group_id"
     t.index ["user_id", "updated_at"], name: "index_battle_maps_on_user_id_and_updated_at"
     t.index ["user_id"], name: "index_battle_maps_on_user_id"
+  end
+
+  create_table "bug_reports", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.text "description", null: false
+    t.text "steps_to_reproduce"
+    t.integer "severity", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.jsonb "context", default: {}, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "kind", default: 0, null: false
+    t.index ["kind"], name: "index_bug_reports_on_kind"
+    t.index ["severity"], name: "index_bug_reports_on_severity"
+    t.index ["status"], name: "index_bug_reports_on_status"
+    t.index ["user_id", "created_at"], name: "index_bug_reports_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_bug_reports_on_user_id"
   end
 
   create_table "campaign_notes", force: :cascade do |t|
@@ -538,13 +557,15 @@ ActiveRecord::Schema.define(version: 2026_07_01_123000) do
     t.jsonb "linked_npc_character_ids", default: [], null: false
     t.jsonb "dm_temp_npc_character_ids", default: [], null: false
     t.bigint "created_by_user_id"
+    t.boolean "sandbox", default: false, null: false
     t.index ["battle_map_id"], name: "index_schedules_on_battle_map_id"
     t.index ["campaign_name"], name: "index_schedules_on_campaign_name"
-    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_active_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status <> 4))"
+    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_active_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status <> 4) AND (sandbox = false))"
     t.index ["created_by_user_id"], name: "index_schedules_on_created_by_user_id"
-    t.index ["group_id", "date_dimension_id"], name: "idx_schedules_active_per_group_date", unique: true, where: "((group_id IS NOT NULL) AND (status <> 4))"
+    t.index ["group_id", "date_dimension_id"], name: "idx_schedules_active_per_group_date", unique: true, where: "((group_id IS NOT NULL) AND (status <> 4) AND (sandbox = false))"
     t.index ["group_id"], name: "index_schedules_on_group_id"
     t.index ["highlights"], name: "index_schedules_on_highlights", using: :gin
+    t.index ["sandbox"], name: "index_schedules_on_sandbox_true", where: "(sandbox = true)"
     t.index ["status"], name: "index_schedules_on_status"
   end
 
@@ -817,6 +838,7 @@ ActiveRecord::Schema.define(version: 2026_07_01_123000) do
     t.datetime "updated_at", precision: 6, null: false
     t.jsonb "progression_settings", default: {}, null: false
     t.datetime "password_changed_at"
+    t.jsonb "ui_preferences", default: {}, null: false
     t.index ["role_id"], name: "index_users_on_role_id"
   end
 
@@ -859,6 +881,7 @@ ActiveRecord::Schema.define(version: 2026_07_01_123000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "battle_maps", "groups"
   add_foreign_key "battle_maps", "users"
+  add_foreign_key "bug_reports", "users"
   add_foreign_key "campaign_notes", "groups"
   add_foreign_key "campaign_notes", "schedules"
   add_foreign_key "campaign_notes", "users"

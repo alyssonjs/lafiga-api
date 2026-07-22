@@ -40,6 +40,30 @@ class User < ApplicationRecord
     # JSON shape: { "xp_thresholds" => { "2" => 300, "3" => 900, ... } }
     # Column added in db/migrate/20260422140000_add_progression_settings_to_users.rb
 
+    # Preferências de UI persistidas (coluna `ui_preferences`, jsonb).
+    # `combat_hotbar`: ativação, por DM, do novo hotbar de combate. Guard de
+    # coluna evita NoMethodError se o deploy adiantar o código sem o schema.
+    def self.supports_ui_preferences?
+      column_names.include?('ui_preferences')
+    end
+
+    # @return [Boolean]
+    def combat_hotbar_pref?
+      return false unless self.class.supports_ui_preferences?
+
+      ActiveModel::Type::Boolean.new.cast((ui_preferences || {})['combat_hotbar']) || false
+    end
+
+    # Grava só a chave `combat_hotbar`, preservando o resto do jsonb.
+    # @param value [Boolean, String] aceita "true"/"false"/1/0 (params HTTP).
+    def set_combat_hotbar_pref!(value)
+      return false unless self.class.supports_ui_preferences?
+
+      casted = ActiveModel::Type::Boolean.new.cast(value) || false
+      merged = (ui_preferences || {}).merge('combat_hotbar' => casted)
+      update!(ui_preferences: merged)
+    end
+
     private
 
     def mark_password_changed_at
