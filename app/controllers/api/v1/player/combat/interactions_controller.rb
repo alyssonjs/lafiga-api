@@ -129,7 +129,9 @@ module Api::V1::Player::Combat
         :character_id, :defender_skill,
         defender_roll: [:total, :formula, :advantage, :skill, :roll_group_id, :natural20, :natural1, { dice: [] }],
         attacker_roll: [:total, :formula, :advantage, :skill, :roll_group_id, :natural20, :natural1, { dice: [] }],
-        opportunity_attack: [:damage, :ignored, :hit, roll: [:total]],
+        # `damage_type`/`magical` habilitam mitigação tipada + Heavy Armor Master
+        # no dano do OA (aplicado server-side). Opcionais — ausentes → dano cheio.
+        opportunity_attack: [:damage, :ignored, :hit, :damage_type, :magical, roll: [:total]],
       ).to_h
     end
 
@@ -244,8 +246,19 @@ module Api::V1::Player::Combat
         reactor_cc = resolve_reactor_combatant(next_payload)
 
         # Dano: só quando NÃO ignorou, o Mestre confirmou ACERTO e há dano > 0.
+        # O `damage` do OA é BRUTO (o reator rola sem conhecer as defesas do
+        # mover), então mitigar aqui é correto — não há dupla mitigação. Se o
+        # cliente enviar `damage_type`/`magical`, o mover ganha resistência/
+        # imunidade/HAM; ausentes → dano cheio (compat retroativa).
         if !ignore && outcome == 'hit' && damage.positive?
-          result = ::Combat::DamageService.call(combatant: mover_cc, amount: damage, current_user: @current_user)
+          typing = oa_damage_typing(oa, respond_params['opportunity_attack'])
+          result = ::Combat::DamageService.call(
+            combatant: mover_cc,
+            amount: damage,
+            current_user: @current_user,
+            damage_type: typing[:damage_type],
+            magical: typing[:magical],
+          )
           if result.success?
             mover_cc = result.result[:combatant]
             damage_applied = true
@@ -310,6 +323,31 @@ module Api::V1::Player::Combat
       return unless log.save
 
       ::Combat::Broadcaster.log_appended(log)
+    end
+
+    # Tipo/magia do dano do OA (habilita mitigação tipada + Heavy Armor Master no
+    # mover). Prioridade: override explícito do respond → 1º rider de ataque
+    # ARMAZENADO na interação (`attacks` do PC reator; `npc_attacks` senão). OA de
+    # arma única é o caso comum → o primeiro rider tipado basta. Sem tipo em lugar
+    # algum → nil (dano cheio, compat retroativa com o front atual).
+    def oa_damage_typing(oa, respond_oa)
+      oa = {} unless oa.is_a?(Hash)
+      respond_oa = respond_oa.respond_to?(:to_h) ? respond_oa.to_h : {}
+
+      dt = respond_oa['damage_type'].presence
+      mg = respond_oa.key?('magical') ? ActiveModel::Type::Boolean.new.cast(respond_oa['magical']) : nil
+
+      unless dt
+        rider = (Array(oa['attacks']) + Array(oa['npc_attacks'])).find do |a|
+          a.is_a?(Hash) && (a['damage_type'] || a[:damage_type]).to_s.strip.present?
+        end
+        if rider
+          dt = (rider['damage_type'] || rider[:damage_type]).to_s
+          mg = ActiveModel::Type::Boolean.new.cast(rider['magical'] || rider[:magical]) if mg.nil?
+        end
+      end
+
+      { damage_type: dt, magical: !!mg }
     end
 
     # O responder do OA já respondeu? (idempotência adicional à fase).

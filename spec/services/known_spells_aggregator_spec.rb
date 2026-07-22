@@ -44,7 +44,7 @@ RSpec.describe KnownSpellsAggregator do
     end
 
     it 'em conjurador known (Ranger), metadata spell_selections substitui SheetKnownSpell defasado' do
-      ranger = create(:klass, api_index: 'ranger', name: 'Ranger Spec')
+      ranger = (Klass.find_by(api_index: 'ranger') || create(:klass, api_index: 'ranger', name: 'Ranger Spec'))
       sp_old = create(:spell, level: 1, name: 'Old KSA', api_index: "ksa_old_#{SecureRandom.hex(3)}")
       sp_new = create(:spell, level: 1, name: 'New KSA', api_index: "ksa_new_#{SecureRandom.hex(3)}")
       sheet = create(:sheet, metadata: {
@@ -65,7 +65,7 @@ RSpec.describe KnownSpellsAggregator do
     end
 
     it 'conjurador known com spell_selections mantém SheetKnownSpell de raça (ex.: tiefling + bruxo)' do
-      warlock = create(:klass, api_index: 'warlock', name: 'Bruxo Spec Merge')
+      warlock = (Klass.find_by(api_index: 'warlock') || create(:klass, api_index: 'warlock', name: 'Bruxo Spec Merge'))
       sp_class = create(:spell, level: 0, name: 'Eldritch Merge Spec', api_index: "kmerge_eld_#{SecureRandom.hex(3)}")
       sp_race = create(:spell, level: 0, name: 'Taumaturgia Merge Spec', api_index: "kmerge_th_#{SecureRandom.hex(3)}")
       sheet = create(:sheet, metadata: {
@@ -87,7 +87,7 @@ RSpec.describe KnownSpellsAggregator do
     end
 
     it 'com spell_selections vazio, nao reidrata spells de per_level para known caster' do
-      ranger = create(:klass, api_index: 'ranger', name: 'Ranger Spec 2')
+      ranger = (Klass.find_by(api_index: 'ranger') || create(:klass, api_index: 'ranger', name: 'Ranger Spec 2'))
       sp_per = create(:spell, level: 1, name: 'Per Only', api_index: "ksa_per_#{SecureRandom.hex(3)}")
       sheet = create(:sheet, metadata: {
         'class_choices' => { 'per_level' => { '2' => { 'spells' => [{ 'name' => sp_per.name, 'level' => 1 }] } } },
@@ -105,7 +105,7 @@ RSpec.describe KnownSpellsAggregator do
     end
 
     it 'inclui Arcano Místico (spell id só em metadata) em catalog_by_id sem SheetKnownSpell' do
-      warlock = create(:klass, api_index: 'warlock', name: 'Bruxo Arcanum Spec')
+      warlock = (Klass.find_by(api_index: 'warlock') || create(:klass, api_index: 'warlock', name: 'Bruxo Arcanum Spec'))
       sp_ma = create(:spell, level: 6, name: 'Sugestão em Massa Spec', api_index: "ma_#{SecureRandom.hex(3)}")
       sheet = create(:sheet, metadata: {
         'spell_selections' => {

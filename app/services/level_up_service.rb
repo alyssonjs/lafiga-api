@@ -8,12 +8,18 @@ class LevelUpService
   # - levels: quantos níveis subir (default 1)
   # - sub_klass_id: definir subclasse (opcional; respeita o threshold)
   # - hp_rolls: array/num para HP ganho (opcional). Se ausente, usa média fixa (round up).
-  def initialize(sheet_id:, klass_id:, levels: 1, sub_klass_id: nil, hp_rolls: nil)
+  # - allow_auto_fill: quando true, completa a cota de magias conhecidas
+  #   com magias da lista de classe (DETERMINÍSTICO, nunca aleatório) se o
+  #   jogador não escolheu o suficiente. Fluxo INTERATIVO (criação/progressão via
+  #   sheet_klasses_controller) usa `false` (default): o jogador escolhe e o guard
+  #   bloqueia se faltar — sem sorteio. Import/gerador aleatório passam `true`.
+  def initialize(sheet_id:, klass_id:, levels: 1, sub_klass_id: nil, hp_rolls: nil, allow_auto_fill: false)
     @sheet = Sheet.find(sheet_id)
     @klass = Klass.find(klass_id)
     @levels = levels.to_i
     @sub_klass_id = sub_klass_id
     @hp_rolls = hp_rolls
+    @allow_auto_fill = allow_auto_fill
   end
 
   # Pré-materializa truques/magias conhecidas exigidas em Spellcasting@L1 antes do
@@ -28,7 +34,8 @@ class LevelUpService
     sk = sheet.sheet_klasses.find_by(klass_id: klass.id)
     return unless sk
 
-    inst = new(sheet_id: sheet.id, klass_id: klass.id, levels: 1)
+    # Seed é chamado só pelo provisionamento (import) — habilita o fallback.
+    inst = new(sheet_id: sheet.id, klass_id: klass.id, levels: 1, allow_auto_fill: true)
     inst.send(:persist_known_spells!, sk, from_level: 1, to_level: 1)
   end
 
@@ -331,53 +338,61 @@ class LevelUpService
       class_spell_ids = SpellSource.where(source_type: 'Klass', source_id: @klass.id).pluck(:spell_id)
       pool = Spell.where(id: class_spell_ids)
 
-      # Cantrips
-      if limits[:cantrips]
-        need = [limits[:cantrips].to_i - counts[:cantrips].to_i, 0].max
-        if need > 0
-          cands = pool.where(level: 0).where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id)).to_a
-          cands.sample(need).each do |sp|
-            SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sp.id)
-            counts[:cantrips] += 1
-          end
-        end
-      end
-
-      # Spells > 0 respeitando gate de nível
-      if limits[:spells]
-        need = [limits[:spells].to_i - counts[:spells].to_i, 0].max
-        if need > 0
-          gate_level = SpellRules.gate_for(@sheet, @klass)
-          cands = pool.where('level > 0 AND level <= ?', gate_level)
-                       .where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id))
-                       .to_a
-          cands.sample(need).each do |sp|
-            SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sp.id)
-            counts[:spells] += 1
-          end
-        end
-      end
-
-      # Wizard spellbook progression: learn fixed number of spells per level
-      begin
-        if @klass.api_index == 'wizard'
-          rule = ClassRules.find(@klass.api_index) || {}
-          learn = rule.dig(:feature_rules, :spellbook_progression, :learn_on_level_up).to_i
-          if learn > 0
-            # Candidates: class list up to the gate for this level, excluding already known
-            gate_level = SpellRules.gate_for(@sheet, @klass)
-            candidates = pool.where('level > 0 AND level <= ?', gate_level)
-                              .where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id))
-                              .to_a
-            # If ClassLevel also defined a known limit for this level and we already auto-filled above,
-            # we still top-up with the spellbook progression for Wizards.
-            candidates.sample(learn).each do |sp|
+      # Fallback de cota de magias conhecidas — SÓ no modo auto-fill (import/
+      # gerador) e DETERMINÍSTICO (nunca `sample`). No fluxo INTERATIVO
+      # (@allow_auto_fill == false) nada é sorteado: o jogador escolhe e o
+      # guard bloqueia se faltar.
+      if @allow_auto_fill
+        # Cantrips até a cota
+        if limits[:cantrips]
+          need = [limits[:cantrips].to_i - counts[:cantrips].to_i, 0].max
+          if need > 0
+            cands = pool.where(level: 0)
+                        .where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id))
+                        .order(:id).to_a
+            cands.first(need).each do |sp|
               SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sp.id)
+              counts[:cantrips] += 1
             end
           end
         end
-      rescue => _e
-        # best-effort only; do not fail level up on wizard spellbook errors
+
+        # Magias > 0 até a cota, respeitando o gate de nível
+        if limits[:spells]
+          need = [limits[:spells].to_i - counts[:spells].to_i, 0].max
+          if need > 0
+            gate_level = SpellRules.gate_for(@sheet, @klass)
+            cands = pool.where('level > 0 AND level <= ?', gate_level)
+                        .where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id))
+                        .order(:level, :id).to_a
+            cands.first(need).each do |sp|
+              SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sp.id)
+              counts[:spells] += 1
+            end
+          end
+        end
+
+        # Progressão de grimório do Mago: aprende N magias por nível, DESCONTANDO
+        # o que o jogador já escolheu neste nível (row['spells']). Determinístico.
+        begin
+          if @klass.api_index == 'wizard'
+            rule = ClassRules.find(@klass.api_index) || {}
+            learn = rule.dig(:feature_rules, :spellbook_progression, :learn_on_level_up).to_i
+            picked_here = Array(row['spells']).size
+            wneed = [learn - picked_here, 0].max
+            if wneed > 0
+              gate_level = SpellRules.gate_for(@sheet, @klass)
+              candidates = pool.where('level > 0 AND level <= ?', gate_level)
+                               .where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id))
+                               .order(:level, :id).to_a
+              candidates.first(wneed).each do |sp|
+                SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sp.id)
+              end
+            end
+          end
+        rescue => _e
+          # best-effort only; do not fail level up on wizard spellbook errors
+        end
       end
     end
 
@@ -391,8 +406,73 @@ class LevelUpService
       @sheet.update_column(:metadata, meta_to_save)
       Rails.logger.info "LevelUpService: auto-healed spell entries em metadata sheet=#{@sheet.id} sk=#{sk.id}"
     end
+
+    # Fix magias-fantasma: espelha os SheetKnownSpell (escolhas + auto-fill) de
+    # volta em metadata.spell_selections, para a progressão mostrar o MESMO que a
+    # ficha (sem magias invisíveis) e o jogador poder vê-las/trocá-las.
+    mirror_known_spells_into_selections!(sk)
   rescue => e
     Rails.logger.warn("Known spells persist skipped: #{e.message}")
+  end
+
+  # Sync REVERSO known → metadata.spell_selections. Complementa o
+  # progression_edit_service#sync_sheet_known_spells_from_spell_selections!
+  # (que vai selections → known ao editar no wizard): aqui, após o auto-fill do
+  # provisionamento/level-up criar SheetKnownSpell, refletimos essas magias nas
+  # seleções para que NÃO fiquem "fantasma" (na ficha, mas fora da progressão).
+  # Mesma regra de classe do sync direto: 'known'/'spellbook' só para conjuradores
+  # com lista de conhecidas (bardo/feiticeiro/patrulheiro/bruxo) e Mago; prepared
+  # não-mago (clérigo/druida/paladino) prepara da lista toda — para esses só
+  # espelhamos 'cantrips' (que são escolhidos). União idempotente (não duplica).
+  def mirror_known_spells_into_selections!(sk)
+    k = sk.klass
+    return unless k
+
+    known = SheetKnownSpell.where(sheet_klass_id: sk.id).includes(:spell).to_a
+    return if known.empty?
+
+    rules = k.api_index.present? ? (ClassRules.find(k.api_index) || {}) : {}
+    prep = (rules.dig(:feature_rules, :spellcasting, :mode) ||
+            rules.dig(:spellcasting, :preparation)).to_s
+    is_wizard = k.api_index.to_s == 'wizard'
+
+    meta = (@sheet.metadata || {}).deep_stringify_keys
+    sel = (meta['spell_selections'] ||= {})
+    resolver = SpellResolver.new
+    resolve_id = lambda do |tok|
+      id = selection_token_id(tok)
+      next id if id
+
+      (resolver.resolve(tok)&.id rescue nil)
+    end
+    add_to_bucket = lambda do |bucket, spell_ids|
+      existing = Array(sel[bucket])
+      have = existing.map { |t| resolve_id.call(t) }.compact.to_set
+      fresh = spell_ids.reject { |sid| have.include?(sid) }.map(&:to_s)
+      sel[bucket] = existing + fresh unless fresh.empty?
+    end
+
+    cantrip_ids = known.select { |r| r.spell&.level.to_i.zero? }.map(&:spell_id)
+    leveled_ids = known.reject { |r| r.spell&.level.to_i.zero? }.map(&:spell_id)
+
+    add_to_bucket.call('cantrips', cantrip_ids)
+    unless prep == 'prepared' && !is_wizard
+      add_to_bucket.call('known', leveled_ids)
+      add_to_bucket.call('spellbook', leveled_ids) if is_wizard
+    end
+
+    @sheet.update_column(:metadata, meta)
+    @sheet.reload
+  rescue StandardError => e
+    Rails.logger.warn("mirror_known_spells_into_selections! skipped: #{e.message}")
+  end
+
+  def selection_token_id(tok)
+    case tok
+    when Integer then tok
+    when String then (tok =~ /\A\d+\z/ ? tok.to_i : nil)
+    when Hash then (tok['id'] || tok[:id]).to_i.nonzero?
+    end
   end
 
   # Best-effort auto-pick para evitar bloqueios triviais quando metadados existem mas escolhas faltam
@@ -440,8 +520,10 @@ class LevelUpService
                     end
           # Só preenchemos root quando per_level['1'] também estiver vazio — evita criar
           # discrepância entre per_level['1'].skills e class_choices.skills_selected.
+          # Auto-fill de perícias DETERMINÍSTICO (nunca sorteia). Roda como fallback
+          # quando o wizard não gravou perícias no per_level['1'].
           if per_lvl1_skills.blank?
-            meta['class_choices']['skills_selected'] = options.sample(need_sk)
+            meta['class_choices']['skills_selected'] = Array(options).first(need_sk)
           end
         end
       end
@@ -450,7 +532,7 @@ class LevelUpService
         pick_src = (meta['class_choices']['instruments_selected'] || meta['class_choices']['instruments'] || [])
         arr = Array(pick_src).map { |x| x.is_a?(Hash) ? (x['name'] || x[:name]) : x }.compact
         if arr.size < inst_need
-          meta['class_choices']['instruments_selected'] = ClassRules.dictionaries[:instruments].sample(inst_need)
+          meta['class_choices']['instruments_selected'] = Array(ClassRules.dictionaries[:instruments]).first(inst_need)
         end
       end
     end
@@ -467,11 +549,14 @@ class LevelUpService
         Rails.logger.warn(
           "[autochoice-levelup] would-have-filled key=#{key} klass=#{@klass.api_index} level=#{current_level} strict=#{strict}"
         )
-        next if strict
+        # Sorteio de features (fighting_style/metamagic/invocations/pact_boon) só no
+        # fallback de import/gerador (allow_auto_fill) e DETERMINÍSTICO. Interativo
+        # não preenche — o guard força a escolha (mesma regra das magias).
+        next if strict || !@allow_auto_fill
 
         options = conf[:options]
         list = resolve_choice_options_for_autofill(options)
-        row[key.to_s] = list.sample(count)
+        row[key.to_s] = Array(list).first(count)
         # propaga top-level fighting_style para compatibilidade
         if key.to_s == 'fighting_style' && meta['class_choices']['fighting_style'].blank?
           meta['class_choices']['fighting_style'] = row[key.to_s]
@@ -479,17 +564,20 @@ class LevelUpService
       end
     end
 
-    # 3) Magias/cantrips mínimos exigidos no nível atual (classes de known)
+    # 3) Cota mínima de cantrips/magias conhecidas — SÓ no modo auto-fill
+    #    (import/gerador) e DETERMINÍSTICO. Interativo não sorteia (guard bloqueia).
     sc = SpellRules.sc_for(@klass, current_level)
-    if sc
+    if @allow_auto_fill && sc
       # cantrips
       can_need = sc.cantrips_known.to_i
       if can_need > 0
         have = SheetKnownSpell.where(sheet_klass_id: sk.id).joins(:spell).where('spells.level = 0').count
         if have < can_need
           class_spell_ids = SpellSource.where(source_type: 'Klass', source_id: @klass.id).pluck(:spell_id)
-          cands = Spell.where(id: class_spell_ids, level: 0).where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id)).to_a
-          cands.sample(can_need - have).each do |sp|
+          cands = Spell.where(id: class_spell_ids, level: 0)
+                       .where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id))
+                       .order(:id).to_a
+          cands.first(can_need - have).each do |sp|
             SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sp.id)
           end
         end
@@ -504,8 +592,8 @@ class LevelUpService
           pool = Spell.where(id: class_spell_ids)
                       .where('level > 0 AND level <= ?', gate_level)
                       .where.not(id: SheetKnownSpell.where(sheet_klass_id: sk.id).select(:spell_id))
-                      .to_a
-          pool.sample(need - have).each do |sp|
+                      .order(:level, :id).to_a
+          pool.first(need - have).each do |sp|
             SheetKnownSpell.find_or_create_by!(sheet_klass_id: sk.id, spell_id: sp.id)
           end
         end
@@ -513,6 +601,10 @@ class LevelUpService
     end
 
     @sheet.update!(metadata: meta)
+
+    # Fix magias-fantasma: reflete o que o auto-fill acima criou (SheetKnownSpell)
+    # nas seleções, antes do guard, para ficha e progressão baterem.
+    mirror_known_spells_into_selections!(sk)
   rescue => e
     Rails.logger.debug("ensure_level_requirements! skipped: #{e.message}")
   end

@@ -496,7 +496,8 @@ class CharacterProvisioningService
             klass_id: k.id,
             levels: delta,
             sub_klass_id: subclass_id,
-            hp_rolls: (hp_rolls.size == delta ? hp_rolls : nil)
+            hp_rolls: (hp_rolls.size == delta ? hp_rolls : nil),
+            allow_auto_fill: true # import: completa a cota (determinístico) p/ passar o guard
           )
           unless lu_result&.success?
             msg = lu_result&.errors&.full_messages&.join('; ') || 'LevelUpService falhou'

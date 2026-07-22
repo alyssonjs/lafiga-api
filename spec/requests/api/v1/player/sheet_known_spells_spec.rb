@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe 'Api::V1::Player::SheetKnownSpellsController', type: :request do
   let(:user) { create(:user) }
   let(:headers) { bearer_headers_for(user).merge('Content-Type' => 'application/json') }
-  let(:wizard) { create(:klass, api_index: 'wizard', name: 'Mago Spec') }
+  let(:wizard) { (Klass.find_by(api_index: 'wizard') || create(:klass, api_index: 'wizard', name: 'Mago Spec')) }
   let(:character) { create(:character, user: user) }
   let!(:sheet) { create(:sheet, character: character) }
   let!(:sk) { create(:sheet_klass, sheet: sheet, klass: wizard, level: 5) }

@@ -217,6 +217,19 @@ RSpec.describe 'Wizard → Ficha (Phase 3.1 HTTP roundtrip)', type: :request do
           h[lv.to_s] = { 'hp' => { 'dieResult' => die, 'total' => die + 2, 'method' => 'fixed' } }
         end
         rows['1']['skills'] = %w[Atletismo Intimidação]
+        # Escolhas obrigatórias por nível (fighting_style do Paladino no L2) — o
+        # LevelUpGuard em modo estrito (RSpec) bloqueia o provision sem elas.
+        (ClassRules.find(conf[:rule])&.dig(:required_choices_at_level) || {}).each do |lv, rc|
+          next if lv.to_i > target_lv
+
+          row = (rows[lv.to_s] ||= {})
+          rc.each do |key, c|
+            cnt = c[:choose].to_i
+            next if cnt <= 0 || row.key?(key.to_s) || !c[:options].is_a?(Array)
+
+            row[key.to_s] = c[:options].first(cnt)
+          end
+        end
 
         payload = {
           character: { name: "RSpec #{label} #{SecureRandom.hex(3)}", background: bg.name },

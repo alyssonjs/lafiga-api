@@ -33,12 +33,19 @@ class Api::V1::Player::GroupsController < ApplicationController
     end
   end
 
+  # DM (papel global do site) edita o grupo inteiro. Um MEMBRO da campanha
+  # (dono de algum personagem vinculado ao grupo — ver Group#member?) pode
+  # editar APENAS descrição e capa; nome, estação, dia e ano continuam
+  # exclusivos do mestre. A separação é imposta pelos strong parameters
+  # (member_group_params) — não confie no cliente para restringir campos.
   def update
-    unless Group.user_is_dm?(@current_user)
-      return render json: { error: 'Apenas o mestre pode criar, editar ou remover grupos.' }, status: :forbidden
+    is_dm = Group.user_is_dm?(@current_user)
+    is_member = @group.member?(@current_user)
+    unless is_dm || is_member
+      return render json: { error: 'Apenas o mestre ou um membro do grupo pode editar o grupo.' }, status: :forbidden
     end
 
-    if @group.update(group_params)
+    if @group.update(is_dm ? group_params : member_group_params)
       render json: { group: GroupSerializer.serialize(@group) }, status: 200
     else
       render json: { errors: @group.errors.full_messages }, status: :unprocessable_entity
@@ -150,5 +157,12 @@ class Api::V1::Player::GroupsController < ApplicationController
     # via ActiveStorage. Quando enviado, o serializer responde com a URL
     # gerada pelo blob (substituindo eventual `cover_image_url` legado).
     params.require(:group).permit(:name, :season, :day, :year, :description, :cover_image_url, :cover_image)
+  end
+
+  # Subconjunto que um MEMBRO (não-DM) pode alterar: apenas descrição e capa
+  # (arquivo via ActiveStorage ou URL externa legada). Nome/estação/dia/ano
+  # ficam de fora — o calendário e o nome da campanha são do mestre.
+  def member_group_params
+    params.require(:group).permit(:description, :cover_image_url, :cover_image)
   end
 end

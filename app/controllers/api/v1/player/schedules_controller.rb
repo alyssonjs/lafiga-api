@@ -149,6 +149,15 @@ class Api::V1::Player::SchedulesController < ApplicationController
        !(Group.user_is_dm?(@current_user) || @schedule.group&.owned_by?(@current_user))
       attrs.delete('dm_temp_npc_character_ids')
     end
+    unless Schedule.supports_combat_groups?
+      attrs.delete('combat_groups')
+    end
+    # Grupos de combate: só o DM da mesa / mestre da plataforma edita (espelha
+    # dm_temp_npc — controle mental e atribuição de lado são DM-authoritative).
+    if attrs.key?('combat_groups') &&
+       !(Group.user_is_dm?(@current_user) || @schedule.group&.owned_by?(@current_user))
+      attrs.delete('combat_groups')
+    end
 
     if attrs.key?('group_id')
       new_gid = attrs['group_id']
@@ -280,6 +289,14 @@ class Api::V1::Player::SchedulesController < ApplicationController
 
     if permitted.key?(:highlights)
       permitted[:highlights] = normalize_highlight_param(permitted[:highlights])
+    end
+
+    # `combat_groups` é um objeto jsonb aninhado (groups[] + members[] de hashes).
+    # `permit` não modela array-de-hash arbitrário sem enumerar chaves; puxamos o
+    # conteúdo cru (allowlist da estrutura fica no model `combat_groups_normalized`).
+    raw_groups = params.dig(:schedule, :combat_groups)
+    if raw_groups.present?
+      permitted[:combat_groups] = raw_groups.respond_to?(:to_unsafe_h) ? raw_groups.to_unsafe_h : raw_groups
     end
 
     permitted

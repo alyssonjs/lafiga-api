@@ -15,9 +15,12 @@ module Combat
   # (pós-modifiers), não o bruto — corrigido na Fase 6A.
   #
   # Fontes de modifiers:
-  #   - PC (Character): `sheet.metadata['resistances'/...]` (também aceita
-  #     summary[:modifiers] no futuro). Pode haver predicate
-  #     `wearing_heavy_armor` para HAM.
+  #   - PC (Character): `sheet.metadata['resistances'/...]` como OVERRIDE manual,
+  #     UNIDO às defesas derivadas do `CharacterSheetSummaryService`
+  #     (`summary[:modifiers][:resistances/damage_immunities/damage_vulnerabilities]`
+  #     + `equipment.ac.armor_category` p/ `wearing_heavy_armor` +
+  #     `damage_reduction_nonmagical_bps` p/ o HAM). O summary só é consultado
+  #     quando há `damage_type` (sem tipo nenhuma mitigação se aplica).
   #   - NPC (CombatNpc): `combatable.resistances/immunities/vulnerabilities`
   #     (Fase 6E adiciona essas colunas; antes disso, vazio).
   class DamageService
@@ -137,13 +140,60 @@ module Combat
           {}
         end
 
-      {
+      mods = {
         resistances: Array(meta_source['resistances']).map { |r| normalize_damage_type(r) }.compact,
         immunities:  Array(meta_source['damage_immunities']).map { |r| normalize_damage_type(r) }.compact,
         vulnerabilities: Array(meta_source['damage_vulnerabilities']).map { |r| normalize_damage_type(r) }.compact,
         wearing_heavy_armor: !!meta_source['wearing_heavy_armor'],
-        feats: Array(meta_source['feats']).select { |f| f.is_a?(Hash) }
+        feats: Array(meta_source['feats']).select { |f| f.is_a?(Hash) },
+        ham_flat_reduction: 0,
       }
+
+      # Enriquecimento via summary — fonte única das defesas DERIVADAS de um PC
+      # (resistências/imunidades de subclasse + itens equipados) e do estado de
+      # ARMADURA (para o HAM). O `sheet.metadata` sozinho não materializa isso em
+      # prod (só `metadata['feats']` é backfilled), então sem este passo o
+      # DamageService nunca vê resistência de subclasse nem armadura pesada.
+      #
+      # Guard: só consultamos o summary quando HÁ `damage_type`. Sem tipo,
+      # `decide_damage_modifier` → :normal e `compute_flat_reduction` → 0 (nil
+      # não é físico), ou seja nenhuma mitigação se aplica — evitamos o custo do
+      # summary no caminho comum (todos os callers atuais chamam SEM tipo).
+      merge_summary_modifiers!(mods, target) if @damage_type.present?
+
+      mods
+    end
+
+    # Une ao `mods` as defesas derivadas + estado de armadura do PC vindos do
+    # CharacterSheetSummaryService. Best-effort: em qualquer erro, mantém apenas
+    # o que veio de `sheet.metadata` (override/fallback conservador).
+    #
+    # - resistances/immunities/vulnerabilities: UNIÃO (metadata ∪ summary), pois
+    #   ambos são válidos (metadata = override manual do Mestre; summary = regra).
+    # - wearing_heavy_armor: metadata OU (armor_category == 'heavy').
+    # - ham_flat_reduction: valor de `damage_reduction_nonmagical_bps` (encapsula
+    #   presença do feat + valor 3). Usado com prioridade em compute_flat_reduction.
+    def merge_summary_modifiers!(mods, target)
+      sheet = target.respond_to?(:sheet) ? target.sheet : nil
+      return unless sheet&.id
+
+      cmd = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false)
+      return unless cmd&.success?
+
+      summary = cmd.result || {}
+      m = summary[:modifiers] || {}
+
+      mods[:resistances]     |= Array(m[:resistances]).map { |r| normalize_damage_type(r) }.compact
+      mods[:immunities]      |= Array(m[:damage_immunities]).map { |r| normalize_damage_type(r) }.compact
+      mods[:vulnerabilities] |= Array(m[:damage_vulnerabilities]).map { |r| normalize_damage_type(r) }.compact
+
+      armor_cat = summary.dig(:equipment, :ac, :armor_category).to_s.downcase
+      mods[:wearing_heavy_armor] ||= (armor_cat == 'heavy')
+
+      mods[:ham_flat_reduction] = m[:damage_reduction_nonmagical_bps].to_i
+    rescue StandardError => e
+      Rails.logger.warn("DamageService: enriquecimento via summary falhou: #{e.class}: #{e.message}") if defined?(Rails)
+      nil
     end
 
     def decide_damage_modifier(mods)
@@ -170,6 +220,12 @@ module Combat
       return 0 unless mods[:wearing_heavy_armor]
       return 0 if @magical
       return 0 unless PHYSICAL_DAMAGE_TYPES.include?(@damage_type.to_s)
+
+      # Preferir o valor derivado do summary (encapsula presença do feat + valor).
+      # Fallback: detecção do feat direto em metadata['feats'] (compat com specs
+      # e com fichas cujo summary não pôde ser construído).
+      from_summary = mods[:ham_flat_reduction].to_i
+      return from_summary if from_summary.positive?
 
       ham = mods[:feats].any? { |f| (f['feat_id'] || f[:feat_id]).to_s == 'maestria_em_armadura_pesada' }
       ham ? 3 : 0

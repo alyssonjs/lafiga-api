@@ -114,9 +114,18 @@ module Api::V1::Player::Combat
       end
     end
 
-    # Body: { amount: 7 }
+    # Body: { amount: 7, damage_type?: 'cortante', magical?: false, attack_kind?: 'normal'|'critical' }
+    # `damage_type`/`magical` habilitam a mitigação tipada + Heavy Armor Master no
+    # DamageService. Ausentes → dano cheio (:normal), compat retroativa.
     def apply_damage
-      result = ::Combat::DamageService.call(combatant: @combatant, amount: params[:amount], current_user: @current_user)
+      result = ::Combat::DamageService.call(
+        combatant: @combatant,
+        amount: params[:amount],
+        current_user: @current_user,
+        damage_type: params[:damage_type].presence,
+        magical: ActiveModel::Type::Boolean.new.cast(params[:magical]),
+        attack_kind: params[:attack_kind].presence || 'normal',
+      )
       if result.success?
         payload = result.result
         ::Combat::Broadcaster.combatant_upserted(payload[:combatant])

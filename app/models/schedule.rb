@@ -29,6 +29,8 @@ class Schedule < ApplicationRecord
 
   LINKED_NPC_CHARACTER_IDS_COL = 'linked_npc_character_ids'.freeze
   DM_TEMP_NPC_CHARACTER_IDS_COL = 'dm_temp_npc_character_ids'.freeze
+  COMBAT_GROUPS_COL = 'combat_groups'.freeze
+  COMBAT_GROUP_MEMBER_TYPES = %w[character combat_npc].freeze
 
   # Coluna JSONB opcional até `db:migrate`; evita NoMethodError se o deploy
   # adiantar o código sem o schema.
@@ -52,6 +54,47 @@ class Schedule < ApplicationRecord
     return [] unless self.class.supports_dm_temp_npc_character_ids?
 
     Array(dm_temp_npc_character_ids).map(&:to_i).reject(&:zero?).uniq
+  end
+
+  def self.supports_combat_groups?
+    attribute_names.include?(COMBAT_GROUPS_COL)
+  end
+
+  # Normaliza o jsonb `combat_groups` para o shape que o front consome (chaves
+  # camelCase preservadas, pois é um blob opaco). Descarta grupos/membros mal
+  # formados. Membership por id ESTÁVEL: memberType 'character' → Character.id;
+  # 'combat_npc' → CombatNpc.id. Sem coluna/dado → objeto vazio.
+  # @return [Hash{'groups'=>Array, 'members'=>Array}]
+  def combat_groups_normalized
+    return { 'groups' => [], 'members' => [] } unless self.class.supports_combat_groups?
+
+    raw = combat_groups.is_a?(Hash) ? combat_groups.deep_stringify_keys : {}
+
+    groups = Array(raw['groups']).filter_map do |g|
+      next unless g.is_a?(Hash)
+      h = g.stringify_keys
+      id = h['id'].to_s.strip
+      next if id.empty?
+      { 'id' => id, 'name' => h['name'].to_s, 'color' => h['color'].to_s }
+    end
+    valid_group_ids = groups.map { |g| g['id'] }.to_set
+
+    members = Array(raw['members']).filter_map do |m|
+      next unless m.is_a?(Hash)
+      h = m.stringify_keys
+      group_id = h['groupId'].to_s.strip
+      member_id = h['memberId'].to_s.strip
+      member_type = h['memberType'].to_s.strip
+      next if group_id.empty? || member_id.empty?
+      next unless valid_group_ids.include?(group_id)
+      next unless COMBAT_GROUP_MEMBER_TYPES.include?(member_type)
+      row = { 'groupId' => group_id, 'memberType' => member_type, 'memberId' => member_id }
+      prev = h['prevGroupId'].to_s.strip
+      row['prevGroupId'] = prev unless prev.empty?
+      row
+    end
+
+    { 'groups' => groups, 'members' => members }
   end
 
   validates :status, :date_dimension_id, :title, presence: true

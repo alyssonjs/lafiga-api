@@ -333,6 +333,19 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
           expect(log.message).to include('7 de dano')
         end
 
+        it 'mitiga por tipo — mover imune ao damage_type do rider (cortante) sofre 0' do
+          # O rider armazenado na interação é `attacks: [{ damage_type: 'cortante' }]`.
+          # O DamageService (server-side) lê esse tipo → mover imune a cortante = 0.
+          create(:sheet, character: attacker_char, hp_current: 20, hp_max: 20,
+                 metadata: { 'damage_immunities' => ['cortante'] })
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: reactor_npc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 18 }, damage: 7, hit: true } },
+               headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok)
+          expect(mover_cc.reload.hp_current).to eq(20) # imune → 0 dano
+        end
+
         it 'hit:false (Mestre marca ERRO) → miss; active_interaction limpa; HP não cai; log ERROU; reação consumida — independe da CA' do
           # roll ALTO de propósito (18 >= CA 15): mesmo assim o Mestre errou.
           post "#{base}/active_interaction/respond",

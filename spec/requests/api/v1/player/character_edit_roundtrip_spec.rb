@@ -48,7 +48,39 @@ RSpec.describe 'Player::Characters edit roundtrip — Phase 5', type: :request d
       rows[subclass_at.to_s] ||= {}
       rows[subclass_at.to_s]['subclass'] = sub_id
     end
+    # Preenche escolhas obrigatórias por nível (fighting_style do Paladino no L2
+    # etc.) como o FE faz. Sem isso, o LevelUpGuard em modo estrito (RSpec) bloqueia
+    # o provision com "Falta escolher <choice> no nível N".
+    fill_required_choices!(klass, rows, target_lv)
     rows
+  end
+
+  # 1ª opção válida das required_choices_at_level da classe (fighting_style,
+  # metamagic, invocations, pact_boon). Options pode ser Array (fighting_style)
+  # ou Symbol (resolvido pelo mesmo helper do LevelUpService).
+  def fill_required_choices!(klass, rows, target_lv)
+    rule = ClassRules.find(klass.api_index) || {}
+    (rule[:required_choices_at_level] || {}).each do |lv, conf|
+      next if lv.to_i > target_lv
+
+      row = (rows[lv.to_s] ||= {})
+      conf.each do |key, c|
+        count = c[:choose].to_i
+        next if count <= 0 || row.key?(key.to_s)
+
+        opts =
+          if c[:options].is_a?(Array)
+            c[:options]
+          else
+            begin
+              LevelUpService.allocate.send(:resolve_choice_options_for_autofill, c[:options])
+            rescue StandardError
+              []
+            end
+          end
+        row[key.to_s] = Array(opts).first(count) if opts.present?
+      end
+    end
   end
 
   def build_payload(klass:, sub_id: nil, level: 1, character_id: nil, name: nil)

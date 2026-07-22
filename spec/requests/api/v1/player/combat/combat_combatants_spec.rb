@@ -310,6 +310,16 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
            params: { amount: 5 }, headers: player_headers, as: :json
       expect(response).to have_http_status(:forbidden)
     end
+
+    it 'honra damage_type — alvo imune sofre 0 (mitigação tipada fiada no endpoint)' do
+      create(:sheet, character: player_character, hp_current: 20, hp_max: 20,
+             metadata: { 'damage_immunities' => ['fogo'] })
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/apply_damage",
+           params: { amount: 12, damage_type: 'fogo' }, headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['damage_applied']).to eq(0)
+    end
   end
 
   describe 'POST heal' do

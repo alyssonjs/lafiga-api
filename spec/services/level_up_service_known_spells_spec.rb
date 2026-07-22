@@ -93,6 +93,29 @@ RSpec.describe LevelUpService, "persist_known_spells! via metadata per_level" do
       expect(cantrips).to be >= sc.cantrips_known.to_i
       expect(leveled).to be >= sc.spells_known.to_i
     end
+
+    it 'com allow_auto_fill: false (interativo) NÃO sorteia magias sem picks' do
+      warlock = Klass.find_by(api_index: 'warlock')
+      skip 'Klass warlock ausente' unless warlock
+
+      sc = SpellRules.sc_for(warlock, 1)
+      skip 'spellcasting L1 ausente' unless sc && sc.spells_known.to_i.positive?
+
+      character = Character.create!(user: user, name: "WL nofill #{SecureRandom.hex(2)}", background: 'Test')
+      sheet = Sheet.create!(
+        character: character, race_id: race.id,
+        str: 10, dex: 10, con: 12, int: 10, wis: 10, cha: 16, hp_max: 10, hp_current: 10,
+        metadata: { 'class_choices' => { 'per_level' => { '1' => { 'skills' => %w[Arcanismo Enganação] } } } }
+      )
+      sk = SheetKlass.create!(sheet: sheet, klass: warlock, level: 1)
+
+      # Fluxo interativo: sem picks e com auto-fill OFF → guard bloquearia, e aqui
+      # persist_known_spells! não cria NENHUMA magia (nunca sorteia).
+      svc = LevelUpService.new(sheet_id: sheet.id, klass_id: warlock.id, levels: 1, allow_auto_fill: false)
+      svc.send(:persist_known_spells!, sk, from_level: 1, to_level: 1)
+
+      expect(SheetKnownSpell.where(sheet_klass_id: sk.id).count).to eq(0)
+    end
   end
 
   describe 'auto-heal de string crua / typo via SpellResolver' do
@@ -167,6 +190,51 @@ RSpec.describe LevelUpService, "persist_known_spells! via metadata per_level" do
 
       service = LevelUpService.new(sheet_id: sheet.id, klass_id: klass.id, levels: 1)
       service.send(:persist_known_spells!, sk, from_level: 2, to_level: 2)
+    end
+  end
+
+  describe '#mirror_known_spells_into_selections! (fix magias-fantasma)' do
+    let(:role) { Role.find_or_create_by!(name: 'player') }
+    let(:user) do
+      User.create!(
+        email: "lu_mir_#{SecureRandom.hex(4)}@example.com",
+        username: "lumir#{SecureRandom.hex(4)}",
+        password: 'password1', password_confirmation: 'password1',
+        role_id: role.id
+      )
+    end
+    let(:race) { Race.create!(name: 'Spec Race', api_index: "spec_race_#{SecureRandom.hex(4)}") }
+    let(:wizard) do
+      Klass.find_by(api_index: 'wizard') ||
+        Klass.create!(name: 'Mago Spec', api_index: 'wizard', hit_die: 6, subclass_level: 2)
+    end
+
+    it 'reflete SheetKnownSpell (auto-fill) em spell_selections e é idempotente' do
+      cantrip = FactoryBot.create(:spell, level: 0, name: "Mir Cantrip #{SecureRandom.hex(2)}", api_index: "mirc_#{SecureRandom.hex(4)}")
+      leveled = FactoryBot.create(:spell, level: 2, name: "Mir Spell #{SecureRandom.hex(2)}", api_index: "mirs_#{SecureRandom.hex(4)}")
+
+      character = Character.create!(user: user, name: 'Mir PC', background: 'Test')
+      sheet = Sheet.create!(
+        character: character, race_id: race.id,
+        str: 10, dex: 10, con: 10, int: 16, wis: 10, cha: 10, hp_max: 8, hp_current: 8,
+        metadata: {}
+      )
+      sk = SheetKlass.create!(sheet: sheet, klass: wizard, level: 3)
+
+      # Simula o que o auto-fill do provisionamento cria: SheetKnownSpell sem source,
+      # ausente de spell_selections (= "fantasma").
+      SheetKnownSpell.create!(sheet_klass_id: sk.id, spell_id: cantrip.id)
+      SheetKnownSpell.create!(sheet_klass_id: sk.id, spell_id: leveled.id)
+
+      svc = LevelUpService.new(sheet_id: sheet.id, klass_id: wizard.id, levels: 1)
+      svc.send(:mirror_known_spells_into_selections!, sk)
+      svc.send(:mirror_known_spells_into_selections!, sk) # roda 2x → não duplica
+
+      sel = sheet.reload.metadata['spell_selections']
+      expect(sel['cantrips'].map(&:to_s)).to contain_exactly(cantrip.id.to_s)
+      expect(sel['known'].map(&:to_s)).to contain_exactly(leveled.id.to_s)
+      # Mago: spellbook espelha as conhecidas de nível > 0.
+      expect(sel['spellbook'].map(&:to_s)).to contain_exactly(leveled.id.to_s)
     end
   end
 end

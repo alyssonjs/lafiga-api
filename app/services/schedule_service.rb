@@ -76,6 +76,10 @@ class ScheduleService
         attrs.delete(:dm_temp_npc_character_ids)
         attrs.delete('dm_temp_npc_character_ids')
       end
+      unless Schedule.supports_combat_groups?
+        attrs.delete(:combat_groups)
+        attrs.delete('combat_groups')
+      end
 
       schedule = Schedule.new(attrs)
       schedule.save!

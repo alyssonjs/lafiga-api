@@ -148,7 +148,7 @@ RSpec.describe 'ASI feat no level-up e edit (Camada A.2)' do
       meta['class_choices']['per_level']['4'] = asi_observador_row
       sheet.update!(metadata: meta)
 
-      result = LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1)
+      result = LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1, allow_auto_fill: true)
       expect(result).to be_success,
         "LevelUpService falhou: #{result.errors.full_messages.inspect}"
 
@@ -168,7 +168,7 @@ RSpec.describe 'ASI feat no level-up e edit (Camada A.2)' do
       meta['class_choices']['per_level']['4'] = asi_observador_row
       sheet.update!(metadata: meta)
 
-      LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1)
+      LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1, allow_auto_fill: true)
 
       sheet.reload
       feats_meta = Array(sheet.metadata['feats'])
@@ -190,7 +190,7 @@ RSpec.describe 'ASI feat no level-up e edit (Camada A.2)' do
       meta['class_choices']['per_level']['4'] = asi_observador_row
       sheet.update!(metadata: meta)
 
-      LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1)
+      LevelUpService.call(sheet_id: sheet.id, klass_id: klass.id, levels: 1, allow_auto_fill: true)
 
       summary = summary_for(sheet.reload)
       expect(summary[:abilities][:scores][:wis]).to eq(15),
