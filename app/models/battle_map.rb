@@ -133,14 +133,17 @@ class BattleMap < ApplicationRecord
 
   # Deep copy (cells/tokens/fog) para nova posse. Usado ao duplicar mapa na UI
   # e ao continuar mesa entre sessões (`ScheduleContinuity`).
-  def self.duplicate_for_user(source, user, name: nil)
+  # `include_tokens: false` cria uma cópia LIMPA do cenário (terreno, fundo,
+  # paredes, camadas) sem os tokens do original — usado ao "vincular/importar"
+  # um mapa numa sessão, que deve começar sem os tokens de encontros anteriores.
+  def self.duplicate_for_user(source, user, name: nil, include_tokens: true)
     raise ArgumentError, 'user obrigatório' if user.nil?
 
     copy = source.dup
     copy.user_id = user.id
     copy.name = name.presence || "#{source.name} (Copia)"
     copy.cells = deep_dup_nested_arrays(source.cells)
-    copy.tokens = deep_dup_nested_arrays(source.tokens)
+    copy.tokens = include_tokens ? deep_dup_nested_arrays(source.tokens) : []
     copy.fog = source.fog.nil? ? nil : deep_dup_nested_arrays(source.fog)
     # Fase 2.0 — preserva as camadas do builder ao duplicar (evita refs
     # compartilhadas entre origem e cópia, igual a cells/tokens).

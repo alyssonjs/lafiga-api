@@ -77,7 +77,9 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # Deep copy. Util para template -> personalizar.
   def duplicate
     return forbidden unless @map.readable_by?(@current_user)
-    copy = BattleMap.duplicate_for_user(@map, @current_user)
+    # `without_tokens=true` → cópia limpa (sem tokens) p/ importar mapa numa sessão.
+    include_tokens = !ActiveModel::Type::Boolean.new.cast(params[:without_tokens])
+    copy = BattleMap.duplicate_for_user(@map, @current_user, include_tokens: include_tokens)
     render json: { battle_map: BattleMapSerializer.serialize(copy, mode: :full) }, status: :created
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
