@@ -203,6 +203,46 @@ RSpec.describe CharacterSheetEdits::ProgressionEditService do
       expect(sel['cantrips']).to eq([])
     end
 
+    it 'B7.5b — remocao na aba "Nivel 1" (target_level < 2) persiste e deleta row source=nil' do
+      # Regressao do bug do Bardo (Ainor): o jogador removia um truque/magia
+      # INICIAL (editando a aba "Nivel 1"), o front mandava `level: 1`, e o
+      # apply! caia no early-return `warn!('nivel ausente')` ANTES de aplicar
+      # spell_selections. A remocao era descartada com HTTP 200 e as magias
+      # `source=nil` (deixadas pelo seed/auto-fill do LevelUpService) nunca eram
+      # deletadas — reaparecendo na ficha via KnownSpellsAggregator.
+      caster = create(:klass, api_index: "b75b_bard_#{SecureRandom.hex(4)}")
+      ClassLevel.create!(klass: caster, level: 4, prof_bonus: 2, ability_score_bonuses: 0)
+      allow(ClassRules).to receive(:find).and_call_original
+      allow(ClassRules).to receive(:find).with(caster.api_index).and_return({
+        feature_rules: { spellcasting: { mode: 'known' } },
+        spellcasting: { preparation: 'known' }
+      })
+
+      keep    = create(:spell, name: 'Keep B75b',  level: 0, api_index: "b75b_keep_#{SecureRandom.hex(3)}")
+      ghost   = create(:spell, name: 'Ghost B75b', level: 0, api_index: "b75b_ghost_#{SecureRandom.hex(3)}")
+
+      sheet_klass.update!(klass: caster)
+      SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).delete_all
+      create(:sheet_known_spell, sheet_klass: sheet_klass, spell: keep,  source: 'class')
+      # A magia removida ficou com source=nil (assinatura do seed/auto-fill).
+      create(:sheet_known_spell, sheet_klass: sheet_klass, spell: ghost, source: nil)
+      sheet.update!(metadata: sheet.metadata.merge(
+        'spell_selections' => { 'cantrips' => [keep.id.to_s, ghost.id.to_s], 'known' => [], 'spellbook' => [], 'prepared' => [] }
+      ))
+
+      warnings = described_class.new(character: character, level: 1, data: {
+        'progressionSubLevel' => 1,
+        'spellSelections' => { 'cantrips' => [keep.id.to_s], 'known' => [], 'spellbook' => [], 'prepared' => [] }
+      }).call.warnings
+
+      expect(warnings).not_to include(a_string_matching(/nivel ausente/))
+      sheet.reload
+      expect(sheet.metadata['spell_selections']['cantrips']).to eq([keep.id.to_s])
+      ids = SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).pluck(:spell_id)
+      expect(ids).to include(keep.id)
+      expect(ids).not_to include(ghost.id)
+    end
+
     it 'B7.6 — sync SheetKnownSpell mesmo quando SpellRules.sc_for retorna nil' do
       caster = create(:klass, api_index: "b76_caster_#{SecureRandom.hex(4)}")
       ClassLevel.create!(klass: caster, level: 4, prof_bonus: 2, ability_score_bonuses: 0)

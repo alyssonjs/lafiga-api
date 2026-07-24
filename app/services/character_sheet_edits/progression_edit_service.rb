@@ -45,7 +45,20 @@ module CharacterSheetEdits
         lc_lv = data.dig('levelChoice', 'level') || data.dig(:levelChoice, :level)
         target_level = lc_lv.to_i if lc_lv.present?
       end
-      return warn!('nivel ausente para progression edit') if target_level.nil? || target_level < 2
+
+      # `spell_selections` é o estado GLOBAL de magias da ficha — NÃO depende de um
+      # nível alvo. Aplicamos ANTES do guard de `target_level` abaixo: senão, uma
+      # remoção feita na aba "Nível 1" (target_level < 2, onde ficam os truques e
+      # magias iniciais do Bardo/etc.) caía no early-return e era DESCARTADA com
+      # HTTP 200 — o jogador removia a magia, salvava e ela reaparecia na ficha
+      # (os SheetKnownSpell `source=nil`/`class` nunca eram deletados pelo sync).
+      spell_selections_applied = apply_spell_selections_if_present!
+
+      if target_level.nil? || target_level < 2
+        # Sem nível de progressão alvo: se ao menos as magias mudaram, é sucesso
+        # (a remoção já persistiu acima); caso contrário, nada a fazer.
+        return spell_selections_applied ? nil : warn!('nivel ausente para progression edit')
+      end
 
       pre_apply_level = sheet.sheet_klasses.order(level: :desc).first&.level.to_i
       # ZE3 do segundo audit: snapshot do CON ANTES de qualquer mutacao. Usado
@@ -89,19 +102,9 @@ module CharacterSheetEdits
         # para depois do sync abaixo.
       end
 
-      if data.key?('spellSelections') && data['spellSelections'].is_a?(Hash)
-        # Bug B7.2 do relatorio de auditoria de steps: antes era `=` direto. PATCH
-        # contendo so `cantrips` zerava `known`/`prepared`/`spellbook` salvos
-        # previamente. Deep-merge preserva sub-arrays nao mencionados; quando o
-        # caller QUER zerar uma sub-aba, basta enviar `[]` explicito.
-        existing_sel = (meta['spell_selections'] || {}).deep_dup
-        meta['spell_selections'] = existing_sel.deep_merge(normalize_spell_selections(data['spellSelections']))
-        sheet.metadata = meta
-      end
-
+      # `spell_selections` já foi aplicado + sincronizado no topo de `apply!`
+      # (apply_spell_selections_if_present!), independente do nível — não repetir aqui.
       sheet.save!
-
-      sync_sheet_known_spells_from_spell_selections! if data.key?('spellSelections') && data['spellSelections'].is_a?(Hash)
 
       # ASI-as-feat: ProgressionEditService apenas grava `per_level[N].asi`
       # no metadata. Antes desta chamada, escolher Observador na edicao do
@@ -183,6 +186,26 @@ module CharacterSheetEdits
       # trace_id (via ZC4) — mais visivel que estado inconsistente silencioso.
       Rails.logger.error "[ProgressionEditService] LevelUpGuardService raised: #{e.class}: #{e.message}\n#{e.backtrace&.first(10)&.join("\n")}"
       raise ActiveRecord::Rollback
+    end
+
+    # Aplica o `spell_selections` do payload ao metadata + sincroniza os
+    # `SheetKnownSpell`, independentemente de nível (é estado GLOBAL de magias).
+    # Devolve `true` se aplicou algo, `false` se o payload não trouxe magias.
+    #
+    # Chamado no TOPO de `apply!`, antes do guard de `target_level < 2`, porque uma
+    # remoção feita na aba "Nível 1" (truques/magias iniciais) precisa persistir
+    # mesmo sem um nível de progressão alvo. Bug B7.2 (deep-merge preserva sub-abas
+    # não mencionadas; enviar `[]` explícito zera uma sub-aba) permanece válido.
+    def apply_spell_selections_if_present!
+      return false unless data.key?('spellSelections') && data['spellSelections'].is_a?(Hash)
+
+      meta = (sheet.metadata || {}).deep_stringify_keys
+      existing_sel = (meta['spell_selections'] || {}).deep_dup
+      meta['spell_selections'] = existing_sel.deep_merge(normalize_spell_selections(data['spellSelections']))
+      sheet.metadata = meta
+      sheet.save!
+      sync_sheet_known_spells_from_spell_selections!
+      true
     end
 
     # Devolve o shape `{ cantrips, known, spellbook, prepared }` que o wizard
