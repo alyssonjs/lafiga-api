@@ -63,6 +63,42 @@ RSpec.describe CharacterProvisioningService, type: :service do
     end
   end
 
+  describe '#derive_spell_selections_from_per_level' do
+    let(:user) { create(:user) }
+    let(:service) { described_class.new(user: user, payload: {}) }
+    let(:bard) { Klass.find_by(api_index: 'bard') || create(:klass, api_index: 'bard') }
+    let(:wizard) { Klass.find_by(api_index: 'wizard') || create(:klass, api_index: 'wizard') }
+
+    # Regressao do bug "magias removidas reaparecem": no reprovision, o merge raso da
+    # Sheet preservava o spell_selections antigo e persist_aggregated_known_spells! o
+    # re-materializava. O reprovision agora deriva spell_selections do payload.
+    it 'usa o MAIOR nivel com magias (cumulativo mais recente), ignorando per_level["1"] defasado' do
+      per_level = {
+        '1' => { 'cantrips' => [{ 'id' => '71' }, { 'id' => '201' }], 'spells' => [{ 'id' => '292' }, { 'id' => '154' }] },
+        '5' => { 'cantrips' => [{ 'id' => '382' }, { 'id' => '227' }, { 'id' => '485' }], 'spells' => [{ 'id' => '154' }, { 'id' => '411' }] }
+      }
+      sel = service.send(:derive_spell_selections_from_per_level, per_level, bard.id)
+      expect(sel['cantrips']).to eq(%w[382 227 485])
+      expect(sel['known']).to eq(%w[154 411])
+      expect(sel['spellbook']).to eq([]) # nao-mago
+      # NAO reintroduz 71/201/292 do nivel 1 defasado
+      expect(sel['cantrips']).not_to include('71', '201')
+      expect(sel['known']).not_to include('292')
+    end
+
+    it 'para Mago, espelha spells em spellbook' do
+      per_level = { '3' => { 'cantrips' => [{ 'id' => '10' }], 'spells' => [{ 'id' => '20' }, { 'id' => '21' }] } }
+      sel = service.send(:derive_spell_selections_from_per_level, per_level, wizard.id)
+      expect(sel['known']).to eq(%w[20 21])
+      expect(sel['spellbook']).to eq(%w[20 21])
+    end
+
+    it 'GUARDRAIL: devolve nil quando o payload nao traz magias (import/gerador/nao-conjurador)' do
+      expect(service.send(:derive_spell_selections_from_per_level, {}, bard.id)).to be_nil
+      expect(service.send(:derive_spell_selections_from_per_level, { '1' => { 'hp' => { 'total' => 10 }, 'skills' => %w[Atletismo] } }, bard.id)).to be_nil
+    end
+  end
+
   describe '#cleanup_non_feat_asi_levels!' do
     let(:user) { create(:user) }
     let(:service) { described_class.new(user: user, payload: {}) }

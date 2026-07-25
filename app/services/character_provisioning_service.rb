@@ -207,6 +207,20 @@ class CharacterProvisioningService
         }
       }.compact
       metadata['race_bonuses_applied'] = race_bonuses_applied if race_bonuses_applied.present?
+
+      # Autoridade sobre `spell_selections` no reprovision (bug "magias removidas
+      # reaparecem"): o merge da Sheet abaixo (linha ~410) e RASO, entao o
+      # `spell_selections` antigo/inflado da ficha SOBREVIVIA a um reprovision.
+      # `persist_aggregated_known_spells!` (adiante) le esse `spell_selections`
+      # via KnownSpellsAggregator para RE-MATERIALIZAR os SheetKnownSpell — logo,
+      # sem substitui-lo aqui, a remocao de uma magia feita no wizard era
+      # desfeita a cada "Salvar Alteracoes". Derivamos a lista do proprio payload
+      # (`classPicksByLevel`, cumulativo) e substituimos (REPLACE). Guardrail:
+      # quando o payload NAO traz magias (import/gerador/admin), `derived` e nil e
+      # preservamos o valor existente — sem regressao para esses fluxos.
+      derived_sel = derive_spell_selections_from_per_level(per_level, klass_id)
+      metadata['spell_selections'] = derived_sel if derived_sel
+
       merge_wizard_general_into_metadata!(metadata, wizard)
 
       # Upsert or create Sheet
@@ -1119,6 +1133,44 @@ class CharacterProvisioningService
       end
     end
     out.compact.map(&:strip).reject(&:blank?).uniq
+  end
+
+  # Deriva `metadata.spell_selections` a partir do `per_level` do payload
+  # (classPicksByLevel). As linhas per_level[N].cantrips/spells sao CUMULATIVAS
+  # (espelhos da selecao inteira); usamos o MAIOR nivel com magias — a lista
+  # cumulativa mais recente/completa — para NAO reintroduzir picks de um
+  # per_level["1"] eventualmente defasado (uniao seria contaminante). Devolve nil
+  # quando o payload nao traz magia alguma (preserva o valor existente).
+  def derive_spell_selections_from_per_level(per_level, klass_id)
+    return nil unless per_level.is_a?(Hash) && per_level.any?
+
+    numeric_levels = per_level.keys.map(&:to_s).select { |k| k.match?(/\A\d+\z/) }.sort_by(&:to_i)
+    row = nil
+    numeric_levels.reverse_each do |lv|
+      r = per_level[lv] || per_level[lv.to_i]
+      next unless r.is_a?(Hash)
+      if Array(r['cantrips'] || r[:cantrips]).any? || Array(r['spells'] || r[:spells]).any?
+        row = r
+        break
+      end
+    end
+    return nil unless row
+
+    extract_ids = lambda do |arr|
+      Array(arr).map { |x| x.is_a?(Hash) ? (x['id'] || x[:id]) : x }
+                .map { |v| v.to_s.strip }.reject(&:blank?).uniq
+    end
+    cantrips = extract_ids.call(row['cantrips'] || row[:cantrips])
+    spells   = extract_ids.call(row['spells'] || row[:spells])
+    prepared = extract_ids.call(row['prepared'] || row[:prepared])
+    is_wizard = (Klass.find_by(id: klass_id)&.api_index.to_s == 'wizard')
+
+    {
+      'cantrips'  => cantrips,
+      'known'     => spells,
+      'spellbook' => is_wizard ? spells : [],
+      'prepared'  => prepared
+    }
   end
 
   def persist_aggregated_known_spells!(sheet)
