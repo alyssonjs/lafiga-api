@@ -218,8 +218,26 @@ class CharacterProvisioningService
       # (`classPicksByLevel`, cumulativo) e substituimos (REPLACE). Guardrail:
       # quando o payload NAO traz magias (import/gerador/admin), `derived` e nil e
       # preservamos o valor existente — sem regressao para esses fluxos.
-      derived_sel = derive_spell_selections_from_per_level(per_level, klass_id)
-      metadata['spell_selections'] = derived_sel if derived_sel
+      # SO para conjuradores de "conhecidas" (Bardo/Feiticeiro/Patrulheiro/Bruxo):
+      # nesses, `per_level[N].cantrips/spells` sao ESPELHOS CUMULATIVOS IDENTICOS
+      # (o front replica a mesma lista em todo nivel). Mago (grimorio) e prepared
+      # (Clerigo/Druida/Paladino) tem `per_level` INCREMENTAL/progressivo por nivel
+      # — NAO devem ser derivados/alinhados, senao um level-up perderia as magias
+      # dos niveis anteriores (ver caster_spell_roundtrip_spec).
+      if known_list_spellcaster?(klass_id)
+        derived_sel = derive_spell_selections_from_per_level(per_level, klass_id)
+        if derived_sel
+          # Reprovision autoritativo: substitui o spell_selections stale (o merge raso
+          # da Sheet o preservava e persist_aggregated_known_spells! o re-materializava,
+          # desfazendo remocoes a cada "Salvar Alteracoes").
+          metadata['spell_selections'] = derived_sel
+          # Em EDICAO o front as vezes envia `per_level["1"]` DEFASADO (lista antiga)
+          # com os niveis 2+ ja reduzidos; `seed_level_one_known_spells!` leria o "1"
+          # e RESSUSCITARIA os picks removidos (SheetKnownSpell source=nil), que o
+          # mirror re-injeta. Alinhamos todos os niveis a lista canonica (maior nivel).
+          align_per_level_spells_to_canonical!(per_level, derived_sel)
+        end
+      end
 
       merge_wizard_general_into_metadata!(metadata, wizard)
 
@@ -1171,6 +1189,39 @@ class CharacterProvisioningService
       'spellbook' => is_wizard ? spells : [],
       'prepared'  => prepared
     }
+  end
+
+  # true para conjuradores cuja cota e "magias CONHECIDAS" (lista cumulativa
+  # identica em todo per_level): Bardo, Feiticeiro, Patrulheiro, Bruxo. Falso para
+  # Mago (grimorio incremental) e prepared puros (Clerigo/Druida/Paladino).
+  def known_list_spellcaster?(klass_id)
+    k = Klass.find_by(id: klass_id)
+    return false unless k&.api_index.present?
+    return false if k.api_index.to_s == 'wizard'
+    rules = ClassRules.find(k.api_index) || {}
+    mode = (rules.dig(:feature_rules, :spellcasting, :mode) ||
+            rules.dig(:spellcasting, :preparation)).to_s
+    mode == 'known'
+  rescue StandardError
+    false
+  end
+
+  # Reescreve `per_level[N].cantrips/spells` para a lista canonica (derivada do
+  # maior nivel). Evita que `seed_level_one_known_spells!` ressuscite picks antigos
+  # de um `per_level["1"]` defasado enviado pelo front em edicao. So altera niveis
+  # que JA possuiam a chave (nao materializa magia onde nao havia).
+  def align_per_level_spells_to_canonical!(per_level, sel)
+    return unless per_level.is_a?(Hash) && sel.is_a?(Hash)
+
+    to_rows = ->(ids) { Array(ids).map { |id| { 'id' => id.to_s, 'name' => id.to_s } } }
+    cantrip_rows = to_rows.call(sel['cantrips'])
+    spell_rows   = to_rows.call(sel['known'])
+
+    per_level.each_value do |row|
+      next unless row.is_a?(Hash)
+      row['cantrips'] = cantrip_rows if row.key?('cantrips') || row.key?(:cantrips)
+      row['spells']   = spell_rows   if row.key?('spells')   || row.key?(:spells)
+    end
   end
 
   def persist_aggregated_known_spells!(sheet)

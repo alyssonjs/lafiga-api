@@ -99,6 +99,39 @@ RSpec.describe CharacterProvisioningService, type: :service do
     end
   end
 
+  describe '#known_list_spellcaster? (gating do fix)' do
+    let(:user) { create(:user) }
+    let(:service) { described_class.new(user: user, payload: {}) }
+
+    it 'true para Bardo (lista cumulativa de conhecidas), false para Mago (grimorio incremental)' do
+      bard = Klass.find_by(api_index: 'bard') || create(:klass, api_index: 'bard')
+      wizard = Klass.find_by(api_index: 'wizard') || create(:klass, api_index: 'wizard')
+      expect(service.send(:known_list_spellcaster?, bard.id)).to be(true)
+      expect(service.send(:known_list_spellcaster?, wizard.id)).to be(false)
+    end
+  end
+
+  describe '#align_per_level_spells_to_canonical!' do
+    let(:user) { create(:user) }
+    let(:service) { described_class.new(user: user, payload: {}) }
+
+    it 'reescreve per_level["1"] defasado para a lista canonica; nao materializa onde nao havia' do
+      per_level = {
+        '1' => { 'cantrips' => [{ 'id' => '71' }], 'spells' => [{ 'id' => '292' }, { 'id' => '154' }], 'skills' => %w[Atuacao] },
+        '2' => { 'cantrips' => [{ 'id' => '382' }], 'spells' => [{ 'id' => '154' }, { 'id' => '260' }] },
+        '3' => { 'hp' => { 'total' => 8 } } # sem magia: nao deve ganhar cantrips/spells
+      }
+      sel = { 'cantrips' => %w[382], 'known' => %w[154 260] }
+      service.send(:align_per_level_spells_to_canonical!, per_level, sel)
+
+      expect(per_level['1']['cantrips'].map { |x| x['id'] }).to eq(%w[382])
+      expect(per_level['1']['spells'].map { |x| x['id'] }).to eq(%w[154 260])
+      expect(per_level['1']['skills']).to eq(%w[Atuacao]) # preservado
+      expect(per_level['3']).not_to have_key('cantrips')
+      expect(per_level['3']).not_to have_key('spells')
+    end
+  end
+
   describe '#cleanup_non_feat_asi_levels!' do
     let(:user) { create(:user) }
     let(:service) { described_class.new(user: user, payload: {}) }
