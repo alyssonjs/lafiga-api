@@ -4836,7 +4836,7 @@ wizard:
         - level: 14
           features:
             - name: "Líder da Cabala"
-              description: "Adquire seguidores fanáticos (cultistas leais) em número igual ao nível de mago ÷ 3 (inicialmente 4). Pode liderar um círculo ritualístico com eles para potencializar a Convocação Vil: cada seguidor gasta um espaço de 2º e você um de 3º+; o ND máximo do corruptor sobe +1 por seguidor participante. Ao surgir o corruptor, cada seguidor faz TR de Constituição CD 15 ou morre."
+              description: "Adquire seguidores fanáticos (cultistas leais) em número igual ao nível de mago ÷ 3 (inicialmente 4). Pode liderar um círculo ritualístico com eles para potencializar a Convocação Vil: cada seguidor gasta um espaço de 2º e você um de 3º+; o ND máximo do corruptor sobe +1 por seguidor participante. Ao surgir o corruptor, cada seguidor faz TR de Constituição CD 15 ou morre. Se um seguidor morre, recrutar um novo leva 1 semana de busca e pesquisa por seguidor."
               rules:
                 followers: "nível de mago ÷ 3 (mín. 4)"
                 ritual_save: "TR de Constituição CD 15"
