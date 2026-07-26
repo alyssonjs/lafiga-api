@@ -4681,7 +4681,7 @@ wizard:
         - level: 10
           features:
             - name: "Eu Ilusório"
-              description: "Reação para fazer um ataque contra você errar (consome a duplicata); 1/descanso curto ou longo."
+              description: "Reação: quando uma criatura te ataca, interpõe uma duplicata ilusória — o ataque erra automaticamente e a ilusão se dissipa. 1/descanso longo."
         - level: 14
           features:
             - name: "Realidade Ilusória"
