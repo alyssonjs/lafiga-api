@@ -4674,6 +4674,10 @@ wizard:
               rules: { savant: { school: "ilusão", copy_cost_multiplier: 0.5, copy_time_multiplier: 0.5 } }
             - name: "Ilusão Menor Aprimorada"
               description: "Ganha o truque ilusão menor (se não tiver) e pode criar imagem + som no mesmo lançamento."
+          grants:
+            spells:
+              always_prepared:
+                2: ["minor-illusion"]
         - level: 6
           features:
             - name: "Ilusões Moldáveis"
