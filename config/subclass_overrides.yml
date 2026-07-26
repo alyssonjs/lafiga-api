@@ -4575,7 +4575,7 @@ wizard:
         - level: 14
           features:
             - name: "Prodígio Maior"
-              description: "Portento gera 3 dados em vez de 2."
+              description: "Prodígio gera 3 dados em vez de 2."
               rules: { portent_dice: 3 }
 
     escola-de-conjuracao:
