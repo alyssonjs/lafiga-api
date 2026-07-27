@@ -123,11 +123,11 @@ class ClassRules
       ],
       ranger_favored_enemy_types: [
         'Aberrações','Bestas','Celestiais','Constructos','Dragões','Elementais','Fadas',
-        'Infernais','Gigantes','Monstruosidades','Lodos','Plantas','Mortos-vivos',
+        'Corruptores','Gigantes','Monstruosidades','Limos','Plantas','Mortos-vivos',
         'Humanoides (2 raças)'
       ],
       ranger_favored_terrain_types: [
-        'Ártico','Costeiro','Deserto','Floresta','Pradaria','Montanha','Pântano','Subterrâneo'
+        'Ártico','Costa','Deserto','Floresta','Planície','Montanha','Pântano','Subterrâneo'
       ],
       ranger_humanoid_races: [
         'Humano','Elfo','Anão','Halfling','Gnomo','Orc','Goblinoide','Gnoll','Kobold','Hobgoblin','Bugbear','Tritão','Draconato'
@@ -1199,7 +1199,7 @@ class ClassRules
       # Percepção e Sobrevivência" — 9 opções. `Acrobacia` estava ausente
       # (audit PHB×projeto 2026-05-08).
       skill_proficiencies: { choose: 3, options: ['Acrobacia','Lidar com Animais','Atletismo','Furtividade','Intuição','Investigação','Natureza','Percepção','Sobrevivência'] },
-      features_level1: ['Inimigo Favorito','Explorador Nato'],
+      features_level1: ['Inimigo Favorito','Explorador Natural'],
       subclass: {
         choose_level: 3,
         options: {
