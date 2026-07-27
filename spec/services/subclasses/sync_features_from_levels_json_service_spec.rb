@@ -118,6 +118,49 @@ RSpec.describe Subclasses::SyncFeaturesFromLevelsJsonService, type: :service do
       f = sub.sub_klass_levels.includes(:features).find_by(level: 3).features.first
       expect(f.description).to eq('nova')
     end
+
+    # CAUSA-RAIZ das descrições/tabelas do compêndio que sumiram: um rename no
+    # levels_json tornava a feature EDITADA pelo mestre (nome antigo) "órfã" do
+    # canônico, e o prune a DESTRUÍA. dm_customized é sagrado.
+    it 'NUNCA poda/destrói uma feature dm_customized renomeada (edição do mestre é preservada)' do
+      sub = make_sub(
+        api_index: 'jur_prune', name: 'JP',
+        levels_json: [{ 'level' => 3, 'features' => [{ 'name' => 'Nome Canônico', 'description' => 'stub curto' }] }],
+      )
+      described_class.new(sub).call
+      level3 = sub.sub_klass_levels.find_by(level: 3)
+
+      editada = Feature.create!(
+        api_index: 'legado-nome-antigo', name: 'Nome Antigo',
+        description: 'Descrição LONGA e detalhada editada pelo mestre. ' * 8,
+        dm_customized: true,
+      )
+      level3.features << editada
+
+      # re-sincroniza (simula o rake rodando após o rename no YAML)
+      described_class.new(sub).call
+
+      expect(Feature.exists?(editada.id)).to be(true), 'a edição do mestre não pode ser destruída'
+      expect(level3.reload.features.map(&:id)).to include(editada.id), 'deve continuar associada ao nível'
+    end
+
+    it 'dedup mantém a versão dm_customized mesmo se mais curta que o stub do sistema' do
+      sub = make_sub(
+        api_index: 'jur_dedup', name: 'JD',
+        levels_json: [{ 'level' => 3, 'features' => [{ 'name' => 'Golpe', 'description' => 'stub condensado gerado pelo sistema, bem mais longo que a edição.' }] }],
+      )
+      described_class.new(sub).call
+      level3 = sub.sub_klass_levels.find_by(level: 3)
+
+      curta_dm = Feature.create!(api_index: 'golpe-dm', name: 'Golpe', description: 'curto do mestre', dm_customized: true)
+      level3.features << curta_dm
+
+      described_class.new(sub).call
+
+      golpes = level3.reload.features.select { |f| f.name == 'Golpe' }
+      expect(golpes.size).to eq(1), 'dedup colapsa duplicatas de mesmo nome'
+      expect(golpes.first.dm_customized).to be(true), 'mantém a edição do mestre, não o stub'
+    end
   end
 
   describe '.run_all' do

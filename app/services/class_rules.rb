@@ -1361,8 +1361,8 @@ class ClassRules
       subclass: {
         choose_level: 1,
         options: {
-          fiend: { id: 'fiend', name: 'O Ínfero' },
-          archfey: { id: 'archfey', name: 'A Rainha/Príncipe das Fadas' },
+          fiend: { id: 'fiend', name: 'Corruptor' },
+          archfey: { id: 'archfey', name: 'Arquifada' },
           great_old_one: { id: 'great_old_one', name: 'O Grande Antigo' },
           'patrono-morte': { id: 'patrono-morte', name: 'A Morte' },
           'patrono-arcanjo-vingador': { id: 'patrono-arcanjo-vingador', name: 'O Arcanjo Vingador' },

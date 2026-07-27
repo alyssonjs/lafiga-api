@@ -73,7 +73,7 @@ module Subclasses
         levels_synced += 1
 
         Array(row['features']).each do |feat|
-          feature = upsert_feature(feat)
+          feature = resolve_feature(feat, level_record)
           next unless feature
 
           unless level_record.features.exists?(feature.id)
@@ -81,6 +81,11 @@ module Subclasses
           end
           features_synced += 1
         end
+
+        # Dedup: colapsa features de MESMO nome no nível (mantém a de descrição
+        # mais longa — tipicamente a canônica/editada pelo compêndio — e remove a
+        # condensada duplicada gerada por re-imports com api_index divergente).
+        dedup_same_name_features!(level_record)
 
         # Pruning (evita recorrência de ghosts/legados em re-import): após anexar
         # as canônicas deste nível, desassocia features de subclasse que NÃO casam
@@ -95,6 +100,61 @@ module Subclasses
 
     private
 
+    # Resolve a Feature canônica de um `feat` do levels_json.
+    # PREFERE reusar uma feature de MESMO nome já anexada ao nível (que pode ter
+    # sido editada no compêndio e ter api_index legado/SRD, ex.: 'dark-ones-blessing'),
+    # preservando a descrição do usuário. Só se não houver, cria/acha por api_index
+    # canônico (`{sub}-{slug}`), evitando duplicatas.
+    def resolve_feature(feat, level_record)
+      return nil unless feat.is_a?(Hash)
+      name = feat['name'].to_s.strip
+      return nil if name.blank?
+
+      norm = normalize_name(name)
+      existing = level_record.features.to_a.find { |f| normalize_name(f.name) == norm }
+      if existing
+        # update_descriptions:false → só preenche descrição VAZIA; nunca sobrescreve
+        # uma edição do compêndio.
+        desc = feat['description'].to_s
+        if desc.present? && existing.respond_to?(:description=) &&
+           (existing.description.blank? || @update_descriptions)
+          existing.update!(description: desc)
+        end
+        return existing
+      end
+
+      upsert_feature(feat)
+    end
+
+    # Colapsa features de MESMO nome (normalizado) no nível: mantém a de descrição
+    # mais longa (tie → menor id/mais antiga) e desassocia as demais. Repontar as
+    # associações de personagem para a mantida antes de remover, evitando perder o
+    # vínculo em fichas existentes.
+    def dedup_same_name_features!(level_record)
+      groups = level_record.features.to_a.group_by { |f| normalize_name(f.name) }
+      groups.each_value do |group|
+        next if group.size <= 1
+        # Preferir MANTER a edição do compêndio (dm_customized) — é a versão
+        # autoritativa do mestre, mesmo que mais curta — depois a mais longa.
+        keep = group.max_by { |f| [dm_customized?(f) ? 1 : 0, f.description.to_s.length, -f.id] }
+        (group - [keep]).each do |f|
+          if defined?(CharactersFeature)
+            CharactersFeature.where(feature_id: f.id)
+                             .where.not(character_id: CharactersFeature.where(feature_id: keep.id).select(:character_id))
+                             .update_all(feature_id: keep.id)
+            CharactersFeature.where(feature_id: f.id).delete_all
+          end
+          level_record.features.delete(f)
+          f.reload
+          # NUNCA destrói uma edição do compêndio — desassocia e mantém como backup
+          # recuperável; só apaga de fato stubs gerados pelo sistema.
+          f.destroy! if !dm_customized?(f) && !f.class_levels.exists? && !f.sub_klass_levels.exists?
+        rescue ActiveRecord::InvalidForeignKey
+          # mantém a Feature se ainda referenciada; a associação já foi removida.
+        end
+      end
+    end
+
     # Remove (desassocia) features de subclasse do nível que não estão no
     # levels_json. Conservador: exige ≥1 canônica casada e nunca remove mais
     # do que o nº de canônicas (1:1 ou menos) para não esvaziar o nível.
@@ -106,6 +166,12 @@ module Subclasses
       feats    = level_record.features.to_a
       matched  = feats.select { |f| canon_names.include?(normalize_name(f.name)) }
       nonmatch = feats.reject { |f| canon_names.include?(normalize_name(f.name)) }
+      # CAUSA-RAIZ da perda de descrições/tabelas: quando o YAML RENOMEIA uma
+      # feature, a versão editada pelo mestre (nome antigo) deixa de casar com o
+      # canônico e o prune a DESTRUÍA. Edição do compêndio (dm_customized) é
+      # sagrada — nunca podar. Fica associada (mesmo virando duplicata de nome
+      # diferente); melhor um duplicado seguro do que apagar trabalho do mestre.
+      nonmatch.reject! { |f| dm_customized?(f) }
       return if nonmatch.empty?
       return if matched.empty? || nonmatch.size > matched.size
 
@@ -122,6 +188,13 @@ module Subclasses
     def normalize_name(s)
       ActiveSupport::Inflector.transliterate(s.to_s).downcase
         .gsub(/[^a-z0-9]+/, ' ').strip.gsub(/\s+/, ' ')
+    end
+
+    # `dm_customized` marca features EDITADAS pelo mestre no compêndio
+    # (Admin::LevelFeatureEditor grava esse flag). São sagradas: o sync jamais
+    # deve sobrescrever, podar ou destruir essas edições — só stubs do sistema.
+    def dm_customized?(feature)
+      feature.respond_to?(:dm_customized) && !!feature.dm_customized
     end
 
     def parse_levels_json

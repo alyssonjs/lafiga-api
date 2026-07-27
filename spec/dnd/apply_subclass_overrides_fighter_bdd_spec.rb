@@ -108,7 +108,7 @@ RSpec.describe 'DndImportHelpers — Guerreiro (subclass_overrides)', type: :mod
       expect(names).to match_array(
         [
           'Crítico Aprimorado',
-          'Atleta Extraordinário',
+          'Atletismo Extraordinário',
           'Estilo de Luta Adicional',
           'Crítico Superior',
           'Sobrevivente',
