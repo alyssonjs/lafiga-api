@@ -1,4 +1,5 @@
 require 'set'
+require 'yaml'
 
 class FeaturesAggregator
   # Padrões de NOME que identificam placeholders genéricos de slot de
@@ -61,11 +62,88 @@ class FeaturesAggregator
       end
     end
 
+    # Disciplinas elementais ESCOLHIDAS (Monge Caminho dos Quatro Elementos): as
+    # seleções vivem em metadata.class_choices e não têm feature estática; emiti-las
+    # como features para que apareçam na ficha (MonkSection renderiza character.features).
+    items.concat(subclass_choice_feature_items)
+
     items = dedup_and_hide_placeholders(items)
     items.sort_by { |x| [x[:level].to_i, x[:name].to_s] }
   end
 
   private
+
+  # Emite as disciplinas elementais escolhidas pelo Monge (Quatro Elementos) como
+  # features. Dedupa por id (a escolha do L6 pode gravar o conjunto cumulativo),
+  # atribuindo a cada disciplina o menor nível em que foi escolhida.
+  # Emite as SELEÇÕES do picker de subclasse (class_choices) como features, para
+  # aparecerem na ficha. Cobre: disciplinas elementais (Quatro Elementos, chave
+  # 'discipline', resolvidas via elemental_disciplines.yml) e tatuagens (Monge
+  # Tatuado, chave 'tattoo', o próprio nome já é o rótulo — sem catálogo).
+  def subclass_choice_feature_items
+    items = []
+    items.concat(choice_items_for('quatro-elementos', 'discipline', 'discipline', elemental_disciplines_catalog))
+    items.concat(choice_items_for('caminho_monge_tatuado', 'tattoo', 'tattoo', {}))
+    items.concat(choice_items_for('caminho_punho_sagrado', 'sacred_domain', 'sacred-domain', {}))
+    items
+  end
+
+  # Dedupa por id (a escolha de níveis superiores pode gravar o conjunto
+  # cumulativo), atribuindo a cada seleção o MENOR nível em que foi escolhida.
+  def choice_items_for(sub_api_index, choice_key, id_prefix, catalog)
+    return [] unless subclass_present?(sub_api_index)
+    per_level = (@sheet.metadata || {}).dig('class_choices', 'per_level')
+    return [] unless per_level.is_a?(Hash)
+
+    chosen = {} # id => menor nível de escolha
+    per_level.each do |lvl, row|
+      next unless row.is_a?(Hash)
+      # flattenFeatureChoicesToRow (front) grava as escolhas ACHATADAS direto na linha
+      # do nível — row['discipline'] / row['tattoo'] / row['sacred_domain'] — e NUNCA
+      # sob um wrapper 'feature_choices'. Lê flat (shape de produção), com fallback
+      # defensivo ao wrapper aninhado para eventuais metadados legados/fabricados.
+      nested = row['feature_choices'] || row[:feature_choices] || {}
+      raw = row[choice_key] || row[choice_key.to_sym] || nested[choice_key] || nested[choice_key.to_sym]
+      Array(raw).each do |id|
+        next if id.to_s.strip.empty?
+        l = lvl.to_i
+        chosen[id] = l if chosen[id].nil? || l < chosen[id]
+      end
+    end
+    return [] if chosen.empty?
+
+    chosen.map do |id, lvl|
+      d = catalog[id.to_s]
+      {
+        id: "#{id_prefix}-#{id}",
+        api_index: id.to_s,
+        level: lvl,
+        name: d ? d['name_pt'].to_s : id.to_s,
+        desc: d ? d['description'].to_s.strip : '',
+        source: 'SubKlass',
+        show: true,
+        pref_id: nil
+      }
+    end
+  end
+
+  def subclass_present?(api_index)
+    @sheet.sheet_klasses.any? do |sk|
+      sk.sub_klass && sk.sub_klass.api_index.to_s == api_index
+    end
+  end
+
+  def elemental_disciplines_catalog
+    @elemental_disciplines_catalog ||= begin
+      path = Rails.root.join('config', 'class_choices', 'elemental_disciplines.yml')
+      rows = YAML.load_file(path)
+      Array(rows).each_with_object({}) do |r, h|
+        h[r['slug'].to_s] = r if r.is_a?(Hash) && r['slug']
+      end
+    rescue StandardError
+      {}
+    end
+  end
 
   def build_item(feature, level, source, show_map)
     {

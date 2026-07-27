@@ -519,7 +519,10 @@ RSpec.describe LevelUpGuardService do
         expect(result.errors.full_messages.join).to match(/Disciplinas.*m[áa]ximo 1/i)
       end
 
-      it 'fails when level-6 discipline chosen at level 3' do
+      it 'fails when level-11 discipline chosen at level 3' do
+        # Chamas da Fênix (Flames of the Phoenix) é disciplina de 11º nível no
+        # canônico (caminho-dos-quatro-elementos.md) — o guard deve rejeitá-la no
+        # nível 3 citando o nível 11 exigido.
         sheet = make_sheet(metadata: {
           'class_choices' => {
             'per_level' => {
@@ -529,7 +532,7 @@ RSpec.describe LevelUpGuardService do
         })
         SheetKlass.create!(sheet: sheet, klass: monk, sub_klass: four_elements, level: 3)
         result = LevelUpGuardService.call(sheet: sheet, klass: monk)
-        expect(result.errors.full_messages.join).to match(/Chamas.*F[êe]nix.*n[íi]vel 6/i)
+        expect(result.errors.full_messages.join).to match(/Chamas.*F[êe]nix.*n[íi]vel 11/i)
       end
 
       it 'fails when an unknown discipline slug is chosen' do

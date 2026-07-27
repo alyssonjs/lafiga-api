@@ -165,4 +165,87 @@ RSpec.describe FeaturesAggregator do
       expect(result.find { |i| i[:name] == 'Magia de Pacto Spec' }[:show]).not_to eq(false)
     end
   end
+
+  describe '#call — disciplinas elementais escolhidas (Monge Quatro Elementos)' do
+    it 'emite as disciplinas escolhidas como features, dedupando o conjunto cumulativo do L6' do
+      qe = SubKlass.find_by(api_index: 'quatro-elementos') ||
+           create(:sub_klass, klass: klass, name: 'Caminho dos Quatro Elementos',
+                              api_index: 'quatro-elementos', levels_json: '{}')
+      sheet = create(:sheet)
+      create(:sheet_klass, sheet: sheet, klass: qe.klass, sub_klass: qe, level: 6)
+      # Shape ACHATADO de produção: flattenFeatureChoicesToRow grava a escolha direto
+      # na linha do nível (row['discipline']), sem wrapper 'feature_choices'.
+      sheet.update!(metadata: {
+        'class_choices' => { 'per_level' => {
+          '3' => { 'discipline' => ['ed-water-whip'] },
+          '6' => { 'discipline' => ['ed-water-whip', 'ed-gong-of-summit'] }
+        } }
+      })
+
+      result = described_class.new(sheet.reload, sync: false).call
+      disc = result.select { |i| i[:api_index].to_s.start_with?('ed-') }
+      # Nomes canônicos resolvidos do elemental_disciplines.yml
+      expect(disc.map { |d| d[:name] }).to contain_exactly('Chicote de Água', 'Gongo do Pico')
+      # Dedup: water-whip aparece 1x apesar de o L6 gravar o conjunto cumulativo
+      expect(disc.count { |d| d[:api_index] == 'ed-water-whip' }).to eq(1)
+      # Nível = menor nível de escolha
+      expect(disc.find { |d| d[:api_index] == 'ed-water-whip' }[:level]).to eq(3)
+    end
+
+    it 'não emite disciplinas quando a subclasse não é Quatro Elementos' do
+      sheet = build_sheet(level: 6)
+      sheet.update!(metadata: {
+        'class_choices' => { 'per_level' => {
+          '3' => { 'discipline' => ['ed-water-whip'] }
+        } }
+      })
+      result = described_class.new(sheet.reload, sync: false).call
+      expect(result.select { |i| i[:api_index].to_s.start_with?('ed-') }).to be_empty
+    end
+  end
+
+  describe '#call — tatuagens escolhidas (Monge Tatuado)' do
+    it 'emite as tatuagens escolhidas como features, dedupando o conjunto cumulativo' do
+      tat = SubKlass.find_by(api_index: 'caminho_monge_tatuado') ||
+            create(:sub_klass, klass: klass, name: 'Caminho do Monge Tatuado',
+                               api_index: 'caminho_monge_tatuado', levels_json: '{}')
+      sheet = create(:sheet)
+      create(:sheet_klass, sheet: sheet, klass: tat.klass, sub_klass: tat, level: 11)
+      # Shape ACHATADO de produção (row['tattoo']), sem wrapper 'feature_choices'.
+      sheet.update!(metadata: {
+        'class_choices' => { 'per_level' => {
+          '3'  => { 'tattoo' => %w[Fênix Serpente] },
+          '11' => { 'tattoo' => %w[Fênix Serpente Dragão] }
+        } }
+      })
+
+      result = described_class.new(sheet.reload, sync: false).call
+      tats = result.select { |i| i[:id].to_s.start_with?('tattoo-') }
+      # Sem catálogo: o próprio nome da tatuagem é o rótulo
+      expect(tats.map { |t| t[:name] }).to contain_exactly('Fênix', 'Serpente', 'Dragão')
+      # Dedup: Fênix/Serpente aparecem 1x apesar do L11 cumulativo; nível = menor
+      expect(tats.count { |t| t[:name] == 'Fênix' }).to eq(1)
+      expect(tats.find { |t| t[:name] == 'Fênix' }[:level]).to eq(3)
+      expect(tats.find { |t| t[:name] == 'Dragão' }[:level]).to eq(11)
+    end
+  end
+
+  describe '#call — Domínios Sagrados escolhidos (Monge Punho Sagrado)' do
+    it 'emite os 2 domínios escolhidos como features (shape achatado de produção)' do
+      ps = SubKlass.find_by(api_index: 'caminho_punho_sagrado') ||
+           create(:sub_klass, klass: klass, name: 'Caminho do Punho Sagrado',
+                              api_index: 'caminho_punho_sagrado', levels_json: '{}')
+      sheet = create(:sheet)
+      create(:sheet_klass, sheet: sheet, klass: ps.klass, sub_klass: ps, level: 3)
+      sheet.update!(metadata: {
+        'class_choices' => { 'per_level' => {
+          '3' => { 'sacred_domain' => %w[Guerra Vida] }
+        } }
+      })
+      result = described_class.new(sheet.reload, sync: false).call
+      doms = result.select { |i| i[:id].to_s.start_with?('sacred-domain-') }
+      expect(doms.map { |d| d[:name] }).to contain_exactly('Guerra', 'Vida')
+      expect(doms.all? { |d| d[:level] == 3 }).to be(true)
+    end
+  end
 end

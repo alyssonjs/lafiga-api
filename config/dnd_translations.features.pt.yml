@@ -77,7 +77,7 @@ features:
   divine-intervention: Intervenção Divina
   divine-intervention-improvement: Intervenção Divina aprimorada
   divine-sense: Sentido Divino
-  divine-smite: Golpe Divino
+  divine-smite: Destruição Divina
   divine-strike: Impacto Divino
   domain-spells-1: Magias de Domínio
   domain-spells-2: Magias de Domínio
@@ -137,7 +137,7 @@ features:
   hunters-prey: Preda do Caçador
   hurl-through-hell: Arremesso ao Inferno
   improved-critical: Crítico Aprimorado
-  improved-divine-smite: Golpe Divino Aprimorado
+  improved-divine-smite: Destruição Divina Aprimorada
   indomitable-1-use: Inquebrantável (1 uso)
   indomitable-2-uses: Inquebrantável (2 usos)
   indomitable-3-uses: Inquebrantável (3 usos)
@@ -145,7 +145,7 @@ features:
   intimidating-presence: Presença Intimidante
   ki: Ki
   ki-empowered-strikes: Golpes Infundidos com Ki
-  lay-on-hands: Imposição de Mãos
+  lay-on-hands: Cura pelas Mãos
   magical-secrets-1: Segredos Arcanos
   magical-secrets-2: Segredos Arcanos
   magical-secrets-3: Segredos Arcanos
@@ -587,7 +587,7 @@ feature_descs:
     A partir do 10º nível, pode passar 1 minuto criando camuflagem para si. Precisa ter acesso a lama fresca, terra, plantas, fuligem e outros materiais naturais para isso.
 
     Depois de camuflado assim, pode tentar se esconder encostando-se a uma superfície sólida, como árvore ou parede, pelo menos tão alta e larga quanto você. Recebe +10 em testes de Destreza (Furtividade) enquanto permanecer imóvel e não realizar ações. Ao se mover ou realizar uma ação ou reação, precisa se camuflar de novo para receber o benefício.
-  improved-divine-smite: No 11º nível, você está tão imbuído de poder justo que todos os seus golpes corpo a corpo com arma carregam energia divina. Sempre que acertar uma criatura com um ataque corpo a corpo com arma, ela sofre 1d8 de dano radiante extra. Se também usar Golpe Divino no ataque, some esse dano ao dano extra do Golpe Divino.
+  improved-divine-smite: No 11º nível, você está tão imbuído de poder justo que todos os seus golpes corpo a corpo com arma carregam energia divina. Sempre que acertar uma criatura com um ataque corpo a corpo com arma, ela sofre 1d8 de dano radiante extra. Se também usar Destruição Divina no ataque, some esse dano ao dano extra da Destruição Divina.
   indomitable-1-use: A partir do 9º nível, você pode rolar de novo um teste de resistência em que tenha falhado. Se o fizer, deve usar o novo resultado, e não pode usar esse recurso de novo até terminar um descanso longo. Pode usá-lo duas vezes entre descansos longos a partir do 13º nível e três vezes entre descansos longos a partir do 17º nível.
   indomitable-2-uses: A partir do 9º nível, você pode rolar de novo um teste de resistência em que tenha falhado. Se o fizer, deve usar o novo resultado, e não pode usar esse recurso de novo até terminar um descanso longo. Pode usá-lo duas vezes entre descansos longos a partir do 13º nível e três vezes entre descansos longos a partir do 17º nível.
   indomitable-3-uses: A partir do 9º nível, você pode rolar de novo um teste de resistência em que tenha falhado. Se o fizer, deve usar o novo resultado, e não pode usar esse recurso de novo até terminar um descanso longo. Pode usá-lo duas vezes entre descansos longos a partir do 13º nível e três vezes entre descansos longos a partir do 17º nível.
@@ -609,7 +609,7 @@ feature_descs:
 
     Como ação, pode tocar uma criatura e retirar poder do reservatório para restaurar pontos de vida a ela, até o máximo que restar no reservatório.
 
-    Em alternativa, pode gastar 5 pontos de vida do reservatório para curar a criatura de uma doença ou neutralizar um veneno que a aflige. Pode curar várias doenças e neutralizar vários venenos num único uso de Imposição de Mãos, gastando PV do reservatório separadamente para cada um.
+    Em alternativa, pode gastar 5 pontos de vida do reservatório para curar a criatura de uma doença ou neutralizar um veneno que a aflige. Pode curar várias doenças e neutralizar vários venenos num único uso de Cura pelas Mãos, gastando PV do reservatório separadamente para cada um.
 
     Esse recurso não afeta mortos-vivos nem constructos.
   magical-secrets-1: |-

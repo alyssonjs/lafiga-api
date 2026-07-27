@@ -3422,7 +3422,7 @@ monk:
       - level: 3
         features:
           - name: "Técnica da Mão Aberta"
-            description: "Quando um golpe da sua Rajada de Golpes acerta, escolha um efeito."
+            description: "A cada acerto da sua Rajada de Golpes, impõe um efeito ao alvo (CD de Chi = 8 + bônus de proficiência + mod. Sabedoria): derrubar (teste de resistência de Destreza ou fica caído); empurrar (teste de resistência de Força ou é empurrado 4,5 m para longe); ou impedir que o alvo realize reações até o fim do seu próximo turno. Sem custo extra de Chi."
             rules:
               applies_to: "apenas acertos de Rajada de Golpes"
               effects:
@@ -3451,7 +3451,7 @@ monk:
       - level: 17
         features:
           - name: "Palma Vibrante"
-            description: "Marca vibrações letais num alvo que você acerta; termine-as com uma ação."
+            description: "Ao acertar um golpe desarmado, gasta 3 Chi para semear vibrações letais que duram dias iguais ao seu nível de monge (apenas 1 criatura afetada por vez). Para encerrá-las, use uma ação (você e o alvo devem estar no mesmo plano): o alvo faz um teste de resistência de Constituição (CD de Chi = 8 + bônus de proficiência + mod. Sabedoria) — em falha, seus PV vão a 0; em sucesso, sofre 10d10 de dano necrótico. Pode optar por encerrar as vibrações inofensivamente, sem gastar ação."
             rules:
               on_hit:
                 cost_ki: 3
@@ -3477,15 +3477,17 @@ monk:
       - level: 3
         features:
           - name: "Artes Sombrias"
-            description: "Gasta ki para imitar magias das sombras; aprende 'ilusão menor'."
+            description: "Ação: gasta 2 Chi para conjurar escuridão, visão no escuro, passos sem pegadas ou silêncio, sem componentes materiais (CD de Chi = 8 + bônus de proficiência + mod. Sabedoria quando aplicável). Também aprende o truque ilusão menor, se ainda não o conhece."
             rules:
               spells_with_ki:
                 cost_per_cast: 2
                 list: ["escuridão","visão no escuro","passos sem pegadas","silêncio"]
                 components: { material: "não requer" }
                 save_dc: "ki_save_dc"
-            grants:
-              cantrips: ["ilusão menor"]
+        grants:
+          spells:
+            always_prepared:
+              3: ["minor-illusion"]
       - level: 6
         features:
           - name: "Passo das Sombras"
@@ -3540,7 +3542,7 @@ monk:
       - level: 3
         features:
           - name: "Discípulo dos Elementos"
-            description: "Aprende 'Sintonia Elemental' e 1 disciplina elemental; ganha mais nos níveis 6, 11 e 17."
+            description: "Aprende a disciplina Sintonia Elemental e escolhe 1 disciplina elemental à sua escolha; aprende mais 1 disciplina no 6º, 11º e 17º nível (ao aprender uma nova, pode trocar uma já conhecida por outra). Cada disciplina gasta Chi ao ser usada; magias conjuradas por disciplina dispensam componentes materiais e usam CD = CD de Chi (8 + bônus de proficiência + mod. Sabedoria). A partir do 5º nível, pode gastar Chi adicional para elevar o nível efetivo da magia (+1 nível por Chi extra), até o teto por faixa: 3 (5º-8º), 4 (9º-12º), 5 (13º-16º), 6 (17º-20º)."
             choices:
               disciplines:
                 choose: 1
@@ -3636,7 +3638,7 @@ monk:
       - level: 0
         features:
           - name: "Sintonia Elemental (sempre conhecida)"
-            description: "Gestos/efeitos elementais simples: acender/apagar chamas, pequenas brisas, aquecer/esfriar e afins."
+            description: "Ação: controla momentaneamente as forças elementais próximas para um efeito à escolha — criar um efeito sensorial inofensivo (água/ar/fogo/terra); acender ou apagar uma vela, tocha ou pequena fogueira; esfriar ou aquecer até 0,5 kg de material inorgânico por até 1 hora; ou moldar terra, fogo, ar ou névoa que caiba em até 30 cm³ por 1 minuto."
 
   # Tradições do Livro de Novos Arquétipos (chaves = ruleSlug do wizard / front)
   caminho_aco:
@@ -3653,6 +3655,9 @@ monk:
           - name: "Proficiência Adicional (Aço)"
             description: |
               A partir do 3° nível, você segue um rumo totalmente diferente das outras tradições monásticas. Você adquire proficiência com armaduras leves e médias.
+            grants:
+              proficiencies:
+                armors: { add: ["light", "medium"] }
           - name: "Técnicas do Monge de Ferro"
             description: |
               A partir do 3° nível, você desenvolve técnicas diferentes das do monge tradicional ao usar seu chi em um combate. Enquanto estiver vestindo uma armadura, você pode adicionar seu modificador de Sabedoria ou de Destreza (o que for maior) à CA base fornecida pela armadura (máximo de +2 para armaduras médias). Além disso, você pode usar todas as suas características de classe mesmo usando armadura, exceto a Rajada de Golpes, Defesa Paciente e Passo do Vento. Você pode usar as características a seguir, no lugar dessas características.
@@ -3689,6 +3694,9 @@ monk:
           - name: "Mestre do Improviso"
             description: |
               No 3° nível, quando você escolhe essa tradição, você adquire proficiência com armas improvisadas. Essas armas são consideradas armas de monge para você.
+            grants:
+              proficiencies:
+                weapons: { add: ["armas improvisadas"] }
           - name: "Estilo do Mestre Bêbado"
             description: |
               Também no 3° nível, você pode realizar novas ações usando seu chi quando estiver embriagado. Você deve usar sua ação para ingerir, pelo menos, um litro de bebida alcoólica forte, como rum, saquê ou vinho, permanecendo bêbado enquanto possuir pontos de chi restantes. Enquanto estiver bêbado, você recebe vantagem em testes de Destreza (Acrobacia), mas sofre desvantagem em testes de Sabedoria (Percepção). Além disso, você pode usar as seguintes características enquanto estiver bêbado:
@@ -3725,6 +3733,9 @@ monk:
           - name: "Tatuador Experiente"
             description: |
               No 3° nível, quando você escolhe essa tradição, você consegue fazer tatuagens com grande perícia. Você adquire proficiência com ferramentas de pintor e suprimentos de caligrafia. Com essas ferramentas, você pode criar tatuagens apropriadas para armazenar poder místico. Cada tatuagem requer uma sessão de 8 horas para ser feita, além do gasto de 100 po em tintas e materiais místicos.
+            grants:
+              proficiencies:
+                tools: { add: ["Ferramentas de pintor", "Suprimentos de caligrafia"] }
           - name: "Tatuagem Mística"
             description: |
               Também no 3° nível, você pode despertar o poder místico em tatuagens que você possuir. Despertar uma tatuagem requer 1 hora de meditação e você não pode despertar outra tatuagem até terminar um descanso longo. Você pode ter duas tatuagens despertas, inicialmente. Cada tatuagem permite que você use seu chi de uma nova forma (Carvalho, Dragão, Fênix, Garça, Macaco, Serpente, Tigre — efeitos detalhados no livro). Ativar essas características não requer uma ação, mas só pode ser feito no seu turno.
@@ -3763,6 +3774,10 @@ monk:
           - name: "Arte do Ninjútsu"
             description: |
               No 3° nível, quando você adentra um clã secreto de ninjas, você adiciona as seguintes armas à sua lista de armas de monge: katana (espada longa), kodachi (cimitarra), fukiya (zarabatana) e naginata (glaive). Você adquire proficiência com essas armas e com kit de venenos.
+            grants:
+              proficiencies:
+                weapons: { add: ["Katana", "Kodachi", "Fukiya", "Naginata"] }
+                tools: { add: ["Kit de Venenos"] }
           - name: "Golpe Súbito"
             description: |
               A partir do 3° nível, você se torna capaz de desferir um golpe letal ao pegar seu oponente desprevenido. Quando você usar uma arma de monge para atacar um oponente que não possa ver você ou que esteja surpreso, você adiciona 1d8 de dano extra ao primeiro ataque que você atingir no seu turno. O dano extra do seu Golpe Súbito aumenta em 1d8 para cada três níveis de monge que você possuir (2d8 no 6°, 3d8 no 9°, 4d8 no 12°, 5d8 no 15° e 6d8 no 18° nível).
@@ -3827,15 +3842,16 @@ monk:
           - name: "Conjuração (Punho Sagrado)"
             description: |
               Quando você alcançar o 3° nível, você amplia sua versatilidade e autossuficiência com a capacidade de conjurar magias divinas. Truques: você aprende um truque, à sua escolha, da lista de magias de clérigo, além do truque chamas sagradas (aprende +1 truque adicional no 10° nível, totalizando 2). Espaços de magia, magias conhecidas e progressão seguem a tabela “Conjuração de Punho Sagrado” (ver rules.spellcasting.table). Habilidade de conjuração: Sabedoria. CD = 8 + bônus de proficiência + modificador de Sabedoria; ataque de magia = bônus de proficiência + modificador de Sabedoria.
-            grants:
-              cantrips: ["chamas sagradas"]
-              cantrips_progression: { at_3: 1, at_10: 2 }
           - name: "Domínios Sagrados"
             description: |
               No 3° nível, você deve escolher dois dentre os Domínios Divinos disponíveis para o clérigo. Você deve escolher as magias da tabela de magias desses domínios como suas magias conhecidas, conforme as regras do capítulo do Punho Sagrado no livro.
           - name: "Energia Divina Interior"
             description: |
               Também no 3° nível, você adquire a capacidade de usar sua energia mística interior em conjunto com sua energia divina. Com uma ação bônus, você pode gastar pontos de chi para conjurar uma magia num espaço de magia superior. Para cada 2 pontos de chi gastos, o nível da magia é elevado em 1, até o máximo de 4° nível. Uma vez que tenha usado essa característica, você não poderá fazê-lo novamente até ter terminado um descanso curto ou longo.
+        grants:
+          spells:
+            always_prepared:
+              3: ["sacred-flame"]
       - level: 6
         features:
           - name: "Punho de Chamas Divinas"
@@ -3865,7 +3881,7 @@ monk:
         features:
           - name: "Mantra de Poder"
             description: |
-              No 3° nível, quando você escolhe essa tradição, você aprende a realizar mantras. Durante um descanso, você pode se concentrar e realizar mantras que permitem que você acesse novos níveis espirituais. Ao terminar um descanso curto ou longo, você pode realocar uma porção de sua energia interior para ganhar um dos benefícios do livro: por exemplo, rolar 1d4 e adicionar a qualquer teste de habilidade (reduz teto de chi em 3); +1d4 de dano com armas de monge e desarmados (teto –4); +1d4 a testes de resistência (teto –5); +1d4 a jogadas de ataque (teto –5); resistência a B/P/S não mágico (teto –6); resistência a dano de magias (teto –6). Você mantém o benefício contanto que não esteja usando armadura ou escudo, até realizar um novo descanso.
+              No 3° nível, quando você escolhe essa tradição, você aprende a realizar mantras. Durante um descanso, você pode se concentrar e realizar mantras que permitem que você acesse novos níveis espirituais. Ao terminar um descanso curto ou longo, você pode realocar uma porção de sua energia interior para ganhar um dos benefícios do livro: por exemplo, rolar 1d4 e adicionar a qualquer teste de habilidade (reduz teto de chi em 3); +1d4 de dano com armas de monge e desarmados (teto –4); +1d4 a testes de resistência (teto –5); +1d4 a jogadas de ataque com armas de monge e desarmados (teto –5); resistência a B/P/S não mágico (teto –6); resistência a dano de magias (teto –6). Você mantém o benefício contanto que não esteja usando armadura ou escudo, até realizar um novo descanso.
       - level: 6
         features:
           - name: "Akasha Interior"
@@ -3917,7 +3933,7 @@ paladin:
       - level: 20
         features:
           - name: "Halo Sagrado"
-            description: "Ação; por 1 min, luz plena 9 m (penumbra +9 m). Inimigo que inicia turno/entra na luz sofre 10 de dano radiante; você tem vantagem em TS contra magias de corruptores ou mortos-vivos. 1/descanso longo."
+            description: "Ação; por 1 min, luz plena 9 m (penumbra +9 m). Inimigo que inicia o turno na luz plena sofre 10 de dano radiante; você tem vantagem em TS contra magias de corruptores ou mortos-vivos. 1/descanso longo."
   juramento-dos-ancioes:
     name: "Juramento dos Anciões"
     flavor: "Juramento Sagrado"

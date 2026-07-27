@@ -228,6 +228,69 @@ class CharacterSheetSummaryService
         # ignore resilience computation errors
       end
 
+      # Defesa sem Armadura (Monge): CA = 10 + DEX + WIS quando sem armadura e sem
+      # escudo. A fórmula existe em ClassRules mas não era aplicada ao número da CA
+      # do summary (ac_for devolvia só 10+DEX) — isso vazava para consumidores da
+      # CA do backend (ex.: seed de AC do combatente). Espelha o precedente acima.
+      begin
+        pk = primary_sheet_klass
+        if pk&.klass
+          is_monk = pk.klass.api_index.to_s == 'monk' || pk.klass.api_index.to_s.include?('monk')
+          armor_cat = (equipment.dig(:ac, :armor_category) || '').to_s.downcase
+          unarmored = armor_cat.blank? || armor_cat == 'none'
+          has_shield = equipment.dig(:ac, :source).to_s.downcase.include?('escudo')
+          if is_monk && unarmored && !has_shield
+            mods = (abilities[:mods] || {})
+            dex_mod = mods[:dex].to_i
+            wis_mod = mods[:wis].to_i
+            alt_ac = 10 + dex_mod + wis_mod
+            cur_ac = equipment.dig(:ac, :ac).to_i
+            if alt_ac > cur_ac
+              equipment[:ac] ||= { ac: alt_ac, source: 'Defesa sem Armadura' }
+              equipment[:ac][:ac] = alt_ac
+              equipment[:ac][:source] = 'Defesa sem Armadura'
+            end
+          end
+        end
+      rescue => _e
+        # ignore unarmored defense computation errors
+      end
+
+      # Defesa sem Armadura (Bárbaro): CA = 10 + DEX + CON quando sem armadura.
+      # Mesmo gap do Monge acima — `ac_for` só devolvia 10+DEX, o que vazava para
+      # consumidores da CA do backend (ex.: seed de AC do combatente).
+      #
+      # DIFERENÇA vs. Monge: o Bárbaro MANTÉM a Defesa sem Armadura usando escudo
+      # (PHB — "You can use a shield and still gain this benefit"), enquanto o
+      # Monge a perde. Por isso SOMAMOS CON por cima da CA do equipamento — que já
+      # inclui o +2 do escudo via EquipmentProfileService — em vez de substituir
+      # com 10+DEX+CON (que descartaria o escudo). Espelha o `computeAC` do front,
+      # onde a base 10+DES+CON e o escudo são somados à parte. Feats/itens (anel de
+      # proteção, bracadeiras) entram DEPOIS via ModifierPipeline (`sum_for('ac')`),
+      # que NÃO emite AC de Defesa sem Armadura — sem duplicar CON.
+      #
+      # NB: o +1 de armadura natural da Forma de Urso (homebrew) é estado de
+      # runtime de combate (toggle `bearFormActive` no front) — NÃO entra aqui,
+      # que é a CA estática da ficha, para não duplicar.
+      begin
+        pk = primary_sheet_klass
+        if pk&.klass && pk.klass.api_index.to_s.include?('barbar')
+          armor_cat = (equipment.dig(:ac, :armor_category) || '').to_s.downcase
+          unarmored = armor_cat.blank? || armor_cat == 'none'
+          con_mod = (abilities[:mods] || {})[:con].to_i
+          if unarmored && con_mod != 0
+            equipment[:ac] ||= { ac: (10 + (abilities[:mods] || {})[:dex].to_i), source: 'Sem armadura' }
+            cur_ac = equipment[:ac][:ac].to_i
+            cur_src = equipment[:ac][:source].to_s
+            equipment[:ac][:ac] = cur_ac + con_mod
+            equipment[:ac][:source] =
+              cur_src.downcase.include?('escudo') ? "#{cur_src} + Defesa sem Armadura" : 'Defesa sem Armadura'
+          end
+        end
+      rescue => _e
+        # ignore unarmored defense computation errors
+      end
+
       # Apply speed penalties from armor and encumbrance
       begin
         base_ft = movement[:speed_ft].to_i
@@ -1522,9 +1585,9 @@ class CharacterSheetSummaryService
       out[:rage] = { total: total, used: [used_for.call('rage'), total].min, damage_bonus: damage }
     end
 
-    # Ki (Monge)
+    # Ki (Monge) — PHB pg. 78: 0@1, começa no nv 2 (total = nível de monge)
     if api_idx.include?('monk') || api_idx == 'monge'
-      total = level
+      total = level >= 2 ? level : 0
       out[:ki] = { total: total, used: [used_for.call('ki'), total].min }
     end
 
