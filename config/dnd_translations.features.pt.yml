@@ -132,7 +132,7 @@ features:
   foe-slayer: Matador de Inimigos
   font-of-magic: Fonte de Magia
   frenzy: Frenesi
-  hide-in-plain-sight: Esconder-se à Vista
+  hide-in-plain-sight: Mimetismo
   holy-nimbus: Auréola Sagrada
   hunters-prey: Preda do Caçador
   hurl-through-hell: Arremesso ao Inferno
@@ -209,7 +209,7 @@ features:
   primal-path-improvement-1: Recurso de caminho
   primal-path-improvement-2: Recurso de caminho
   primal-path-improvement-3: Recurso de caminho
-  primeval-awareness: Consciência Primeva
+  primeval-awareness: Prontidão Primitiva
   purity-of-body: Pureza Corporal
   purity-of-spirit: Pureza do Espírito
   quivering-palm: Palma Trêmula
@@ -775,7 +775,7 @@ feature_descs:
   primal-path-improvement-1: No 3º nível, você escolhe um caminho que molda a natureza da sua fúria. Escolha o Caminho do Berserker ou o Caminho do Guerreiro Totêmico, ambos detalhados ao fim da descrição da classe. Sua escolha concede recursos no 3º nível e novamente nos níveis 6, 10 e 14.
   primal-path-improvement-2: No 3º nível, você escolhe um caminho que molda a natureza da sua fúria. Escolha o Caminho do Berserker ou o Caminho do Guerreiro Totêmico, ambos detalhados ao fim da descrição da classe. Sua escolha concede recursos no 3º nível e novamente nos níveis 6, 10 e 14.
   primal-path-improvement-3: No 3º nível, você escolhe um caminho que molda a natureza da sua fúria. Escolha o Caminho do Berserker ou o Caminho do Guerreiro Totêmico, ambos detalhados ao fim da descrição da classe. Sua escolha concede recursos no 3º nível e novamente nos níveis 6, 10 e 14.
-  primeval-awareness: 'A partir do 3º nível, você pode usar sua ação e gastar um espaço de magia de patrulheiro para focar a percepção na região ao redor. Por 1 minuto por nível do espaço gasto, pode sentir se os seguintes tipos de criaturas estão presentes em até 1 milha de você (ou até 6 milhas se estiver em terreno favorecido): aberrações, celestiais, dragões, elementais, fadas, infernais e mortos-vivos. O recurso não revela localização nem quantidade.'
+  primeval-awareness: 'A partir do 3º nível, você pode usar sua ação e gastar um espaço de magia de patrulheiro para focar a percepção na região ao redor. Por 1 minuto por nível do espaço gasto, pode sentir se os seguintes tipos de criaturas estão presentes em até 1 milha de você (ou até 6 milhas se estiver em terreno favorecido): aberrações, celestiais, corruptores, dragões, elementais, fadas e mortos-vivos. O recurso não revela localização nem quantidade.'
   purity-of-body: No 10º nível, sua maestria sobre o ki que percorre você torna você imune a doenças e veneno.
   rage: |-
     Em combate, você luta com ferocidade primordial. No seu turno, pode entrar em fúria como ação bônus. Enquanto estiver em fúria, recebe os benefícios a seguir se não estiver usando armadura pesada:
