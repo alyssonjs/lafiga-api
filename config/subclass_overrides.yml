@@ -2426,9 +2426,8 @@ ranger:
                 defaults: "sem ações (exceto reações) até receber comando"
                 movement_command: "mover-se pode ser ordenado verbalmente (sem ação)"
                 action_command:
-                  action_cost: "Ação"
+                  action_cost: "Ação Bônus"
                   actions_allowed: ["Ataque","Disparada","Desengajar","Esquivar","Ajuda"]
-                  extra_attack_synergy: "se você tiver Ataque Extra, faz 1 ataque com arma ao comandar 'Ataque'"
               autonomy_and_travel:
                 if_you_are_incapacitated_or_absent: "prioriza defender você"
                 favored_terrain_stealth: "viajando só com a besta no terreno favorito, pode mover-se furtivamente em ritmo normal"
@@ -2436,22 +2435,43 @@ ranger:
                 ritual: "8 horas para vincular nova besta não-hostil"
       - level: 7
         features:
-          - name: "Treinamento Excepcional"
-            description: "Quando a besta não atacar no seu turno, você pode usar Ação Bônus para comandá-la a Disparar, Desengajar, Esquivar ou Ajudar."
-            rules:
-              bonus_action_command: ["Disparar","Desengajar","Esquivar","Ajudar"]
-      - level: 11
-        features:
           - name: "Fúria Bestial"
-            description: "Quando você comanda 'Ataque', a besta faz 2 ataques (ou usa Ataque Múltiplo, se tiver)."
+            description: "Quando você comanda 'Ataque', a besta faz 2 ataques (ou usa Ataque Múltiplo, se tiver) em vez de um."
             rules:
               companion_attacks_on_attack_command: 2
-      - level: 15
+      - level: 9
+        features:
+          - name: "Companheiro Aprimorado (Médio)"
+            description: "A partir do 9º nível, pode escolher uma besta Média ou menor com ND ≤ 1/2 como companheiro."
+            rules:
+              companion_upgrade:
+                size_max: "Médio"
+                cr_max: "1/2"
+      - level: 11
         features:
           - name: "Compartilhar Magias"
-            description: "Magias que tenham você como alvo também afetam o companheiro a até 9 m."
+            description: "Magias que tenham você como alvo também afetam o companheiro a até 9 m. Além disso, ao comandar 'Ataque', você pode usar sua ação e gastar um espaço de magia de 1º nível para dar +1d6 de dano aos ataques da besta até o fim do turno (+1d6 por nível de espaço acima do 1º)."
             rules:
               share_target_self_spells_with_companion_within_m: 9
+              empower_companion_attacks:
+                action_cost: "Ação"
+                base_slot_level: 1
+                bonus_damage: "1d6"
+                scaling: "+1d6 por nível de espaço de magia acima do 1º"
+      - level: 13
+        features:
+          - name: "Companheiro Aprimorado (Grande)"
+            description: "A partir do 13º nível, pode escolher uma besta Grande ou menor com ND ≤ 1 como companheiro."
+            rules:
+              companion_upgrade:
+                size_max: "Grande"
+                cr_max: "1"
+      - level: 15
+        features:
+          - name: "Companheiro de Caça"
+            description: "Quando você ordenar que o companheiro ataque uma criatura que você atingiu com um ataque no seu turno, ele recebe vantagem nas jogadas de ataque contra ela até o fim do seu turno."
+            rules:
+              companion_advantage_vs_creature_you_hit: true
 
   # Novos arquétipos (Livro de Novos Arquétipos) — chaves alinhadas a characterCreationData / canonical_indexes
   arqueiro_floresta_alta:
