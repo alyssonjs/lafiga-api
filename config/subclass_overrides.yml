@@ -2565,6 +2565,10 @@ ranger:
           - name: "Explorador Urbano"
             description: |
               No 3° nível, você terá os benefícios da característica Explorador Natural em qualquer território urbano. Um território urbano, com esse propósito, é qualquer local que, segundo o Mestre, se encaixe como uma vila, cidade ou metrópole. Além disso, você adquire proficiência na perícia Persuasão e tem vantagem em testes de Carisma (Persuasão) com os propósitos de obter informações sobre uma criatura, item ou local que você deseja encontrar.
+        grants:
+          proficiencies:
+            skills:
+              fixed: ["Persuasão"]
       - level: 7
         features:
           - name: "Buscar e Abater"
@@ -2575,6 +2579,10 @@ ranger:
           - name: "Percepção do Antinatural"
             description: |
               No 11° nível, você se torna extremamente familiarizado com um ambiente que não seja natural. Em qualquer ambiente urbano ou masmorra que não seja natural, você recebe vantagem em testes de Sabedoria (Percepção) ou Inteligência (Investigação) realizados para encontrar rastros, portas secretas, armadilhas, passagens escondidas ou qualquer outra característica no terreno que não tenha sido feita naturalmente. Além disso, você adquire proficiência com ferramentas de ladrão e tem vantagem em qualquer teste que fizer com elas num território urbano ou masmorra que não seja natural. Alternativamente, se preferir, ao invés de dar vantagem nas jogadas de ataque de seus companheiros, você pode usar sua ação bônus para realizar um ataque que, ao invés de causar dano, cansa seu oponente. O alvo deve realizar um teste de resistência de Constituição (CD 8 + seu bônus de proficiência + seu modificador de Destreza) ou receberá 1 nível de exaustão.
+        grants:
+          proficiencies:
+            tools:
+              add: ["Ferramentas de Ladrão"]
       - level: 15
         features:
           - name: "Líder de Caçada"
