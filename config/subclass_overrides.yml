@@ -2170,8 +2170,6 @@ ranger:
               bonus_damage:
                 dice_by_level:
                   "3": "2d6"
-                  "9": "1d8 (substitui 2d6)"
-                  "16": "1d10 (substitui 1d8)"
         grants:
           languages:
             choose: 1
