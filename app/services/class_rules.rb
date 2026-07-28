@@ -1449,7 +1449,7 @@ class ClassRules
         options: ['Lidar com Animais','Arcanismo','Atletismo','Medicina','Natureza','Atuação','Persuasão','Prestidigitação','Sobrevivência']
       },
 
-      features_level1: ['Bolsa de Cozinheiro','Petiscos','Sais Aromáticos'],
+      features_level1: ['Bolsa de Cozinheiro','Petiscos','Temperos Aromáticos'],
 
       subclass: {
         choose_level: 3,
