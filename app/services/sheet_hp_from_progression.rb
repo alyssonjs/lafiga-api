@@ -62,6 +62,13 @@ module SheetHpFromProgression
     feat_hp = FeatHpBonus.total_for_sheet(sheet, character_level.to_i)
     total += feat_hp if feat_hp.positive?
 
+    # Subclass HP bonus (ex.: Cozinheiro › Sargento Alimentar "Nunca Satisfeito"
+    # +3 imediato + 1/nível). O YAML declarava `max_hp_bonus_immediate/per_level`
+    # mas nada consumia — hp_max ficava sem o bônus. Cada subclasse usa o nível
+    # da sua própria classe. Cobertura: spec/services/subclass_hp_bonus_spec.rb.
+    subclass_hp = SubclassHpBonus.total_for_sheet(sheet)
+    total += subclass_hp if subclass_hp.positive?
+
     total
   end
 end

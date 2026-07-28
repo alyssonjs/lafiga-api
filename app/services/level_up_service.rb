@@ -184,6 +184,14 @@ class LevelUpService
         rescue => _e
           Rails.logger.warn("LevelUpService: feat HP bonus omitido (#{_e.class})") if defined?(Rails.logger)
         end
+        # Subclass HP bonus (ex.: Sargento Alimentar "Nunca Satisfeito": +3 ao
+        # adquirir no Nv 3, +1 a cada nível seguinte). Delta ao atingir new_level.
+        begin
+          sp = SubclassHpBonus.step_bonus_for_klass(sk, new_level)
+          step_gain += sp if sp.positive?
+        rescue => _e
+          Rails.logger.warn("LevelUpService: subclass HP bonus omitido (#{_e.class})") if defined?(Rails.logger)
+        end
         gained_hp += step_gain
       end
 
