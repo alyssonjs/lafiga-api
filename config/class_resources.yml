@@ -105,6 +105,27 @@ drain_energy:
   recharge: short
 corrupt_nature:
   recharge: long
+fairy_creature:
+  recharge: long
+summon_elder:
+  recharge: long
+verdant_growth:
+  recharge: long
+# ── Feiticeiro (sorcerer) — gates de Origem de Feitiçaria ──
+sorcerous_restoration:
+  recharge: long
+blade_dance:
+  recharge: long
+blood_well:
+  recharge: short
+elemental_power:
+  recharge: short
+maddening_gaze:
+  recharge: short
+demonic_resilience:
+  recharge: long
+reflexive_skin:
+  recharge: short
 mystic_master:
   recharge: long
 fey_presence:
