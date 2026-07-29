@@ -214,6 +214,37 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
           expect(data['payload']['conditions']).to eq([{ 'id' => 'frightened', 'turns_left' => 1 }])
         }
       end
+
+      # Bárbaro base F1.20/M4: a ATIVAÇÃO/TÉRMINO da Fúria vive em turn_state
+      # (rageRoundsRemaining) — server-authoritative. O PATCH que a muta dispara
+      # combatant_upserted com o estado, então TODOS os players veem a Fúria em
+      # tempo real (não só quem clicou).
+      it 'F1.20/M4 — PATCH turn_state com rageRoundsRemaining (Fúria) dispara combatant_upserted com o estado' do
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { turn_state: { rageRoundsRemaining: 10 } } },
+                headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['turn_state']).to eq({ 'rageRoundsRemaining' => 10 })
+        }
+      end
+
+      # Bárbaro base F2.7: o Ataque Descuidado foi MIGRADO de character.classData
+      # (que não broadcastava — gap de multiplayer) para turn_state do combatente,
+      # como a Fúria. Assim a declaração sincroniza em tempo real e os inimigos de
+      # TODOS os clientes veem a vulnerabilidade (ataques contra o bárbaro têm
+      # vantagem) — não só o cliente que declarou.
+      it 'F2.7 — PATCH turn_state com recklessUntilNextTurnActive dispara combatant_upserted com o estado' do
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { turn_state: { recklessUntilNextTurnActive: true } } },
+                headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['turn_state']).to eq({ 'recklessUntilNextTurnActive' => true })
+        }
+      end
     end
 
     # Efeito de combate (dano/cura) aplicado pelo JOGADOR DONO do combatente do
