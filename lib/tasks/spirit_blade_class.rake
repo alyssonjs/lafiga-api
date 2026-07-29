@@ -82,7 +82,7 @@ namespace :custom do
           options: {
             'soul-reaper': { id: 'soul-reaper', name: 'Ceifeiro de Almas' },
             'spirit-summoner': { id: 'spirit-summoner', name: 'Conjurador Espiritual' },
-            'elemental-blade': { id: 'elemental-blade', name: 'Lâmina Elemental' },
+            'elemental-blade': { id: 'elemental-blade', name: 'Especialista Elemental' },
           },
         },
         spellcasting: nil,
@@ -142,7 +142,7 @@ namespace :custom do
       },
       {
         api_index: 'elemental-blade',
-        name: 'Lâmina Elemental',
+        name: 'Especialista Elemental',
         subclass_flavor: 'Infunde a arma com energia elemental devastadora',
         description: 'Os espadachins que descobrem uma fonte elemental em seu espirito, repleta de energia natural, acabam se tornando verdadeiros destruidores em massa, apenas balancando suas armas e causando resultados catastroficos.',
       },
@@ -150,7 +150,7 @@ namespace :custom do
 
     # Renomear subklass legada (api_index antigo "spirit-elementalist")
     if (legacy = SubKlass.find_by(klass_id: klass.id, api_index: 'spirit-elementalist'))
-      legacy.update!(api_index: 'elemental-blade', name: 'Lâmina Elemental')
+      legacy.update!(api_index: 'elemental-blade', name: 'Especialista Elemental')
       puts "  [custom]   SubKlass renomeada: spirit-elementalist -> elemental-blade"
     end
 
@@ -206,7 +206,7 @@ namespace :custom do
         api_index: 'spirit-blade-arquetipo-espiritual-choose',
         name: 'Arquétipo Espiritual',
         levels: [3],
-        description: 'No 3° nível, você escolhe um arquétipo: Ceifeiro de Almas, Conjurador Espiritual ou Lâmina Elemental. O arquétipo confere características especiais no 3°, 7°, 10°, 15° e 18° nível.',
+        description: 'No 3° nível, você escolhe um arquétipo: Ceifeiro de Almas, Conjurador Espiritual ou Especialista Elemental. O arquétipo confere características especiais no 3°, 7°, 10°, 15° e 18° nível.',
       },
       {
         api_index: 'spirit-blade-incremento-valor-habilidade',
