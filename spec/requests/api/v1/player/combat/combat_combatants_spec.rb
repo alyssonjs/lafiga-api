@@ -183,6 +183,39 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
       end
     end
 
+    # Broadcast realtime — SERVER-SIDE dos "sync anchors" do front (que sao
+    # server-authoritative): o PATCH que muta turn_state/condicoes dispara
+    # `combatant_upserted` no SessionRealtimeChannel, com o estado atualizado no
+    # payload. Cobre F3.11 (frenzyActive), F6.10 (condicoes/supressao),
+    # F10.16 (pending/lockout no turn_state), F14.14 (pending), M4.
+    context 'broadcast realtime no update (sync anchors)' do
+      def stream
+        SessionRealtimeChannel.stream_name_for(schedule.id)
+      end
+
+      it 'F3.11/F10.16/F14.14 — PATCH turn_state dispara combatant_upserted com o turn_state no payload' do
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { turn_state: { frenzyActive: true, frenzyActivatedRound: 2 } } },
+                headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['turn_state']).to eq({ 'frenzyActive' => true, 'frenzyActivatedRound' => 2 })
+        }
+      end
+
+      it 'F6.10/M4 — PATCH conditions dispara combatant_upserted com as condicoes no payload' do
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { conditions: [{ id: 'frightened', turns_left: 1 }] } },
+                headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['conditions']).to eq([{ 'id' => 'frightened', 'turns_left' => 1 }])
+        }
+      end
+    end
+
     # Efeito de combate (dano/cura) aplicado pelo JOGADOR DONO do combatente do
     # TURNO ATUAL em QUALQUER combatente — habilita poção/ataque/magia do jogador
     # (a regra "curado de 0 volta à batalha" envia a transição de morte derivada).
