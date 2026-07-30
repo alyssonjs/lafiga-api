@@ -666,4 +666,123 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
       end
     end
   end
+
+  # ---- Fortitude Instintiva (kind: instinctive_fortitude) --------------------
+  # O Bárbaro Furioso Imortal (PC do defender_user) cai a 0 PV. QUEM APLICOU o
+  # dano (o atacante do turno atual, ou o DM) declara a interação → o DONO do PC
+  # caído (defender) decide (M2): aceitar entra em Fúria + volta a 1 PV + consome
+  # a reação (F14.4, server-side); recusar não consome nada. M3: NPC → DM.
+  describe 'Fortitude Instintiva' do
+    # Atacante no turno atual (position 0 = current_turn_index) → pode iniciar.
+    let!(:attacker_cc) do
+      create(:combat_combatant, :pc,
+             combat_state: cs, combatable: attacker_char,
+             position: 0, ac: 15, hp_current: 20, hp_max: 20)
+    end
+
+    # Bárbaro CAÍDO (PC do defender_user): 0 PV, Morrendo, 1 falha de TR de morte.
+    let!(:downed_cc) do
+      create(:combat_combatant, :pc,
+             combat_state: cs, combatable: defender_char,
+             position: 1, hp_current: 0, hp_max: 30,
+             death_saves: { 'successes' => 0, 'failures' => 1 })
+    end
+
+    def if_upsert_body(reactor_identity:, owned_by_dm: false)
+      {
+        interaction: {
+          kind: 'instinctive_fortitude',
+          source_id: reactor_identity.to_s,
+          target_ids: [reactor_identity.to_s],
+          pending_responders: [
+            { character_id: reactor_identity.to_s, need: 'offer_reaction', owned_by_dm: owned_by_dm, responded: false },
+          ],
+          instinctive_fortitude: { downed_name: 'Grog' },
+        },
+      }
+    end
+
+    describe 'PUT (upsert)' do
+      it 'o atacante do turno atual declara → fase declared, caído pendente offer_reaction' do
+        put "#{base}/active_interaction",
+            params: if_upsert_body(reactor_identity: defender_char.id),
+            headers: attacker_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['kind']).to eq('instinctive_fortitude')
+        expect(ai['phase']).to eq('declared')
+        expect(ai['source_id']).to eq(defender_char.id.to_s)
+        expect(ai['pending_responders'].first['need']).to eq('offer_reaction')
+        expect(ai['instinctive_fortitude']['downed_name']).to eq('Grog')
+      end
+
+      it 'o DM também pode declarar (M3: caído NPC)' do
+        put "#{base}/active_interaction",
+            params: if_upsert_body(reactor_identity: defender_char.id, owned_by_dm: true),
+            headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+      end
+
+      it '403 quando quem declara não é o atacante do turno nem DM' do
+        put "#{base}/active_interaction",
+            params: if_upsert_body(reactor_identity: defender_char.id),
+            headers: outsider_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    describe 'POST (respond) — dono do caído decide (M2)' do
+      before do
+        put "#{base}/active_interaction",
+            params: if_upsert_body(reactor_identity: defender_char.id),
+            headers: attacker_headers, as: :json
+      end
+
+      it 'ACEITA: HP=1, sai de Morrendo, entra em Fúria, consome a reação (F14.4); limpa + log' do
+        expect do
+          post "#{base}/active_interaction/respond",
+               params: { character_id: defender_char.id.to_s, instinctive_fortitude: { accept: true } },
+               headers: defender_headers, as: :json
+        end.to change { schedule.session_logs.count }.by_at_least(1)
+        expect(response).to have_http_status(:ok)
+
+        downed_cc.reload
+        expect(downed_cc.hp_current).to eq(1)
+        expect(downed_cc.is_dead).to be false
+        expect(downed_cc.is_stabilized).to be false
+        expect(downed_cc.death_saves).to eq('successes' => 0, 'failures' => 0) # resetado
+        expect(downed_cc.turn_state['rageRoundsRemaining']).to eq(10)
+        expect(downed_cc.actions_used['reaction']).to be true # F14.4: reação consumida
+        expect(cs.reload.active_interaction).to be_nil
+      end
+
+      it 'RECUSA: nada é consumido (HP 0, reação livre); permanece Morrendo; limpa + log' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, instinctive_fortitude: { decline: true } },
+             headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+
+        downed_cc.reload
+        expect(downed_cc.hp_current).to eq(0)
+        expect(downed_cc.actions_used['reaction']).to be false
+        expect(downed_cc.turn_state['rageRoundsRemaining']).to be_nil
+        expect(cs.reload.active_interaction).to be_nil
+      end
+
+      it '403 quando quem responde não é o dono do caído (M2) nem DM' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, instinctive_fortitude: { accept: true } },
+             headers: attacker_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+        expect(cs.reload.active_interaction).to be_present
+      end
+
+      it '422 sem accept nem decline' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, instinctive_fortitude: {} },
+             headers: defender_headers, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
 end

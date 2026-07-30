@@ -30,6 +30,8 @@ module Api::V1::Player::Combat
           ::Combat::InteractionService.build_hostile_casting(ip)
         when ::Combat::InteractionService::KIND_TARGET_CONSENT
           ::Combat::InteractionService.build_target_consent(ip)
+        when ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
+          ::Combat::InteractionService.build_instinctive_fortitude(ip)
         else
           ::Combat::InteractionService.build_contest(ip)
         end
@@ -55,6 +57,7 @@ module Api::V1::Player::Combat
       return respond_opportunity_attack(current) if current['kind'] == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
       return respond_hostile_casting(current) if current['kind'] == ::Combat::InteractionService::KIND_HOSTILE_CASTING
       return respond_target_consent(current) if current['kind'] == ::Combat::InteractionService::KIND_TARGET_CONSENT
+      return respond_instinctive_fortitude(current) if current['kind'] == ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
 
       next_payload, err = ::Combat::InteractionService.apply_response(current, respond_params)
       if err
@@ -110,6 +113,8 @@ module Api::V1::Player::Combat
         hostile_casting: [:caster_id, :caster_name, :spell_name, :spell_level, :dc, :hostile],
         # Consentimento de alvo (magia voluntária/benéfica): bloco descritivo.
         target_consent: [:caster_id, :caster_name, :spell_name, :beneficial, :auto_refuse],
+        # Fortitude Instintiva (Furioso Imortal L14): bloco descritivo (nome do caído).
+        instinctive_fortitude: [:downed_name],
       ).to_h.tap do |p|
         lists = permitted_opportunity_attack_lists
         p[:opportunity_attack] = (p[:opportunity_attack] || {}).merge(lists) if lists.present?
@@ -147,6 +152,8 @@ module Api::V1::Player::Combat
         hostile_casting: [:frustrate, :ignored, :saved],
         # Consentimento de alvo: o dono do PC `accept` ou `refuse`.
         target_consent: [:accept, :refuse],
+        # Fortitude Instintiva: o dono do PC caído `accept` (entra em fúria/1 PV) ou `decline`.
+        instinctive_fortitude: [:accept, :decline],
       ).to_h
     end
 
@@ -164,6 +171,12 @@ module Api::V1::Player::Combat
         current_turn_belongs_to_user?
       when ::Combat::InteractionService::KIND_HOSTILE_CASTING
         false # conjuração hostil de NPC é declarada só pelo Mestre
+      when ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
+        # O DISPARO vem de QUEM APLICOU o dano (o atacante do turno atual, ou o
+        # Mestre por NPC — já coberto por site_or_table_dm). O `source_id` é o
+        # Bárbaro CAÍDO (reator), não o atacante; então "dono do source" barraria
+        # o atacante. Autorizamos o dono do PC do turno atual, mirror do OA.
+        current_turn_belongs_to_user? || owns_character?(payload['source_id'])
       else
         owns_character?(payload['source_id'])
       end
@@ -400,6 +413,93 @@ module Api::V1::Player::Combat
         end
 
       log = schedule.session_logs.new(kind: :combat, actor: target, message: message)
+      return unless log.save
+
+      ::Combat::Broadcaster.log_appended(log)
+    end
+
+    # --- Fortitude Instintiva (respond server-side, fase única) ----------------
+    #
+    # O DONO do PC caído (`character_id` pendente) decide (M2/M3):
+    #   `accept:true`  → entra em Fúria: HP=1, sai de Morrendo (heal! zera
+    #                    is_dead/is_stabilized), reseta death_saves, grava o
+    #                    turn_state de fúria (rageRoundsRemaining=10, mesma fonte
+    #                    única do hotbar), CONSOME a reação (F14.4, server-side).
+    #                    A Fúria Implacável é passiva enquanto em fúria (front).
+    #   `decline:true` → NÃO consome nada; permanece Morrendo. Limpa e loga.
+    #
+    # O consumo de 1 USO de Fúria (recurso de classe) fica no tracker client-side
+    # do jogador (o recurso não é server-authoritative) — o log lembra de marcar.
+    # `with_lock` serializa contra corrida; idempotente se a interação já mudou.
+    def respond_instinctive_fortitude(current)
+      reactor_cc = nil
+      log_data = nil
+
+      rp = respond_params
+      if_resp = rp['instinctive_fortitude'].is_a?(Hash) ? rp['instinctive_fortitude'] : {}
+      accept  = ActiveModel::Type::Boolean.new.cast(if_resp['accept'])
+      decline = ActiveModel::Type::Boolean.new.cast(if_resp['decline'])
+      character_id = rp['character_id'].to_s
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        if current.blank? || current['kind'] != ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
+          return render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+        end
+
+        responder = Array(current['pending_responders']).find do |r|
+          r['character_id'].to_s == character_id && ![true, 1, '1', 'true'].include?(r['responded'])
+        end
+        return render(json: { active_interaction: current }, status: :ok) if responder.nil?
+
+        return render(json: { error: 'informe accept ou decline' }, status: :unprocessable_entity) unless accept || decline
+
+        blk = current['instinctive_fortitude'] || {}
+        reactor_cc = resolve_combatant_by_identity(character_id)
+        reactor_name = reactor_cc&.name.to_s.presence || blk['downed_name'].to_s.presence || reactor_display_name(character_id, blk)
+
+        if accept && reactor_cc
+          # Entra em Fúria: HP=1 (heal! sai de Morrendo + zera is_dead/is_stabilized),
+          # reseta death saves, grava o turn_state de fúria e consome a reação.
+          reactor_cc.death_saves = CombatCombatant::RESET_DEATH_SAVES.dup
+          reactor_cc.heal!(1) # persiste hp_current=1 + is_dead/is_stabilized=false + death_saves
+          ts = Hash(reactor_cc.turn_state).merge(
+            'rageRoundsRemaining' => 10,
+            'rageTookDamageSinceLastTurn' => false,
+          )
+          au = Hash(reactor_cc.actions_used).merge('reaction' => true)
+          reactor_cc.update(turn_state: ts, actions_used: au)
+          log_data = { kind: 'accept', reactor_name: reactor_name }
+        else
+          # Recusa (ou aceitou sem combatant resolvido): não muta nada.
+          log_data = { kind: 'decline', reactor_name: reactor_name }
+        end
+
+        @combat_state.clear_active_interaction!
+      end
+
+      @combat_state.reload
+      # accept muta o combatant (HP/turn_state/reação) → broadcast antes do state.
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && log_data && log_data[:kind] == 'accept'
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      log_instinctive_fortitude(@schedule, log_data) if log_data
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # Feed server-side da Fortitude Instintiva (SessionLog kind combat).
+    def log_instinctive_fortitude(schedule, data)
+      return if schedule.blank? || data.blank?
+
+      reactor = data[:reactor_name].to_s.presence || 'O Bárbaro'
+      message =
+        if data[:kind] == 'accept'
+          "🛡️ Fortitude Instintiva: #{reactor} entra em Fúria, ativa a Fúria Implacável e volta a 1 PV. (Consome 1 uso de Fúria — marque no tracker.)"
+        else
+          "💀 #{reactor} recusa a Fortitude Instintiva e permanece Morrendo."
+        end
+
+      log = schedule.session_logs.new(kind: :combat, actor: reactor, message: message)
       return unless log.save
 
       ::Combat::Broadcaster.log_appended(log)

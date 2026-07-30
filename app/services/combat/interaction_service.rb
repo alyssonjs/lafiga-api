@@ -37,6 +37,7 @@ module Combat
     KIND_OPPORTUNITY_ATTACK = 'opportunity_attack'
     KIND_HOSTILE_CASTING = 'hostile_casting'
     KIND_TARGET_CONSENT = 'target_consent'
+    KIND_INSTINCTIVE_FORTITUDE = 'instinctive_fortitude'
     DEFENDER_SKILL_OPTIONS = %w[Atletismo Acrobacia].freeze
     ATTACKER_SKILL = 'Atletismo'
 
@@ -212,6 +213,43 @@ module Combat
       }
     end
 
+    # ---- upsert Fortitude Instintiva (Furioso Imortal L14) --------------------
+    # O DISPARO vem de QUEM APLICOU o dano (o cliente do atacante/Mestre roda o
+    # `handleUpdateCombatant` que detecta `justDowned`). `source_id` é o BÁRBARO
+    # que caiu a 0 PV (o REATOR), único `target_id`. O DONO do PC decide (M2):
+    # `need:'offer_reaction'`, fase única `declared`. Aceitar → entra em Fúria +
+    # volta a 1 PV + consome a reação (server-side no respond). Recusar não
+    # consome nada. Bloco `instinctive_fortitude` só descritivo (nome).
+    #
+    # Retorna o hash normalizado, ou `nil` se inválido (caller → 422).
+    def build_instinctive_fortitude(params)
+      p = stringify(params)
+
+      kind = (p['kind'] || KIND_INSTINCTIVE_FORTITUDE).to_s
+      return nil unless kind == KIND_INSTINCTIVE_FORTITUDE
+
+      source_id  = presence(p['source_id'])
+      target_ids = Array(p['target_ids']).map { |t| presence(t) }.compact
+      return nil if source_id.nil? || target_ids.empty?
+
+      reactor_id = source_id
+      raw = Array(dig(p, 'pending_responders')).find { |r| stringify(r)['character_id'].to_s == reactor_id.to_s }
+      owned = truthy(stringify(raw || {})['owned_by_dm'])
+
+      {
+        'id' => presence(p['id']) || SecureRandom.uuid,
+        'kind' => KIND_INSTINCTIVE_FORTITUDE,
+        'phase' => 'declared',
+        'source_id' => reactor_id,
+        'target_ids' => [reactor_id],
+        'pending_responders' => [
+          { 'character_id' => reactor_id, 'need' => 'offer_reaction', 'owned_by_dm' => owned, 'responded' => false },
+        ],
+        'instinctive_fortitude' => normalize_instinctive_fortitude(dig(p, 'instinctive_fortitude')),
+        'label' => presence(p['label']) || 'Fortitude Instintiva',
+      }
+    end
+
     # ---- respond (o defensor rola; depois resolve) ----------------------------
     # Aplica a resposta de um responder à interação corrente e avança a fase.
     # `current` é o `active_interaction` persistido; `params` traz
@@ -352,6 +390,16 @@ module Combat
       out['beneficial']  = truthy(h['beneficial']) if h.key?('beneficial')
       out['auto_refuse'] = truthy(h['auto_refuse']) if h.key?('auto_refuse')
       out['outcome'] = nil
+      out
+    end
+
+    # Normaliza o bloco `instinctive_fortitude` do upsert. Só descritivo (nome do
+    # Bárbaro caído, para o prompt). O motor não interpreta. Nunca nil (bloco
+    # opcional): devolve ao menos `{}` normalizado.
+    def normalize_instinctive_fortitude(raw)
+      h = stringify(raw || {})
+      out = {}
+      out['downed_name'] = presence(h['downed_name']).to_s if presence(h['downed_name'])
       out
     end
 
