@@ -245,6 +245,36 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
           expect(data['payload']['turn_state']).to eq({ 'recklessUntilNextTurnActive' => true })
         }
       end
+
+      # Desistente L10 F10.24/M4: a supressão de item mágico vive em
+      # turn_state.suppressedItem (server-authoritative). O PATCH que a grava
+      # dispara combatant_upserted → todos os clientes veem a supressão + expiração.
+      it 'F10.24 — PATCH turn_state com suppressedItem (Suprimir Item) dispara combatant_upserted com o estado' do
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { turn_state: { suppressedItem: { targetId: 't1', targetName: 'Ogro', rounds: 2 } } } },
+                headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['turn_state']).to eq({
+            'suppressedItem' => { 'targetId' => 't1', 'targetName' => 'Ogro', 'rounds' => 2 },
+          })
+        }
+      end
+
+      # Desistente L14 F14.9/M4: o bônus da Fúria Absorvente vive em
+      # turn_state.rageAbsorbBonus/rageAbsorbRounds (server-authoritative). O PATCH
+      # dispara combatant_upserted → o bônus melee sincroniza em tempo real.
+      it 'F14.9 — PATCH turn_state com rageAbsorb* (Fúria Absorvente) dispara combatant_upserted com o estado' do
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { turn_state: { rageAbsorbBonus: 3, rageAbsorbRounds: 1 } } },
+                headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['turn_state']).to eq({ 'rageAbsorbBonus' => 3, 'rageAbsorbRounds' => 1 })
+        }
+      end
     end
 
     # Efeito de combate (dano/cura) aplicado pelo JOGADOR DONO do combatente do
