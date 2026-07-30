@@ -584,4 +584,86 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
       end
     end
   end
+
+  # ---- Consentimento de Alvo (kind: target_consent) --------------------------
+  # Um conjurador (PC do attacker_user) mira o PC do defender_user com magia
+  # voluntária/benéfica → o DONO do alvo (defender) decide aceitar/recusar (M2).
+  # Recusar/cancelar não consome nada (F3.6). Aversão à Magia auto-recusa (F3.1,
+  # o front pré-seleciona recusar; aqui testamos o cano genérico).
+  describe 'Consentimento de Alvo' do
+    def tc_upsert_body(caster_identity:, target_identity:, auto_refuse: true)
+      {
+        interaction: {
+          kind: 'target_consent',
+          source_id: caster_identity.to_s,
+          target_ids: [target_identity.to_s],
+          pending_responders: [
+            { character_id: target_identity.to_s, need: 'consent', owned_by_dm: false, responded: false },
+          ],
+          target_consent: { caster_id: caster_identity.to_s, caster_name: 'Clériga', spell_name: 'Bênção', beneficial: true, auto_refuse: auto_refuse },
+        },
+      }
+    end
+
+    describe 'PUT (upsert)' do
+      it 'o dono do PC conjurador declara → fase declared, alvo pendente consent' do
+        put "#{base}/active_interaction",
+            params: tc_upsert_body(caster_identity: attacker_char.id, target_identity: defender_char.id),
+            headers: attacker_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['kind']).to eq('target_consent')
+        expect(ai['pending_responders'].first['need']).to eq('consent')
+        expect(ai['target_consent']['auto_refuse']).to be true
+      end
+
+      it 'o DM também pode declarar' do
+        put "#{base}/active_interaction",
+            params: tc_upsert_body(caster_identity: attacker_char.id, target_identity: defender_char.id),
+            headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    describe 'POST (respond) — dono do alvo decide (M2)' do
+      before do
+        put "#{base}/active_interaction",
+            params: tc_upsert_body(caster_identity: attacker_char.id, target_identity: defender_char.id),
+            headers: attacker_headers, as: :json
+      end
+
+      it 'o dono do alvo RECUSA (F3.1): limpa + log; nada consumido (F3.6)' do
+        expect do
+          post "#{base}/active_interaction/respond",
+               params: { character_id: defender_char.id.to_s, target_consent: { refuse: true } },
+               headers: defender_headers, as: :json
+        end.to change { schedule.session_logs.count }.by_at_least(1)
+        expect(response).to have_http_status(:ok)
+        expect(cs.reload.active_interaction).to be_nil
+      end
+
+      it 'o dono do alvo ACEITA: limpa + log' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, target_consent: { accept: true } },
+             headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(cs.reload.active_interaction).to be_nil
+      end
+
+      it '403 quando quem responde não é o dono do alvo (M2) nem DM' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, target_consent: { refuse: true } },
+             headers: attacker_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+        expect(cs.reload.active_interaction).to be_present
+      end
+
+      it '422 sem accept nem refuse' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, target_consent: {} },
+             headers: defender_headers, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
 end

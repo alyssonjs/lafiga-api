@@ -28,6 +28,8 @@ module Api::V1::Player::Combat
           ::Combat::InteractionService.build_opportunity_attack(ip)
         when ::Combat::InteractionService::KIND_HOSTILE_CASTING
           ::Combat::InteractionService.build_hostile_casting(ip)
+        when ::Combat::InteractionService::KIND_TARGET_CONSENT
+          ::Combat::InteractionService.build_target_consent(ip)
         else
           ::Combat::InteractionService.build_contest(ip)
         end
@@ -52,6 +54,7 @@ module Api::V1::Player::Combat
 
       return respond_opportunity_attack(current) if current['kind'] == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
       return respond_hostile_casting(current) if current['kind'] == ::Combat::InteractionService::KIND_HOSTILE_CASTING
+      return respond_target_consent(current) if current['kind'] == ::Combat::InteractionService::KIND_TARGET_CONSENT
 
       next_payload, err = ::Combat::InteractionService.apply_response(current, respond_params)
       if err
@@ -105,6 +108,8 @@ module Api::V1::Player::Combat
         ],
         # Conjuração hostil (Frustrar Conjuração): bloco descritivo do cast.
         hostile_casting: [:caster_id, :caster_name, :spell_name, :spell_level, :dc, :hostile],
+        # Consentimento de alvo (magia voluntária/benéfica): bloco descritivo.
+        target_consent: [:caster_id, :caster_name, :spell_name, :beneficial, :auto_refuse],
       ).to_h.tap do |p|
         lists = permitted_opportunity_attack_lists
         p[:opportunity_attack] = (p[:opportunity_attack] || {}).merge(lists) if lists.present?
@@ -140,6 +145,8 @@ module Api::V1::Player::Combat
         opportunity_attack: [:damage, :ignored, :hit, :damage_type, :magical, roll: [:total]],
         # Frustrar Conjuração: fase 1 (reator) `frustrate`/`ignored`; fase 2 (Mestre) `saved`.
         hostile_casting: [:frustrate, :ignored, :saved],
+        # Consentimento de alvo: o dono do PC `accept` ou `refuse`.
+        target_consent: [:accept, :refuse],
       ).to_h
     end
 
@@ -331,6 +338,68 @@ module Api::V1::Player::Combat
         end
 
       log = schedule.session_logs.new(kind: :combat, actor: reactor, message: message)
+      return unless log.save
+
+      ::Combat::Broadcaster.log_appended(log)
+    end
+
+    # --- Consentimento de Alvo (respond server-side, fase única) ---------------
+    #
+    # O DONO do PC alvo (`character_id` pendente) decide: `refuse` → a magia não o
+    # afeta; `accept` → prossegue. Nenhum recurso é consumido pelo conjurador na
+    # recusa/cancelamento (F3.6) — a interação em si é livre. Limpa server-side +
+    # loga. Aversão à Magia (Desistente) auto-recusa: o front pré-seleciona recusar.
+    def respond_target_consent(current)
+      log_data = nil
+
+      rp = respond_params
+      tc_resp = rp['target_consent'].is_a?(Hash) ? rp['target_consent'] : {}
+      refuse = ActiveModel::Type::Boolean.new.cast(tc_resp['refuse'])
+      accept = ActiveModel::Type::Boolean.new.cast(tc_resp['accept'])
+      character_id = rp['character_id'].to_s
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        if current.blank? || current['kind'] != ::Combat::InteractionService::KIND_TARGET_CONSENT
+          return render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+        end
+
+        responder = Array(current['pending_responders']).find do |r|
+          r['character_id'].to_s == character_id && ![true, 1, '1', 'true'].include?(r['responded'])
+        end
+        return render(json: { active_interaction: current }, status: :ok) if responder.nil?
+
+        return render(json: { error: 'informe accept ou refuse' }, status: :unprocessable_entity) unless refuse || accept
+
+        tc = current['target_consent'] || {}
+        target_name = reactor_display_name(character_id, tc)
+        log_data = { kind: refuse ? 'refuse' : 'accept', target_name: target_name, caster_name: tc['caster_name'], spell_name: tc['spell_name'] }
+        @combat_state.clear_active_interaction!
+      end
+
+      @combat_state.reload
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      log_target_consent(@schedule, log_data) if log_data
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # Feed server-side do Consentimento de Alvo.
+    def log_target_consent(schedule, data)
+      return if schedule.blank? || data.blank?
+
+      target = data[:target_name].to_s.presence || 'O alvo'
+      caster = data[:caster_name].to_s.presence || 'o conjurador'
+      spell  = data[:spell_name].to_s.presence
+
+      message =
+        if data[:kind] == 'refuse'
+          "🚫 #{target} recusa #{spell ? "#{spell} de " : ''}#{caster} — a magia voluntária não o afeta."
+        else
+          "✅ #{target} aceita #{spell ? "#{spell} de " : ''}#{caster}."
+        end
+
+      log = schedule.session_logs.new(kind: :combat, actor: target, message: message)
       return unless log.save
 
       ::Combat::Broadcaster.log_appended(log)

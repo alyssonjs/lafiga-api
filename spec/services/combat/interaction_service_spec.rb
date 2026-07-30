@@ -276,4 +276,51 @@ RSpec.describe Combat::InteractionService do
       expect(described_class.build_hostile_casting(hc_params.merge(kind: 'contest'))).to be_nil
     end
   end
+
+  describe '.build_target_consent (Consentimento de Alvo)' do
+    let(:tc_params) do
+      {
+        kind: 'target_consent',
+        source_id: 'caster-1',
+        target_ids: ['pc-alvo-1'],
+        pending_responders: [{ character_id: 'pc-alvo-1', need: 'consent', owned_by_dm: false, responded: false }],
+        target_consent: { caster_id: 'caster-1', caster_name: 'Clériga', spell_name: 'Palavra Curativa', beneficial: true, auto_refuse: true },
+      }
+    end
+
+    it 'monta na fase declared com o alvo pendente need consent' do
+      ai = described_class.build_target_consent(tc_params)
+      expect(ai['kind']).to eq('target_consent')
+      expect(ai['phase']).to eq('declared')
+      expect(ai['source_id']).to eq('caster-1')
+      expect(ai['target_ids']).to eq(['pc-alvo-1'])
+      expect(ai['pending_responders']).to eq([
+        { 'character_id' => 'pc-alvo-1', 'need' => 'consent', 'owned_by_dm' => false, 'responded' => false },
+      ])
+      expect(ai['label']).to eq('Consentimento de alvo')
+    end
+
+    it 'preserva o bloco target_consent (conjurador/magia/benéfico/auto-recusa)' do
+      tc = described_class.build_target_consent(tc_params)['target_consent']
+      expect(tc['caster_name']).to eq('Clériga')
+      expect(tc['spell_name']).to eq('Palavra Curativa')
+      expect(tc['beneficial']).to be true
+      expect(tc['auto_refuse']).to be true
+      expect(tc).to have_key('outcome')
+    end
+
+    it 'marca owned_by_dm quando o alvo é NPC do DM' do
+      params = tc_params.deep_dup
+      params[:pending_responders].first[:owned_by_dm] = true
+      ai = described_class.build_target_consent(params)
+      expect(ai['pending_responders'].first['owned_by_dm']).to be true
+    end
+
+    it 'retorna nil sem source_id / sem target_ids / sem bloco / kind diferente' do
+      expect(described_class.build_target_consent(tc_params.merge(source_id: ''))).to be_nil
+      expect(described_class.build_target_consent(tc_params.merge(target_ids: []))).to be_nil
+      expect(described_class.build_target_consent(tc_params.merge(target_consent: nil))).to be_nil
+      expect(described_class.build_target_consent(tc_params.merge(kind: 'contest'))).to be_nil
+    end
+  end
 end

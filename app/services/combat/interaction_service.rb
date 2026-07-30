@@ -36,6 +36,7 @@ module Combat
     KIND_CONTEST = 'contest'
     KIND_OPPORTUNITY_ATTACK = 'opportunity_attack'
     KIND_HOSTILE_CASTING = 'hostile_casting'
+    KIND_TARGET_CONSENT = 'target_consent'
     DEFENDER_SKILL_OPTIONS = %w[Atletismo Acrobacia].freeze
     ATTACKER_SKILL = 'Atletismo'
 
@@ -173,6 +174,44 @@ module Combat
       }
     end
 
+    # ---- upsert Consentimento de Alvo (magia voluntária/benéfica) -------------
+    # Um conjurador (`source_id`) mira um PC (`target_ids.first`) com magia que
+    # exige alvo VOLUNTÁRIO. O DONO do PC decide (M2): `need:'consent'`, fase
+    # única `declared`. A Aversão à Magia (Desistente) auto-recusa (`auto_refuse`
+    # informativo no bloco). Recusar/cancelar não consome nada (F3.6).
+    #
+    # Retorna o hash normalizado, ou `nil` se inválido (caller → 422).
+    def build_target_consent(params)
+      p = stringify(params)
+
+      kind = (p['kind'] || KIND_TARGET_CONSENT).to_s
+      return nil unless kind == KIND_TARGET_CONSENT
+
+      source_id  = presence(p['source_id'])
+      target_ids = Array(p['target_ids']).map { |t| presence(t) }.compact
+      return nil if source_id.nil? || target_ids.empty?
+
+      tc = normalize_target_consent(dig(p, 'target_consent'))
+      return nil if tc.nil?
+
+      target_id = target_ids.first
+      raw = Array(dig(p, 'pending_responders')).find { |r| stringify(r)['character_id'].to_s == target_id.to_s }
+      owned = truthy(stringify(raw || {})['owned_by_dm'])
+
+      {
+        'id' => presence(p['id']) || SecureRandom.uuid,
+        'kind' => KIND_TARGET_CONSENT,
+        'phase' => 'declared',
+        'source_id' => source_id,
+        'target_ids' => [target_id],
+        'pending_responders' => [
+          { 'character_id' => target_id, 'need' => 'consent', 'owned_by_dm' => owned, 'responded' => false },
+        ],
+        'target_consent' => tc,
+        'label' => presence(p['label']) || 'Consentimento de alvo',
+      }
+    end
+
     # ---- respond (o defensor rola; depois resolve) ----------------------------
     # Aplica a resposta de um responder à interação corrente e avança a fase.
     # `current` é o `active_interaction` persistido; `params` traz
@@ -296,6 +335,22 @@ module Combat
       out['spell_name']  = presence(h['spell_name']).to_s  if presence(h['spell_name'])
       out['spell_level'] = h['spell_level'].to_i if h['spell_level'].to_s.match?(/\A\d+\z/)
       out['dc']          = h['dc'].to_i          if h['dc'].to_s.match?(/\A\d+\z/)
+      out['outcome'] = nil
+      out
+    end
+
+    # Normaliza o bloco `target_consent` do upsert. Descritivo (conjurador/magia/
+    # benéfico/auto-recusa). `outcome` só entra no respond. Retorna nil se ausente.
+    def normalize_target_consent(raw)
+      return nil if raw.nil?
+      h = stringify(raw)
+
+      out = {}
+      out['caster_id']   = presence(h['caster_id']).to_s   if presence(h['caster_id'])
+      out['caster_name'] = presence(h['caster_name']).to_s if presence(h['caster_name'])
+      out['spell_name']  = presence(h['spell_name']).to_s  if presence(h['spell_name'])
+      out['beneficial']  = truthy(h['beneficial']) if h.key?('beneficial')
+      out['auto_refuse'] = truthy(h['auto_refuse']) if h.key?('auto_refuse')
       out['outcome'] = nil
       out
     end
