@@ -35,6 +35,7 @@ module Combat
   module InteractionService
     KIND_CONTEST = 'contest'
     KIND_OPPORTUNITY_ATTACK = 'opportunity_attack'
+    KIND_HOSTILE_CASTING = 'hostile_casting'
     DEFENDER_SKILL_OPTIONS = %w[Atletismo Acrobacia].freeze
     ATTACKER_SKILL = 'Atletismo'
 
@@ -124,6 +125,51 @@ module Combat
         ],
         'opportunity_attack' => oa,
         'label' => presence(p['label']) || 'Ataque de Oportunidade',
+      }
+    end
+
+    # ---- upsert Conjuração Hostil (Frustrar Conjuração, Desistente L10) --------
+    # O DISPARO vem do MESTRE ao declarar que uma criatura hostil está conjurando
+    # (não há ação de conjuração de NPC no engine; monsterDatabase não tem spells).
+    # `source_id` é o CONJURADOR; `target_ids` são os REATORES (Desistentes L10+ a
+    # ≤9 m) — cada um vira pending responder (`need:'offer_reaction'`). Fase inicial
+    # `declared`. Detalhes (nome/nível da magia, CD) ficam no bloco `hostile_casting`.
+    #
+    # Retorna o hash normalizado, ou `nil` se inválido (caller → 422).
+    def build_hostile_casting(params)
+      p = stringify(params)
+
+      kind = (p['kind'] || KIND_HOSTILE_CASTING).to_s
+      return nil unless kind == KIND_HOSTILE_CASTING
+
+      source_id  = presence(p['source_id'])
+      target_ids = Array(p['target_ids']).map { |t| presence(t) }.compact
+      return nil if source_id.nil? || target_ids.empty?
+
+      hc = normalize_hostile_casting(dig(p, 'hostile_casting'))
+      return nil if hc.nil?
+
+      responders_in = Array(dig(p, 'pending_responders'))
+      pending = target_ids.map do |rid|
+        raw = responders_in.find { |r| stringify(r)['character_id'].to_s == rid.to_s }
+        owned = truthy(stringify(raw || {})['owned_by_dm'])
+        {
+          'character_id' => rid,
+          'need' => 'offer_reaction',
+          'owned_by_dm' => owned,
+          'responded' => false,
+        }
+      end
+
+      {
+        'id' => presence(p['id']) || SecureRandom.uuid,
+        'kind' => KIND_HOSTILE_CASTING,
+        'phase' => 'declared',
+        'source_id' => source_id,
+        'target_ids' => target_ids,
+        'pending_responders' => pending,
+        'hostile_casting' => hc,
+        'label' => presence(p['label']) || 'Conjuração hostil',
       }
     end
 
@@ -234,6 +280,23 @@ module Combat
       out['ignores_disengage']   = truthy(h['ignores_disengage'])          if h.key?('ignores_disengage')
       out['oa_at_disadvantage']  = truthy(h['oa_at_disadvantage'])         if h.key?('oa_at_disadvantage')
 
+      out
+    end
+
+    # Normaliza o bloco `hostile_casting` do upsert. Descritivo (nome/nível/CD são
+    # informativos p/ o prompt); o motor não os interpreta. `outcome` só entra no
+    # respond. Retorna nil se ausente/vazio.
+    def normalize_hostile_casting(raw)
+      return nil if raw.nil?
+      h = stringify(raw)
+
+      out = { 'hostile' => true }
+      out['caster_id']   = presence(h['caster_id']).to_s   if presence(h['caster_id'])
+      out['caster_name'] = presence(h['caster_name']).to_s if presence(h['caster_name'])
+      out['spell_name']  = presence(h['spell_name']).to_s  if presence(h['spell_name'])
+      out['spell_level'] = h['spell_level'].to_i if h['spell_level'].to_s.match?(/\A\d+\z/)
+      out['dc']          = h['dc'].to_i          if h['dc'].to_s.match?(/\A\d+\z/)
+      out['outcome'] = nil
       out
     end
 

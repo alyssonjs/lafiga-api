@@ -23,8 +23,11 @@ module Api::V1::Player::Combat
     def upsert
       ip = interaction_params
       payload =
-        if ip['kind'].to_s == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
+        case ip['kind'].to_s
+        when ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
           ::Combat::InteractionService.build_opportunity_attack(ip)
+        when ::Combat::InteractionService::KIND_HOSTILE_CASTING
+          ::Combat::InteractionService.build_hostile_casting(ip)
         else
           ::Combat::InteractionService.build_contest(ip)
         end
@@ -48,6 +51,7 @@ module Api::V1::Player::Combat
       return forbidden! unless authorized_to_respond?(current, respond_params)
 
       return respond_opportunity_attack(current) if current['kind'] == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
+      return respond_hostile_casting(current) if current['kind'] == ::Combat::InteractionService::KIND_HOSTILE_CASTING
 
       next_payload, err = ::Combat::InteractionService.apply_response(current, respond_params)
       if err
@@ -99,6 +103,8 @@ module Api::V1::Player::Combat
           # via `permitted_opportunity_attack_lists` (permit não cobre array de
           # hash arbitrário). Allowlist estrita aqui; o service só repassa hashes.
         ],
+        # Conjuração hostil (Frustrar Conjuração): bloco descritivo do cast.
+        hostile_casting: [:caster_id, :caster_name, :spell_name, :spell_level, :dc, :hostile],
       ).to_h.tap do |p|
         lists = permitted_opportunity_attack_lists
         p[:opportunity_attack] = (p[:opportunity_attack] || {}).merge(lists) if lists.present?
@@ -132,6 +138,8 @@ module Api::V1::Player::Combat
         # `damage_type`/`magical` habilitam mitigação tipada + Heavy Armor Master
         # no dano do OA (aplicado server-side). Opcionais — ausentes → dano cheio.
         opportunity_attack: [:damage, :ignored, :hit, :damage_type, :magical, roll: [:total]],
+        # Frustrar Conjuração: fase 1 (reator) `frustrate`/`ignored`; fase 2 (Mestre) `saved`.
+        hostile_casting: [:frustrate, :ignored, :saved],
       ).to_h
     end
 
@@ -144,11 +152,14 @@ module Api::V1::Player::Combat
     def authorized_to_initiate?(payload)
       return true if site_or_table_dm?
 
-      if payload['kind'] == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
-        return current_turn_belongs_to_user?
+      case payload['kind']
+      when ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
+        current_turn_belongs_to_user?
+      when ::Combat::InteractionService::KIND_HOSTILE_CASTING
+        false # conjuração hostil de NPC é declarada só pelo Mestre
+      else
+        owns_character?(payload['source_id'])
       end
-
-      owns_character?(payload['source_id'])
     end
 
     def authorized_to_clear?
@@ -318,6 +329,130 @@ module Api::V1::Player::Combat
         else
           "⚔️ #{reactor} reagiu ao movimento de #{mover}: ERROU."
         end
+
+      log = schedule.session_logs.new(kind: :combat, actor: reactor, message: message)
+      return unless log.save
+
+      ::Combat::Broadcaster.log_appended(log)
+    end
+
+    # --- Frustrar Conjuração (respond server-side, 2 fases) --------------------
+    #
+    # Fase `declared` — o REATOR (Desistente PC) decide:
+    #   `ignored:true`   → abriu mão (F10.6): NÃO consome reação, limpa.
+    #   `frustrate:true` → usa a reação (F10.2): consome a reação server-side e
+    #                      avança p/ `phase:'roll'`, trocando o pending responder
+    #                      pelo MESTRE (`need:'arbitrate'`) para o TR do conjurador.
+    # Fase `roll` — o MESTRE arbitra o TR de Sabedoria do conjurador vs a CD:
+    #   `saved:true`  → sucesso: a magia PROSSEGUE (F10.5); limpa.
+    #   `saved:false` → falha: a magia FALHA e o espaço é gasto (F10.4); limpa.
+    #
+    # `with_lock` serializa contra corrida; idempotente se a interação já mudou.
+    def respond_hostile_casting(current)
+      reactor_cc = nil
+      log_data = nil
+      reaction_consumed = false
+
+      rp = respond_params
+      hc_resp = rp['hostile_casting'].is_a?(Hash) ? rp['hostile_casting'] : {}
+      ignored   = ActiveModel::Type::Boolean.new.cast(hc_resp['ignored'])
+      frustrate = ActiveModel::Type::Boolean.new.cast(hc_resp['frustrate'])
+      character_id = rp['character_id'].to_s
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        if current.blank? || current['kind'] != ::Combat::InteractionService::KIND_HOSTILE_CASTING
+          return render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+        end
+
+        responder = Array(current['pending_responders']).find do |r|
+          r['character_id'].to_s == character_id && ![true, 1, '1', 'true'].include?(r['responded'])
+        end
+        # Idempotência: já resolvido / não é meu turno de responder.
+        return render(json: { active_interaction: current }, status: :ok) if responder.nil?
+
+        hc = (current['hostile_casting'] || {}).dup
+        phase = current['phase'].to_s
+
+        if phase == 'declared'
+          if ignored
+            log_data = { kind: 'ignored', reactor_name: reactor_display_name(character_id, hc), caster_name: hc['caster_name'] }
+            @combat_state.clear_active_interaction!
+          elsif frustrate
+            reactor_cc = resolve_combatant_by_identity(character_id)
+            if reactor_cc
+              au = Hash(reactor_cc.actions_used).merge('reaction' => true)
+              reactor_cc.update(actions_used: au)
+              reaction_consumed = true
+            end
+            hc['frustrated_by'] = character_id
+            hc['frustrated_by_name'] = reactor_cc&.name.to_s.presence || reactor_display_name(character_id, hc)
+            next_state = current.merge(
+              'phase' => 'roll',
+              'hostile_casting' => hc,
+              'pending_responders' => [
+                { 'character_id' => current['source_id'].to_s, 'need' => 'arbitrate', 'owned_by_dm' => true, 'responded' => false },
+              ],
+            )
+            @combat_state.set_active_interaction!(next_state)
+            log_data = { kind: 'frustrate_offer', reactor_name: hc['frustrated_by_name'], caster_name: hc['caster_name'] }
+          else
+            return render(json: { error: 'resposta inválida: informe frustrate ou ignored' }, status: :unprocessable_entity)
+          end
+        elsif phase == 'roll'
+          return render(json: { error: 'saved ausente' }, status: :unprocessable_entity) unless hc_resp.key?('saved')
+
+          saved = ActiveModel::Type::Boolean.new.cast(hc_resp['saved'])
+          hc['outcome'] = saved ? 'proceeds' : 'frustrated'
+          log_data = {
+            kind: saved ? 'proceeds' : 'frustrated',
+            reactor_name: hc['frustrated_by_name'],
+            caster_name: hc['caster_name'],
+            spell_name: hc['spell_name'],
+          }
+          @combat_state.clear_active_interaction!
+        else
+          return render(json: { active_interaction: current }, status: :ok)
+        end
+      end
+
+      @combat_state.reload
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && reaction_consumed
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      log_hostile_casting(@schedule, log_data) if log_data
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # Nome do reator p/ o log/estado. Preferência: CombatCombatant resolvido;
+    # senão o Character; senão um rótulo genérico.
+    def reactor_display_name(character_id, _hc)
+      cc = resolve_combatant_by_identity(character_id)
+      return cc.name.to_s if cc&.name.present?
+
+      Character.find_by(id: character_id)&.name.to_s.presence || 'Desistente'
+    end
+
+    # Feed server-side do Frustrar Conjuração (SessionLog kind combat).
+    def log_hostile_casting(schedule, data)
+      return if schedule.blank? || data.blank?
+
+      reactor = data[:reactor_name].to_s.presence || 'Desistente'
+      caster  = data[:caster_name].to_s.presence || 'o conjurador'
+      spell   = data[:spell_name].to_s.presence
+
+      message =
+        case data[:kind]
+        when 'ignored'
+          "🛡️ #{reactor} não frustrou a conjuração de #{caster}."
+        when 'frustrate_offer'
+          "🌀 #{reactor} usa a reação para Frustrar Conjuração de #{caster}: TR de Sabedoria do conjurador."
+        when 'frustrated'
+          "🌀 #{reactor} FRUSTROU #{spell ? "#{spell} de " : ''}#{caster}: a magia falha e o espaço é gasto."
+        when 'proceeds'
+          "🌀 #{caster} resiste a #{reactor}: a #{spell || 'magia'} prossegue."
+        end
+      return if message.blank?
 
       log = schedule.session_logs.new(kind: :combat, actor: reactor, message: message)
       return unless log.save

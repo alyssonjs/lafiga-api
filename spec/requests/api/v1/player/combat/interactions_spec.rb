@@ -471,4 +471,117 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
       expect(response.parsed_body['combat_state']['active_interaction']).to be_nil
     end
   end
+
+  # ---- Frustrar Conjuração (kind: hostile_casting) ---------------------------
+  # Fluxo 2 fases: (1) o Mestre declara a conjuração hostil de um NPC → o
+  # Desistente PC vira pending `offer_reaction`; (2a) o reator frustra (gasta
+  # reação server-side, avança p/ arbitragem do Mestre) ou ignora (não gasta);
+  # (2b) o Mestre arbitra o TR do conjurador → magia falha (frustrada) ou prossegue.
+  describe 'Frustrar Conjuração' do
+    let!(:caster_npc) { create(:combat_npc, schedule: schedule) }
+    let!(:caster_cc) do
+      create(:combat_combatant, :npc, combat_state: cs, combatable: caster_npc, position: 0)
+    end
+    # Reator Desistente = PC do defender_user.
+    let!(:desistente_cc) do
+      create(:combat_combatant, :pc, combat_state: cs, combatable: defender_char, position: 1)
+    end
+
+    def hc_upsert_body(caster_identity:, reactor_identity:)
+      {
+        interaction: {
+          kind: 'hostile_casting',
+          source_id: caster_identity.to_s,
+          target_ids: [reactor_identity.to_s],
+          pending_responders: [
+            { character_id: reactor_identity.to_s, need: 'offer_reaction', owned_by_dm: false, responded: false },
+          ],
+          hostile_casting: { caster_id: caster_identity.to_s, caster_name: 'Cultista', spell_name: 'Enfeitiçar Pessoa', spell_level: 1, dc: 14 },
+        },
+      }
+    end
+
+    describe 'PUT (upsert)' do
+      it 'o DM declara a conjuração → fase declared, reator pendente offer_reaction' do
+        put "#{base}/active_interaction",
+            params: hc_upsert_body(caster_identity: caster_cc.combatable_id, reactor_identity: defender_char.id),
+            headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['kind']).to eq('hostile_casting')
+        expect(ai['phase']).to eq('declared')
+        expect(ai['pending_responders'].first['need']).to eq('offer_reaction')
+        expect(ai['hostile_casting']['caster_name']).to eq('Cultista')
+        expect(ai['hostile_casting']['dc']).to eq(14)
+      end
+
+      it '403 para jogador — só o Mestre declara conjuração de NPC' do
+        put "#{base}/active_interaction",
+            params: hc_upsert_body(caster_identity: caster_cc.combatable_id, reactor_identity: defender_char.id),
+            headers: defender_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+        expect(cs.reload.active_interaction).to be_nil
+      end
+    end
+
+    describe 'POST (respond) — 2 fases' do
+      before do
+        put "#{base}/active_interaction",
+            params: hc_upsert_body(caster_identity: caster_cc.combatable_id, reactor_identity: defender_char.id),
+            headers: dm_headers, as: :json
+      end
+
+      it 'reator frustra (fase 1): consome reação e avança p/ arbitragem do Mestre' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, hostile_casting: { frustrate: true } },
+             headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('roll')
+        expect(ai['pending_responders'].first['need']).to eq('arbitrate')
+        expect(ai['pending_responders'].first['owned_by_dm']).to be true
+        expect(desistente_cc.reload.actions_used['reaction']).to be true
+      end
+
+      it 'reator ignora (fase 1): NÃO consome reação e limpa a interação' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, hostile_casting: { ignored: true } },
+             headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(cs.reload.active_interaction).to be_nil
+        expect(desistente_cc.reload.actions_used['reaction']).to be_falsey
+      end
+
+      it 'Mestre arbitra FALHA no TR (fase 2): magia frustrada, limpa + log' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, hostile_casting: { frustrate: true } },
+             headers: defender_headers, as: :json
+        expect do
+          post "#{base}/active_interaction/respond",
+               params: { character_id: caster_cc.combatable_id.to_s, hostile_casting: { saved: false } },
+               headers: dm_headers, as: :json
+        end.to change { schedule.session_logs.count }.by_at_least(1)
+        expect(response).to have_http_status(:ok)
+        expect(cs.reload.active_interaction).to be_nil
+      end
+
+      it 'Mestre arbitra SUCESSO no TR (fase 2): magia prossegue, limpa' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, hostile_casting: { frustrate: true } },
+             headers: defender_headers, as: :json
+        post "#{base}/active_interaction/respond",
+             params: { character_id: caster_cc.combatable_id.to_s, hostile_casting: { saved: true } },
+             headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(cs.reload.active_interaction).to be_nil
+      end
+
+      it '403 quando outro jogador (não o reator pendente) tenta frustrar' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, hostile_casting: { frustrate: true } },
+             headers: attacker_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
 end

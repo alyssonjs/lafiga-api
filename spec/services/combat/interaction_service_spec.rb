@@ -216,4 +216,64 @@ RSpec.describe Combat::InteractionService do
       expect(err).to eq(:not_pending)
     end
   end
+
+  describe '.build_hostile_casting (Frustrar Conjuração)' do
+    let(:hc_params) do
+      {
+        kind: 'hostile_casting',
+        source_id: 'caster-npc-1',
+        target_ids: ['desistente-1'],
+        pending_responders: [{ character_id: 'desistente-1', need: 'offer_reaction', owned_by_dm: false, responded: false }],
+        hostile_casting: { caster_id: 'caster-npc-1', caster_name: 'Cultista', spell_name: 'Enfeitiçar Pessoa', spell_level: 1, dc: 14 },
+      }
+    end
+
+    it 'monta na fase declared com os reatores como pending offer_reaction' do
+      ai = described_class.build_hostile_casting(hc_params)
+      expect(ai['kind']).to eq('hostile_casting')
+      expect(ai['phase']).to eq('declared')
+      expect(ai['source_id']).to eq('caster-npc-1')
+      expect(ai['target_ids']).to eq(['desistente-1'])
+      expect(ai['id']).to be_present
+      expect(ai['pending_responders']).to eq([
+        { 'character_id' => 'desistente-1', 'need' => 'offer_reaction', 'owned_by_dm' => false, 'responded' => false },
+      ])
+      expect(ai['label']).to eq('Conjuração hostil')
+    end
+
+    it 'preserva o bloco hostile_casting (nome/nível/CD) + hostile true e outcome nil' do
+      hc = described_class.build_hostile_casting(hc_params)['hostile_casting']
+      expect(hc['caster_id']).to eq('caster-npc-1')
+      expect(hc['caster_name']).to eq('Cultista')
+      expect(hc['spell_name']).to eq('Enfeitiçar Pessoa')
+      expect(hc['spell_level']).to eq(1)
+      expect(hc['dc']).to eq(14)
+      expect(hc['hostile']).to be true
+      expect(hc).to have_key('outcome')
+      expect(hc['outcome']).to be_nil
+    end
+
+    it 'suporta múltiplos reatores (todos viram offer_reaction)' do
+      params = hc_params.merge(target_ids: %w[d-1 d-2])
+      ai = described_class.build_hostile_casting(params)
+      expect(ai['pending_responders'].map { |r| r['character_id'] }).to eq(%w[d-1 d-2])
+      expect(ai['pending_responders'].map { |r| r['need'] }.uniq).to eq(['offer_reaction'])
+    end
+
+    it 'retorna nil sem source_id (conjurador)' do
+      expect(described_class.build_hostile_casting(hc_params.merge(source_id: ''))).to be_nil
+    end
+
+    it 'retorna nil sem target_ids (reatores)' do
+      expect(described_class.build_hostile_casting(hc_params.merge(target_ids: []))).to be_nil
+    end
+
+    it 'retorna nil sem o bloco hostile_casting' do
+      expect(described_class.build_hostile_casting(hc_params.merge(hostile_casting: nil))).to be_nil
+    end
+
+    it 'retorna nil para kind diferente' do
+      expect(described_class.build_hostile_casting(hc_params.merge(kind: 'contest'))).to be_nil
+    end
+  end
 end
