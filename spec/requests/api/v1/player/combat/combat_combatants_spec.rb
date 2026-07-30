@@ -290,6 +290,103 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
       end
     end
 
+    # ── Forma de Urso (Guerreiro Urso) — SYNC ANCHORS server-side ──────────────
+    # O estado durável da forma/agarrão/PV-temp é escrito pelo front via
+    # combatBridge (PATCH deste controller) e sincroniza por `combatant_upserted`
+    # + PERSISTE em CombatCombatant (sobrevive a reload). Fecha a fronteira de
+    # sync que o BDD puro do front NÃO alcança (server-authoritative): F3.15/F3.20
+    # (forma), F10.10/F10.15 (agarrão), F14.3/F14.9/F14.11 (Vigor), M1, M4.
+    context 'Forma de Urso (Guerreiro Urso) — sync anchors' do
+      def stream
+        SessionRealtimeChannel.stream_name_for(schedule.id)
+      end
+
+      # F3.15/F3.20/M4: bearFormActive + janela de ativação vivem no turn_state do
+      # combatente (o DONO do PC muta o próprio). Persiste (round-trip via GET =
+      # sobrevive a reload) e dispara combatant_upserted → TODOS os clientes veem a forma.
+      it 'F3.15/F3.20/M4 — turn_state bearFormActive persiste, faz round-trip e broadcasta' do
+        state = { bearFormActive: true, bearFormActivationRound: 1, bearFormActivationTurnIndex: 0 }
+        expected = { 'bearFormActive' => true, 'bearFormActivationRound' => 1, 'bearFormActivationTurnIndex' => 0 }
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { turn_state: state } }, headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['turn_state']).to eq(expected)
+        }
+        expect(combatant.reload.turn_state).to eq(expected)
+
+        get "/api/v1/player/schedules/#{schedule.id}/combat_combatants", headers: player_headers
+        row = response.parsed_body['combatants'].find { |c| c['id'] == combatant.id }
+        expect(row['turn_state']).to eq(expected) # re-hidrata após reload
+      end
+
+      # F10.10/F10.15/M4: o agarrão (grapplingTargetId + CD de fuga) vive no
+      # turn_state do URSO — persiste (roundtrip) e broadcasta.
+      it 'F10.10/F10.15/M4 — turn_state grapplingTargetId+escapeDC persiste e broadcasta' do
+        state = { grapplingTargetId: 'npc-goblin', crushingEmbraceEscapeDC: 15 }
+        expected = { 'grapplingTargetId' => 'npc-goblin', 'crushingEmbraceEscapeDC' => 15 }
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { turn_state: state } }, headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['turn_state']).to eq(expected)
+        }
+        expect(combatant.reload.turn_state).to eq(expected)
+      end
+
+      # F10.10/M4: as condições grappled + restrained do ALVO são aplicadas pelo
+      # jogador do turno (COMBAT_EFFECT_FIELDS) e broadcastam → todos veem o alvo
+      # Agarrado/Impedido em tempo real (F10.14 garante que AMBAS são limpas juntas).
+      it 'F10.10/M4 — PATCH conditions [grappled, restrained] no alvo broadcasta as duas' do
+        victim_npc = create(:combat_npc, schedule: schedule)
+        victim = create(:combat_combatant, :npc, combat_state: cs, combatable: victim_npc, position: 1)
+        cs.update_column(:current_turn_index, combatant.position) # turno do Urso
+
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{victim.id}",
+                params: { combatant: { conditions: [{ id: 'grappled', turns_left: 0 }, { id: 'restrained', turns_left: 0 }] } },
+                headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          ids = data['payload']['conditions'].map { |c| c['id'] }
+          expect(ids).to contain_exactly('grappled', 'restrained')
+        }
+      end
+
+      # F14.3/F14.9/F14.11/M4: os PV temp do Vigor do Urso (2×nível) são aplicados
+      # pelo jogador do turno (temp_hp ∈ COMBAT_EFFECT_FIELDS) e sincronizam + persistem.
+      it 'F14.3/F14.9/F14.11/M4 — PATCH temp_hp (Vigor) persiste e broadcasta' do
+        cs.update_column(:current_turn_index, combatant.position) # turno do Urso
+
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { temp_hp: 28 } }, headers: player_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['temp_hp']).to eq(28)
+        }
+        expect(combatant.reload.temp_hp).to eq(28)
+      end
+
+      # M1: um jogador NUNCA consome economia (ação/bônus/reação) de OUTRO player.
+      # actions_used ∉ COMBAT_EFFECT_FIELDS → só o DONO do combatente (ou o DM) o muta;
+      # mesmo no próprio turno, mutar o actions_used de outro combatente dá 403.
+      it 'M1 — jogador NÃO muta actions_used de combatente de OUTRO player (403)' do
+        other_user = create(:user, role: player_role)
+        other_char = create(:character, user: other_user, group: schedule.group)
+        other_combatant = create(:combat_combatant, combat_state: cs, combatable: other_char, position: 2)
+        cs.update_column(:current_turn_index, combatant.position) # meu turno
+
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{other_combatant.id}",
+              params: { combatant: { actions_used: { reaction: true } } }, headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(other_combatant.reload.actions_used['reaction']).to be_falsey
+      end
+    end
+
     # Efeito de combate (dano/cura) aplicado pelo JOGADOR DONO do combatente do
     # TURNO ATUAL em QUALQUER combatente — habilita poção/ataque/magia do jogador
     # (a regra "curado de 0 volta à batalha" envia a transição de morte derivada).
