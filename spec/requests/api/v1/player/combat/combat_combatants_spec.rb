@@ -275,6 +275,19 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
           expect(data['payload']['turn_state']).to eq({ 'rageAbsorbBonus' => 3, 'rageAbsorbRounds' => 1 })
         }
       end
+
+      # F3.7/M4: o resultado de DANO/CURA (hp) do combatente é server-authoritative
+      # e sincroniza por combatBridge — o PATCH de hp dispara combatant_upserted com
+      # o hp no payload (cobre a Aversão à Magia ÷2 já aplicada antes de escrever hp).
+      it 'F3.7/M4 — PATCH hp (dano/cura) dispara combatant_upserted com o hp no payload' do
+        expect {
+          patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+                params: { combatant: { hp_current: 12 } }, headers: dm_headers, as: :json
+        }.to have_broadcasted_to(stream).with { |data|
+          expect(data['event']).to eq('combatant_upserted')
+          expect(data['payload']['hp_current']).to eq(12)
+        }
+      end
     end
 
     # Efeito de combate (dano/cura) aplicado pelo JOGADOR DONO do combatente do
