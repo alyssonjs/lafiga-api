@@ -167,11 +167,12 @@ RSpec.describe CombatCombatant, type: :model do
     it 'remove só as chaves por-turno do turn_state, preservando o resto' do
       c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
                  actions_used: { 'action' => true, 'bonus_action' => true, 'movement' => true, 'reaction' => true },
-                 turn_state: { 'attacksMade' => 2, 'outraChave' => 'fica' })
+                 turn_state: { 'attacksMade' => 2, 'bearFormAttacks' => { 'bite' => 1 }, 'outraChave' => 'fica' })
       c.reset_turn_actions!
 
       c.reload
       expect(c.turn_state).not_to have_key('attacksMade')
+      expect(c.turn_state).not_to have_key('bearFormAttacks') # Forma de Urso: composição zera por turno
       expect(c.turn_state).to eq('outraChave' => 'fica')
       expect(c.actions_used).to include('action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false)
     end

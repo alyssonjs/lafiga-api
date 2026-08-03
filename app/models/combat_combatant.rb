@@ -13,7 +13,9 @@ class CombatCombatant < ApplicationRecord
   # `reset_turn_actions!`; todo o resto do hash é preservado intacto.
   # Chaves por-turno futuras (ex.: budget de ataques extra) devem ser
   # adicionadas a esta lista.
-  PER_TURN_TURN_STATE_KEYS = %w[attacksMade].freeze
+  # `bearFormAttacks`: composição do multiataque da Forma de Urso (mordida/garra/
+  # arma) — por-turno, zera junto com `attacksMade` no início do turno.
+  PER_TURN_TURN_STATE_KEYS = %w[attacksMade bearFormAttacks].freeze
 
   belongs_to :combat_state
   belongs_to :combatable, polymorphic: true
