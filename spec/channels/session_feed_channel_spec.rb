@@ -405,6 +405,33 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'relaya save_prompt_resolved para todos os clientes (resolução de TR)' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'save_prompt_resolved',
+      'id' => 'spr-1',
+      'timestamp' => 1_700_000_000_009,
+      'sessionId' => schedule.id.to_s,
+      'rollGroupId' => 'rg-tr-1',
+    }
+    expect do
+      perform :feed_item, item: item
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('kind' => 'save_prompt_resolved', 'rollGroupId' => 'rg-tr-1'),
+    )
+  end
+
+  it 'descarta save_prompt_resolved sem rollGroupId' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'save_prompt_resolved', 'id' => 'spr-2',
+      'timestamp' => 1_700_000_000_010, 'sessionId' => schedule.id.to_s,
+    }
+    expect do
+      perform :feed_item, item: item
+    end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
   it 'does not broadcast junk kind' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     expect do

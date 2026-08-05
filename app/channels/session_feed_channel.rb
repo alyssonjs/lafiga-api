@@ -150,6 +150,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_roll_pending(h)
     when 'attack_hit_resolution'
       normalize_attack_hit_resolution(h)
+    when 'save_prompt_resolved'
+      normalize_save_prompt_resolved(h)
     when 'floating_fx'
       normalize_floating_fx(h)
     when 'damage_mitigation'
@@ -436,6 +438,35 @@ class SessionFeedChannel < ApplicationCable::Channel
     end
 
     result
+  end
+
+  # Resolução de PROMPT de TR: quando o dono do alvo (ou o Mestre) rola/dispensa o
+  # Teste de Resistência, o botão "Rolar TR" precisa sumir em TODOS os clientes — o
+  # card é broadcast, mas a resolução era local (outro cliente ficava com o botão
+  # ativo). Igual ao attack_hit_resolution: relayado por rollGroupId, efêmero (não
+  # persistido — kind fora de SessionFeedItem::KINDS), atualização in-place.
+  def normalize_save_prompt_resolved(h)
+    return nil unless h.is_a?(Hash)
+
+    h = h.stringify_keys
+    return nil unless h['kind'].to_s == 'save_prompt_resolved'
+
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    roll_group_id = h['rollGroupId'].to_s
+    return nil if roll_group_id.empty? || roll_group_id.length > MAX_ID_LENGTH
+
+    {
+      'kind' => 'save_prompt_resolved',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'rollGroupId' => roll_group_id.truncate(MAX_ID_LENGTH)
+    }
   end
 
   # FX efêmero: números de dano flutuantes sobre um token. Relayado a todos os
