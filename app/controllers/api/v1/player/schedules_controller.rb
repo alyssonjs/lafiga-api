@@ -159,6 +159,12 @@ class Api::V1::Player::SchedulesController < ApplicationController
       attrs.delete('combat_groups')
     end
 
+    # Metadados da mesa que precisam sincronizar em tempo real para os demais
+    # clientes com a sessão aberta (só broadcast se sobreviveram às allowlists
+    # acima). Ver Combat::Broadcaster.session_meta_changed.
+    meta_changed = %w[combat_groups linked_npc_character_ids dm_temp_npc_character_ids]
+                   .any? { |k| attrs.key?(k) }
+
     if attrs.key?('group_id')
       new_gid = attrs['group_id']
       if new_gid.present?
@@ -188,7 +194,9 @@ class Api::V1::Player::SchedulesController < ApplicationController
         if raw_character_ids
           reconcile_schedule_characters(@schedule, raw_character_ids)
         end
-        render json: { schedule: serialize_schedule_for_current_user(@schedule.reload) }, status: 200
+        fresh = @schedule.reload
+        Combat::Broadcaster.session_meta_changed(fresh) if meta_changed
+        render json: { schedule: serialize_schedule_for_current_user(fresh) }, status: 200
       else
         render json: { errors: @schedule.errors.full_messages }, status: :unprocessable_entity
         raise ActiveRecord::Rollback

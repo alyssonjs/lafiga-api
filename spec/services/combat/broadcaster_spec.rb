@@ -75,6 +75,35 @@ RSpec.describe Combat::Broadcaster, type: :service do
     end
   end
 
+  describe '.session_meta_changed' do
+    it 'broadcasts the normalized session metadata with the envelope' do
+      expect {
+        described_class.session_meta_changed(schedule)
+      }.to have_broadcasted_to(stream).with { |data|
+        expect(data['event']).to eq('session_meta_changed')
+        expect(data['payload']).to include(
+          'combat_groups', 'linked_npc_character_ids', 'dm_temp_npc_character_ids'
+        )
+        # Payload usa os MESMOS normalizadores do ScheduleSerializer → bate 1:1
+        # com o load inicial no front.
+        expect(data['payload']['combat_groups']).to eq(schedule.combat_groups_normalized)
+        expect(data['payload']['linked_npc_character_ids']).to eq(schedule.linked_npc_sheet_ids_normalized)
+        expect(data['payload']['dm_temp_npc_character_ids']).to eq(schedule.dm_temp_npc_character_ids_normalized)
+        expect(data['emitted_at']).to be_present
+      }
+    end
+
+    it 'does nothing when schedule is nil' do
+      expect { described_class.session_meta_changed(nil) }.not_to have_broadcasted_to(stream)
+    end
+
+    it 'is suppressed inside .silently' do
+      expect {
+        described_class.silently { described_class.session_meta_changed(schedule) }
+      }.not_to have_broadcasted_to(stream)
+    end
+  end
+
   describe '.silently' do
     it 'suppresses broadcasts inside the block' do
       combatant = create(:combat_combatant, combat_state: cs, combatable: char, position: 0)

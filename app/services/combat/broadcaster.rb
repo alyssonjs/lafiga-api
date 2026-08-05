@@ -22,6 +22,7 @@ module Combat
       npc_destroyed
       log_appended
       concentration_broken
+      session_meta_changed
     ].freeze
 
     module_function
@@ -65,6 +66,22 @@ module Combat
         combatant_id: combatant.id,
         spell: spell_name,
         dc: dc
+      })
+    end
+
+    # Emitido pelo schedules_controller#update quando METADADOS da mesa mudam:
+    # grupos/times de combate, NPCs de ficha vinculados e PJs marcados como
+    # "NPC temporário". Diferente dos demais eventos (que carregam estado de
+    # combate por combatant/npc), este sincroniza a CONFIGURAÇÃO da sessão para
+    # todos os clientes com a mesa aberta — sem ele, mudar o time de um token ou
+    # (des)vincular um NPC só aparecia após reload. Usa os MESMOS normalizadores
+    # do ScheduleSerializer para o payload bater 1:1 com o load inicial.
+    def session_meta_changed(schedule)
+      return if suppressed? || schedule.nil?
+      broadcast(schedule.id, 'session_meta_changed', {
+        combat_groups: schedule.combat_groups_normalized,
+        linked_npc_character_ids: schedule.linked_npc_sheet_ids_normalized,
+        dm_temp_npc_character_ids: schedule.dm_temp_npc_character_ids_normalized,
       })
     end
 

@@ -278,6 +278,28 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(response.parsed_body['schedule']['linked_npc_character_ids']).to eq([char_a.id, char_c.id])
     end
 
+    it 'faz broadcast de session_meta_changed ao atualizar metadados da mesa (linked_npc)' do
+      expect(Combat::Broadcaster).to receive(:session_meta_changed).with(kind_of(Schedule))
+
+      patch "/api/v1/player/schedules/#{schedule.id}",
+            params: { schedule: { linked_npc_character_ids: [char_a.id] } },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'NAO faz broadcast de session_meta_changed quando so campos nao-meta mudam' do
+      expect(Combat::Broadcaster).not_to receive(:session_meta_changed)
+
+      patch "/api/v1/player/schedules/#{schedule.id}",
+            params: { schedule: { xp_awarded: 321 } },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+    end
+
     it 'permite ao mestre da mesa atualizar dm_temp_npc_character_ids' do
       skip unless Schedule.supports_dm_temp_npc_character_ids?
 
