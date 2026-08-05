@@ -41,6 +41,10 @@ class SessionFeedChannel < ApplicationCable::Channel
   # Preview de área ao vivo (aoe_preview): formas válidas + teto de tamanho.
   AOE_PREVIEW_SHAPES = %w[sphere cone cube line cylinder].freeze
   MAX_AOE_SIZE_FT = 500
+  # Kinds efêmeros de alta frequência (previews de arraste): bucket de rate-limit
+  # próprio por-kind + NÃO persistem. Novo preview vivo = adicionar aqui.
+  EPHEMERAL_PREVIEW_KINDS = %w[aoe_preview oa_threat].freeze
+  MAX_OA_THREATS = 24
 
   def self.stream_name_for(schedule_id)
     "session_feed_#{schedule_id}"
@@ -66,11 +70,12 @@ class SessionFeedChannel < ApplicationCable::Channel
     item = payload['item']
     kind = item.is_a?(Hash) ? (item['kind'] || item[:kind]).to_s : ''
 
-    # Preview de área é stream de mouse-move (alta frequência, efêmero) → bucket de
-    # rate-limit próprio e generoso, separado do chat/rolls (que dividem o default).
+    # Previews efêmeros (mouse-move / arraste) são de alta frequência → cada kind tem
+    # bucket de rate-limit PRÓPRIO e generoso, separado do chat/rolls (bucket default).
+    ephemeral = EPHEMERAL_PREVIEW_KINDS.include?(kind)
     rate_ok =
-      if kind == 'aoe_preview'
-        SessionFeed::RateLimit.allow?(@current_user.id, @schedule_id, bucket: 'aoe_preview', limit: SessionFeed::RateLimit::AOE_PREVIEW_LIMIT)
+      if ephemeral
+        SessionFeed::RateLimit.allow?(@current_user.id, @schedule_id, bucket: kind, limit: SessionFeed::RateLimit::AOE_PREVIEW_LIMIT)
       else
         SessionFeed::RateLimit.allow?(@current_user.id, @schedule_id)
       end
@@ -80,7 +85,7 @@ class SessionFeedChannel < ApplicationCable::Channel
           event: 'session_feed.throttled',
           user_id: @current_user.id,
           schedule_id: @schedule_id,
-          bucket: kind == 'aoe_preview' ? 'aoe_preview' : 'default',
+          bucket: ephemeral ? kind : 'default',
         }.to_json,
       )
       return
@@ -94,8 +99,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       return
     end
 
-    # aoe_preview NÃO persiste (efêmero + alta frequência) — evita Persist 20×/s.
-    persist_item(normalized) unless normalized['kind'] == 'aoe_preview'
+    # Previews efêmeros NÃO persistem (alta frequência) — evita Persist 20×/s.
+    persist_item(normalized) unless EPHEMERAL_PREVIEW_KINDS.include?(normalized['kind'])
 
     ActionCable.server.broadcast(self.class.stream_name_for(@schedule_id), normalized)
   end
@@ -169,6 +174,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_save_prompt_resolved(h)
     when 'aoe_preview'
       normalize_aoe_preview(h)
+    when 'oa_threat'
+      normalize_oa_threat(h)
     when 'floating_fx'
       normalize_floating_fx(h)
     when 'damage_mitigation'
@@ -540,6 +547,53 @@ class SessionFeedChannel < ApplicationCable::Channel
     out['color'] = color if color
     spell_name = h['spellName'].to_s
     out['spellName'] = spell_name.truncate(80) if spell_name.present?
+    out
+  end
+
+  # Setas de AMEAÇA de Ataque de Oportunidade AO VIVO (oa_threat): enquanto um cliente
+  # ARRASTA um token em combate, transmite a célula viva do arraste + os ids dos inimigos
+  # que ameaçam (JÁ computados no emissor — a ameaça é definida na origem congelada, então
+  # NÃO recomputar no receptor). Efêmero, não persiste. clientId (por aba) p/ echo-skip.
+  # `phase:'end'` (soltou/cancelou) limpa as setas.
+  def normalize_oa_threat(h)
+    return nil unless h.is_a?(Hash)
+
+    h = h.stringify_keys
+    return nil unless h['kind'].to_s == 'oa_threat'
+
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    dragged_id = h['draggedTokenId'].to_s
+    return nil if dragged_id.empty? || dragged_id.length > MAX_ID_LENGTH
+
+    phase = h['phase'].to_s
+    phase = 'move' unless %w[move end].include?(phase)
+
+    out = {
+      'kind' => 'oa_threat',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'senderId' => @current_user.id.to_s,
+      'draggedTokenId' => dragged_id.truncate(MAX_ID_LENGTH),
+      'phase' => phase
+    }
+    client_id = h['clientId'].to_s
+    out['clientId'] = client_id.truncate(MAX_ID_LENGTH) if client_id.present?
+    return out if phase == 'end' # 'end' só precisa do draggedTokenId p/ limpar
+
+    out['dragCol'] = h['dragCol'].to_i
+    out['dragRow'] = h['dragRow'].to_i
+    threat_ids = h['threatTokenIds']
+    threat_ids = [] unless threat_ids.is_a?(Array)
+    out['threatTokenIds'] = threat_ids
+                            .first(MAX_OA_THREATS)
+                            .map { |t| t.to_s }
+                            .reject { |t| t.empty? || t.length > MAX_ID_LENGTH }
     out
   end
 

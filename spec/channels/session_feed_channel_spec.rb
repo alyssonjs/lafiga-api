@@ -477,6 +477,49 @@ RSpec.describe SessionFeedChannel, type: :channel do
     end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
   end
 
+  it 'relaya oa_threat (move) com célula viva + ids de ameaça + clientId' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'oa_threat', 'id' => 'oat-1', 'timestamp' => 1_700_000_000_020,
+      'sessionId' => schedule.id.to_s, 'draggedTokenId' => 'tok-mover', 'phase' => 'move',
+      'dragCol' => 7, 'dragRow' => 4, 'threatTokenIds' => %w[tok-e1 tok-e2],
+      'clientId' => 'cli-xyz',
+    }
+    expect do
+      perform :feed_item, item: item
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'oa_threat', 'draggedTokenId' => 'tok-mover', 'dragCol' => 7,
+        'phase' => 'move', 'threatTokenIds' => %w[tok-e1 tok-e2],
+        'senderId' => player.id.to_s, 'clientId' => 'cli-xyz',
+      ),
+    )
+  end
+
+  it 'relaya oa_threat (end) só com draggedTokenId p/ limpar as setas' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'oa_threat', 'id' => 'oat-2', 'timestamp' => 1_700_000_000_021,
+      'sessionId' => schedule.id.to_s, 'draggedTokenId' => 'tok-mover', 'phase' => 'end',
+    }
+    expect do
+      perform :feed_item, item: item
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('kind' => 'oa_threat', 'draggedTokenId' => 'tok-mover', 'phase' => 'end'),
+    )
+  end
+
+  it 'descarta oa_threat sem draggedTokenId' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'oa_threat', 'id' => 'oat-3', 'timestamp' => 1_700_000_000_022,
+      'sessionId' => schedule.id.to_s, 'phase' => 'move', 'dragCol' => 1, 'dragRow' => 1,
+    }
+    expect do
+      perform :feed_item, item: item
+    end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
   it 'does not broadcast junk kind' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     expect do
