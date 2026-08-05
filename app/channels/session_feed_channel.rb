@@ -518,6 +518,10 @@ class SessionFeedChannel < ApplicationCable::Channel
       'casterId' => caster_id.truncate(MAX_ID_LENGTH),
       'phase' => phase
     }
+    # Nonce por ABA (client-provided) — o front usa p/ echo-skip por CLIENTE (2 abas
+    # do mesmo user diferem). Não-autoritativo; só afeta a própria visão do emissor.
+    client_id = h['clientId'].to_s
+    out['clientId'] = client_id.truncate(MAX_ID_LENGTH) if client_id.present?
     return out if phase == 'end' # 'end' só precisa do casterId p/ limpar o fantasma
 
     shape = h['shape'].to_s

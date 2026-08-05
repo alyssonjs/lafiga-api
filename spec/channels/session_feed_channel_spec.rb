@@ -439,6 +439,7 @@ RSpec.describe SessionFeedChannel, type: :channel do
       'sessionId' => schedule.id.to_s, 'casterId' => 'tok-bb', 'phase' => 'move',
       'shape' => 'sphere', 'sizeFt' => 30, 'originCol' => 9, 'originRow' => 5,
       'dirCol' => 9, 'dirRow' => 5, 'color' => '#C93B3B', 'spellName' => 'Bola de Fogo',
+      'clientId' => 'cli-abc123',
     }
     expect do
       perform :feed_item, item: item
@@ -446,6 +447,7 @@ RSpec.describe SessionFeedChannel, type: :channel do
       a_hash_including(
         'kind' => 'aoe_preview', 'casterId' => 'tok-bb', 'shape' => 'sphere',
         'originCol' => 9, 'phase' => 'move', 'senderId' => player.id.to_s,
+        'clientId' => 'cli-abc123',
       ),
     )
   end
