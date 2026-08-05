@@ -152,6 +152,114 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'preserva damageLines (quebra por tipo) numa rolagem de dano — card per-tipo cross-device' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    dmg_roll = valid_roll.merge(
+      'type' => 'damage',
+      'label' => 'Niva → Gnaels · dano Mangual',
+      'total' => 12,
+      'breakdown' => 'd8[4]+3 + (1d8 fogo)[5]',
+      'damageType' => 'concussao',
+      'damageLines' => [
+        { 'type' => 'concussao', 'raw' => 7, 'final' => 7, 'mult' => 1 },
+        { 'type' => 'fogo', 'raw' => 5, 'final' => 5, 'mult' => 1 },
+      ],
+    )
+    expect do
+      perform :feed_item, item: dmg_roll
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'roll',
+        'type' => 'damage',
+        'damageLines' => [
+          a_hash_including('type' => 'concussao', 'raw' => 7, 'final' => 7),
+          a_hash_including('type' => 'fogo', 'raw' => 5, 'final' => 5),
+        ],
+      ),
+    )
+  end
+
+  it 'não anexa damageLines em rolagem que não seja de dano' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    atk = valid_roll.merge(
+      'type' => 'attack',
+      'damageLines' => [{ 'type' => 'fogo', 'raw' => 5, 'final' => 5, 'mult' => 1 }],
+    )
+    expect do
+      perform :feed_item, item: atk
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      satisfy { |p| p['kind'] == 'roll' && !p.key?('damageLines') },
+    )
+  end
+
+  it 'relaya damage_mitigation com lines pós-mitigação (Fúria: concussão ÷2, fogo intacto)' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    mit = {
+      'kind' => 'damage_mitigation',
+      'id' => 'dmit-1',
+      'timestamp' => 1_700_000_000_002,
+      'sessionId' => schedule.id.to_s,
+      'rollGroupId' => 'dmg-abc',
+      'mitigatedTotal' => 8,
+      'tag' => 'RESISTÊNCIA',
+      'lines' => [
+        { 'type' => 'concussao', 'raw' => 7, 'final' => 3, 'mult' => 0.5 },
+        { 'type' => 'fogo', 'raw' => 5, 'final' => 5, 'mult' => 1 },
+      ],
+    }
+    expect do
+      perform :feed_item, item: mit
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'damage_mitigation',
+        'rollGroupId' => 'dmg-abc',
+        'mitigatedTotal' => 8,
+        'tag' => 'RESISTÊNCIA',
+        'lines' => [
+          a_hash_including('type' => 'concussao', 'raw' => 7, 'final' => 3, 'mult' => 0.5),
+          a_hash_including('type' => 'fogo', 'raw' => 5, 'final' => 5, 'mult' => 1.0),
+        ],
+      ),
+    )
+  end
+
+  it 'saneia damage_mitigation: mult fora de {0,0.5,1,2} vira 1 e linha malformada é descartada' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    mit = {
+      'kind' => 'damage_mitigation',
+      'id' => 'dmit-2',
+      'timestamp' => 1_700_000_000_003,
+      'sessionId' => schedule.id.to_s,
+      'rollGroupId' => 'dmg-xyz',
+      'mitigatedTotal' => 4,
+      'tag' => 'RESISTÊNCIA',
+      'lines' => [
+        { 'type' => 'fogo', 'raw' => 5, 'final' => 5, 'mult' => 3 }, # mult inválido → 1.0
+        { 'raw' => 2, 'final' => 2, 'mult' => 1 },                    # sem type → descartada
+      ],
+    }
+    expect do
+      perform :feed_item, item: mit
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      satisfy do |p|
+        p['kind'] == 'damage_mitigation' &&
+          p['lines'] == [{ 'type' => 'fogo', 'raw' => 5, 'final' => 5, 'mult' => 1.0 }]
+      end,
+    )
+  end
+
+  it 'descarta damage_mitigation sem rollGroupId' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    mit = {
+      'kind' => 'damage_mitigation', 'id' => 'dmit-3',
+      'timestamp' => 1_700_000_000_004, 'sessionId' => schedule.id.to_s,
+      'mitigatedTotal' => 8, 'tag' => 'RESISTÊNCIA',
+    }
+    expect do
+      perform :feed_item, item: mit
+    end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
   it 'broadcasts chat with sticker data URL (tiny png)' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     png_b64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='

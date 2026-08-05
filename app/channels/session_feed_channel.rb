@@ -35,6 +35,9 @@ class SessionFeedChannel < ApplicationCable::Channel
   MAX_FX_FLOATS = 12
   MAX_FX_DURATION_MS = 6_000
   DEFAULT_FX_DURATION_MS = 1_200
+  # Quebra de dano POR TIPO no card (arma + riders elementais): concussão, fogo…
+  MAX_DAMAGE_LINES = 16
+  DAMAGE_LINE_MULTS = [0, 0.5, 1, 2].freeze
 
   def self.stream_name_for(schedule_id)
     "session_feed_#{schedule_id}"
@@ -149,6 +152,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_attack_hit_resolution(h)
     when 'floating_fx'
       normalize_floating_fx(h)
+    when 'damage_mitigation'
+      normalize_damage_mitigation(h)
     else
       nil
     end
@@ -297,6 +302,13 @@ class SessionFeedChannel < ApplicationCable::Channel
       out['dice'] = h['dice'].filter_map { |x| x.is_a?(Numeric) ? x.to_i : Integer(x, exception: false) }.compact.first(40)
     end
 
+    # Quebra de dano POR TIPO (arma + riders elementais) p/ o card exibir um chip
+    # por tipo cross-device (ex.: concussão + fogo). Só em rolagens de dano.
+    if type == 'damage'
+      lines = sanitize_damage_lines(h['damageLines'])
+      out['damageLines'] = lines if lines.present?
+    end
+
     sr = h['senderRole'].to_s
     out['senderRole'] = sr if CHAT_ROLES.include?(sr)
     accent = sanitize_hex_color(h['cardAccentColor'])
@@ -326,6 +338,64 @@ class SessionFeedChannel < ApplicationCable::Channel
       end
     end
 
+    out
+  end
+
+  # Sanitiza a quebra de dano POR TIPO ({type, raw, final, mult}[]) — usada tanto
+  # na rolagem de dano (damageLines) quanto na resolução da mitigação (lines).
+  # Descarta linhas malformadas; cap em MAX_DAMAGE_LINES; mult restrito a
+  # {0, 0.5, 1, 2}. Retorna nil quando nada válido resta.
+  def sanitize_damage_lines(raw)
+    return nil unless raw.is_a?(Array)
+
+    lines = raw.first(MAX_DAMAGE_LINES).filter_map do |ln|
+      next nil unless ln.is_a?(Hash)
+
+      l = ln.stringify_keys
+      type = l['type'].to_s.slice(0, 24)
+      next nil if type.empty?
+
+      raw_i = l['raw'].is_a?(Numeric) ? l['raw'].to_i : Integer(l['raw'], exception: false)
+      final_i = l['final'].is_a?(Numeric) ? l['final'].to_i : Integer(l['final'], exception: false)
+      next nil if raw_i.nil? || final_i.nil? || raw_i.negative? || final_i.negative?
+
+      mult_f = l['mult'].is_a?(Numeric) ? l['mult'].to_f : Float(l['mult'], exception: false)
+      mult_f = 1.0 unless DAMAGE_LINE_MULTS.include?(mult_f)
+
+      { 'type' => type, 'raw' => raw_i, 'final' => final_i, 'mult' => mult_f }
+    end
+
+    lines.presence
+  end
+
+  # Atualiza um card de dano já emitido com o valor REAL pós-mitigação + a quebra
+  # por tipo (cross-device). Efêmero: relayado a todos, não persistido (fora de
+  # SessionFeedItem::KINDS). Casa por `rollGroupId` no cliente.
+  def normalize_damage_mitigation(h)
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    rg = h['rollGroupId'].to_s
+    return nil if rg.empty? || rg.length > MAX_ID_LENGTH
+
+    mt = h['mitigatedTotal']
+    mt_i = mt.is_a?(Numeric) ? mt.to_i : Integer(mt, exception: false)
+    return nil if mt_i.nil?
+
+    out = {
+      'kind' => 'damage_mitigation',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'rollGroupId' => rg,
+      'mitigatedTotal' => mt_i,
+      'tag' => h['tag'].to_s.slice(0, 24),
+    }
+    lines = sanitize_damage_lines(h['lines'])
+    out['lines'] = lines if lines.present?
     out
   end
 
