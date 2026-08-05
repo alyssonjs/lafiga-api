@@ -588,6 +588,9 @@ class SessionFeedChannel < ApplicationCable::Channel
 
     out['dragCol'] = h['dragCol'].to_i
     out['dragRow'] = h['dragRow'].to_i
+    # Distância que o token vai percorrer (exibida no fantasma remoto). Opcional.
+    dist = h['dragDistanceFt']
+    out['dragDistanceFt'] = dist.to_f if dist.is_a?(Numeric) || dist.to_s.match?(/\A-?\d+(\.\d+)?\z/)
     threat_ids = h['threatTokenIds']
     threat_ids = [] unless threat_ids.is_a?(Array)
     out['threatTokenIds'] = threat_ids

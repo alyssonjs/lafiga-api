@@ -482,7 +482,7 @@ RSpec.describe SessionFeedChannel, type: :channel do
     item = {
       'kind' => 'oa_threat', 'id' => 'oat-1', 'timestamp' => 1_700_000_000_020,
       'sessionId' => schedule.id.to_s, 'draggedTokenId' => 'tok-mover', 'phase' => 'move',
-      'dragCol' => 7, 'dragRow' => 4, 'threatTokenIds' => %w[tok-e1 tok-e2],
+      'dragCol' => 7, 'dragRow' => 4, 'dragDistanceFt' => 15.0, 'threatTokenIds' => %w[tok-e1 tok-e2],
       'clientId' => 'cli-xyz',
     }
     expect do
@@ -490,7 +490,7 @@ RSpec.describe SessionFeedChannel, type: :channel do
     end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
       a_hash_including(
         'kind' => 'oa_threat', 'draggedTokenId' => 'tok-mover', 'dragCol' => 7,
-        'phase' => 'move', 'threatTokenIds' => %w[tok-e1 tok-e2],
+        'phase' => 'move', 'threatTokenIds' => %w[tok-e1 tok-e2], 'dragDistanceFt' => 15.0,
         'senderId' => player.id.to_s, 'clientId' => 'cli-xyz',
       ),
     )
