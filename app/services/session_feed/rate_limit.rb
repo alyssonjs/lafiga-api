@@ -7,18 +7,23 @@ module SessionFeed
   class RateLimit
     LIMIT = 60
     WINDOW_SECONDS = 60
+    # Bucket próprio p/ o stream de preview de área (mouse-move): alta frequência,
+    # efêmero, NÃO pode consumir o bucket compartilhado do chat/rolls. ~20/s.
+    AOE_PREVIEW_LIMIT = 1_200
 
     class << self
-      def allow?(user_id, schedule_id)
+      # `bucket` isola contadores por classe de tráfego (default = chat/rolls);
+      # `limit` permite um teto próprio (ex.: preview de área). Retrocompatível.
+      def allow?(user_id, schedule_id, bucket: 'default', limit: LIMIT)
         return true if user_id.blank? || schedule_id.blank?
 
         window = Time.current.to_i / WINDOW_SECONDS
-        key = "session_feed/v1/#{user_id}/#{schedule_id}/#{window}"
+        key = "session_feed/v1/#{bucket}/#{user_id}/#{schedule_id}/#{window}"
 
         if use_redis?
-          allow_via_redis!(key)
+          allow_via_redis!(key, limit)
         else
-          allow_via_cache!(key)
+          allow_via_cache!(key, limit)
         end
       end
 
@@ -28,19 +33,19 @@ module SessionFeed
         ENV['REDIS_URL'].to_s.present? && !Rails.env.test?
       end
 
-      def allow_via_redis!(key)
+      def allow_via_redis!(key, limit)
         r = redis_client
         n = r.incr(key)
         r.expire(key, WINDOW_SECONDS * 2) if n == 1
-        n <= LIMIT
+        n <= limit
       rescue Redis::BaseError => e
         Rails.logger.warn({ event: 'session_feed.rate_limit_redis_error', error: e.class.name, message: e.message }.to_json)
         true
       end
 
-      def allow_via_cache!(key)
+      def allow_via_cache!(key, limit)
         count = Rails.cache.read(key).to_i
-        return false if count >= LIMIT
+        return false if count >= limit
 
         Rails.cache.write(key, count + 1, expires_in: (WINDOW_SECONDS * 2).seconds)
         true

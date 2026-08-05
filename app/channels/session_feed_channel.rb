@@ -38,6 +38,9 @@ class SessionFeedChannel < ApplicationCable::Channel
   # Quebra de dano POR TIPO no card (arma + riders elementais): concussão, fogo…
   MAX_DAMAGE_LINES = 16
   DAMAGE_LINE_MULTS = [0, 0.5, 1, 2].freeze
+  # Preview de área ao vivo (aoe_preview): formas válidas + teto de tamanho.
+  AOE_PREVIEW_SHAPES = %w[sphere cone cube line cylinder].freeze
+  MAX_AOE_SIZE_FT = 500
 
   def self.stream_name_for(schedule_id)
     "session_feed_#{schedule_id}"
@@ -59,19 +62,30 @@ class SessionFeedChannel < ApplicationCable::Channel
   def feed_item(data)
     return unless @schedule_id && @current_user
 
-    unless SessionFeed::RateLimit.allow?(@current_user.id, @schedule_id)
+    payload = data.is_a?(Hash) ? data.stringify_keys : {}
+    item = payload['item']
+    kind = item.is_a?(Hash) ? (item['kind'] || item[:kind]).to_s : ''
+
+    # Preview de área é stream de mouse-move (alta frequência, efêmero) → bucket de
+    # rate-limit próprio e generoso, separado do chat/rolls (que dividem o default).
+    rate_ok =
+      if kind == 'aoe_preview'
+        SessionFeed::RateLimit.allow?(@current_user.id, @schedule_id, bucket: 'aoe_preview', limit: SessionFeed::RateLimit::AOE_PREVIEW_LIMIT)
+      else
+        SessionFeed::RateLimit.allow?(@current_user.id, @schedule_id)
+      end
+    unless rate_ok
       Rails.logger.warn(
         {
           event: 'session_feed.throttled',
           user_id: @current_user.id,
           schedule_id: @schedule_id,
+          bucket: kind == 'aoe_preview' ? 'aoe_preview' : 'default',
         }.to_json,
       )
       return
     end
 
-    payload = data.is_a?(Hash) ? data.stringify_keys : {}
-    item = payload['item']
     normalized = normalize_item(item)
     return if normalized.blank?
 
@@ -80,7 +94,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       return
     end
 
-    persist_item(normalized)
+    # aoe_preview NÃO persiste (efêmero + alta frequência) — evita Persist 20×/s.
+    persist_item(normalized) unless normalized['kind'] == 'aoe_preview'
 
     ActionCable.server.broadcast(self.class.stream_name_for(@schedule_id), normalized)
   end
@@ -152,6 +167,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_attack_hit_resolution(h)
     when 'save_prompt_resolved'
       normalize_save_prompt_resolved(h)
+    when 'aoe_preview'
+      normalize_aoe_preview(h)
     when 'floating_fx'
       normalize_floating_fx(h)
     when 'damage_mitigation'
@@ -467,6 +484,59 @@ class SessionFeedChannel < ApplicationCable::Channel
       'sessionId' => @schedule_id.to_s,
       'rollGroupId' => roll_group_id.truncate(MAX_ID_LENGTH)
     }
+  end
+
+  # Preview AO VIVO de área (aoe_preview): o conjurador transmite a origem/direção
+  # resolvidas enquanto move o mouse; os OUTROS clientes recomputam as células e
+  # desenham um fantasma. Efêmero (não persiste), relayado, com `sender_id`
+  # AUTORITATIVO (do @current_user) p/ o front pular o próprio eco. `phase:'end'`
+  # limpa o fantasma. Envia origem+direção (não as células cruas) p/ payload enxuto.
+  def normalize_aoe_preview(h)
+    return nil unless h.is_a?(Hash)
+
+    h = h.stringify_keys
+    return nil unless h['kind'].to_s == 'aoe_preview'
+
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    caster_id = h['casterId'].to_s
+    return nil if caster_id.empty? || caster_id.length > MAX_ID_LENGTH
+
+    phase = h['phase'].to_s
+    phase = 'move' unless %w[move end].include?(phase)
+
+    out = {
+      'kind' => 'aoe_preview',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'senderId' => @current_user.id.to_s,
+      'casterId' => caster_id.truncate(MAX_ID_LENGTH),
+      'phase' => phase
+    }
+    return out if phase == 'end' # 'end' só precisa do casterId p/ limpar o fantasma
+
+    shape = h['shape'].to_s
+    return nil unless AOE_PREVIEW_SHAPES.include?(shape)
+
+    size_ft = h['sizeFt'].to_f
+    return nil unless size_ft.positive? && size_ft <= MAX_AOE_SIZE_FT
+
+    out['shape'] = shape
+    out['sizeFt'] = size_ft
+    out['originCol'] = h['originCol'].to_i
+    out['originRow'] = h['originRow'].to_i
+    out['dirCol'] = h['dirCol'].to_i
+    out['dirRow'] = h['dirRow'].to_i
+    color = sanitize_hex_color(h['color'])
+    out['color'] = color if color
+    spell_name = h['spellName'].to_s
+    out['spellName'] = spell_name.truncate(80) if spell_name.present?
+    out
   end
 
   # FX efêmero: números de dano flutuantes sobre um token. Relayado a todos os

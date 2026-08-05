@@ -432,6 +432,49 @@ RSpec.describe SessionFeedChannel, type: :channel do
     end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
   end
 
+  it 'relaya aoe_preview (move) recomputável com sender_id autoritativo' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'aoe_preview', 'id' => 'aoep-1', 'timestamp' => 1_700_000_000_011,
+      'sessionId' => schedule.id.to_s, 'casterId' => 'tok-bb', 'phase' => 'move',
+      'shape' => 'sphere', 'sizeFt' => 30, 'originCol' => 9, 'originRow' => 5,
+      'dirCol' => 9, 'dirRow' => 5, 'color' => '#C93B3B', 'spellName' => 'Bola de Fogo',
+    }
+    expect do
+      perform :feed_item, item: item
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'aoe_preview', 'casterId' => 'tok-bb', 'shape' => 'sphere',
+        'originCol' => 9, 'phase' => 'move', 'senderId' => player.id.to_s,
+      ),
+    )
+  end
+
+  it 'relaya aoe_preview (end) só com casterId p/ limpar o fantasma' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'aoe_preview', 'id' => 'aoep-2', 'timestamp' => 1_700_000_000_012,
+      'sessionId' => schedule.id.to_s, 'casterId' => 'tok-bb', 'phase' => 'end',
+    }
+    expect do
+      perform :feed_item, item: item
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('kind' => 'aoe_preview', 'casterId' => 'tok-bb', 'phase' => 'end'),
+    )
+  end
+
+  it 'descarta aoe_preview (move) com forma inválida' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'aoe_preview', 'id' => 'aoep-3', 'timestamp' => 1_700_000_000_013,
+      'sessionId' => schedule.id.to_s, 'casterId' => 'tok-bb', 'phase' => 'move',
+      'shape' => 'triangulo', 'sizeFt' => 30, 'originCol' => 1, 'originRow' => 1,
+    }
+    expect do
+      perform :feed_item, item: item
+    end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
   it 'does not broadcast junk kind' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     expect do
