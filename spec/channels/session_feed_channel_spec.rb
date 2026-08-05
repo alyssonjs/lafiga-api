@@ -120,6 +120,38 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'preserva savePrompt em roll type save (card de prompt de TR, substitui o modal)' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    save_roll = valid_roll.merge(
+      'type' => 'save',
+      'total' => 0,
+      'label' => 'Niva → Gargula · TR CON CD 15',
+      'savePrompt' => { 'dc' => 15, 'ability' => 'con', 'targetName' => 'Gargula', 'sourceName' => 'Niva', 'mode' => 'apply-on-fail' },
+    )
+    expect do
+      perform :feed_item, item: save_roll
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'roll',
+        'type' => 'save',
+        'savePrompt' => a_hash_including('dc' => 15, 'ability' => 'con', 'targetName' => 'Gargula', 'mode' => 'apply-on-fail'),
+      ),
+    )
+  end
+
+  it 'ignora savePrompt com dc inválido / mode fora do whitelist' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    save_roll = valid_roll.merge(
+      'type' => 'save', 'total' => 0,
+      'savePrompt' => { 'dc' => 'xx', 'ability' => 'con', 'targetName' => 'Gargula', 'mode' => 'hack' },
+    )
+    expect do
+      perform :feed_item, item: save_roll
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      satisfy { |p| p['kind'] == 'roll' && !p.key?('savePrompt') },
+    )
+  end
+
   it 'broadcasts chat with sticker data URL (tiny png)' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     png_b64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
@@ -237,6 +269,34 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'relaya dodge target/attacker no ERRO (miss)' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    resolution = {
+      'kind' => 'attack_hit_resolution', 'id' => 'ahr-2', 'timestamp' => 1_700_000_000_007,
+      'sessionId' => schedule.id.to_s, 'rollGroupId' => 'rg-atk-2', 'outcome' => 'miss',
+      'dodgeTargetTokenId' => 'tok-alvo', 'dodgeAttackerTokenId' => 'tok-atk',
+    }
+    expect do
+      perform :feed_item, item: resolution
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('dodgeTargetTokenId' => 'tok-alvo', 'dodgeAttackerTokenId' => 'tok-atk'),
+    )
+  end
+
+  it 'descarta dodge target/attacker no ACERTO (hit)' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    resolution = {
+      'kind' => 'attack_hit_resolution', 'id' => 'ahr-3', 'timestamp' => 1_700_000_000_008,
+      'sessionId' => schedule.id.to_s, 'rollGroupId' => 'rg-atk-3', 'outcome' => 'hit',
+      'dodgeTargetTokenId' => 'tok-alvo', 'dodgeAttackerTokenId' => 'tok-atk',
+    }
+    expect do
+      perform :feed_item, item: resolution
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      satisfy { |p| p['outcome'] == 'hit' && !p.key?('dodgeTargetTokenId') && !p.key?('dodgeAttackerTokenId') },
+    )
+  end
+
   it 'does not broadcast junk kind' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     expect do
@@ -250,6 +310,102 @@ RSpec.describe SessionFeedChannel, type: :channel do
     expect do
       perform :feed_item, item: valid_chat
     end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
+  describe 'floating_fx (números de dano flutuantes, efêmero)' do
+    let(:valid_fx) do
+      {
+        'kind' => 'floating_fx',
+        'id' => 'fx-1',
+        'timestamp' => 1_700_000_000_010,
+        'sessionId' => schedule.id.to_s,
+        'tokenId' => 'token-abc',
+        'floats' => [{ 'type' => 'cortante', 'value' => 3 }, { 'type' => 'fogo', 'value' => 5 }],
+        'fxKind' => 'damage',
+        'durationMs' => 1_200,
+      }
+    end
+
+    it 'relaya o FX normalizado a todos os subscribers' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      expect do
+        perform :feed_item, item: valid_fx
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including(
+          'kind' => 'floating_fx',
+          'tokenId' => 'token-abc',
+          'floats' => [{ 'type' => 'cortante', 'value' => 3 }, { 'type' => 'fogo', 'value' => 5 }],
+          'fxKind' => 'damage',
+        ),
+      )
+    end
+
+    it 'coage value para inteiro e limita a quantidade de floats' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      many = (1..20).map { |i| { 'type' => 'fogo', 'value' => "#{i}" } }
+      fx = valid_fx.merge('floats' => many)
+      expect do
+        perform :feed_item, item: fx
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        satisfy do |p|
+          p['kind'] == 'floating_fx' &&
+            p['floats'].length == SessionFeedChannel::MAX_FX_FLOATS &&
+            p['floats'].all? { |f| f['value'].is_a?(Integer) }
+        end,
+      )
+    end
+
+    it 'não relaya quando floats está vazio' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      expect do
+        perform :feed_item, item: valid_fx.merge('floats' => [])
+      end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+    end
+
+    it 'não relaya quando falta tokenId' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      expect do
+        perform :feed_item, item: valid_fx.merge('tokenId' => '')
+      end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+    end
+
+    it 'faz clamp de durationMs fora do limite e default de fxKind inválido' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      fx = valid_fx.merge('durationMs' => 999_999, 'fxKind' => 'explode')
+      expect do
+        perform :feed_item, item: fx
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including('durationMs' => SessionFeedChannel::DEFAULT_FX_DURATION_MS, 'fxKind' => 'damage'),
+      )
+    end
+
+    it 'NÃO persiste (efêmero, fora de SessionFeedItem::KINDS)' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      expect { perform :feed_item, item: valid_fx }
+        .not_to change(SessionFeedItem, :count)
+    end
+
+    it 'relaya attackFx (FX de ataque melee) quando o par de tokenIds é válido' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      fx = valid_fx.merge('attackFx' => { 'attackerTokenId' => 'tok-atk', 'targetTokenId' => 'tok-alvo' })
+      expect do
+        perform :feed_item, item: fx
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including(
+          'attackFx' => { 'attackerTokenId' => 'tok-atk', 'targetTokenId' => 'tok-alvo' },
+        ),
+      )
+    end
+
+    it 'descarta attackFx incompleto (sem attackerTokenId) mas relaya o resto' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      fx = valid_fx.merge('attackFx' => { 'targetTokenId' => 'tok-alvo' })
+      expect do
+        perform :feed_item, item: fx
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        satisfy { |p| p['kind'] == 'floating_fx' && !p.key?('attackFx') },
+      )
+    end
   end
 
   describe 'persistência (SessionFeed::Persist)' do

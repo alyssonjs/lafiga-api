@@ -323,4 +323,120 @@ RSpec.describe Combat::InteractionService do
       expect(described_class.build_target_consent(tc_params.merge(kind: 'contest'))).to be_nil
     end
   end
+
+  describe '.build_protective_swap (Fúria Protetora: Trocar de Lugar)' do
+    let(:ps_params) do
+      {
+        kind: 'protective_swap',
+        source_id: 'prot-1',
+        pending_responders: [{ character_id: 'prot-1', need: 'offer_reaction', owned_by_dm: false, responded: false }],
+        protective_swap: {
+          reactor_char_id: 'prot-1',
+          ally_char_id: 'ally-1',
+          ally_owned_by_dm: false,
+          attacker_token_id: 'tk-foe',
+          ally_token_id: 'tk-ally',
+          reactor_token_id: 'tk-prot',
+          attack_meta: { name: 'Espada Longa', caster_name: 'Ogro', bonus: '+5', damage: '1d8+3', damage_type: 'cortante' },
+        },
+      }
+    end
+
+    it 'monta na fase awaiting_protector com o Protetor pendente (need offer_reaction)' do
+      ai = described_class.build_protective_swap(ps_params)
+      expect(ai['kind']).to eq('protective_swap')
+      expect(ai['phase']).to eq('awaiting_protector')
+      expect(ai['source_id']).to eq('prot-1')
+      expect(ai['target_ids']).to eq(['prot-1'])
+      expect(ai['id']).to be_present
+      expect(ai['pending_responders']).to eq([
+        { 'character_id' => 'prot-1', 'need' => 'offer_reaction', 'owned_by_dm' => false, 'responded' => false },
+      ])
+      expect(ai['label']).to eq('Fúria Protetora: Trocar de Lugar')
+    end
+
+    it 'preserva o bloco protective_swap (chars/tokens/attack_meta) + outcome nil' do
+      ps = described_class.build_protective_swap(ps_params)['protective_swap']
+      expect(ps['reactor_char_id']).to eq('prot-1')
+      expect(ps['ally_char_id']).to eq('ally-1')
+      expect(ps['ally_owned_by_dm']).to be false
+      expect(ps['attacker_token_id']).to eq('tk-foe')
+      expect(ps['ally_token_id']).to eq('tk-ally')
+      expect(ps['reactor_token_id']).to eq('tk-prot')
+      expect(ps['attack_meta']).to eq(
+        'name' => 'Espada Longa', 'caster_name' => 'Ogro', 'bonus' => '+5',
+        'damage' => '1d8+3', 'damage_type' => 'cortante',
+      )
+      expect(ps).to have_key('outcome')
+      expect(ps['outcome']).to be_nil
+    end
+
+    it 'marca ally_owned_by_dm quando o aliado é NPC do DM' do
+      params = ps_params.deep_dup
+      params[:protective_swap][:ally_owned_by_dm] = true
+      ps = described_class.build_protective_swap(params)['protective_swap']
+      expect(ps['ally_owned_by_dm']).to be true
+    end
+
+    it 'retorna nil sem reactor_char_id / sem ally_char_id / sem bloco / kind diferente' do
+      no_reactor = ps_params.deep_dup.tap { |h| h[:protective_swap].delete(:reactor_char_id); h.delete(:source_id) }
+      no_ally    = ps_params.deep_dup.tap { |h| h[:protective_swap].delete(:ally_char_id) }
+      expect(described_class.build_protective_swap(no_reactor)).to be_nil
+      expect(described_class.build_protective_swap(no_ally)).to be_nil
+      expect(described_class.build_protective_swap(ps_params.merge(protective_swap: nil))).to be_nil
+      expect(described_class.build_protective_swap(ps_params.merge(kind: 'contest'))).to be_nil
+    end
+  end
+
+  describe '.build_tribe_defender (Defensor da Tribo)' do
+    let(:td_params) do
+      {
+        kind: 'tribe_defender',
+        source_id: 'def-1',
+        pending_responders: [{ character_id: 'def-1', need: 'offer_reaction', owned_by_dm: false, responded: false }],
+        tribe_defender: {
+          defender_char_id: 'def-1',
+          ally_char_id: 'ally-1',
+          ally_owned_by_dm: false,
+          defender_token_id: 'tk-def',
+          ally_token_id: 'tk-ally',
+          downed_name: 'Aliado Caído',
+        },
+      }
+    end
+
+    it 'monta na fase declared com o Defensor pendente (need offer_reaction)' do
+      ai = described_class.build_tribe_defender(td_params)
+      expect(ai['kind']).to eq('tribe_defender')
+      expect(ai['phase']).to eq('declared')
+      expect(ai['source_id']).to eq('def-1')
+      expect(ai['target_ids']).to eq(['def-1'])
+      expect(ai['id']).to be_present
+      expect(ai['pending_responders']).to eq([
+        { 'character_id' => 'def-1', 'need' => 'offer_reaction', 'owned_by_dm' => false, 'responded' => false },
+      ])
+      expect(ai['label']).to eq('Defensor da Tribo')
+    end
+
+    it 'preserva o bloco tribe_defender (chars/tokens/nome) + outcome nil' do
+      td = described_class.build_tribe_defender(td_params)['tribe_defender']
+      expect(td['defender_char_id']).to eq('def-1')
+      expect(td['ally_char_id']).to eq('ally-1')
+      expect(td['ally_owned_by_dm']).to be false
+      expect(td['defender_token_id']).to eq('tk-def')
+      expect(td['ally_token_id']).to eq('tk-ally')
+      expect(td['downed_name']).to eq('Aliado Caído')
+      expect(td).to have_key('outcome')
+      expect(td['outcome']).to be_nil
+    end
+
+    it 'retorna nil sem defender_char_id / sem ally_char_id / sem bloco / kind diferente' do
+      no_def = td_params.deep_dup.tap { |h| h[:tribe_defender].delete(:defender_char_id); h.delete(:source_id) }
+      no_ally = td_params.deep_dup.tap { |h| h[:tribe_defender].delete(:ally_char_id) }
+      expect(described_class.build_tribe_defender(no_def)).to be_nil
+      expect(described_class.build_tribe_defender(no_ally)).to be_nil
+      expect(described_class.build_tribe_defender(td_params.merge(tribe_defender: nil))).to be_nil
+      expect(described_class.build_tribe_defender(td_params.merge(kind: 'contest'))).to be_nil
+    end
+  end
 end

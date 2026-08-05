@@ -77,6 +77,37 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
       expect(json).to include('hp_current' => 9, 'hp_max' => 9, 'ac' => 14)
     end
 
+    # A CA de um combatente PC é AUTORITATIVA do summary da ficha (Defesa sem
+    # Armadura do Bárbaro, escudo, feats, itens mágicos). O front ECOA um `ac` no
+    # create, mas ele pode chegar STALE (ex.: escudo equipado depois do último
+    # snapshot) — o controller deve IGNORAR o `ac` ecoado e usar o do summary,
+    # senão o combate congela um valor antigo (bug: ficha 18 × combate 12).
+    it 'PC: a CA vem do summary (autoritativa), ignorando o `ac` ecoado pelo front' do
+      create(:sheet, character: player_character, hp_current: 30, hp_max: 30)
+      cmd = CharacterSheetSummaryService.call(sheet_id: player_character.sheet.id, sync: false)
+      authoritative_ac = cmd.success? ? cmd.result.dig(:equipment, :ac, :ac).to_i : 10
+      stale_front_ac = authoritative_ac + 7 # valor "velho" que o front mandaria
+
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants",
+           params: { combatant: { type: 'pc', combatable_id: player_character.id, initiative: 10, ac: stale_front_ac } },
+           headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body['combatant']['ac']).to eq(authoritative_ac)
+      expect(response.parsed_body['combatant']['ac']).not_to eq(stale_front_ac)
+    end
+
+    it 'NPC: continua honrando o `ac` enviado no create (o Mestre pode customizar)' do
+      npc = create(:combat_npc, schedule: schedule, hp_current: 9, hp_max: 9, ac: 14)
+
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants",
+           params: { combatant: { type: 'npc', combatable_id: npc.id, initiative: 12, ac: 17 } },
+           headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body['combatant']['ac']).to eq(17)
+    end
+
     it '422 when adding a Character from another group' do
       other_group = create(:group)
       foreign_char = create(:character, group: other_group)
@@ -121,6 +152,98 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
       json = response.parsed_body['combatant']
       expect(json['conditions']).to eq([{ 'id' => 'poisoned', 'turns_left' => 3 }])
       expect(json['actions_used']).to include('action' => true, 'movement' => true)
+    end
+
+    # Houserule "1 reação por RODADA": `reactionUsedRound` é um marcador
+    # SERVER-OWNED (o front nunca o envia) que trava a reação como GASTA até o
+    # fim da rodada. Ao virar o turno o front faz um reset DEFENSIVO reescrevendo
+    # actions_used/turn_state inteiros — sem esta trava, esse PATCH "recarregaria"
+    # a reação no mesmo round. Ver `apply_reaction_round_lock!` no controller e
+    # `reset_turn_actions!` (a mesma regra na virada server-side).
+    context 'trava de reação por rodada (reactionUsedRound server-owned)' do
+      let(:reset_patch) do
+        { combatant: {
+          actions_used: { action: false, bonus_action: false, movement: false, reaction: false },
+          turn_state: { attacksMade: 0 },
+        } }
+      end
+
+      it 'preserva o marcador e mantém reaction=true quando o front reseta na MESMA rodada' do
+        combatant.update!(
+          actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => true },
+          turn_state: { 'reactionUsedRound' => cs.round, 'guardingAlly' => 'token-x' },
+        )
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: reset_patch, headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body['combatant']
+        expect(json['actions_used']).to include('reaction' => true)            # reação continua gasta
+        expect(json['turn_state']).to include('reactionUsedRound' => cs.round) # marcador preservado
+      end
+
+      it 'NÃO interfere numa RODADA NOVA (round > reactionUsedRound): a reação recarrega' do
+        combatant.update!(
+          actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => true },
+          turn_state: { 'reactionUsedRound' => cs.round },
+        )
+        cs.update!(round: cs.round + 1)
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: reset_patch, headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body['combatant']
+        expect(json['actions_used']).to include('reaction' => false)     # recarregou
+        expect(json['turn_state']).not_to have_key('reactionUsedRound')  # front pôde limpar
+      end
+
+      it 'não força reaction quando não há marcador (reação normal, sem houserule)' do
+        combatant.update!(turn_state: {})
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { actions_used: { action: false, bonus_action: false, movement: false, reaction: false } } },
+              headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['combatant']['actions_used']).to include('reaction' => false)
+      end
+
+      # STAMP (economia de reação unificada): qualquer #update que TRANSICIONE
+      # actions_used.reaction false→true sem carimbo vivo NASCE round-locked —
+      # o backend carimba reactionUsedRound (server-owned). Cobre AO manual do
+      # Mestre, retaliação e o funil de ações do front (que só marcavam o flag,
+      # antes sem lock → reação presa).
+      it 'STAMP: PATCH marcando reaction=true carimba reactionUsedRound = rodada atual' do
+        combatant.update!(turn_state: {}, actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false })
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { actions_used: { action: false, bonus_action: false, movement: false, reaction: true } } },
+              headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body['combatant']
+        expect(json['actions_used']).to include('reaction' => true)
+        expect(json['turn_state']).to include('reactionUsedRound' => cs.round) # nasceu round-locked
+      end
+
+      it 'STAMP: PATCH só de actions_used PRESERVA outras chaves do turn_state ao carimbar' do
+        combatant.update!(turn_state: { 'guardingAlly' => 'tk-x' }, actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false })
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { actions_used: { action: false, bonus_action: false, movement: false, reaction: true } } },
+              headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body['combatant']
+        expect(json['turn_state']).to include('guardingAlly' => 'tk-x', 'reactionUsedRound' => cs.round)
+      end
+
+      it 'STAMP: guard de transição — reaction JÁ true sem carimbo (legado) NÃO cria carimbo espúrio' do
+        combatant.update!(turn_state: {}, actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => true })
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { actions_used: { action: false, bonus_action: false, movement: false, reaction: true } } },
+              headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['combatant']['turn_state']).not_to have_key('reactionUsedRound')
+      end
     end
 
     it 'allows the owning player to set initiative once while it is nil' do

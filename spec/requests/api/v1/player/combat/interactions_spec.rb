@@ -376,6 +376,50 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
           expect(log.message).to include('abriu mão')
         end
 
+        # REGRESSÃO: o mover só é necessário p/ APLICAR DANO. No IGNORAR (e no ERRO)
+        # o HP do mover não é tocado — um mover não-resolvível NÃO pode dar 422 e
+        # travar a reação. Era o bug: ignorar o 1.º AO dava 422 "mover combatant não
+        # encontrado", a interação não limpava e o 2.º AO nunca abria.
+        it 'ignored:true LIMPA a interação mesmo com o mover NÃO resolvível (não dá 422)' do
+          mover_cc.destroy! # torna o mover irresolúvel (find_by id + por identidade → nil)
+          post "#{base}/active_interaction/respond",
+               params: { character_id: reactor_npc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 18 }, damage: 7, ignored: true } },
+               headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok)
+          expect(response.parsed_body['active_interaction']).to be_nil
+          expect(cs.reload.active_interaction).to be_nil
+        end
+
+        it 'hit:false (ERRO) LIMPA a interação mesmo com o mover NÃO resolvível (não dá 422)' do
+          mover_cc.destroy!
+          post "#{base}/active_interaction/respond",
+               params: { character_id: reactor_npc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 5 }, damage: 7, hit: false } },
+               headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok)
+          expect(cs.reload.active_interaction).to be_nil
+        end
+
+        # REGRESSÃO: o front (resolveTargetIdentity) identifica o reator de AO como
+        # `npc-<CombatNpc.id>` (ex.: 'npc-47'). `resolve_combatant_by_identity` tem
+        # de resolver esse esquema — senão o reator NPC não é achado e a reação NÃO
+        # é consumida (bug: AO do NPC não gastava a reação → reagia de novo na mesma
+        # rodada). Aqui o reator é enviado como 'npc-<id>' e o miss deve consumir.
+        it 'reator NPC por `npc-<id>` (esquema do front): miss consome a reação' do
+          npc_ident = "npc-#{reactor_npc_cc.combatable_id}"
+          put "#{base}/active_interaction",
+              params: oa_upsert_body(reactor_identity: npc_ident, mover_identity: mover_cc.combatable_id,
+                                     owned_by_dm: true, mover_combatant_id: mover_cc.id),
+              headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok)
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: npc_ident, opportunity_attack: { roll: { total: 5 }, damage: 0, hit: false } },
+               headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok)
+          expect(reactor_npc_cc.reload.actions_used['reaction']).to be true # reação CONSUMIDA
+          expect(cs.reload.active_interaction).to be_nil
+        end
+
         it 'idempotente: segundo respond não reaplica dano nem cria segundo log' do
           # 1º respond: Mestre confirma acerto → aplica dano, cria log e LIMPA.
           expect do
@@ -782,6 +826,216 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
              params: { character_id: defender_char.id.to_s, instinctive_fortitude: {} },
              headers: defender_headers, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
+
+  describe 'Fúria Protetora: Trocar de Lugar (protective_swap)' do
+    # Atacante = NPC do DM, no turno atual (position 0 = current_turn_index).
+    let!(:attacker_npc) { create(:combat_npc, schedule: schedule) }
+    let!(:attacker_npc_cc) do
+      create(:combat_combatant, :npc, combat_state: cs, combatable: attacker_npc, position: 0)
+    end
+    # Protetor = PC do defender_user (reator).
+    let!(:protector_cc) do
+      create(:combat_combatant, :pc, combat_state: cs, combatable: defender_char,
+             position: 1, ac: 18, hp_current: 30, hp_max: 30)
+    end
+    # Aliado (alvo original) = PC do outsider.
+    let!(:ally_char) { create(:character, user: outsider, group: schedule.group) }
+    let!(:ally_cc) do
+      create(:combat_combatant, :pc, combat_state: cs, combatable: ally_char,
+             position: 2, ac: 14, hp_current: 12, hp_max: 12)
+    end
+
+    def ps_upsert_body
+      {
+        interaction: {
+          kind: 'protective_swap',
+          source_id: defender_char.id.to_s,
+          pending_responders: [
+            { character_id: defender_char.id.to_s, need: 'offer_reaction', owned_by_dm: false, responded: false },
+          ],
+          protective_swap: {
+            reactor_char_id: defender_char.id.to_s,
+            ally_char_id: ally_char.id.to_s,
+            ally_owned_by_dm: false,
+            attacker_token_id: 'tk-foe',
+            ally_token_id: 'tk-ally',
+            reactor_token_id: 'tk-prot',
+            attack_meta: { name: 'Machado', caster_name: 'Ogro', bonus: '+5', damage: '1d12+3', damage_type: 'cortante' },
+          },
+        },
+      }
+    end
+
+    def respond_body(char_id, accept:)
+      decision = accept ? { accept: true } : { decline: true }
+      { character_id: char_id.to_s, protective_swap: decision }
+    end
+
+    describe 'PUT (upsert)' do
+      it 'DM declara o swap (atacante NPC) → 200, fase awaiting_protector' do
+        put "#{base}/active_interaction", params: ps_upsert_body, headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['kind']).to eq('protective_swap')
+        expect(ai['phase']).to eq('awaiting_protector')
+        expect(ai['pending_responders'].first['character_id']).to eq(defender_char.id.to_s)
+        expect(ai['pending_responders'].first['need']).to eq('offer_reaction')
+      end
+
+      it '403 quando quem declara não é DM nem dono do PC do turno atual' do
+        put "#{base}/active_interaction", params: ps_upsert_body, headers: outsider_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    describe 'POST (respond) — 2 fases' do
+      before do
+        put "#{base}/active_interaction", params: ps_upsert_body, headers: dm_headers, as: :json
+      end
+
+      it 'Protetor aceita → fase awaiting_consent com o aliado pendente (need consent)' do
+        post "#{base}/active_interaction/respond",
+             params: respond_body(defender_char.id, accept: true), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('awaiting_consent')
+        expect(ai['pending_responders'].first['character_id']).to eq(ally_char.id.to_s)
+        expect(ai['pending_responders'].first['need']).to eq('consent')
+      end
+
+      it 'Protetor recusa → resolved/declined sem consumir reação' do
+        post "#{base}/active_interaction/respond",
+             params: respond_body(defender_char.id, accept: false), headers: defender_headers, as: :json
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('resolved')
+        expect(ai['protective_swap']['outcome']).to eq('declined')
+        expect(protector_cc.reload.actions_used['reaction']).to be_falsey
+      end
+
+      it 'fluxo completo: Protetor aceita → aliado consente → consome reação + resolved/accepted' do
+        post "#{base}/active_interaction/respond",
+             params: respond_body(defender_char.id, accept: true), headers: defender_headers, as: :json
+        post "#{base}/active_interaction/respond",
+             params: respond_body(ally_char.id, accept: true), headers: outsider_headers, as: :json
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('resolved')
+        expect(ai['protective_swap']['outcome']).to eq('accepted')
+        expect(protector_cc.reload.actions_used['reaction']).to be true
+        # Houserule "1 reação por RODADA": grava o marcador SERVER-OWNED da rodada
+        # do uso (sem ele, o reset defensivo do front recarregaria a reação).
+        expect(protector_cc.reload.turn_state['reactionUsedRound']).to eq(cs.round)
+      end
+
+      it 'aliado recusa o consentimento → resolved/declined sem consumir reação' do
+        post "#{base}/active_interaction/respond",
+             params: respond_body(defender_char.id, accept: true), headers: defender_headers, as: :json
+        post "#{base}/active_interaction/respond",
+             params: respond_body(ally_char.id, accept: false), headers: outsider_headers, as: :json
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('resolved')
+        expect(ai['protective_swap']['outcome']).to eq('declined')
+        expect(protector_cc.reload.actions_used['reaction']).to be_falsey
+      end
+
+      it 'outsider não pode responder pelo Protetor (não é dono)' do
+        post "#{base}/active_interaction/respond",
+             params: respond_body(defender_char.id, accept: true), headers: outsider_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
+  describe 'Defensor da Tribo (tribe_defender)' do
+    # Atacante/aplicador = NPC do DM, no turno atual (position 0).
+    let!(:td_attacker_npc) { create(:combat_npc, schedule: schedule) }
+    let!(:td_attacker_cc) do
+      create(:combat_combatant, :npc, combat_state: cs, combatable: td_attacker_npc, position: 0)
+    end
+    # Defensor = PC do defender_user (reator).
+    let!(:td_defender_cc) do
+      create(:combat_combatant, :pc, combat_state: cs, combatable: defender_char,
+             position: 1, ac: 18, hp_current: 40, hp_max: 40)
+    end
+    # Aliado caído = PC do outsider.
+    let!(:td_ally_char) { create(:character, user: outsider, group: schedule.group) }
+    let!(:td_ally_cc) do
+      create(:combat_combatant, :pc, combat_state: cs, combatable: td_ally_char,
+             position: 2, ac: 14, hp_current: 0, hp_max: 12)
+    end
+
+    def td_upsert_body
+      {
+        interaction: {
+          kind: 'tribe_defender',
+          source_id: defender_char.id.to_s,
+          pending_responders: [
+            { character_id: defender_char.id.to_s, need: 'offer_reaction', owned_by_dm: false, responded: false },
+          ],
+          tribe_defender: {
+            defender_char_id: defender_char.id.to_s,
+            ally_char_id: td_ally_char.id.to_s,
+            ally_owned_by_dm: false,
+            defender_token_id: 'tk-def',
+            ally_token_id: 'tk-ally',
+            downed_name: 'Aliado',
+          },
+        },
+      }
+    end
+
+    def td_respond_body(char_id, accept:)
+      decision = accept ? { accept: true } : { decline: true }
+      { character_id: char_id.to_s, tribe_defender: decision }
+    end
+
+    describe 'PUT (upsert)' do
+      it 'DM/aplicador declara → 200, fase declared, Defensor pendente' do
+        put "#{base}/active_interaction", params: td_upsert_body, headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['kind']).to eq('tribe_defender')
+        expect(ai['phase']).to eq('declared')
+        expect(ai['pending_responders'].first['character_id']).to eq(defender_char.id.to_s)
+      end
+
+      it '403 quando quem declara não é DM, dono do turno nem dono do Defensor' do
+        put "#{base}/active_interaction", params: td_upsert_body, headers: outsider_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    describe 'POST (respond)' do
+      before do
+        put "#{base}/active_interaction", params: td_upsert_body, headers: dm_headers, as: :json
+      end
+
+      it 'Defensor aceita → consome a reação + marca guardingAlly (atômico) + resolved/accepted' do
+        post "#{base}/active_interaction/respond",
+             params: td_respond_body(defender_char.id, accept: true), headers: defender_headers, as: :json
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('resolved')
+        expect(ai['tribe_defender']['outcome']).to eq('accepted')
+        # Reação E guardingAlly no MESMO update — o front não repatcha actions_used.
+        expect(td_defender_cc.reload.actions_used['reaction']).to be true
+        expect(td_defender_cc.reload.turn_state['guardingAlly']).to eq('tk-ally')
+      end
+
+      it 'Defensor recusa → resolved/declined sem consumir reação' do
+        post "#{base}/active_interaction/respond",
+             params: td_respond_body(defender_char.id, accept: false), headers: defender_headers, as: :json
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('resolved')
+        expect(ai['tribe_defender']['outcome']).to eq('declined')
+        expect(td_defender_cc.reload.actions_used['reaction']).to be_falsey
+      end
+
+      it 'outsider não pode responder pelo Defensor' do
+        post "#{base}/active_interaction/respond",
+             params: td_respond_body(defender_char.id, accept: true), headers: outsider_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end

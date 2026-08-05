@@ -38,6 +38,8 @@ module Combat
     KIND_HOSTILE_CASTING = 'hostile_casting'
     KIND_TARGET_CONSENT = 'target_consent'
     KIND_INSTINCTIVE_FORTITUDE = 'instinctive_fortitude'
+    KIND_PROTECTIVE_SWAP = 'protective_swap'
+    KIND_TRIBE_DEFENDER = 'tribe_defender'
     DEFENDER_SKILL_OPTIONS = %w[Atletismo Acrobacia].freeze
     ATTACKER_SKILL = 'Atletismo'
 
@@ -248,6 +250,134 @@ module Combat
         'instinctive_fortitude' => normalize_instinctive_fortitude(dig(p, 'instinctive_fortitude')),
         'label' => presence(p['label']) || 'Fortitude Instintiva',
       }
+    end
+
+    # ---- upsert Fúria Protetora: Trocar de Lugar (Protetor Tribal L3) ---------
+    # O ATACANTE (dono do turno / Mestre por NPC) declara que um ataque MELEE vai
+    # mirar um ALIADO adjacente a um Protetor Tribal elegível. Fluxo de DOIS
+    # respondedores sequenciais:
+    #   fase `awaiting_protector`: o Protetor (`source_id`, `need:'offer_reaction'`)
+    #     decide TROCAR (accept) ou não (decline);
+    #   fase `awaiting_consent`: o dono do ALIADO (`ally_char_id`, `need:'consent'`)
+    #     confirma a troca (accept) ou recusa (decline).
+    # O consumo da reação (server-side) e o `outcome:'accepted'` acontecem no
+    # respond; o SWAP de posição + o retarget do ataque são executados pelo front
+    # do atacante ao ver `phase:'resolved'`.
+    #
+    # Retorna o hash normalizado, ou `nil` se inválido (caller → 422).
+    def build_protective_swap(params)
+      p = stringify(params)
+
+      kind = (p['kind'] || KIND_PROTECTIVE_SWAP).to_s
+      return nil unless kind == KIND_PROTECTIVE_SWAP
+
+      ps = normalize_protective_swap(dig(p, 'protective_swap'))
+      return nil if ps.nil?
+
+      reactor_id = presence(p['source_id']) || ps['reactor_char_id']
+      return nil if reactor_id.nil?
+
+      raw = Array(dig(p, 'pending_responders')).find { |r| stringify(r)['character_id'].to_s == reactor_id.to_s }
+      owned = truthy(stringify(raw || {})['owned_by_dm'])
+
+      {
+        'id' => presence(p['id']) || SecureRandom.uuid,
+        'kind' => KIND_PROTECTIVE_SWAP,
+        'phase' => 'awaiting_protector',
+        'source_id' => reactor_id,
+        'target_ids' => [reactor_id],
+        'pending_responders' => [
+          { 'character_id' => reactor_id, 'need' => 'offer_reaction', 'owned_by_dm' => owned, 'responded' => false },
+        ],
+        'protective_swap' => ps,
+        'label' => presence(p['label']) || 'Fúria Protetora: Trocar de Lugar',
+      }
+    end
+
+    # ---- upsert Defensor da Tribo (Protetor Tribal L10) ----------------------
+    # O DISPARO vem de QUEM APLICOU o dano (aplicador/atacante do turno, ou o Mestre
+    # por NPC). Quando um aliado cai a 0 PV / inconsciente / paralisado, oferece a
+    # reação ao DEFENSOR elegível (`source_id`, único responder, `offer_reaction`,
+    # fase única `declared`). Aceitar → consome a reação (respond) + `outcome:accepted`;
+    # o front executa o movimento (Defensor → espaço do aliado) e a marca não-alvejável.
+    #
+    # Retorna o hash normalizado, ou `nil` se inválido (caller → 422).
+    def build_tribe_defender(params)
+      p = stringify(params)
+
+      kind = (p['kind'] || KIND_TRIBE_DEFENDER).to_s
+      return nil unless kind == KIND_TRIBE_DEFENDER
+
+      td = normalize_tribe_defender(dig(p, 'tribe_defender'))
+      return nil if td.nil?
+
+      defender_id = presence(p['source_id']) || td['defender_char_id']
+      return nil if defender_id.nil?
+
+      raw = Array(dig(p, 'pending_responders')).find { |r| stringify(r)['character_id'].to_s == defender_id.to_s }
+      owned = truthy(stringify(raw || {})['owned_by_dm'])
+
+      {
+        'id' => presence(p['id']) || SecureRandom.uuid,
+        'kind' => KIND_TRIBE_DEFENDER,
+        'phase' => 'declared',
+        'source_id' => defender_id,
+        'target_ids' => [defender_id],
+        'pending_responders' => [
+          { 'character_id' => defender_id, 'need' => 'offer_reaction', 'owned_by_dm' => owned, 'responded' => false },
+        ],
+        'tribe_defender' => td,
+        'label' => presence(p['label']) || 'Defensor da Tribo',
+      }
+    end
+
+    def normalize_tribe_defender(raw)
+      return nil if raw.nil?
+      h = stringify(raw)
+
+      defender = presence(h['defender_char_id'])
+      ally     = presence(h['ally_char_id'])
+      return nil if defender.nil? || ally.nil?
+
+      out = {
+        'defender_char_id' => defender.to_s,
+        'ally_char_id' => ally.to_s,
+      }
+      out['ally_owned_by_dm'] = truthy(h['ally_owned_by_dm'])
+      out['defender_token_id'] = presence(h['defender_token_id']).to_s if presence(h['defender_token_id'])
+      out['ally_token_id']     = presence(h['ally_token_id']).to_s     if presence(h['ally_token_id'])
+      out['downed_name']       = presence(h['downed_name']).to_s       if presence(h['downed_name'])
+      out['outcome'] = nil
+      out
+    end
+
+    def normalize_protective_swap(raw)
+      return nil if raw.nil?
+      h = stringify(raw)
+
+      reactor = presence(h['reactor_char_id'])
+      ally    = presence(h['ally_char_id'])
+      return nil if reactor.nil? || ally.nil?
+
+      out = {
+        'reactor_char_id' => reactor.to_s,
+        'ally_char_id' => ally.to_s,
+        'ally_owned_by_dm' => truthy(h['ally_owned_by_dm']),
+      }
+      out['attacker_token_id'] = presence(h['attacker_token_id']).to_s if presence(h['attacker_token_id'])
+      out['ally_token_id']     = presence(h['ally_token_id']).to_s     if presence(h['ally_token_id'])
+      out['reactor_token_id']  = presence(h['reactor_token_id']).to_s  if presence(h['reactor_token_id'])
+
+      am = stringify(h['attack_meta'] || {})
+      out['attack_meta'] = {
+        'name' => presence(am['name']).to_s,
+        'caster_name' => presence(am['caster_name']).to_s,
+        'bonus' => presence(am['bonus']).to_s,
+        'damage' => presence(am['damage']).to_s,
+        'damage_type' => presence(am['damage_type']).to_s,
+      }
+      out['outcome'] = nil
+      out
     end
 
     # ---- respond (o defensor rola; depois resolve) ----------------------------

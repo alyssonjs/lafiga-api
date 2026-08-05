@@ -182,6 +182,46 @@ RSpec.describe CombatCombatant, type: :model do
       expect { c.reset_turn_actions! }.not_to raise_error
       expect(c.reload.turn_state).to eq({})
     end
+
+    # Houserule Defensor da Tribo — "1 reação por RODADA": `reactionUsedRound`
+    # mantém a reação GASTA até o fim da rodada em que foi usada; numa rodada nova
+    # (round > gravado) ela recarrega e o marcador é limpo.
+    it 'com reactionUsedRound: preserva reaction=true na MESMA rodada; libera na próxima' do
+      combat_state.update!(round: 5)
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 actions_used: { 'action' => true, 'bonus_action' => true, 'movement' => true, 'reaction' => true },
+                 turn_state: { 'reactionUsedRound' => 5, 'guardingAlly' => 'tk-x' })
+
+      # Mesma rodada (5): reação continua gasta; demais ações resetam; marcador fica.
+      c.reset_turn_actions!
+      c.reload
+      expect(c.actions_used).to include('action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => true)
+      expect(c.turn_state).to include('reactionUsedRound' => 5, 'guardingAlly' => 'tk-x')
+
+      # Rodada nova (6 > 5): reação recarrega; marcador limpo; guardingAlly fica.
+      combat_state.update!(round: 6)
+      c.reset_turn_actions!
+      c.reload
+      expect(c.actions_used['reaction']).to be false
+      expect(c.turn_state).not_to have_key('reactionUsedRound')
+      expect(c.turn_state).to include('guardingAlly' => 'tk-x')
+    end
+
+    # Economia de reação unificada: `turn_state.reaction` era um flag órfão do
+    # front que ninguém limpava → o reator ficava preso pra sempre. O reset agora
+    # o remove (auto-cura de dado legado); o estado real vive em actions_used +
+    # reactionUsedRound.
+    it 'auto-cura: remove o turn_state.reaction legado (preso) na virada de turno' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false },
+                 turn_state: { 'reaction' => true, 'guardingAlly' => 'tk-y' }) # reaction preso, SEM reactionUsedRound
+
+      c.reset_turn_actions!
+      c.reload
+      expect(c.turn_state).not_to have_key('reaction')       # flag stale removido
+      expect(c.turn_state).to include('guardingAlly' => 'tk-y') # o resto preservado
+      expect(c.actions_used['reaction']).to be false          # reator destravado
+    end
   end
 
   describe 'G15 — auto_resolve_death_saves' do

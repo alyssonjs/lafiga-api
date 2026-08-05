@@ -29,6 +29,12 @@ class SessionFeedChannel < ApplicationCable::Channel
   ROLL_TYPES = %w[attack damage skill save ability initiative heal spell custom].freeze
   ATTACK_HIT_OUTCOMES = %w[pending hit miss].freeze
   DM_ATTACK_OUTCOMES = %w[hit miss].freeze
+  # FX efêmero de números de dano flutuantes (floating_fx): relayado a todos, NÃO
+  # persistido (fora de SessionFeedItem::KINDS → SessionFeed::Persist ignora).
+  FX_KINDS = %w[damage heal].freeze
+  MAX_FX_FLOATS = 12
+  MAX_FX_DURATION_MS = 6_000
+  DEFAULT_FX_DURATION_MS = 1_200
 
   def self.stream_name_for(schedule_id)
     "session_feed_#{schedule_id}"
@@ -141,6 +147,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_roll_pending(h)
     when 'attack_hit_resolution'
       normalize_attack_hit_resolution(h)
+    when 'floating_fx'
+      normalize_floating_fx(h)
     else
       nil
     end
@@ -299,6 +307,25 @@ class SessionFeedChannel < ApplicationCable::Channel
       out['attackHitOutcome'] = aho if ATTACK_HIT_OUTCOMES.include?(aho)
     end
 
+    # Card de PROMPT de teste de resistência (TR): substitui o modal. Preserva o
+    # objeto `savePrompt` (sanitizado) para o card renderizar cross-device.
+    if type == 'save' && h['savePrompt'].is_a?(Hash)
+      sp = h['savePrompt'].stringify_keys
+      dc = sp['dc']
+      dc_i = dc.is_a?(Numeric) ? dc.to_i : Integer(dc, exception: false)
+      if dc_i
+        prompt = {
+          'dc' => dc_i,
+          'ability' => sp['ability'].to_s.slice(0, 8),
+          'targetName' => sp['targetName'].to_s.truncate(120),
+        }
+        prompt['sourceName'] = sp['sourceName'].to_s.truncate(120) if sp['sourceName'].present?
+        prompt['mode'] = sp['mode'] if %w[apply-on-fail remove-on-success].include?(sp['mode'].to_s)
+        prompt['resolved'] = true if sp['resolved'] == true
+        out['savePrompt'] = prompt
+      end
+    end
+
     out
   end
 
@@ -321,7 +348,7 @@ class SessionFeedChannel < ApplicationCable::Channel
     outcome = h['outcome'].to_s
     return nil unless DM_ATTACK_OUTCOMES.include?(outcome)
 
-    {
+    result = {
       'kind' => 'attack_hit_resolution',
       'id' => id,
       'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
@@ -329,6 +356,77 @@ class SessionFeedChannel < ApplicationCable::Channel
       'rollGroupId' => roll_group_id.truncate(MAX_ID_LENGTH),
       'outcome' => outcome
     }
+
+    # Só no ERRO: token que esquivou (+ atacante do lunge) → FX nos clientes. Whitelist.
+    if outcome == 'miss'
+      dodge = h['dodgeTargetTokenId'].to_s
+      result['dodgeTargetTokenId'] = dodge if dodge.present? && dodge.length <= MAX_ID_LENGTH
+      atk = h['dodgeAttackerTokenId'].to_s
+      result['dodgeAttackerTokenId'] = atk if atk.present? && atk.length <= MAX_ID_LENGTH
+    end
+
+    result
+  end
+
+  # FX efêmero: números de dano flutuantes sobre um token. Relayado a todos os
+  # subscribers, mas NÃO persistido (kind fora de SessionFeedItem::KINDS). Cada
+  # `floats[i]` = { type (string curta), value (int) }.
+  def normalize_floating_fx(h)
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    token_id = h['tokenId'].to_s
+    return nil if token_id.empty? || token_id.length > MAX_ID_LENGTH
+
+    raw_floats = h['floats']
+    return nil unless raw_floats.is_a?(Array)
+
+    floats = raw_floats.first(MAX_FX_FLOATS).filter_map do |f|
+      next nil unless f.is_a?(Hash)
+
+      fh = f.stringify_keys
+      value = fh['value']
+      value_i = value.is_a?(Numeric) ? value.to_i : Integer(value, exception: false)
+      next nil if value_i.nil?
+
+      { 'type' => fh['type'].to_s.slice(0, 24), 'value' => value_i }
+    end
+    return nil if floats.empty?
+
+    fx_kind = h['fxKind'].to_s
+    fx_kind = 'damage' unless FX_KINDS.include?(fx_kind)
+
+    dur = h['durationMs']
+    dur_i = dur.is_a?(Numeric) ? dur.to_i : DEFAULT_FX_DURATION_MS
+    dur_i = DEFAULT_FX_DURATION_MS if dur_i <= 0 || dur_i > MAX_FX_DURATION_MS
+
+    normalized = {
+      'kind' => 'floating_fx',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'tokenId' => token_id.slice(0, MAX_ID_LENGTH),
+      'floats' => floats,
+      'fxKind' => fx_kind,
+      'durationMs' => dur_i,
+    }
+
+    # FX de ataque melee OPCIONAL (atacante avança + alvo treme). Só um par de
+    # tokenIds; efêmero como o resto do floating_fx. Whitelist explícito.
+    afx = h['attackFx']
+    if afx.is_a?(Hash)
+      afh = afx.stringify_keys
+      atk = afh['attackerTokenId'].to_s
+      tgt = afh['targetTokenId'].to_s
+      if atk.present? && atk.length <= MAX_ID_LENGTH && tgt.present? && tgt.length <= MAX_ID_LENGTH
+        normalized['attackFx'] = { 'attackerTokenId' => atk, 'targetTokenId' => tgt }
+      end
+    end
+
+    normalized
   end
 
   # Fase suspense — sem total/d20; o cliente mostra animação até o `roll` com o mesmo rollGroupId.

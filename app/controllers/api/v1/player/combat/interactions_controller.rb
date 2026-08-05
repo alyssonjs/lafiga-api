@@ -32,6 +32,10 @@ module Api::V1::Player::Combat
           ::Combat::InteractionService.build_target_consent(ip)
         when ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
           ::Combat::InteractionService.build_instinctive_fortitude(ip)
+        when ::Combat::InteractionService::KIND_PROTECTIVE_SWAP
+          ::Combat::InteractionService.build_protective_swap(ip)
+        when ::Combat::InteractionService::KIND_TRIBE_DEFENDER
+          ::Combat::InteractionService.build_tribe_defender(ip)
         else
           ::Combat::InteractionService.build_contest(ip)
         end
@@ -58,6 +62,8 @@ module Api::V1::Player::Combat
       return respond_hostile_casting(current) if current['kind'] == ::Combat::InteractionService::KIND_HOSTILE_CASTING
       return respond_target_consent(current) if current['kind'] == ::Combat::InteractionService::KIND_TARGET_CONSENT
       return respond_instinctive_fortitude(current) if current['kind'] == ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
+      return respond_protective_swap(current) if current['kind'] == ::Combat::InteractionService::KIND_PROTECTIVE_SWAP
+      return respond_tribe_defender(current) if current['kind'] == ::Combat::InteractionService::KIND_TRIBE_DEFENDER
 
       next_payload, err = ::Combat::InteractionService.apply_response(current, respond_params)
       if err
@@ -115,6 +121,18 @@ module Api::V1::Player::Combat
         target_consent: [:caster_id, :caster_name, :spell_name, :beneficial, :auto_refuse],
         # Fortitude Instintiva (Furioso Imortal L14): bloco descritivo (nome do caído).
         instinctive_fortitude: [:downed_name],
+        # Fúria Protetora: Trocar de Lugar (Protetor Tribal L3): tokens/chars do
+        # swap + metadados do ataque melee interposto.
+        protective_swap: [
+          :reactor_char_id, :ally_char_id, :ally_owned_by_dm,
+          :attacker_token_id, :ally_token_id, :reactor_token_id,
+          attack_meta: [:name, :caster_name, :bonus, :damage, :damage_type],
+        ],
+        # Defensor da Tribo (Protetor Tribal L10): chars/tokens do guardião + aliado caído.
+        tribe_defender: [
+          :defender_char_id, :ally_char_id, :ally_owned_by_dm,
+          :defender_token_id, :ally_token_id, :downed_name,
+        ],
       ).to_h.tap do |p|
         lists = permitted_opportunity_attack_lists
         p[:opportunity_attack] = (p[:opportunity_attack] || {}).merge(lists) if lists.present?
@@ -154,6 +172,11 @@ module Api::V1::Player::Combat
         target_consent: [:accept, :refuse],
         # Fortitude Instintiva: o dono do PC caído `accept` (entra em fúria/1 PV) ou `decline`.
         instinctive_fortitude: [:accept, :decline],
+        # Fúria Protetora: Trocar de Lugar — Protetor (fase 1) e aliado (fase 2)
+        # respondem `accept`/`decline`.
+        protective_swap: [:accept, :decline],
+        # Defensor da Tribo: o Defensor `accept` (move + protege) ou `decline`.
+        tribe_defender: [:accept, :decline],
       ).to_h
     end
 
@@ -177,6 +200,15 @@ module Api::V1::Player::Combat
         # Bárbaro CAÍDO (reator), não o atacante; então "dono do source" barraria
         # o atacante. Autorizamos o dono do PC do turno atual, mirror do OA.
         current_turn_belongs_to_user? || owns_character?(payload['source_id'])
+      when ::Combat::InteractionService::KIND_PROTECTIVE_SWAP
+        # O DISPARO vem do ATACANTE (dono do turno; NPC → Mestre já coberto). O
+        # `source_id` é o Protetor (reator), não o atacante → "dono do source"
+        # barraria o atacante. Autorizamos o dono do PC do turno atual, mirror do OA.
+        current_turn_belongs_to_user?
+      when ::Combat::InteractionService::KIND_TRIBE_DEFENDER
+        # O DISPARO vem de QUEM APLICOU o dano (atacante do turno, ou Mestre por
+        # NPC). O `source_id` é o Defensor (reator). Mirror da Fortitude Instintiva.
+        current_turn_belongs_to_user? || owns_character?(payload['source_id'])
       else
         owns_character?(payload['source_id'])
       end
@@ -186,6 +218,12 @@ module Api::V1::Player::Combat
       return true if site_or_table_dm?
       current = @combat_state&.active_interaction
       return false if current.blank?
+      # Fúria Protetora: quem LIMPA (após executar o swap+retarget) é o ATACANTE,
+      # dono do turno — não o Protetor (`source_id`). Mirror da exceção do initiate.
+      return current_turn_belongs_to_user? if current['kind'] == ::Combat::InteractionService::KIND_PROTECTIVE_SWAP
+      # Defensor da Tribo: quem LIMPA (após mover+proteger) é o aplicador do dano,
+      # dono do turno. Mirror.
+      return current_turn_belongs_to_user? if current['kind'] == ::Combat::InteractionService::KIND_TRIBE_DEFENDER
       owns_character?(current['source_id'])
     end
 
@@ -232,6 +270,21 @@ module Api::V1::Player::Combat
     #
     # `ignored:true` = o reator abriu mão da reação → NÃO consome reação, NÃO
     # aplica dano; apenas limpa a interação e loga a desistência.
+    # Consome a reação do combatente respeitando a houserule "1 reação por
+    # RODADA": marca `actions_used.reaction=true` E grava `reactionUsedRound`
+    # (a rodada do uso) — um marcador SERVER-OWNED (o front NUNCA o envia). Isso
+    # mantém a reação GASTA até o FIM da rodada, inclusive no turno do reator.
+    # As outras duas pontas respeitam o marcador: `apply_reaction_round_lock!`
+    # (combat_combatants#update — blinda contra o reset defensivo do front) e
+    # `reset_turn_actions!` (model — a mesma regra na virada server-side).
+    # `extra_turn_state` funde chaves adicionais no MESMO update, atômico com o
+    # consumo (ex.: `guardingAlly` do Defensor, estado de Fúria da Fortitude).
+    def consume_reaction!(cc, extra_turn_state = {})
+      au = Hash(cc.actions_used).merge('reaction' => true)
+      ts = Hash(cc.turn_state).merge(extra_turn_state).merge('reactionUsedRound' => @combat_state.round.to_i)
+      cc.update(actions_used: au, turn_state: ts)
+    end
+
     def respond_opportunity_attack(current)
       mover_cc = nil
       reactor_cc = nil
@@ -262,9 +315,12 @@ module Api::V1::Player::Combat
 
         oa = next_payload['opportunity_attack'] || {}
         mover_cc = resolve_mover_combatant(next_payload)
-        return render(json: { error: 'mover combatant não encontrado' }, status: :unprocessable_entity) if mover_cc.nil?
-
-        mover_ac   = mover_cc.ac.to_i
+        # O mover só é OBRIGATÓRIO quando há DANO a aplicar (ver ramo abaixo). No
+        # IGNORAR/ERRO o reator não toca o HP do mover, então um mover não-resolvido
+        # NÃO pode travar a reação — era o BUG: ignorar o 1.º AO dava 422 "mover
+        # combatant não encontrado", a interação não limpava e o 2.º AO não abria.
+        # Dado do mover ausente vira nil-safe aqui; a exigência fica no ramo de dano.
+        mover_ac   = mover_cc&.ac.to_i
         roll_total = oa.dig('roll', 'total').to_i
         damage     = oa['damage'].to_i
         outcome =
@@ -282,6 +338,8 @@ module Api::V1::Player::Combat
         # cliente enviar `damage_type`/`magical`, o mover ganha resistência/
         # imunidade/HAM; ausentes → dano cheio (compat retroativa).
         if !ignore && outcome == 'hit' && damage.positive?
+          # Aqui SIM o mover é necessário (aplicar dano no HP). Sem ele, 422.
+          return render(json: { error: 'mover combatant não encontrado' }, status: :unprocessable_entity) if mover_cc.nil?
           typing = oa_damage_typing(oa, respond_params['opportunity_attack'])
           result = ::Combat::DamageService.call(
             combatant: mover_cc,
@@ -299,14 +357,13 @@ module Api::V1::Player::Combat
         # Reação consumida pelo REATOR só quando NÃO ignorou (ignorar = não
         # reagiu → não gasta reação). Server-side, persiste.
         if !ignore && reactor_cc
-          au = Hash(reactor_cc.actions_used).merge('reaction' => true)
-          reactor_cc.update(actions_used: au)
+          consume_reaction!(reactor_cc)
           reaction_consumed = true
         end
 
         # Dados p/ o log server-side (capturados antes de sair do lock).
         log_data = {
-          mover_name:    mover_cc.name.to_s,
+          mover_name:    mover_cc&.name.to_s.presence || oa['mover_name'].to_s,
           reactor_name:  reactor_cc&.name.to_s.presence || oa['reactor_name'].to_s,
           roll_total:    roll_total,
           mover_ac:      mover_ac,
@@ -464,12 +521,9 @@ module Api::V1::Player::Combat
           # reseta death saves, grava o turn_state de fúria e consome a reação.
           reactor_cc.death_saves = CombatCombatant::RESET_DEATH_SAVES.dup
           reactor_cc.heal!(1) # persiste hp_current=1 + is_dead/is_stabilized=false + death_saves
-          ts = Hash(reactor_cc.turn_state).merge(
-            'rageRoundsRemaining' => 10,
-            'rageTookDamageSinceLastTurn' => false,
-          )
-          au = Hash(reactor_cc.actions_used).merge('reaction' => true)
-          reactor_cc.update(turn_state: ts, actions_used: au)
+          consume_reaction!(reactor_cc,
+                            'rageRoundsRemaining' => 10,
+                            'rageTookDamageSinceLastTurn' => false)
           log_data = { kind: 'accept', reactor_name: reactor_name }
         else
           # Recusa (ou aceitou sem combatant resolvido): não muta nada.
@@ -485,6 +539,150 @@ module Api::V1::Player::Combat
       ::Combat::Broadcaster.state_changed(@combat_state)
       log_instinctive_fortitude(@schedule, log_data) if log_data
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # --- Fúria Protetora: Trocar de Lugar (respond server-side) ----------------
+    #
+    # Fluxo de DUAS fases (dois respondedores sequenciais):
+    #   `awaiting_protector` — o Protetor (`source_id`) `accept` (→ pede
+    #     consentimento do aliado) ou `decline` (→ resolve 'declined').
+    #   `awaiting_consent`   — o dono do aliado `accept` (→ consome a reação do
+    #     Protetor server-side + resolve 'accepted') ou `decline` (→ 'declined').
+    #
+    # NÃO limpa a interação: resolve para `phase:'resolved'` + `outcome`. O front
+    # do ATACANTE observa o `resolved`, executa o SWAP de posição (updateMap) e o
+    # RETARGET do ataque, e então limpa (DELETE). `with_lock` serializa; qualquer
+    # dupla-resposta é idempotente (sem responder pendente → devolve o estado).
+    def respond_protective_swap(current)
+      rp = respond_params
+      ps_resp = rp['protective_swap'].is_a?(Hash) ? rp['protective_swap'] : {}
+      accept  = ActiveModel::Type::Boolean.new.cast(ps_resp['accept'])
+      decline = ActiveModel::Type::Boolean.new.cast(ps_resp['decline'])
+      character_id = rp['character_id'].to_s
+      reactor_cc = nil
+      log_data = nil
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        if current.blank? || current['kind'] != ::Combat::InteractionService::KIND_PROTECTIVE_SWAP
+          return render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+        end
+
+        responder = Array(current['pending_responders']).find do |r|
+          r['character_id'].to_s == character_id && ![true, 1, '1', 'true'].include?(r['responded'])
+        end
+        return render(json: { active_interaction: current }, status: :ok) if responder.nil?
+        return render(json: { error: 'informe accept ou decline' }, status: :unprocessable_entity) unless accept || decline
+
+        blk   = current['protective_swap'] || {}
+        phase = current['phase'].to_s
+
+        if decline
+          # Recusa em qualquer fase encerra sem swap nem consumo de reação.
+          resolved = current.merge(
+            'phase' => 'resolved',
+            'pending_responders' => [],
+            'protective_swap' => blk.merge('outcome' => 'declined'),
+          )
+          @combat_state.set_active_interaction!(resolved)
+          log_data = { kind: 'declined', by: (phase == 'awaiting_protector' ? 'protector' : 'ally') }
+        elsif phase == 'awaiting_protector'
+          # Protetor aceitou → pede consentimento do dono do aliado (fase 2).
+          ally_id = blk['ally_char_id'].to_s
+          nxt = current.merge(
+            'phase' => 'awaiting_consent',
+            'pending_responders' => [
+              {
+                'character_id' => ally_id,
+                'need' => 'consent',
+                'owned_by_dm' => truthy(blk['ally_owned_by_dm']),
+                'responded' => false,
+              },
+            ],
+          )
+          @combat_state.set_active_interaction!(nxt)
+          log_data = { kind: 'protector_accepted' }
+        else
+          # Aliado consentiu → consome a reação do Protetor (server-authoritative)
+          # e resolve 'accepted'. O SWAP + retarget são executados pelo front.
+          reactor_id = blk['reactor_char_id'].to_s
+          reactor_cc = resolve_combatant_by_identity(reactor_id)
+          consume_reaction!(reactor_cc) if reactor_cc
+          resolved = current.merge(
+            'phase' => 'resolved',
+            'pending_responders' => [],
+            'protective_swap' => blk.merge('outcome' => 'accepted'),
+          )
+          @combat_state.set_active_interaction!(resolved)
+          log_data = { kind: 'accepted' }
+        end
+      end
+
+      @combat_state.reload
+      # accept (fase 2) consome a reação do Protetor → broadcast do combatant antes do state.
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && log_data && log_data[:kind] == 'accepted'
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # --- Defensor da Tribo: respond server-side (fase única) -------------------
+    #
+    # O Defensor `accept` (consome a reação + `outcome:accepted`; o front move o
+    # Defensor até o espaço do aliado e marca o aliado não-alvejável) ou `decline`
+    # (`outcome:declined`, sem consumo). NÃO limpa: resolve para `phase:'resolved'`;
+    # o front do disparador observa e executa/limpa. `with_lock` + idempotente.
+    def respond_tribe_defender(current)
+      rp = respond_params
+      td_resp = rp['tribe_defender'].is_a?(Hash) ? rp['tribe_defender'] : {}
+      accept  = ActiveModel::Type::Boolean.new.cast(td_resp['accept'])
+      decline = ActiveModel::Type::Boolean.new.cast(td_resp['decline'])
+      character_id = rp['character_id'].to_s
+      defender_cc = nil
+      log_data = nil
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        if current.blank? || current['kind'] != ::Combat::InteractionService::KIND_TRIBE_DEFENDER
+          return render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+        end
+
+        responder = Array(current['pending_responders']).find do |r|
+          r['character_id'].to_s == character_id && ![true, 1, '1', 'true'].include?(r['responded'])
+        end
+        return render(json: { active_interaction: current }, status: :ok) if responder.nil?
+        return render(json: { error: 'informe accept ou decline' }, status: :unprocessable_entity) unless accept || decline
+
+        blk = current['tribe_defender'] || {}
+        if accept
+          defender_cc = resolve_combatant_by_identity(blk['defender_char_id'].to_s)
+          if defender_cc
+            # ATÔMICO: consome a reação (com o marcador da houserule por-rodada)
+            # E marca quem o Defensor guarda — o front NÃO deve repatchar
+            # actions_used depois (sobrescreveria o consumo).
+            consume_reaction!(defender_cc, 'guardingAlly' => blk['ally_token_id'].to_s)
+          end
+          resolved = current.merge('phase' => 'resolved', 'pending_responders' => [],
+                                   'tribe_defender' => blk.merge('outcome' => 'accepted'))
+          @combat_state.set_active_interaction!(resolved)
+          log_data = { kind: 'accepted' }
+        else
+          resolved = current.merge('phase' => 'resolved', 'pending_responders' => [],
+                                   'tribe_defender' => blk.merge('outcome' => 'declined'))
+          @combat_state.set_active_interaction!(resolved)
+          log_data = { kind: 'declined' }
+        end
+      end
+
+      @combat_state.reload
+      ::Combat::Broadcaster.combatant_upserted(defender_cc) if defender_cc && log_data && log_data[:kind] == 'accepted'
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    def truthy(val)
+      [true, 1, '1', 'true', 'yes'].include?(val)
     end
 
     # Feed server-side da Fortitude Instintiva (SessionLog kind combat).
@@ -551,8 +749,7 @@ module Api::V1::Player::Combat
           elsif frustrate
             reactor_cc = resolve_combatant_by_identity(character_id)
             if reactor_cc
-              au = Hash(reactor_cc.actions_used).merge('reaction' => true)
-              reactor_cc.update(actions_used: au)
+              consume_reaction!(reactor_cc)
               reaction_consumed = true
             end
             hc['frustrated_by'] = character_id
@@ -687,8 +884,16 @@ module Api::V1::Player::Combat
     def resolve_combatant_by_identity(identity)
       return nil if identity.blank?
 
-      @combat_state.combat_combatants.find_by(id: identity) ||
-        @combat_state.combat_combatants.find_by(combatable_id: identity)
+      id = identity.to_s
+      # AO/reator NPC: o front (resolveTargetIdentity) devolve `npc-<CombatNpc.id>`
+      # (ex.: 'npc-47') como identidade — o combatable_id cru é 47. Sem tratar o
+      # prefixo, o reator NPC não resolvia e o consumo da reação (miss/respond) era
+      # pulado. PC continua resolvendo por combatable_id (character_id).
+      npc_id = id.start_with?('npc-') ? id.delete_prefix('npc-') : nil
+
+      @combat_state.combat_combatants.find_by(id: id) ||
+        @combat_state.combat_combatants.find_by(combatable_id: id) ||
+        (npc_id && @combat_state.combat_combatants.find_by(combatable_type: 'CombatNpc', combatable_id: npc_id))
     end
 
     def respond_error_message(err)

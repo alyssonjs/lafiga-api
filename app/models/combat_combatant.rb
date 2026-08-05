@@ -15,7 +15,10 @@ class CombatCombatant < ApplicationRecord
   # adicionadas a esta lista.
   # `bearFormAttacks`: composição do multiataque da Forma de Urso (mordida/garra/
   # arma) — por-turno, zera junto com `attacksMade` no início do turno.
-  PER_TURN_TURN_STATE_KEYS = %w[attacksMade bearFormAttacks].freeze
+  # `protectiveRageAcActive`: Fúria Protetora (Protetor Tribal L3) — ação bônus
+  # concede +2 CA vs corpo-a-corpo "até o início do seu PRÓXIMO turno"; zerar no
+  # início do turno do dono é exatamente essa expiração.
+  PER_TURN_TURN_STATE_KEYS = %w[attacksMade bearFormAttacks protectiveRageAcActive].freeze
 
   belongs_to :combat_state
   belongs_to :combatable, polymorphic: true
@@ -76,10 +79,25 @@ class CombatCombatant < ApplicationRecord
   # budget de ataques não fica sujo quando nenhum cliente está aberto na
   # virada (o front continua zerando defensivamente; a operação é idempotente).
   def reset_turn_actions!
-    update!(
-      actions_used: RESET_ACTIONS.dup,
-      turn_state: Hash(turn_state).except(*PER_TURN_TURN_STATE_KEYS),
-    )
+    ts = Hash(turn_state)
+    # Houserule Defensor da Tribo (Protetor Tribal L10) — "1 reação por RODADA":
+    # ao usar a reação, `reactionUsedRound` guarda a rodada do uso. Enquanto a
+    # rodada da sessão for <= a rodada gravada (mesma rodada), a reação NÃO
+    # recarrega neste reset (fica gasta até o fim da rodada, inclusive no turno do
+    # Defensor). Numa RODADA NOVA (round > gravado), libera e limpa o marcador.
+    used_round = ts['reactionUsedRound']
+    cur_round = combat_state&.round
+    keep_reaction =
+      used_round.is_a?(Integer) && cur_round.is_a?(Integer) && cur_round <= used_round
+    next_actions = RESET_ACTIONS.dup
+    next_actions['reaction'] = true if keep_reaction
+    # `reaction` NUNCA foi chave legítima de turn_state — só existiu como marcador
+    # otimista de front (bug: nunca limpo). Removê-la aqui AUTO-CURA combatentes
+    # presos por esse flag stale na próxima virada de turno deles. O estado real
+    # de reação vive em `actions_used.reaction` + `reactionUsedRound` (round-lock).
+    next_ts = ts.except(*PER_TURN_TURN_STATE_KEYS, 'reaction')
+    next_ts = next_ts.except('reactionUsedRound') unless keep_reaction
+    update!(actions_used: next_actions, turn_state: next_ts)
   end
 
   # Decrementa `turns_left` no fim da rodada (ciclo completo da iniciativa), PHB.

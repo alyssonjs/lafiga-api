@@ -55,7 +55,12 @@ module Api::V1::Player::Combat
         tie_break_dex: attrs.key?(:tie_break_dex) ? attrs[:tie_break_dex].to_i : defaults[:tie_break_dex].to_i,
         hp_current: attrs[:hp_current].presence&.to_i || defaults[:hp_current],
         hp_max: attrs[:hp_max].presence&.to_i || defaults[:hp_max],
-        ac: attrs[:ac].presence&.to_i || defaults[:ac],
+        # CA de PC é AUTORITATIVA do summary (Defesa sem Armadura, escudo, feats,
+        # itens mágicos) — ignora o `ac` que o front ECOA no create, que podia
+        # chegar STALE (ex.: escudo equipado depois) e congelar um valor antigo no
+        # snapshot do combatente. NPC/genérico continuam honrando o `ac` enviado (o
+        # Mestre pode customizar). Override de CA em combate vem por PATCH #update.
+        ac: combatable.is_a?(Character) ? defaults[:ac] : (attrs[:ac].presence&.to_i || defaults[:ac]),
         temp_hp: attrs[:temp_hp].presence&.to_i || 0,
       }
 
@@ -72,7 +77,9 @@ module Api::V1::Player::Combat
 
     def update
       combat_state = @combatant.combat_state
-      if @combatant.update(combatant_update_params)
+      attrs = combatant_update_params.to_h
+      apply_reaction_round_lock!(attrs)
+      if @combatant.update(attrs)
         if @combatant.saved_change_to_initiative? || @combatant.saved_change_to_tie_break_dex?
           ::Combat::SortInitiativePositionsService.call(combat_state: combat_state.reload)
           @combatant.reload
@@ -249,6 +256,67 @@ module Api::V1::Player::Combat
           p[:turn_state] = ts.respond_to?(:to_unsafe_h) ? ts.to_unsafe_h : ts
         end
       end
+    end
+
+    # Houserule "1 reação por RODADA" (Protetor Tribal e demais reações via pipe
+    # active_interaction): ao usar a reação, o respond grava `reactionUsedRound`
+    # (a rodada do uso) no turn_state e marca `actions_used.reaction=true`. A
+    # reação fica GASTA até o FIM dessa rodada — inclusive no turno do próprio
+    # reator. `reset_turn_actions!` (virada server-side) já respeita isso.
+    #
+    # O PROBLEMA que esta trava resolve: ao virar o turno o front faz um reset
+    # DEFENSIVO, reescrevendo `actions_used`/`turn_state` INTEIROS (REPLACE) via
+    # este endpoint. Como o front não conhece `reactionUsedRound` (marcador
+    # SERVER-OWNED, nunca enviado por ele), esse PATCH (a) apaga o marcador do
+    # turn_state e (b) zera `reaction` — "recarregando" a reação no mesmo round.
+    # Aqui blindamos ambos enquanto a rodada da sessão <= a rodada gravada:
+    #   1) preserva o marcador se o PATCH reescreveu o turn_state sem ele;
+    #   2) força `actions_used['reaction'] = true`.
+    # Numa RODADA NOVA (round > gravado) o marcador já foi limpo pela virada →
+    # `used_round` nil → esta trava não interfere e a reação recarrega normal.
+    #
+    # STAMP (unificação da economia de reação): além de PROTEGER um carimbo vivo,
+    # este endpoint agora CARIMBA `reactionUsedRound` quando um #update do front
+    # TRANSICIONA `actions_used.reaction` false→true sem carimbo vivo. Assim
+    # QUALQUER caminho que consome reação (funil de ações, AO manual do Mestre,
+    # retaliação) nasce round-locked server-side — sem o front conhecer o marcador
+    # (server-owned). Antes só `consume_reaction!` (pipe active_interaction)
+    # carimbava, e os caminhos otimistas do front ficavam sem lock (reação presa
+    # via o antigo `turn_state.reaction`, que ninguém limpava).
+    def apply_reaction_round_lock!(p)
+      existing_ts = @combatant.turn_state.is_a?(Hash) ? @combatant.turn_state : {}
+      used_round  = existing_ts['reactionUsedRound']
+      cur_round   = @combatant.combat_state&.round
+      return unless cur_round.is_a?(Integer)
+
+      live_stamp = used_round.is_a?(Integer) && cur_round <= used_round
+
+      # PROTECT: já há carimbo vivo desta rodada → blinda contra o reset defensivo
+      # do front (REPLACE de actions_used/turn_state), que desconhece o marcador.
+      if live_stamp
+        if p[:turn_state].is_a?(Hash) && !p[:turn_state].key?('reactionUsedRound')
+          p[:turn_state]['reactionUsedRound'] = used_round
+        end
+        p[:actions_used]['reaction'] = true if p[:actions_used].is_a?(Hash)
+        return
+      end
+
+      # STAMP: PATCH transicionando reaction false→true sem carimbo vivo → nasce o
+      # round-lock. Gate de TRANSIÇÃO (persistido falsy) evita re-carimbo espúrio
+      # quando um PATCH defensivo carrega `reaction:true` de outra rodada.
+      return unless p[:actions_used].is_a?(Hash) && reaction_flag_truthy?(p[:actions_used]['reaction'])
+      persisted = @combatant.actions_used.is_a?(Hash) ? @combatant.actions_used['reaction'] : nil
+      return if reaction_flag_truthy?(persisted)
+
+      # Materializa turn_state do existente para não zerar outras chaves quando o
+      # PATCH mandou só actions_used.
+      ts = p[:turn_state].is_a?(Hash) ? p[:turn_state] : existing_ts.dup
+      ts['reactionUsedRound'] = cur_round
+      p[:turn_state] = ts
+    end
+
+    def reaction_flag_truthy?(v)
+      ActiveModel::Type::Boolean.new.cast(v) == true
     end
 
     def resolve_combatable(type, id)
