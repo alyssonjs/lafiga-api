@@ -629,10 +629,26 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
         expect(response).to have_http_status(:forbidden)
       end
 
-      it '403 ao tentar turn_state pela via de reação (só efeito de combate passa)' do
+      # REGRESSÃO: o caminho de dano do front SEMPRE anexa turn_state
+      # (rageTookDamageSinceLastTurn) ao PATCH ao sofrer dano. A allowlist da reação
+      # precisa aceitar turn_state (COMBAT_EFFECT_ON_TURN_FIELDS) — senão o payload REAL
+      # do AO (hp_current + temp_hp + turn_state) dava 403 e o dano do reator NÃO subtraía
+      # HP no alvo (bug: só passava se, por acaso, viesse hp puro).
+      it 'permite o payload REAL do AO (hp_current + temp_hp + turn_state) no ALVO' do
         set_oa(player_character.id)
         patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{mover.id}",
-              params: { combatant: { turn_state: { 'x' => 1 } } }, headers: player_headers, as: :json
+              params: { combatant: { hp_current: 12, temp_hp: 0, turn_state: { 'rageTookDamageSinceLastTurn' => true } } },
+              headers: player_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(mover.reload.hp_current).to eq(12)
+        expect(mover.turn_state).to include('rageTookDamageSinceLastTurn' => true)
+      end
+
+      it '403 ao tentar actions_used pela via de reação (economia do alvo fica com o alvo)' do
+        set_oa(player_character.id)
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{mover.id}",
+              params: { combatant: { hp_current: 12, actions_used: { 'reaction' => true } } },
+              headers: player_headers, as: :json
         expect(response).to have_http_status(:forbidden)
       end
     end

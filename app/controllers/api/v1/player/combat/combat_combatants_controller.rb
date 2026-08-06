@@ -469,8 +469,12 @@ module Api::V1::Player::Combat
     # um combatente que NAO e dele e FORA do seu turno. E legitimo: existe uma interacao
     # ATIVA `opportunity_attack` no combate onde o PC do jogador e o REATOR (`source_id`) e
     # este combatente e o ALVO (mover). Escopo SEGURO: so campos de EFEITO DE COMBATE
-    # (hp/condicoes — sem turn_state/actions_used), e so enquanto a interacao existe. Sem
-    # isto, o AO do JOGADOR nao subtraia HP (o guard off-turn/nao-dono descartava o PATCH).
+    # + `turn_state` (MESMA allowlist do atacante no proprio turno,
+    # COMBAT_EFFECT_ON_TURN_FIELDS — sem `actions_used`), e so enquanto a interacao existe.
+    # ⚠️ `turn_state` E OBRIGATORIO na allowlist: o caminho de dano do front SEMPRE anexa
+    # `turn_state.rageTookDamageSinceLastTurn` ao sofrer dano (GameSessionPage handleUpdateCombatant)
+    # — sem ele o payload REAL do AO (hp_current+temp_hp+turn_state) caia fora da lista e dava
+    # 403, e o AO do JOGADOR nao subtraia HP (o dano so passava se, por acaso, viesse hp puro).
     # DM autoritativo por cima; auditavel pelo log de combate.
     def player_applying_reaction_damage?
       ai = @combatant.combat_state&.active_interaction
@@ -490,7 +494,7 @@ module Api::V1::Player::Combat
       keys = combatant_update_params.to_h.keys.map(&:to_s)
       return false if keys.empty?
 
-      (keys - COMBAT_EFFECT_FIELDS).empty?
+      (keys - COMBAT_EFFECT_ON_TURN_FIELDS).empty?
     end
 
     # Teste de morte: DM sempre; jogador só grava o teste do PRÓPRIO combatente
