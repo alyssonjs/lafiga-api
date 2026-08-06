@@ -444,6 +444,16 @@ module Api::V1::Player::Combat
       is_concentrating concentration_spell
     ].freeze
 
+    # Efeitos que o jogador do TURNO ATUAL (conjurante) pode aplicar em QUALQUER
+    # combatente, inclusive alvos inimigos/NPC do Mestre: os campos de combate acima
+    # + `turn_state`. O `turn_state` carrega os efeitos da magia sobre o alvo — em
+    # especial o `pendingTargetSave` (prompt de TR de uma magia de AREA). Sem ele, um
+    # AoE conjurado por JOGADOR nao conseguia registrar o TR nos alvos do Mestre (o
+    # write batia em 403). NAO inclui `actions_used`: a economia de acao do alvo e
+    # dele, o conjurante nunca a gasta. Escopo seguro: so no PROPRIO turno do jogador
+    # (current_turn_belongs_to_user?), com o DM sempre autoritativo por cima.
+    COMBAT_EFFECT_ON_TURN_FIELDS = (COMBAT_EFFECT_FIELDS + %w[turn_state]).freeze
+
     def authorize_combatant_update!
       return if site_or_table_dm?
       return if player_setting_own_initiative_only?
@@ -465,9 +475,11 @@ module Api::V1::Player::Combat
       render json: { error: 'apenas o DM ou o dono do PC no próprio turno pode gravar teste de morte' }, status: :forbidden
     end
 
-    # Jogador DONO do combatente do TURNO ATUAL pode aplicar efeitos de combate
-    # (dano/cura) em qualquer combatente. Conservador: valida a lista EXATA de
-    # chaves enviadas contra COMBAT_EFFECT_FIELDS (nada fora disso passa).
+    # Jogador cujo combatente e o do TURNO ATUAL (conjurante) pode aplicar efeitos de
+    # combate em QUALQUER combatente, inclusive alvos NPC do Mestre: dano/cura/condicoes
+    # + `turn_state` (ex.: registrar o `pendingTargetSave`/TR de uma magia de AREA nos
+    # alvos). Conservador: valida a lista EXATA de chaves contra COMBAT_EFFECT_ON_TURN_FIELDS
+    # (nada fora passa) — `actions_used` fica DE FORA (economia do alvo e dele).
     def player_applying_combat_effect_on_own_turn?
       return false unless current_turn_belongs_to_user?
 
@@ -475,7 +487,7 @@ module Api::V1::Player::Combat
       keys = p.keys.map(&:to_s)
       return false if keys.empty?
 
-      (keys - COMBAT_EFFECT_FIELDS).empty?
+      (keys - COMBAT_EFFECT_ON_TURN_FIELDS).empty?
     end
 
     # Jogador só pode definir iniciativa no próprio PC, uma vez (de nil → valor).

@@ -285,10 +285,25 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
         expect(row['turn_state']).to eq(expected_turn_state)
       end
 
-      it '403 quando o jogador tenta mutar turn_state de combatente de OUTRO (NPC), mesmo no próprio turno' do
+      # O conjurante do TURNO pode gravar turn_state (ex.: pendingTargetSave/TR de uma
+      # magia de AREA) em combatente de OUTRO — inclusive NPC do Mestre. turn_state esta
+      # em COMBAT_EFFECT_ON_TURN_FIELDS. Sem isso, o AoE do jogador nao registrava o TR.
+      it 'permite o jogador do TURNO gravar turn_state (TR de área) em combatente de OUTRO (NPC)' do
         npc = create(:combat_npc, schedule: schedule)
         npc_combatant = create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 1)
-        cs.update_column(:current_turn_index, combatant.position) # turno do PC do player
+        cs.update_column(:current_turn_index, combatant.position) # turno do PC do player (conjurante)
+
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
+              params: { combatant: { turn_state: opaque_turn_state } }, headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(npc_combatant.reload.turn_state).to eq(expected_turn_state)
+      end
+
+      it '403 ao gravar turn_state em combatente de OUTRO quando NÃO é o turno do jogador' do
+        npc = create(:combat_npc, schedule: schedule)
+        npc_combatant = create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 1)
+        cs.update_column(:current_turn_index, npc_combatant.position) # NÃO é o turno do player
 
         patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
               params: { combatant: { turn_state: opaque_turn_state } }, headers: player_headers, as: :json
