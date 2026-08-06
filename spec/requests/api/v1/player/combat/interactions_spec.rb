@@ -497,6 +497,39 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
           expect(mover_cc.reload.hp_current).to eq(20)
         end
       end
+
+      # REGRESSÃO: o EMIT às vezes carimba owned_by_dm:true num PC de JOGADOR (o mover que
+      # dispara o OA não conhece o dono exato do reator). owned_by_dm NÃO é gate de autz — o
+      # DONO REAL do PC responder tem que conseguir responder/ignorar, senão a interação
+      # fica presa e trava a hotbar do mover ("ambos ignoraram, hotbar continuou bloqueada").
+      context 'reator PC com owned_by_dm carimbado TRUE por engano (regressão)' do
+        before do
+          body = oa_upsert_body(reactor_identity: reactor_pc_cc.combatable_id, mover_identity: mover_cc.combatable_id,
+                                owned_by_dm: true, mover_combatant_id: mover_cc.id)
+          put "#{base}/active_interaction", params: body, headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok)
+          expect(cs.reload.active_interaction['pending_responders'].first['owned_by_dm']).to be true
+        end
+
+        it 'o DONO REAL do PC reator IGNORA → 200 + interação limpa (destrava a hotbar do mover)' do
+          post "#{base}/active_interaction/respond",
+               params: { character_id: reactor_pc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 0 }, damage: 0, ignored: true } },
+               headers: defender_headers, as: :json
+          expect(response).to have_http_status(:ok)
+          expect(response.parsed_body['active_interaction']).to be_nil
+          expect(cs.reload.active_interaction).to be_nil
+          expect(mover_cc.reload.hp_current).to eq(20)                        # ignorar não aplica dano
+          expect(reactor_pc_cc.reload.actions_used['reaction']).to be_falsey  # ignorar não consome reação
+        end
+
+        it 'ainda 403 para quem NÃO é o dono do reator nem DM' do
+          post "#{base}/active_interaction/respond",
+               params: { character_id: reactor_pc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 0 }, damage: 0, ignored: true } },
+               headers: outsider_headers, as: :json
+          expect(response).to have_http_status(:forbidden)
+          expect(cs.reload.active_interaction).to be_present
+        end
+      end
     end
   end
 

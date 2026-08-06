@@ -229,13 +229,21 @@ module Api::V1::Player::Combat
 
     # Quem pode responder: DM (resolve NPCs/`owned_by_dm`) OU dono do PC
     # `character_id` que está em `pending_responders`.
+    #
+    # ⚠️ `owned_by_dm` NÃO é gate de autz — é dica de roteamento congelada no EMIT, e o
+    # emissor (ex.: o MOVER que dispara o OA) NÃO conhece o dono exato do reator, só que
+    # é um PC não-temp; às vezes carimba `owned_by_dm:true` num PC de JOGADOR (bug: o
+    # reator não conseguia ignorar/atacar o próprio AO → a interação ficava presa e
+    # travava a hotbar do mover). `owns_character?` é a VERDADE: só o dono do Character
+    # passa; NPC (sem Character) e PC de outro jogador caem fora sozinhos. O roteamento do
+    # PROMPT já manda o dm-temp-npc ao DM (front `interactionResponderVisible` exclui
+    # dmTempNpcCharacterIds), então o dono de um dm-temp-npc não dispara respond aqui.
     def authorized_to_respond?(current, rp)
       return true if site_or_table_dm?
 
       character_id = rp['character_id'].to_s
       responder = Array(current['pending_responders']).find { |r| r['character_id'].to_s == character_id }
       return false if responder.nil?
-      return false if responder['owned_by_dm'] == true
 
       owns_character?(character_id)
     end
