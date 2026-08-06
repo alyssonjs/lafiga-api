@@ -24,6 +24,10 @@ module Combat
   class ReorderService
     prepend SimpleCommand
 
+    # Namespace do advisory lock (1º arg de pg_advisory_xact_lock) — evita colisão
+    # com quaisquer outros locks consultivos do app. 2º arg = combat_state.id.
+    ADVISORY_LOCK_NAMESPACE = 8_410
+
     def initialize(combat_state:, ordered_combatant_ids:, current_user: nil)
       @combat_state = combat_state
       @ordered_ids  = Array(ordered_combatant_ids).map(&:to_i)
@@ -42,6 +46,16 @@ module Combat
       end
 
       ActiveRecord::Base.transaction do
+        # SERIALIZA reorders CONCORRENTES do MESMO combate. Sem isto, duas transações
+        # (comuns agora que a hotbar é liberada a vários clientes — troca de rodada +
+        # writes simultâneos) fazem o REPLACE das mesmas linhas de `position` em ordens
+        # diferentes e DEADLOCKAM no índice único index_combat_combatants_on_state_and_position
+        # (PG::TRDeadlockDetected → 500). O advisory lock TRANSACIONAL por combat_state faz
+        # a 2ª transação ESPERAR a 1ª terminar; auto-libera no commit/rollback.
+        ActiveRecord::Base.connection.execute(
+          "SELECT pg_advisory_xact_lock(#{ADVISORY_LOCK_NAMESPACE}, #{@combat_state.id.to_i})",
+        )
+
         # Fase 1: posições temporárias negativas para liberar o índice único.
         # `update_columns` pula validação (negativo viola `>= 0`), o que é OK
         # porque o estado final será válido e a transação garante consistência.
