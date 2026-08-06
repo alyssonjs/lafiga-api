@@ -587,6 +587,55 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
         expect(response).to have_http_status(:forbidden)
       end
     end
+
+    # O REATOR de um Ataque de Oportunidade aplica dano no ALVO (mover) — combatente que
+    # NÃO é dele e FORA do seu turno. Legítimo quando há uma interação opportunity_attack
+    # ATIVA em que o PC do jogador é o REATOR (source_id) e o alvo é o mover.
+    context 'jogador aplica dano de REAÇÃO (Ataque de Oportunidade) no alvo' do
+      let!(:mover_npc) { create(:combat_npc, schedule: schedule, hp_current: 20, hp_max: 20) }
+      let!(:mover) { create(:combat_combatant, :npc, combat_state: cs, combatable: mover_npc, position: 3, hp_current: 20, hp_max: 20) }
+
+      before { cs.update_column(:current_turn_index, mover.position) } # turno do MOVER, não do reator
+
+      def set_oa(source_char_id)
+        cs.update!(active_interaction: {
+          'kind' => 'opportunity_attack',
+          'source_id' => source_char_id.to_s,
+          'target_ids' => [],
+          'opportunity_attack' => { 'mover_combatant_id' => mover.id.to_s },
+        })
+      end
+
+      it 'permite hp no ALVO quando o PC do jogador é o REATOR de um AO ativo' do
+        set_oa(player_character.id)
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{mover.id}",
+              params: { combatant: { hp_current: 12 } }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(mover.reload.hp_current).to eq(12)
+      end
+
+      it '403 sem interação de AO ativa' do
+        cs.update!(active_interaction: nil)
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{mover.id}",
+              params: { combatant: { hp_current: 12 } }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it '403 quando o REATOR do AO não é PC do jogador' do
+        other_char = create(:character, user: outsider, group: schedule.group)
+        set_oa(other_char.id)
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{mover.id}",
+              params: { combatant: { hp_current: 12 } }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it '403 ao tentar turn_state pela via de reação (só efeito de combate passa)' do
+        set_oa(player_character.id)
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{mover.id}",
+              params: { combatant: { turn_state: { 'x' => 1 } } }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe 'DELETE destroy' do

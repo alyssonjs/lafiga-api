@@ -460,8 +460,37 @@ module Api::V1::Player::Combat
       return if player_updating_own_turn_state?
       return if player_applying_combat_effect_on_own_turn?
       return if player_updating_own_combatant?
+      return if player_applying_reaction_damage?
 
       render json: { error: 'apenas o DM da mesa ou o mestre da plataforma pode mutar combatentes' }, status: :forbidden
+    end
+
+    # O REATOR de uma reacao (ex.: Ataque de Oportunidade) aplica dano no ALVO da reacao —
+    # um combatente que NAO e dele e FORA do seu turno. E legitimo: existe uma interacao
+    # ATIVA `opportunity_attack` no combate onde o PC do jogador e o REATOR (`source_id`) e
+    # este combatente e o ALVO (mover). Escopo SEGURO: so campos de EFEITO DE COMBATE
+    # (hp/condicoes — sem turn_state/actions_used), e so enquanto a interacao existe. Sem
+    # isto, o AO do JOGADOR nao subtraia HP (o guard off-turn/nao-dono descartava o PATCH).
+    # DM autoritativo por cima; auditavel pelo log de combate.
+    def player_applying_reaction_damage?
+      ai = @combatant.combat_state&.active_interaction
+      return false unless ai.is_a?(Hash) && ai['kind'] == 'opportunity_attack'
+
+      reactor_char_id = ai['source_id'].to_s
+      return false if reactor_char_id.blank?
+      return false unless @current_user.characters.exists?(id: reactor_char_id)
+
+      # Este combatente e o ALVO (mover) da interacao?
+      mover_combatant_id = ai.dig('opportunity_attack', 'mover_combatant_id').to_s
+      target_ids = Array(ai['target_ids']).map(&:to_s)
+      is_target = (mover_combatant_id.present? && mover_combatant_id == @combatant.id.to_s) ||
+                  target_ids.include?(@combatant.combatable_id.to_s)
+      return false unless is_target
+
+      keys = combatant_update_params.to_h.keys.map(&:to_s)
+      return false if keys.empty?
+
+      (keys - COMBAT_EFFECT_FIELDS).empty?
     end
 
     # Teste de morte: DM sempre; jogador só grava o teste do PRÓPRIO combatente
