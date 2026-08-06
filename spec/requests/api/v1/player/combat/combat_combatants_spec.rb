@@ -547,6 +547,31 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
         expect(response).to have_http_status(:forbidden)
       end
     end
+
+    # O jogador precisa resolver o PRÓPRIO teste de resistência quando é ALVO fora do
+    # seu turno (ex.: apanha uma área na vez de outro): a resolução mexe no hp dele
+    # (auto-dano) + turn_state (limpa o pending). Sem esta liberação dava 403 e o
+    # pending nunca resolvia (reload destravava a barra; conjurador preso).
+    context 'jogador muta o PRÓPRIO combatente fora do seu turno (resolver o próprio TR)' do
+      let!(:npc) { create(:combat_npc, schedule: schedule) }
+      let!(:npc_combatant) { create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 1) }
+
+      before { cs.update_column(:current_turn_index, npc_combatant.position) } # NÃO é o turno do player
+
+      it 'permite hp + turn_state no PRÓPRIO combatente mesmo fora do seu turno (auto-dano de área)' do
+        payload = { combatant: { hp_current: 14, turn_state: { 'afterAoe' => true } } }
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: payload, headers: player_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(combatant.reload.hp_current).to eq(14)
+      end
+
+      it '403 ao tentar mutar o combatente de OUTRO fora do turno (escopo: só o próprio)' do
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
+              params: { combatant: { hp_current: 3 } }, headers: player_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe 'DELETE destroy' do

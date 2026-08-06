@@ -449,6 +449,7 @@ module Api::V1::Player::Combat
       return if player_setting_own_initiative_only?
       return if player_updating_own_turn_state?
       return if player_applying_combat_effect_on_own_turn?
+      return if player_updating_own_combatant?
 
       render json: { error: 'apenas o DM da mesa ou o mestre da plataforma pode mutar combatentes' }, status: :forbidden
     end
@@ -502,6 +503,25 @@ module Api::V1::Player::Combat
       return false if keys.empty?
 
       (keys - PLAYER_TURN_STATE_FIELDS).empty?
+    end
+
+    # O JOGADOR pode mutar o SEU PRÓPRIO combatente com campos de EFEITO DE COMBATE
+    # + turn_state em QUALQUER turno (não só no dele). Habilita o jogador a resolver
+    # o PRÓPRIO teste de resistência quando é ALVO fora do seu turno (ex.: apanha uma
+    # área na vez de outro): a resolução mexe no `hp` dele (auto-dano) e no turn_state
+    # (limpa o pending), o que não cabia em `player_updating_own_turn_state?` (só
+    # turn_state) nem em `player_applying_combat_effect_on_own_turn?` (exige o turno
+    # ser dele). Escopo SEGURO: só o próprio combatente (`player_owns_combatant?`) e
+    # só campos de combate/turn_state (allowlist) — nunca outro combatente. Auditável
+    # pelo log de combate. Sem esta regra, rolar o próprio TR fora do turno dava 403 e
+    # o pending nunca resolvia (reload destravava; conjurador preso).
+    def player_updating_own_combatant?
+      return false unless player_owns_combatant?
+
+      keys = combatant_update_params.to_h.keys.map(&:to_s)
+      return false if keys.empty?
+
+      (keys - (COMBAT_EFFECT_FIELDS + PLAYER_TURN_STATE_FIELDS)).empty?
     end
 
     # O combatente é um PC cujo personagem pertence ao usuário autenticado.
