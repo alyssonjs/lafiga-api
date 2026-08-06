@@ -51,9 +51,17 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       if attrs.key?(:aoe_placements) && attrs[:aoe_placements].is_a?(Array) && !@map.writable_by?(@current_user)
         old = @map.aoe_placements || []
         new_list = attrs[:aoe_placements]
-        old_ids = old.map { |p| (p['id'] || p[:id]).to_s }.compact.to_set
         new_ids = new_list.map { |p| (p['id'] || p[:id]).to_s }.compact.to_set
-        return forbidden unless old_ids <= new_ids
+        # Jogador (nao-owner) pode ADICIONAR qualquer placement e REMOVER apenas os
+        # EFEMEROS — marcadores transitorios das proprias magias de area, que o front
+        # limpa ao resolver a magia (ex.: Onda Trovejante com `ephemeral: true`).
+        # Placements PERSISTENTES (colocados pelo DM/owner) seguem append-only: nao
+        # podem ser removidos por jogador. O flag `ephemeral` e lido do registro
+        # ARMAZENADO (`old`), NUNCA do payload do cliente — assim o cliente nao pode
+        # "marcar como efemero" um placement persistente para apaga-lo.
+        removed = old.reject { |p| new_ids.include?((p['id'] || p[:id]).to_s) }
+        non_ephemeral_removed = removed.reject { |p| p['ephemeral'] || p[:ephemeral] }
+        return forbidden if non_ephemeral_removed.any?
       end
     end
 

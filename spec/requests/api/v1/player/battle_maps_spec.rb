@@ -215,6 +215,64 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
             headers: bearer_headers_for(viewer), as: :json
       expect(response).to have_http_status(:forbidden)
     end
+
+    it 'membro do grupo PODE remover aoe_placement EFEMERO (marcador transitorio da propria magia)' do
+      dm = create(:user, role: dm_role)
+      group = create(:group)
+      viewer = create(:user, role: player_role)
+      create(:character, user: viewer, group: group)
+      existing = [
+        {
+          'id' => 'eph1', 'shape' => 'cube', 'sizeFt' => 15,
+          'origin' => { 'col' => 2, 'row' => 2 },
+          'cells' => [{ 'col' => 2, 'row' => 2 }],
+          'color' => '#7B3DC9', 'spellName' => 'Onda Trovejante', 'ephemeral' => true,
+        },
+      ]
+      m = create(
+        :battle_map,
+        user: dm,
+        group: group,
+        aoe_placements: existing,
+        player_permissions: { 'measure' => true, 'pencil' => false, 'aoe' => true },
+      )
+      patch "/api/v1/player/battle_maps/#{m.id}",
+            params: { battle_map: { aoe_placements: [] } },
+            headers: bearer_headers_for(viewer), as: :json
+      expect(response).to have_http_status(:ok)
+      expect(m.reload.aoe_placements).to eq([])
+    end
+
+    it 'membro do grupo NAO pode remover placement PERSISTENTE nem removendo um EFEMERO junto' do
+      dm = create(:user, role: dm_role)
+      group = create(:group)
+      viewer = create(:user, role: player_role)
+      create(:character, user: viewer, group: group)
+      persistent = {
+        'id' => 'dm1', 'shape' => 'sphere', 'sizeFt' => 20,
+        'origin' => { 'col' => 0, 'row' => 0 }, 'cells' => [{ 'col' => 0, 'row' => 0 }],
+        'color' => '#C93B3B',
+      }
+      ephemeral = {
+        'id' => 'eph1', 'shape' => 'cube', 'sizeFt' => 15,
+        'origin' => { 'col' => 2, 'row' => 2 }, 'cells' => [{ 'col' => 2, 'row' => 2 }],
+        'color' => '#7B3DC9', 'ephemeral' => true,
+      }
+      m = create(
+        :battle_map,
+        user: dm,
+        group: group,
+        aoe_placements: [persistent, ephemeral],
+        player_permissions: { 'measure' => true, 'pencil' => false, 'aoe' => true },
+      )
+      # Apagar TUDO (persistente + efemero) -> 403 por causa do persistente.
+      patch "/api/v1/player/battle_maps/#{m.id}",
+            params: { battle_map: { aoe_placements: [] } },
+            headers: bearer_headers_for(viewer), as: :json
+      expect(response).to have_http_status(:forbidden)
+      # O persistente segue no lugar (nada mutou).
+      expect(m.reload.aoe_placements.map { |p| p['id'] }).to include('dm1')
+    end
   end
 
   describe 'DELETE /api/v1/player/battle_maps/:id' do
