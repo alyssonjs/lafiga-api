@@ -70,6 +70,7 @@ Rails.application.routes.draw do
           member do
             post :equip
             post :unequip
+            post :allocate_ammunition
           end
           collection do
             post :grant
@@ -236,6 +237,7 @@ Rails.application.routes.draw do
           member do
             post :equip
             post :unequip
+            post :allocate_ammunition
           end
         end
 
@@ -254,6 +256,9 @@ Rails.application.routes.draw do
           member do
             post :duplicate
             post :move_token
+            post :launch_projectile
+            post :resolve_projectile
+            post :pick_up_projectile
           end
           collection do
             post :import_legacy

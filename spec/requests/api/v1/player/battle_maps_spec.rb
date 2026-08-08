@@ -74,6 +74,7 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
       payload = response.parsed_body['battle_map']
       expect(payload['cells']).to be_an(Array)
       expect(payload['width']).to eq(5)
+      expect(payload['droppedProjectiles']).to eq([])
     end
 
     it 'retorna 403 para nao-membro' do

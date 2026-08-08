@@ -54,6 +54,7 @@ class BattleMapSerializer
       stamps: map.stamps || [],
       paths: map.paths || [],
       mapEffects: map.map_effects || {},
+      droppedProjectiles: map.dropped_projectiles || [],
     )
   end
 

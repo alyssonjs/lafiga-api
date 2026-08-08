@@ -12,7 +12,8 @@ class SheetItem < ApplicationRecord
     ring_left ring_right amulet cloak boots helmet gloves belt
     circlet earrings bracelet_left bracelet_right
   ].freeze
-  ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS).freeze
+  UTILITY_SLOTS   = %w[quiver].freeze
+  ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS + UTILITY_SLOTS).freeze
 
   validates :sheet_id, presence: true
   validates :item_name, presence: true
@@ -22,6 +23,7 @@ class SheetItem < ApplicationRecord
   validate  :validate_equipment_proficiency
 
   before_validation :resolve_catalog_item
+  before_destroy :release_ammunition_contents, if: :quiver?
   before_save :sanitize_slot
   after_save  :enforce_slot_exclusivity_and_conflicts
 
@@ -31,6 +33,7 @@ class SheetItem < ApplicationRecord
   # Itens que carregam qualquer uma NÃO empilham — duas varinhas 7/7 são duas
   # instâncias com contadores independentes, não uma pilha de 2 com 1 contador.
   PER_INSTANCE_PROP_KEYS = %w[charges attuned uses uses_remaining uses_left].freeze
+  AMMUNITION_CONTAINER_PROP = 'quiver_sheet_item_id'.freeze
 
   # Ponto único de criação com empilhamento, ATÔMICO e serializado por ficha.
   # Trava a `sheet` (FOR UPDATE) para evitar corrida read-then-write em
@@ -134,7 +137,42 @@ class SheetItem < ApplicationRecord
     }
   end
 
+  def quiver?
+    identity = normalized_inventory_identity
+    identity.include?('aljava') || identity.include?('quiver')
+  end
+
+  def ammunition?
+    identity = normalized_inventory_identity
+    identity.match?(/(?:^|[- ])(flecha|flechas|arrow|arrows|virote|virotes|bolt|bolts)(?:$|[- ])/)
+  end
+
+  def ammunition_container_id
+    value = (props_json || {})[AMMUNITION_CONTAINER_PROP]
+    value.present? ? value.to_s : nil
+  end
+
   private
+
+  def normalized_inventory_identity
+    [item_index, item_name]
+      .compact
+      .join(' ')
+      .unicode_normalize(:nfd)
+      .gsub(/\p{Mn}/, '')
+      .downcase
+      .gsub(/[^a-z0-9]+/, '-')
+  end
+
+  def release_ammunition_contents
+    sheet.sheet_items
+         .where("props_json ->> 'quiver_sheet_item_id' = ?", id.to_s)
+         .find_each do |ammunition|
+      props = (ammunition.props_json || {}).deep_dup.stringify_keys
+      props.delete(AMMUNITION_CONTAINER_PROP)
+      ammunition.update!(props_json: props)
+    end
+  end
 
   # Garante que todo SheetItem aponte para um Item canonico no catalogo.
   # Se o caller (controller, service, importer) ja passou item_id, respeita.

@@ -160,6 +160,7 @@ weapons:
     hands: 1
     damage_die: 1d4
     properties: [ammunition]
+    ammunition_index: pedra-de-funda
     range: 30/120
     weight_kg: 0.0
     cost_cp: 10
@@ -173,6 +174,7 @@ weapons:
     hands: 2
     damage_die: 1d6
     properties: [ammunition, two-handed]
+    ammunition_index: flecha
     range: 80/320
     weight_kg: 1.0
     cost_cp: 2500
@@ -186,6 +188,7 @@ weapons:
     hands: 2
     damage_die: 1d8
     properties: [ammunition, loading, two-handed]
+    ammunition_index: virote
     range: 80/320
     weight_kg: 2.5
     cost_cp: 2500
@@ -420,6 +423,7 @@ weapons:
     hands: 1
     damage_die: "1"
     properties: [ammunition, loading]
+    ammunition_index: agulha-de-zarabatana
     range: 25/100
     weight_kg: 0.5
     cost_cp: 1000
@@ -433,6 +437,7 @@ weapons:
     hands: 1
     damage_die: 1d6
     properties: [ammunition, light, loading]
+    ammunition_index: virote
     range: 30/120
     weight_kg: 1.5
     cost_cp: 7500
@@ -446,6 +451,7 @@ weapons:
     hands: 2
     damage_die: 1d10
     properties: [ammunition, heavy, loading, two-handed]
+    ammunition_index: virote
     range: 100/400
     weight_kg: 4.5
     cost_cp: 5000
@@ -459,6 +465,7 @@ weapons:
     hands: 2
     damage_die: 1d8
     properties: [ammunition, heavy, two-handed]
+    ammunition_index: flecha
     range: 150/600
     weight_kg: 1.5
     cost_cp: 5000
@@ -633,6 +640,18 @@ shields:
 
 
 gear:
+  aljava:
+    name: Aljava
+    aliases: [quiver]
+    kind: gear
+    category: equipment
+    weight_kg: 0.5
+    cost_cp: 100
+    cost: { amount: 1, unit: po }
+    props:
+      equipment_slot: quiver
+      ammunition_types: [flecha, virote]
+
   bolsa-de-componentes:
     name: Bolsa de Componentes
     aliases: [component-pouch]

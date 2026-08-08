@@ -31,13 +31,24 @@ module Api
         render json: me_payload, status: :ok
       end
 
-      # PATCH /api/v1/me/ui_preferences  { combat_hotbar: true|false }
-      # Grava preferências de UI da própria conta. `combat_hotbar` ativa o novo
-      # hotbar de combate; é inócua para não-DM (o front nunca renderiza o hotbar
-      # sem `role === 'dm'`), então qualquer usuário autenticado pode gravá-la.
+      # PATCH /api/v1/me/ui_preferences
+      # Grava preferências de UI da própria conta. Os atalhos de fichas são uma
+      # ferramenta exclusiva do mestre e ficam isolados por sessão.
       def update_ui_preferences
+        if params.key?(:floating_sheet_pins) && !Group.user_is_dm?(@current_user)
+          return render json: { error: 'Acesso restrito ao Mestre.' }, status: :forbidden
+        end
+
         @current_user.set_combat_hotbar_pref!(params[:combat_hotbar]) if params.key?(:combat_hotbar)
+
+        if params.key?(:floating_sheet_pins)
+          pins = params.require(:floating_sheet_pins).permit(:session_id, character_ids: [])
+          @current_user.set_floating_sheet_pins_pref!(pins[:session_id], pins[:character_ids])
+        end
+
         render json: me_payload, status: :ok
+      rescue ActionController::ParameterMissing, ArgumentError => e
+        render json: { error: e.message }, status: :unprocessable_entity
       end
 
       private

@@ -70,20 +70,24 @@ cozinheiro:
           name: "Arquétipo de Cozinheiro"
           category: class_feature
           description: >
-            Você escolhe um arquétipo: Mestre da Fritura, Alquimista Gourmet,
-            Doceiro Encantado, Mestre do Fogo e Fumaça ou Cantineiro de Guerra.
-            Você recebe características do arquétipo agora e novamente nos níveis 6, 10, 14 e 18.
+            Você escolhe um arquétipo: Sous Chef, Sargento Alimentar,
+            Mestre-Cuca, Mestre Cervejeiro, Amassador de Monstros ou
+            Doceiro Encantado. Você recebe características do arquétipo agora
+            e novamente nos níveis 6, 10, 14 e 18.
 
-    - level: 5
+    - level: 4
       features:
+        # api_index mantido como 'asi_5' de propósito (id opaco): a feature
+        # dm_customized no banco já usa esse índice associada ao L4. Renomear
+        # p/ 'asi_4' criaria DUPLICATA no re-run do rake (que nunca faz prune).
         - api_index: asi_5
           name: "Incremento no Valor de Habilidade"
           category: ability_score_improvement
           description: >
             Aumente um valor de habilidade em +2 ou dois valores em +1 (máximo
             20, a menos que sua campanha permita ultrapassar).
-    
-    - level: 4
+
+    - level: 5
       features:
         - api_index: rotund_reflection
           name: "Reflexão Rotunda"

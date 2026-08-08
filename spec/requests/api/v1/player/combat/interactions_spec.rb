@@ -270,6 +270,12 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
             npc_attacks: [],
             ignores_disengage: false,
             oa_at_disadvantage: false,
+            queued_reactions: [
+              {
+                reactor_token_id: 'tok-next-reactor', reactor_name: 'Próximo Reator',
+                mover_token_id: 'tok-mover', mover_name: mover_cc.name,
+              },
+            ],
           },
         },
       }
@@ -285,6 +291,12 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
         expect(ai['kind']).to eq('opportunity_attack')
         expect(ai['phase']).to eq('roll')
         expect(ai['pending_responders'].first['need']).to eq('offer_reaction')
+        expect(ai.dig('opportunity_attack', 'queued_reactions')).to eq([
+          {
+            'reactor_token_id' => 'tok-next-reactor', 'reactor_name' => 'Próximo Reator',
+            'mover_token_id' => 'tok-mover', 'mover_name' => mover_cc.name,
+          },
+        ])
       end
 
       it 'jogador-mover (dono do PC do turno) faz upsert de OA cujo reator é NPC → 200' do
@@ -466,6 +478,27 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
           expect(response).to have_http_status(:ok)
         end
 
+        it 'confirma Atacar sem Protetor e libera a rolagem no mesmo AO' do
+          interaction_id = cs.reload.active_interaction['id']
+
+          post "#{base}/active_interaction/respond",
+               params: {
+                 character_id: reactor_pc_cc.combatable_id.to_s,
+                 opportunity_attack: { commit: true },
+               },
+               headers: defender_headers, as: :json
+
+          expect(response).to have_http_status(:ok)
+          ai = response.parsed_body['active_interaction']
+          expect(ai['id']).to eq(interaction_id)
+          expect(ai['phase']).to eq('attack_roll')
+          expect(ai['pending_responders'].first).to include(
+            'character_id' => reactor_pc_cc.combatable_id.to_s,
+            'need' => 'roll_attack',
+          )
+          expect(reactor_pc_cc.reload.actions_used['reaction']).to be_falsey
+        end
+
         it 'dono do PC reator (fora do turno dele) responde com hit:true → HP do mover cai; interação limpa; reação consumida' do
           # current_turn_index = 0 (mover). O reator (defender_char) está em position 2 → fora do turno.
           post "#{base}/active_interaction/respond",
@@ -528,6 +561,126 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
                headers: outsider_headers, as: :json
           expect(response).to have_http_status(:forbidden)
           expect(cs.reload.active_interaction).to be_present
+        end
+      end
+
+      context 'Fúria Protetora embutida no mesmo AO' do
+        let!(:protector_char) { create(:character, user: outsider, group: schedule.group) }
+        let!(:protector_cc) do
+          create(:combat_combatant, :pc,
+                 combat_state: cs, combatable: protector_char,
+                 position: 3, ac: 18, hp_current: 30, hp_max: 30)
+        end
+
+        before do
+          body = oa_upsert_body(
+            reactor_identity: reactor_pc_cc.combatable_id,
+            mover_identity: mover_cc.combatable_id,
+            owned_by_dm: false,
+            mover_combatant_id: mover_cc.id,
+          )
+          put "#{base}/active_interaction", params: body, headers: attacker_headers, as: :json
+          expect(response).to have_http_status(:ok)
+        end
+
+        def embedded_swap_body
+          {
+            character_id: reactor_pc_cc.combatable_id.to_s,
+            opportunity_attack: { commit: true },
+            protective_swap: {
+              reactor_char_id: protector_char.id.to_s,
+              reactor_owned_by_dm: false,
+              ally_char_id: attacker_char.id.to_s,
+              ally_owned_by_dm: false,
+              attacker_token_id: 'tok-reactor',
+              ally_token_id: 'tok-mover',
+              reactor_token_id: 'tok-protector',
+              reactor_from_col: 10,
+              reactor_from_row: 11,
+              ally_from_col: 12,
+              ally_from_row: 13,
+              attack_meta: { name: 'Espada Longa', caster_name: 'Reator', bonus: '+5', damage: '1d8+3' },
+            },
+          }
+        end
+
+        it 'só oferece o swap depois que o reator confirma Atacar' do
+          expect(cs.reload.active_interaction['phase']).to eq('roll')
+          expect(cs.active_interaction['protective_swap']).to be_nil
+
+          post "#{base}/active_interaction/respond",
+               params: embedded_swap_body, headers: defender_headers, as: :json
+
+          expect(response).to have_http_status(:ok)
+          ai = response.parsed_body['active_interaction']
+          expect(ai['kind']).to eq('opportunity_attack')
+          expect(ai['phase']).to eq('awaiting_protector')
+          expect(ai['pending_responders'].first).to include(
+            'character_id' => protector_char.id.to_s,
+            'need' => 'offer_reaction',
+          )
+        end
+
+        it 'mantém o AO no mesmo slot até consentir, aplicar o swap e retargetar' do
+          post "#{base}/active_interaction/respond",
+               params: embedded_swap_body, headers: defender_headers, as: :json
+          interaction_id = response.parsed_body.dig('active_interaction', 'id')
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: protector_char.id.to_s, protective_swap: { accept: true } },
+               headers: outsider_headers, as: :json
+          expect(response.parsed_body.dig('active_interaction', 'phase')).to eq('awaiting_consent')
+          expect(response.parsed_body.dig('active_interaction', 'id')).to eq(interaction_id)
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: attacker_char.id.to_s, protective_swap: { accept: true } },
+               headers: attacker_headers, as: :json
+          ai = response.parsed_body['active_interaction']
+          expect(ai['phase']).to eq('awaiting_swap_apply')
+          expect(ai['target_ids']).to eq([attacker_char.id.to_s])
+          expect(ai['pending_responders'].first['need']).to eq('apply_swap')
+          expect(protector_cc.reload.actions_used['reaction']).to be true
+
+          post "#{base}/active_interaction/respond",
+               params: {
+                 character_id: attacker_char.id.to_s,
+                 opportunity_attack: { roll: { total: 20 }, damage: 10, hit: true },
+               },
+               headers: dm_headers, as: :json
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(cs.reload.active_interaction['phase']).to eq('awaiting_swap_apply')
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: attacker_char.id.to_s, opportunity_attack: { swap_applied: true } },
+               headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok)
+          ai = response.parsed_body['active_interaction']
+          expect(ai['id']).to eq(interaction_id)
+          expect(ai['kind']).to eq('opportunity_attack')
+          expect(ai['phase']).to eq('attack_roll')
+          expect(ai['target_ids']).to eq([protector_char.id.to_s])
+          expect(ai['opportunity_attack']).to include(
+            'mover_token_id' => 'tok-protector',
+            'mover_combatant_id' => protector_cc.id,
+          )
+          expect(ai['pending_responders'].first).to include(
+            'character_id' => defender_char.id.to_s,
+            'need' => 'roll_attack',
+          )
+        end
+
+        it 'retoma o ataque contra o alvo original quando o Protetor recusa' do
+          post "#{base}/active_interaction/respond",
+               params: embedded_swap_body, headers: defender_headers, as: :json
+          post "#{base}/active_interaction/respond",
+               params: { character_id: protector_char.id.to_s, protective_swap: { decline: true } },
+               headers: outsider_headers, as: :json
+
+          ai = response.parsed_body['active_interaction']
+          expect(ai['phase']).to eq('attack_roll')
+          expect(ai['target_ids']).to eq([attacker_char.id.to_s])
+          expect(ai.dig('protective_swap', 'outcome')).to eq('declined')
+          expect(protector_cc.reload.actions_used['reaction']).to be_falsey
         end
       end
     end

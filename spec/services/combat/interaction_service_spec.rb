@@ -124,6 +124,12 @@ RSpec.describe Combat::InteractionService do
           npc_attacks: [],
           ignores_disengage: false,
           oa_at_disadvantage: false,
+          queued_reactions: [
+            {
+              reactor_token_id: 'tok-next-reactor', reactor_name: 'Legolas',
+              mover_token_id: 'tok-mover', mover_name: 'Goblin',
+            },
+          ],
         },
       }
     end
@@ -152,6 +158,12 @@ RSpec.describe Combat::InteractionService do
       expect(oa['npc_attacks']).to eq([])
       expect(oa['ignores_disengage']).to be false
       expect(oa['oa_at_disadvantage']).to be false
+      expect(oa['queued_reactions']).to eq([
+        {
+          'reactor_token_id' => 'tok-next-reactor', 'reactor_name' => 'Legolas',
+          'mover_token_id' => 'tok-mover', 'mover_name' => 'Goblin',
+        },
+      ])
     end
 
     it 'marca owned_by_dm quando o reator é NPC do DM' do
@@ -214,6 +226,197 @@ RSpec.describe Combat::InteractionService do
     it 'erro :not_pending para responder fora da lista' do
       _, err = described_class.apply_response(current, { character_id: 'outro', opportunity_attack: { roll: { total: 17 }, damage: 6 } })
       expect(err).to eq(:not_pending)
+    end
+  end
+
+  describe '.prepare_opportunity_attack' do
+    let(:current) do
+      described_class.build_opportunity_attack(
+        kind: 'opportunity_attack',
+        source_id: 'reactor-1',
+        target_ids: ['mover-1'],
+        pending_responders: [
+          { character_id: 'reactor-1', need: 'offer_reaction', owned_by_dm: false, responded: false },
+        ],
+        opportunity_attack: {
+          mover_token_id: 'tok-mover',
+          mover_name: 'Ainor',
+          mover_combatant_id: 99,
+          reactor_token_id: 'tok-reactor',
+          reactor_name: 'Ruric',
+        },
+      )
+    end
+
+    let(:protective_swap) do
+      {
+        reactor_char_id: 'protector-1',
+        reactor_owned_by_dm: false,
+        ally_char_id: 'mover-1',
+        ally_owned_by_dm: false,
+        attacker_token_id: 'tok-reactor',
+        ally_token_id: 'tok-mover',
+        reactor_token_id: 'tok-protector',
+        reactor_from_col: 10,
+        reactor_from_row: 11,
+        ally_from_col: 12,
+        ally_from_row: 13,
+        attack_meta: { name: 'Espada Longa', caster_name: 'Ruric', bonus: '+5', damage: '1d8+3' },
+      }
+    end
+
+    it 'avança direto para attack_roll quando o reator ataca sem Protetor elegível' do
+      next_ai, err = described_class.prepare_opportunity_attack(current, {
+        character_id: 'reactor-1', opportunity_attack: { commit: true },
+      })
+
+      expect(err).to be_nil
+      expect(next_ai['kind']).to eq('opportunity_attack')
+      expect(next_ai['phase']).to eq('attack_roll')
+      expect(next_ai['opportunity_attack']['attack_committed']).to be true
+      expect(next_ai['pending_responders']).to eq([
+        { 'character_id' => 'reactor-1', 'need' => 'roll_attack', 'owned_by_dm' => false, 'responded' => false },
+      ])
+    end
+
+    it 'embute a Fúria Protetora no mesmo AO depois que o reator decide atacar' do
+      next_ai, err = described_class.prepare_opportunity_attack(current, {
+        character_id: 'reactor-1',
+        opportunity_attack: { commit: true },
+        protective_swap: protective_swap,
+      })
+
+      expect(err).to be_nil
+      expect(next_ai['kind']).to eq('opportunity_attack')
+      expect(next_ai['phase']).to eq('awaiting_protector')
+      expect(next_ai['target_ids']).to eq(['mover-1'])
+      expect(next_ai['protective_swap']).to include(
+        'reactor_char_id' => 'protector-1',
+        'ally_char_id' => 'mover-1',
+        'reactor_from_col' => 10.0,
+        'ally_from_row' => 13.0,
+        'outcome' => nil,
+      )
+      expect(next_ai['pending_responders']).to eq([
+        { 'character_id' => 'protector-1', 'need' => 'offer_reaction', 'owned_by_dm' => false, 'responded' => false },
+      ])
+    end
+  end
+
+  describe '.apply_opportunity_attack_protective_swap_response' do
+    let(:prepared) do
+      base = described_class.build_opportunity_attack(
+        kind: 'opportunity_attack',
+        source_id: 'reactor-1',
+        target_ids: ['mover-1'],
+        pending_responders: [
+          { character_id: 'reactor-1', need: 'offer_reaction', owned_by_dm: false, responded: false },
+        ],
+        opportunity_attack: { mover_token_id: 'tok-mover', mover_name: 'Ainor', mover_combatant_id: 99 },
+      )
+      described_class.prepare_opportunity_attack(base, {
+        character_id: 'reactor-1',
+        opportunity_attack: { commit: true },
+        protective_swap: {
+          reactor_char_id: 'protector-1', reactor_owned_by_dm: false,
+          ally_char_id: 'mover-1', ally_owned_by_dm: false,
+          ally_token_id: 'tok-mover', reactor_token_id: 'tok-protector',
+        },
+      }).first
+    end
+
+    it 'faz a recusa do Protetor retomar o roll do mesmo AO' do
+      next_ai, err = described_class.apply_opportunity_attack_protective_swap_response(prepared, {
+        character_id: 'protector-1', protective_swap: { decline: true },
+      })
+
+      expect(err).to be_nil
+      expect(next_ai['kind']).to eq('opportunity_attack')
+      expect(next_ai['phase']).to eq('attack_roll')
+      expect(next_ai['protective_swap']['outcome']).to eq('declined')
+      expect(next_ai['target_ids']).to eq(['mover-1'])
+      expect(next_ai['pending_responders'].first).to include(
+        'character_id' => 'reactor-1', 'need' => 'roll_attack', 'responded' => false,
+      )
+    end
+
+    it 'faz o aceite do Protetor pedir consentimento ao aliado' do
+      next_ai, err = described_class.apply_opportunity_attack_protective_swap_response(prepared, {
+        character_id: 'protector-1', protective_swap: { accept: true },
+      })
+
+      expect(err).to be_nil
+      expect(next_ai['phase']).to eq('awaiting_consent')
+      expect(next_ai['pending_responders'].first).to include(
+        'character_id' => 'mover-1', 'need' => 'consent', 'responded' => false,
+      )
+    end
+
+    it 'faz o consentimento aguardar a aplicação do swap sem retarget antecipado' do
+      consent, = described_class.apply_opportunity_attack_protective_swap_response(prepared, {
+        character_id: 'protector-1', protective_swap: { accept: true },
+      })
+      next_ai, err = described_class.apply_opportunity_attack_protective_swap_response(consent, {
+        character_id: 'mover-1', protective_swap: { accept: true },
+      })
+
+      expect(err).to be_nil
+      expect(next_ai['phase']).to eq('awaiting_swap_apply')
+      expect(next_ai['protective_swap']).to include('outcome' => 'accepted', 'swap_applied' => false)
+      expect(next_ai['target_ids']).to eq(['mover-1'])
+      expect(next_ai['pending_responders'].first).to include(
+        'character_id' => 'mover-1', 'need' => 'apply_swap', 'responded' => false,
+      )
+    end
+  end
+
+  describe '.complete_opportunity_attack_swap' do
+    it 'retargeta o mesmo AO para o Protetor depois que o mapa confirma o swap' do
+      current = {
+        'id' => 'oa-1', 'kind' => 'opportunity_attack', 'phase' => 'awaiting_swap_apply',
+        'source_id' => 'reactor-1', 'target_ids' => ['mover-1'],
+        'pending_responders' => [
+          { 'character_id' => 'mover-1', 'need' => 'apply_swap', 'owned_by_dm' => false, 'responded' => false },
+        ],
+        'opportunity_attack' => {
+          'mover_token_id' => 'tok-mover', 'mover_name' => 'Ainor', 'mover_combatant_id' => 99,
+          'reactor_owned_by_dm' => false, 'attack_committed' => true,
+          'queued_reactions' => [
+            {
+              'reactor_token_id' => 'tok-next-reactor', 'reactor_name' => 'Ysari',
+              'mover_token_id' => 'tok-mover', 'mover_name' => 'Ainor',
+            },
+          ],
+        },
+        'protective_swap' => {
+          'reactor_char_id' => 'protector-1', 'ally_char_id' => 'mover-1',
+          'reactor_token_id' => 'tok-protector', 'outcome' => 'accepted', 'swap_applied' => false,
+        },
+      }
+
+      next_ai, err = described_class.complete_opportunity_attack_swap(current, {
+        character_id: 'mover-1', opportunity_attack: { swap_applied: true },
+      }, {
+        mover_identity: 'protector-1', mover_combatant_id: 123,
+        mover_token_id: 'tok-protector', mover_name: 'Gnaels',
+      })
+
+      expect(err).to be_nil
+      expect(next_ai['phase']).to eq('attack_roll')
+      expect(next_ai['target_ids']).to eq(['protector-1'])
+      expect(next_ai['opportunity_attack']).to include(
+        'mover_token_id' => 'tok-protector', 'mover_name' => 'Gnaels', 'mover_combatant_id' => 123,
+      )
+      expect(next_ai.dig('opportunity_attack', 'queued_reactions')).to eq([
+        {
+          'reactor_token_id' => 'tok-next-reactor', 'reactor_name' => 'Ysari',
+          'mover_token_id' => 'tok-protector', 'mover_name' => 'Gnaels',
+        },
+      ])
+      expect(next_ai['protective_swap']['swap_applied']).to be true
+      expect(next_ai['pending_responders'].first).to include(
+        'character_id' => 'reactor-1', 'need' => 'roll_attack', 'responded' => false,
+      )
     end
   end
 

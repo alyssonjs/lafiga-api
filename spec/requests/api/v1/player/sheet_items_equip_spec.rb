@@ -34,6 +34,30 @@ RSpec.describe 'Api::V1::Player::SheetItemsController equip', type: :request do
       expect(body['equipped']).to eq(true)
     end
 
+    it 'equipa uma aljava e mantém apenas uma no slot quiver' do
+      first = SheetItem.create!(
+        sheet: sheet, item_name: 'Aljava', item_index: 'aljava', category: 'gear',
+        quantity: 1, equipped: false, source: 'test', props_json: {}
+      )
+      second = SheetItem.create!(
+        sheet: sheet, item_name: 'Aljava reserva', item_index: 'aljava-reserva', category: 'gear',
+        quantity: 1, equipped: false, source: 'test', props_json: {}
+      )
+
+      post "/api/v1/player/sheet_items/#{first.id}/equip",
+           params: { slot: 'quiver' }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), -> { response.body }
+
+      post "/api/v1/player/sheet_items/#{second.id}/equip",
+           params: { slot: 'quiver' }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), -> { response.body }
+
+      expect(first.reload).not_to be_equipped
+      expect(first.slot).to be_nil
+      expect(second.reload).to be_equipped
+      expect(second.slot).to eq('quiver')
+    end
+
     it 'rejeita slot desconhecido' do
       item = SheetItem.create!(
         sheet: sheet,
@@ -94,6 +118,29 @@ RSpec.describe 'Api::V1::Player::SheetItemsController equip', type: :request do
       expect(wp).to be_a(Hash)
       expect(wp['ammunition_index'] || wp[:ammunition_index]).to eq('flecha')
       expect(wp['damage_die'] || wp[:damage_die]).to eq('1d6')
+    end
+  end
+
+  describe 'POST /api/v1/player/sheet_items/:id/allocate_ammunition' do
+    it 'allows the owner to put ammunition into an unequipped quiver' do
+      quiver = SheetItem.create!(
+        sheet: sheet, item_name: 'Aljava', item_index: 'aljava', category: 'gear',
+        quantity: 1, equipped: false, source: 'test'
+      )
+      bolts = SheetItem.create!(
+        sheet: sheet, item_name: 'Virote de Besta', item_index: 'virote', category: 'Armas',
+        quantity: 13, equipped: false, source: 'test'
+      )
+
+      post "/api/v1/player/sheet_items/#{bolts.id}/allocate_ammunition",
+           params: { quiver_id: quiver.id, quantity: 13 },
+           headers: headers,
+           as: :json
+
+      expect(response).to have_http_status(:ok), -> { response.body }
+      stored = response.parsed_body.fetch('sheet_items').find { |item| item['id'] == bolts.id }
+      expect(stored.dig('props', SheetItem::AMMUNITION_CONTAINER_PROP)).to eq(quiver.id)
+      expect(stored['quantity']).to eq(13)
     end
   end
 end

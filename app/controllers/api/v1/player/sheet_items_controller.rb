@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :allocate_ammunition]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -61,6 +61,21 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/allocate_ammunition
+  # body: { quiver_id: SheetItem id | null, quantity: integer }
+  def allocate_ammunition
+    items = SheetItems::AllocateAmmunitionService.new(
+      ammunition: @item,
+      quiver_id: params[:quiver_id],
+      quantity: params[:quantity]
+    ).call
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::AllocateAmmunitionService::InvalidAllocation => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   private

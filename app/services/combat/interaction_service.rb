@@ -363,10 +363,14 @@ module Combat
         'reactor_char_id' => reactor.to_s,
         'ally_char_id' => ally.to_s,
         'ally_owned_by_dm' => truthy(h['ally_owned_by_dm']),
+        'reactor_owned_by_dm' => truthy(h['reactor_owned_by_dm']),
       }
       out['attacker_token_id'] = presence(h['attacker_token_id']).to_s if presence(h['attacker_token_id'])
       out['ally_token_id']     = presence(h['ally_token_id']).to_s     if presence(h['ally_token_id'])
       out['reactor_token_id']  = presence(h['reactor_token_id']).to_s  if presence(h['reactor_token_id'])
+      %w[reactor_from_col reactor_from_row ally_from_col ally_from_row].each do |key|
+        out[key] = h[key].to_f if h[key].is_a?(Numeric)
+      end
 
       am = stringify(h['attack_meta'] || {})
       out['attack_meta'] = {
@@ -377,6 +381,7 @@ module Combat
         'damage_type' => presence(am['damage_type']).to_s,
       }
       out['outcome'] = nil
+      out['swap_applied'] = false
       out
     end
 
@@ -422,6 +427,140 @@ module Combat
       responder['responded'] = true
 
       maybe_resolve_contest!(interaction)
+      [interaction, nil]
+    end
+
+    # O reator confirmou que vai executar o AO. Sem Protetor elegível, o mesmo
+    # active_interaction avança para a rolagem. Com Fúria Protetora, a troca vira
+    # uma subfase do AO em vez de ocupar/clobberar o slot global da interação.
+    def prepare_opportunity_attack(current, params)
+      return [nil, :not_found] if current.blank?
+
+      interaction = deep_dup(current)
+      return [interaction, :invalid_phase] unless interaction['kind'] == KIND_OPPORTUNITY_ATTACK && interaction['phase'] == 'roll'
+
+      p = stringify(params)
+      character_id = presence(p['character_id'])
+      return [interaction, :invalid_character] if character_id.nil?
+
+      responder = pending_responder(interaction, character_id)
+      return [interaction, :not_pending] if responder.nil?
+      return [interaction, :invalid_response] unless truthy(dig(p, 'opportunity_attack', 'commit'))
+
+      oa = interaction['opportunity_attack'] ||= {}
+      oa['attack_committed'] = true
+      oa['reactor_owned_by_dm'] = truthy(responder['owned_by_dm'])
+
+      raw_swap = p['protective_swap']
+      if raw_swap.present?
+        swap = normalize_protective_swap(raw_swap)
+        return [interaction, :invalid_response] if swap.nil?
+
+        interaction['protective_swap'] = swap
+        interaction['phase'] = 'awaiting_protector'
+        interaction['pending_responders'] = [
+          responder_hash(
+            swap['reactor_char_id'],
+            'offer_reaction',
+            truthy(swap['reactor_owned_by_dm']),
+          ),
+        ]
+      else
+        resume_opportunity_attack_roll!(interaction)
+      end
+
+      [interaction, nil]
+    end
+
+    # Respostas das duas subfases da Fúria Protetora embutida no AO. Recusar
+    # retoma a rolagem original. Consentir preserva o alvo original até o cliente
+    # responsável pelo mapa confirmar que aplicou a troca de tokens.
+    def apply_opportunity_attack_protective_swap_response(current, params)
+      return [nil, :not_found] if current.blank?
+
+      interaction = deep_dup(current)
+      unless interaction['kind'] == KIND_OPPORTUNITY_ATTACK &&
+             %w[awaiting_protector awaiting_consent].include?(interaction['phase'])
+        return [interaction, :invalid_phase]
+      end
+
+      p = stringify(params)
+      character_id = presence(p['character_id'])
+      return [interaction, :invalid_character] if character_id.nil?
+
+      responder = pending_responder(interaction, character_id)
+      return [interaction, :not_pending] if responder.nil?
+
+      decision = stringify(p['protective_swap'] || {})
+      accept = truthy(decision['accept'])
+      decline = truthy(decision['decline'])
+      return [interaction, :invalid_response] if accept == decline
+
+      swap = interaction['protective_swap']
+      return [interaction, :invalid_response] unless swap.is_a?(Hash)
+
+      if decline
+        interaction['protective_swap'] = swap.merge('outcome' => 'declined')
+        resume_opportunity_attack_roll!(interaction)
+        return [interaction, nil]
+      end
+
+      if interaction['phase'] == 'awaiting_protector'
+        interaction['phase'] = 'awaiting_consent'
+        interaction['pending_responders'] = [
+          responder_hash(swap['ally_char_id'], 'consent', truthy(swap['ally_owned_by_dm'])),
+        ]
+        return [interaction, nil]
+      end
+
+      interaction['protective_swap'] = swap.merge('outcome' => 'accepted', 'swap_applied' => false)
+      interaction['phase'] = 'awaiting_swap_apply'
+      interaction['pending_responders'] = [
+        # O swap move DOIS tokens e a API de mapa reserva essa mutação atômica ao
+        # Mestre. O dono do aliado já consentiu na fase anterior; daqui em diante
+        # o DM apenas persiste a troca e confirma a retomada do AO.
+        responder_hash(swap['ally_char_id'], 'apply_swap', true),
+      ]
+      [interaction, nil]
+    end
+
+    # Confirmação do cliente que aplicou o swap no mapa. Só aqui o AO troca o
+    # alvo persistido para o Protetor e libera o reator para rolar o ataque.
+    def complete_opportunity_attack_swap(current, params, retarget)
+      return [nil, :not_found] if current.blank?
+
+      interaction = deep_dup(current)
+      unless interaction['kind'] == KIND_OPPORTUNITY_ATTACK && interaction['phase'] == 'awaiting_swap_apply'
+        return [interaction, :invalid_phase]
+      end
+
+      p = stringify(params)
+      character_id = presence(p['character_id'])
+      return [interaction, :invalid_character] if character_id.nil?
+      return [interaction, :not_pending] if pending_responder(interaction, character_id).nil?
+      return [interaction, :invalid_response] unless truthy(dig(p, 'opportunity_attack', 'swap_applied'))
+
+      target = stringify(retarget)
+      mover_identity = presence(target['mover_identity'])
+      mover_token_id = presence(target['mover_token_id'])
+      return [interaction, :invalid_response] if mover_identity.nil? || mover_token_id.nil?
+
+      oa = interaction['opportunity_attack'] ||= {}
+      original_mover_token_id = presence(dig(interaction, 'protective_swap', 'ally_token_id')) ||
+                                presence(oa['mover_token_id'])
+      oa['mover_token_id'] = mover_token_id.to_s
+      oa['mover_name'] = presence(target['mover_name']).to_s
+      oa['mover_combatant_id'] = target['mover_combatant_id'] unless target['mover_combatant_id'].nil?
+      Array(oa['queued_reactions']).each do |queued|
+        next unless queued.is_a?(Hash)
+        next unless queued['mover_token_id'].to_s == original_mover_token_id.to_s
+
+        queued['mover_token_id'] = mover_token_id.to_s
+        queued['mover_name'] = presence(target['mover_name']).to_s
+      end
+      interaction['target_ids'] = [mover_identity.to_s]
+      interaction['protective_swap'] = Hash(interaction['protective_swap']).merge('swap_applied' => true)
+      resume_opportunity_attack_roll!(interaction)
       [interaction, nil]
     end
 
@@ -486,6 +625,25 @@ module Combat
       out['npc_attacks']         = Array(h['npc_attacks']).select { |a| a.is_a?(Hash) }.map { |a| stringify(a) } if h['npc_attacks'].is_a?(Array)
       out['ignores_disengage']   = truthy(h['ignores_disengage'])          if h.key?('ignores_disengage')
       out['oa_at_disadvantage']  = truthy(h['oa_at_disadvantage'])         if h.key?('oa_at_disadvantage')
+      out['mover_from_col']      = h['mover_from_col'].to_f                 if h['mover_from_col'].is_a?(Numeric)
+      out['mover_from_row']      = h['mover_from_row'].to_f                 if h['mover_from_row'].is_a?(Numeric)
+      if h['queued_reactions'].is_a?(Array)
+        out['queued_reactions'] = h['queued_reactions'].filter_map do |raw_entry|
+          entry = stringify(raw_entry)
+          reactor_token_id = presence(entry['reactor_token_id'])
+          reactor_name = presence(entry['reactor_name'])
+          mover_token_id = presence(entry['mover_token_id'])
+          mover_name = presence(entry['mover_name'])
+          next if [reactor_token_id, reactor_name, mover_token_id, mover_name].any?(&:nil?)
+
+          {
+            'reactor_token_id' => reactor_token_id.to_s,
+            'reactor_name' => reactor_name.to_s,
+            'mover_token_id' => mover_token_id.to_s,
+            'mover_name' => mover_name.to_s,
+          }
+        end
+      end
 
       out
     end
@@ -548,6 +706,30 @@ module Combat
       out['natural20'] = true if truthy(h['natural20'])
       out['natural1'] = true if truthy(h['natural1'])
       out
+    end
+
+    def pending_responder(interaction, character_id)
+      Array(interaction['pending_responders']).find do |responder|
+        responder['character_id'].to_s == character_id.to_s && !truthy(responder['responded'])
+      end
+    end
+
+    def responder_hash(character_id, need, owned_by_dm)
+      {
+        'character_id' => character_id.to_s,
+        'need' => need,
+        'owned_by_dm' => truthy(owned_by_dm),
+        'responded' => false,
+      }
+    end
+
+    def resume_opportunity_attack_roll!(interaction)
+      oa = interaction['opportunity_attack'] ||= {}
+      interaction['phase'] = 'attack_roll'
+      interaction['pending_responders'] = [
+        responder_hash(interaction['source_id'], 'roll_attack', truthy(oa['reactor_owned_by_dm'])),
+      ]
+      interaction
     end
 
     def stringify(obj)

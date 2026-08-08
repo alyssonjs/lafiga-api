@@ -64,6 +64,33 @@ class User < ApplicationRecord
       update!(ui_preferences: merged)
     end
 
+    # Persiste, por sessão, os atalhos de fichas fixados pelo mestre.
+    # Uma lista vazia remove a entrada da sessão para evitar acumular chaves
+    # sem uso no JSONB da conta.
+    def set_floating_sheet_pins_pref!(session_id, character_ids)
+      return false unless self.class.supports_ui_preferences?
+
+      normalized_session_id = session_id.to_s.strip
+      raise ArgumentError, 'sessão inválida' unless normalized_session_id.match?(/\A[a-zA-Z0-9:._-]{1,100}\z/)
+
+      normalized_character_ids = Array(character_ids)
+                                 .map { |id| id.to_s.strip }
+                                 .select { |id| id.match?(/\A[a-zA-Z0-9:._-]{1,100}\z/) }
+                                 .uniq
+                                 .first(100)
+      preferences = (ui_preferences || {}).deep_dup
+      pins_by_session = preferences.fetch('floating_sheet_pins_by_session', {}).to_h
+
+      if normalized_character_ids.empty?
+        pins_by_session.delete(normalized_session_id)
+      else
+        pins_by_session[normalized_session_id] = normalized_character_ids
+      end
+
+      preferences['floating_sheet_pins_by_session'] = pins_by_session
+      update!(ui_preferences: preferences)
+    end
+
     private
 
     def mark_password_changed_at

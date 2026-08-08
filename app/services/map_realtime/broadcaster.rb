@@ -24,6 +24,8 @@ module MapRealtime
       measurements_changed: 'measurements_changed',
       aoe_placements_changed: 'aoe_placements_changed',
       drawings_changed:     'drawings_changed',
+      dropped_projectiles_changed: 'dropped_projectiles_changed',
+      projectile_resolved:  'projectile_resolved',
       map_updated:          'map_updated',
       map_deleted:          'map_deleted'
     }.freeze
@@ -68,6 +70,14 @@ module MapRealtime
 
       def drawings_changed(map, drawings, actor: nil)
         broadcast(map, :drawings_changed, { drawings: drawings }, actor: actor)
+      end
+
+      def dropped_projectiles_changed(map, projectiles, actor: nil)
+        broadcast(map, :dropped_projectiles_changed, { droppedProjectiles: projectiles }, actor: actor)
+      end
+
+      def projectile_resolved(map, projectile, actor: nil)
+        broadcast(map, :projectile_resolved, { projectile: projectile }, actor: actor)
       end
 
       def map_updated(map, full_payload, actor: nil)

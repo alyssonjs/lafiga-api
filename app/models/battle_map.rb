@@ -29,6 +29,7 @@ class BattleMap < ApplicationRecord
   MAX_TERRAIN_LAYERS = 48
   MAX_STAMPS = 4000
   MAX_PATHS = 800
+  MAX_DROPPED_PROJECTILES = 200
   MAX_STROKES_PER_LAYER = 2000
   MIN_DIM = 5
   # MAX_DIM = 200: limite generoso para mapas grandes (overworld, dungeons multi-andar
@@ -73,6 +74,7 @@ class BattleMap < ApplicationRecord
   validate :stamps_well_formed
   validate :paths_well_formed
   validate :map_effects_well_formed
+  validate :dropped_projectiles_well_formed
 
   PLAYER_TOOLS = %w[measure pencil aoe].freeze
   DEFAULT_PLAYER_PERMISSIONS = { 'measure' => true, 'pencil' => false, 'aoe' => true }.freeze
@@ -152,6 +154,7 @@ class BattleMap < ApplicationRecord
     copy.stamps = deep_dup_nested_arrays(source.stamps)
     copy.paths = deep_dup_nested_arrays(source.paths)
     copy.map_effects = source.map_effects.respond_to?(:deep_dup) ? source.map_effects.deep_dup : source.map_effects
+    copy.dropped_projectiles = include_tokens ? deep_dup_nested_arrays(source.dropped_projectiles) : []
     copy.save!
     copy
   end
@@ -210,6 +213,16 @@ class BattleMap < ApplicationRecord
   def tokens_well_formed
     return if tokens.is_a?(Array)
     errors.add(:tokens, 'must be an array')
+  end
+
+  def dropped_projectiles_well_formed
+    unless dropped_projectiles.is_a?(Array)
+      errors.add(:dropped_projectiles, 'must be an array')
+      return
+    end
+    if dropped_projectiles.size > MAX_DROPPED_PROJECTILES
+      errors.add(:dropped_projectiles, "too many (#{dropped_projectiles.size} > #{MAX_DROPPED_PROJECTILES})")
+    end
   end
 
   def fog_well_formed

@@ -57,6 +57,8 @@ class EquipmentCatalog
           loading: props.include?('loading') || props.include?('carregamento'),
           special: props.include?('special') || props.include?('especial'),
           thrown: props.include?('thrown') || props.include?('arremesso'),
+          ammunition: props.include?('ammunition') || props.include?('municao'),
+          ammunition_index: w['ammunition_index'] || w['ammo_index'],
           range: w['range']
         }
       end

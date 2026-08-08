@@ -110,6 +110,10 @@ module Api::V1::Player::Combat
           :mover_token_id, :mover_name, :mover_combatant_id,
           :reactor_token_id, :reactor_name,
           :ignores_disengage, :oa_at_disadvantage,
+          :mover_from_col, :mover_from_row,
+          queued_reactions: [
+            :reactor_token_id, :reactor_name, :mover_token_id, :mover_name,
+          ],
           # `attacks`/`npc_attacks` são listas de hashes descritivos (estrutura
           # aninhada como o `contest`); puxamos o conteúdo cru de forma segura
           # via `permitted_opportunity_attack_lists` (permit não cobre array de
@@ -165,7 +169,7 @@ module Api::V1::Player::Combat
         attacker_roll: [:total, :formula, :advantage, :skill, :roll_group_id, :natural20, :natural1, { dice: [] }],
         # `damage_type`/`magical` habilitam mitigação tipada + Heavy Armor Master
         # no dano do OA (aplicado server-side). Opcionais — ausentes → dano cheio.
-        opportunity_attack: [:damage, :ignored, :hit, :damage_type, :magical, roll: [:total]],
+        opportunity_attack: [:damage, :ignored, :hit, :damage_type, :magical, :commit, :swap_applied, roll: [:total]],
         # Frustrar Conjuração: fase 1 (reator) `frustrate`/`ignored`; fase 2 (Mestre) `saved`.
         hostile_casting: [:frustrate, :ignored, :saved],
         # Consentimento de alvo: o dono do PC `accept` ou `refuse`.
@@ -174,7 +178,15 @@ module Api::V1::Player::Combat
         instinctive_fortitude: [:accept, :decline],
         # Fúria Protetora: Trocar de Lugar — Protetor (fase 1) e aliado (fase 2)
         # respondem `accept`/`decline`.
-        protective_swap: [:accept, :decline],
+        protective_swap: [
+          :accept, :decline,
+          :reactor_char_id, :reactor_owned_by_dm,
+          :ally_char_id, :ally_owned_by_dm,
+          :attacker_token_id, :ally_token_id, :reactor_token_id,
+          :reactor_from_col, :reactor_from_row,
+          :ally_from_col, :ally_from_row,
+          attack_meta: [:name, :caster_name, :bonus, :damage, :damage_type],
+        ],
         # Defensor da Tribo: o Defensor `accept` (move + protege) ou `decline`.
         tribe_defender: [:accept, :decline],
       ).to_h
@@ -294,6 +306,21 @@ module Api::V1::Player::Combat
     end
 
     def respond_opportunity_attack(current)
+      phase = current['phase'].to_s
+      oa_response = respond_params['opportunity_attack'] || {}
+      return prepare_opportunity_attack(current) if phase == 'roll' && truthy(oa_response['commit'])
+      if %w[awaiting_protector awaiting_consent].include?(phase)
+        return respond_opportunity_attack_protective_swap(current)
+      end
+      if phase == 'awaiting_swap_apply'
+        return complete_opportunity_attack_swap(current) if truthy(oa_response['swap_applied'])
+
+        return render(
+          json: { error: respond_error_message(:invalid_response) },
+          status: respond_error_status(:invalid_response),
+        )
+      end
+
       mover_cc = nil
       reactor_cc = nil
       log_data = nil
@@ -392,6 +419,104 @@ module Api::V1::Player::Combat
       ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && reaction_consumed
       ::Combat::Broadcaster.state_changed(@combat_state)
       log_oa_resolved(@schedule, log_data) if log_data
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # O clique "Atacar" compromete o AO. Se o front enviou uma Fúria Protetora
+    # elegível, ela vira subfase do mesmo active_interaction; caso contrário o AO
+    # segue direto para a rolagem.
+    def prepare_opportunity_attack(_current)
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        unless current&.dig('kind') == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK && current['phase'] == 'roll'
+          return render json: { active_interaction: current }, status: :ok
+        end
+
+        next_payload, err = ::Combat::InteractionService.prepare_opportunity_attack(current, respond_params)
+        if err
+          return render(json: { error: respond_error_message(err) }, status: respond_error_status(err))
+        end
+        @combat_state.set_active_interaction!(next_payload)
+      end
+
+      @combat_state.reload
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # Decide as fases Protetor → consentimento do aliado dentro do próprio AO.
+    # A reação do Protetor é consumida somente quando o aliado consente.
+    def respond_opportunity_attack_protective_swap(_current)
+      protector_cc = nil
+      reaction_consumed = false
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        unless current&.dig('kind') == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK &&
+               %w[awaiting_protector awaiting_consent].include?(current['phase'])
+          return render json: { active_interaction: current }, status: :ok
+        end
+
+        previous_phase = current['phase']
+        next_payload, err = ::Combat::InteractionService.apply_opportunity_attack_protective_swap_response(
+          current,
+          respond_params,
+        )
+        if err
+          return render(json: { error: respond_error_message(err) }, status: respond_error_status(err))
+        end
+
+        if previous_phase == 'awaiting_consent' && next_payload['phase'] == 'awaiting_swap_apply'
+          protector_id = next_payload.dig('protective_swap', 'reactor_char_id')
+          protector_cc = resolve_combatant_by_identity(protector_id)
+          consume_reaction!(protector_cc) if protector_cc
+          reaction_consumed = protector_cc.present?
+        end
+
+        @combat_state.set_active_interaction!(next_payload)
+      end
+
+      @combat_state.reload
+      ::Combat::Broadcaster.combatant_upserted(protector_cc) if reaction_consumed
+      ::Combat::Broadcaster.state_changed(@combat_state)
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # O controlador do aliado confirma que a troca já foi persistida no mapa.
+    # Retargeta o mesmo AO para o Protetor e libera a rolagem do reator.
+    def complete_opportunity_attack_swap(_current)
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        unless current&.dig('kind') == ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK &&
+               current['phase'] == 'awaiting_swap_apply'
+          return render json: { active_interaction: current }, status: :ok
+        end
+
+        swap = current['protective_swap'] || {}
+        protector_cc = resolve_combatant_by_identity(swap['reactor_char_id'])
+        if protector_cc.nil?
+          return render(json: { error: 'combatente Protetor não encontrado' }, status: :unprocessable_entity)
+        end
+
+        next_payload, err = ::Combat::InteractionService.complete_opportunity_attack_swap(
+          current,
+          respond_params,
+          mover_identity: swap['reactor_char_id'],
+          mover_combatant_id: protector_cc.id,
+          mover_token_id: swap['reactor_token_id'],
+          mover_name: protector_cc.name,
+        )
+        if err
+          return render(json: { error: respond_error_message(err) }, status: respond_error_status(err))
+        end
+        @combat_state.set_active_interaction!(next_payload)
+      end
+
+      @combat_state.reload
+      ::Combat::Broadcaster.state_changed(@combat_state)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -911,6 +1036,8 @@ module Api::V1::Player::Combat
         not_pending: 'este personagem não está pendente nesta interação',
         invalid_roll: 'defender_roll inválido',
         invalid_skill: 'perícia de defesa inválida',
+        invalid_phase: 'fase inválida para esta resposta',
+        invalid_response: 'resposta inválida para esta interação',
       }.fetch(err, 'resposta inválida')
     end
 

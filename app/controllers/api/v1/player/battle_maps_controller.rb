@@ -1,6 +1,6 @@
 class Api::V1::Player::BattleMapsController < ApplicationController
   before_action :authorize_request
-  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :move_token]
+  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :move_token, :launch_projectile, :resolve_projectile, :pick_up_projectile]
 
   # GET /api/v1/player/battle_maps
   # Lista todos os mapas que o user pode ver: proprios + compartilhados via group.
@@ -177,6 +177,49 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
     MapRealtime::Broadcaster.token_moved(@map, token_id, new_x, new_y, actor: @current_user)
     render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :full) }, status: 200
+  end
+
+  def launch_projectile
+    projectile = BattleMapProjectiles.launch!(map: @map, user: @current_user, params: params)
+    render json: { projectile: projectile, battle_map: BattleMapSerializer.serialize(@map, mode: :full) }, status: :created
+  rescue BattleMapProjectiles::Forbidden => e
+    render json: { error: e.message }, status: :forbidden
+  rescue BattleMapProjectiles::NotFound => e
+    render json: { error: e.message }, status: :not_found
+  rescue BattleMapProjectiles::Invalid, ActiveRecord::RecordInvalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  def resolve_projectile
+    projectile = BattleMapProjectiles.resolve!(
+      map: @map, user: @current_user,
+      projectile_id: params[:projectile_id], outcome: params[:outcome]
+    )
+    render json: { projectile: projectile }, status: :ok
+  rescue BattleMapProjectiles::Forbidden => e
+    render json: { error: e.message }, status: :forbidden
+  rescue BattleMapProjectiles::NotFound => e
+    render json: { error: e.message }, status: :not_found
+  rescue BattleMapProjectiles::Invalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  def pick_up_projectile
+    item = BattleMapProjectiles.pick_up!(
+      map: @map, user: @current_user,
+      projectile_id: params[:projectile_id], character_id: params[:character_id],
+      token_id: params[:token_id], equip: params[:equip]
+    )
+    render json: {
+      sheet_item: item.as_inventory_json,
+      sheet_items: item.sheet.sheet_items.reload.map(&:as_inventory_json)
+    }, status: :ok
+  rescue BattleMapProjectiles::Forbidden => e
+    render json: { error: e.message }, status: :forbidden
+  rescue BattleMapProjectiles::NotFound => e
+    render json: { error: e.message }, status: :not_found
+  rescue BattleMapProjectiles::Invalid, ActiveRecord::RecordInvalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   private

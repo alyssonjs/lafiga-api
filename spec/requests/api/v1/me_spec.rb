@@ -106,4 +106,87 @@ RSpec.describe 'Api::V1::MeController', type: :request do
       end
     end
   end
+
+  describe 'PATCH /api/v1/me/ui_preferences' do
+    it 'persiste as fichas fixadas do mestre por sessão e as devolve após reload' do
+      patch '/api/v1/me/ui_preferences',
+            params: {
+              floating_sheet_pins: {
+                session_id: 'schedule-42',
+                character_ids: %w[12 18 12]
+              }
+            },
+            headers: bearer_headers_for(dm)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig(
+        'user_infos', 'ui_preferences', 'floating_sheet_pins_by_session', 'schedule-42'
+      )).to eq(%w[12 18])
+
+      get '/api/v1/me', headers: bearer_headers_for(dm)
+      expect(response.parsed_body.dig(
+        'user_infos', 'ui_preferences', 'floating_sheet_pins_by_session', 'schedule-42'
+      )).to eq(%w[12 18])
+    end
+
+    it 'preserva os atalhos de outras sessões ao atualizar a sessão atual' do
+      dm.update!(ui_preferences: {
+        'combat_hotbar' => true,
+        'floating_sheet_pins_by_session' => { 'schedule-1' => ['7'] }
+      })
+
+      patch '/api/v1/me/ui_preferences',
+            params: {
+              floating_sheet_pins: {
+                session_id: 'schedule-2',
+                character_ids: ['9']
+              }
+            },
+            headers: bearer_headers_for(dm)
+
+      preferences = response.parsed_body.dig('user_infos', 'ui_preferences')
+      expect(preferences['combat_hotbar']).to be(true)
+      expect(preferences['floating_sheet_pins_by_session']).to eq(
+        'schedule-1' => ['7'],
+        'schedule-2' => ['9']
+      )
+    end
+
+    it 'remove a preferência da sessão quando todas as fichas são desfixadas' do
+      dm.update!(ui_preferences: {
+        'floating_sheet_pins_by_session' => {
+          'schedule-1' => ['7'],
+          'schedule-2' => ['9']
+        }
+      })
+
+      patch '/api/v1/me/ui_preferences',
+            params: {
+              floating_sheet_pins: {
+                session_id: 'schedule-1',
+                character_ids: []
+              }
+            },
+            headers: bearer_headers_for(dm)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig(
+        'user_infos', 'ui_preferences', 'floating_sheet_pins_by_session'
+      )).to eq('schedule-2' => ['9'])
+    end
+
+    it 'impede que jogador grave atalhos exclusivos do mestre' do
+      patch '/api/v1/me/ui_preferences',
+            params: {
+              floating_sheet_pins: {
+                session_id: 'schedule-42',
+                character_ids: ['12']
+              }
+            },
+            headers: bearer_headers_for(player)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(player.reload.ui_preferences || {}).not_to have_key('floating_sheet_pins_by_session')
+    end
+  end
 end
