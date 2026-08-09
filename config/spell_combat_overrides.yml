@@ -1,0 +1,42 @@
+# Curadoria manual do `combat_data` das magias (sobrepõe o seed derivado da
+# Open5e em db/seeds/spell_combat_data.json).
+#
+# Por que existe:
+#   O seed é auto-derivado por parsing do texto SRD. O dano/TR/área/alcance/
+#   upcast são confiáveis; as CONDIÇÕES infligidas são heurística e só o
+#   subconjunto de ALTA confiança (condição + TR) entra no seed. Os casos-limite
+#   (inflige-sem-TR tipo Sono/Leque Cromático, buffs, homebrew, magias
+#   fora-do-SRD) são curados aqui.
+#
+# Formato:
+#   <api_index>:            # slug em inglês (== spells.api_index)
+#     <campo>: <valor>      # substitui o campo no seed (merge raso no topo).
+#   Para trocar uma lista de condições, forneça a lista COMPLETA (ela é
+#   substituída, não mesclada).
+#
+#   Campos: resolution (saving_throw|spell_attack|auto|none), save_ability
+#   (str|dex|con|int|wis|cha), save_success (half|negates),
+#   damage {dice, types[], upcast{nível:dado}, cantrip_scaling{nível:dado}},
+#   area {shape, size_ft}, range_ft, target_count, duration {text, rounds},
+#   concentration, ritual, components {v,s,m,consumed},
+#   inflicts_conditions [{key,polarity,save,repeat_save}], removes_conditions [].
+#
+# Aplicar:  docker exec lafiga_api bundle exec rails spells:import_combat_data
+#           (DRY_RUN=1 para prévia).
+
+# ── Exemplos (edge cases reais: inflige condição SEM teste de resistência) ──
+
+# Sono: sem TR (afeta por total de PV); dorme = inconsciente. Sem "remove".
+sleep:
+  resolution: auto
+  save_success: null
+  inflicts_conditions:
+    - { key: unconscious, polarity: debuff, save: null, repeat_save: false }
+  removes_conditions: null
+
+# Leque Cromático (Color Spray): sem TR (por total de PV); só cega.
+color-spray:
+  resolution: auto
+  save_success: null
+  inflicts_conditions:
+    - { key: blinded, polarity: debuff, save: null, repeat_save: false }

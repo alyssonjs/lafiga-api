@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_09_120000) do
+ActiveRecord::Schema.define(version: 2026_08_09_130000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -776,6 +776,7 @@ ActiveRecord::Schema.define(version: 2026_08_09_120000) do
     t.text "higher_level"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.jsonb "combat_data", default: {}, null: false
     t.index ["api_index"], name: "index_spells_on_api_index", unique: true
   end
 

@@ -1,0 +1,5299 @@
+{
+ "acid-arrow": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "4d4",
+   "types": [
+    "acid"
+   ]
+  },
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "acid-splash": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "1d6",
+   "types": [],
+   "cantrip_scaling": {
+    "1": "1d6",
+    "5": "2d6",
+    "11": "3d6",
+    "17": "4d6"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "alarm": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 20
+  },
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "8 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": true,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "alter-self": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "animal-friendship": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "int",
+  "save_success": "negates",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "int",
+    "repeat_save": false
+   }
+  ]
+ },
+ "animal-shapes": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "unconscious"
+  ]
+ },
+ "animate-objects": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "antilife-shell": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "antimagic-field": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 10
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "arcane-eye": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "arcane-hand": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "4d8",
+   "types": [
+    "force"
+   ]
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "arcane-sword": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "3d10",
+   "types": [
+    "force"
+   ]
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "aura-of-life": {
+  "source": "open5e:srd-2024",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "bane": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "range_ft": 30,
+  "target_count": 3,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "banishment": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "incapacitated",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   }
+  ]
+ },
+ "barkskin": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "beacon-of-hope": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "bestow-curse": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "black-tentacles": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d6",
+   "types": [
+    "bludgeoning"
+   ]
+  },
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "restrained",
+    "polarity": "debuff",
+    "save": "dex",
+    "repeat_save": false
+   }
+  ]
+ },
+ "blade-barrier": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "6d10",
+   "types": [
+    "slashing"
+   ]
+  },
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "bless": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 30,
+  "target_count": 3,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "blight": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "8d8",
+   "types": [
+    "necrotic"
+   ],
+   "upcast": {
+    "5": "9d8",
+    "6": "10d8",
+    "7": "11d8",
+    "8": "12d8",
+    "9": "13d8"
+   }
+  },
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "blur": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "branding-smite": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "removes_conditions": [
+   "invisible"
+  ]
+ },
+ "burning-hands": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d6",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "2": "4d6",
+    "3": "5d6",
+    "4": "6d6",
+    "5": "7d6",
+    "6": "8d6",
+    "7": "9d6",
+    "8": "10d6",
+    "9": "11d6"
+   }
+  },
+  "area": {
+   "shape": "cone",
+   "size_ft": 15
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "call-lightning": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d10",
+   "types": [
+    "lightning"
+   ],
+   "upcast": {
+    "4": "4d10",
+    "5": "5d10",
+    "6": "6d10",
+    "7": "7d10",
+    "8": "8d10",
+    "9": "9d10"
+   }
+  },
+  "area": {
+   "shape": "cylinder",
+   "size_ft": 60
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "calm-emotions": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "save_success": "negates",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   },
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   }
+  ]
+ },
+ "chain-lightning": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "10d8",
+   "types": [
+    "lightning"
+   ]
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "charm-person": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "chill-touch": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "1d8",
+   "types": [
+    "necrotic"
+   ],
+   "cantrip_scaling": {
+    "1": "1d8",
+    "5": "2d8",
+    "11": "3d8",
+    "17": "4d8"
+   }
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 round",
+   "rounds": 1
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "chromatic-orb": {
+  "source": "open5e:srd-2024",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "3d8",
+   "types": [],
+   "upcast": {
+    "2": "4d8",
+    "3": "5d8",
+    "4": "6d8",
+    "5": "7d8",
+    "6": "8d8",
+    "7": "9d8",
+    "8": "10d8",
+    "9": "11d8"
+   }
+  },
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  }
+ },
+ "circle-of-death": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "8d6",
+   "types": [
+    "necrotic"
+   ],
+   "upcast": {
+    "7": "10d6",
+    "8": "12d6",
+    "9": "14d6"
+   }
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 60
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "clairvoyance": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 1,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "cloudkill": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "5d8",
+   "types": [
+    "poison"
+   ],
+   "upcast": {
+    "6": "6d8",
+    "7": "7d8",
+    "8": "8d8",
+    "9": "9d8"
+   }
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "color-spray": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cone",
+   "size_ft": 15
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 round",
+   "rounds": 1
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "command": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 round",
+   "rounds": 1
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "prone",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "compulsion": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "charmed"
+  ]
+ },
+ "cone-of-cold": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "8d8",
+   "types": [
+    "cold"
+   ],
+   "upcast": {
+    "6": "9d8",
+    "7": "10d8",
+    "8": "11d8",
+    "9": "12d8"
+   }
+  },
+  "area": {
+   "shape": "cone",
+   "size_ft": 60
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "confusion": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "conjure-animals": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "conjure-celestial": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "conjure-elemental": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 10
+  },
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "conjure-fey": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "conjure-minor-elementals": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "conjure-woodland-beings": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "contact-other-plane": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "int",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": true,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "contagion": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "save_ability": "con",
+  "save_success": "negates",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "7 days",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "blinded",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   },
+   {
+    "key": "stunned",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   }
+  ]
+ },
+ "control-water": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "str",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d8",
+   "types": [
+    "bludgeoning"
+   ]
+  },
+  "range_ft": 300,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "control-weather": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "8 hours",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "create-or-destroy-water": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 30
+  },
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "creation": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 5
+  },
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "special",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "dancing-lights": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "darkness": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 15
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": true
+  }
+ },
+ "daylight": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 60
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "delayed-blast-fireball": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "detect-evil-and-good": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "detect-magic": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": true,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "detect-poison-and-disease": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": true,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "detect-thoughts": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "int",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "disintegrate": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "10d6+40",
+   "types": [
+    "force"
+   ],
+   "upcast": {
+    "7": "13d6+40",
+    "8": "16d6+40",
+    "9": "19d6+40"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "dispel-evil-and-good": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "save_ability": "cha",
+  "save_success": "negates",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   },
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   }
+  ]
+ },
+ "dissonant-whispers": {
+  "source": "open5e:srd-2024",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d6",
+   "types": [
+    "psychic"
+   ]
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "divine-favor": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "divine-word": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "save_success": "negates",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "deafened",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   },
+   {
+    "key": "blinded",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   }
+  ]
+ },
+ "dominate-beast": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "dominate-monster": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "dominate-person": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "dream": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d6",
+   "types": [
+    "psychic"
+   ]
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "8 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "druidcraft": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 5
+  },
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "earthquake": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "5d6",
+   "types": [
+    "bludgeoning"
+   ]
+  },
+  "range_ft": 500,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "prone",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   }
+  ]
+ },
+ "eldritch-blast": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "1d10",
+   "types": [
+    "force"
+   ]
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "ensnaring-strike": {
+  "source": "open5e:srd-2024",
+  "resolution": "saving_throw",
+  "save_ability": "str",
+  "save_success": "half",
+  "damage": {
+   "dice": "1d6",
+   "types": [
+    "piercing"
+   ],
+   "upcast": {
+    "2": "2d6",
+    "3": "3d6",
+    "4": "4d6",
+    "5": "5d6",
+    "6": "6d6",
+    "7": "7d6",
+    "8": "8d6",
+    "9": "9d6"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "restrained",
+    "polarity": "debuff",
+    "save": "str",
+    "repeat_save": false
+   }
+  ]
+ },
+ "entangle": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "str",
+  "save_success": "negates",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "restrained",
+    "polarity": "debuff",
+    "save": "str",
+    "repeat_save": false
+   }
+  ]
+ },
+ "enthrall": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "charmed",
+   "incapacitated"
+  ]
+ },
+ "expeditious-retreat": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "eyebite": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "unconscious",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": true
+   },
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": true
+   }
+  ]
+ },
+ "fabricate": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 5
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "faerie-fire": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "area": {
+   "shape": "cube",
+   "size_ft": 20
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "removes_conditions": [
+   "invisible"
+  ]
+ },
+ "faithful-hound": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "8 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "removes_conditions": [
+   "invisible"
+  ]
+ },
+ "fear": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "area": {
+   "shape": "cone",
+   "size_ft": 30
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "feeblemind": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "int",
+  "save_success": "half",
+  "damage": {
+   "dice": "4d6",
+   "types": [
+    "psychic"
+   ]
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "find-the-path": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "finger-of-death": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "7d8+30",
+   "types": [
+    "necrotic"
+   ]
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "fire-bolt": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "1d10",
+   "types": [
+    "fire"
+   ],
+   "cantrip_scaling": {
+    "1": "1d10",
+    "5": "2d10",
+    "11": "3d10",
+    "17": "4d10"
+   }
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "fire-storm": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "7d10",
+   "types": [
+    "fire"
+   ]
+  },
+  "area": {
+   "shape": "cube",
+   "size_ft": 10
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "fireball": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "8d6",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "4": "9d6",
+    "5": "10d6",
+    "6": "11d6",
+    "7": "12d6",
+    "8": "13d6",
+    "9": "14d6"
+   }
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "flame-blade": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "3d6",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "3": "3d6",
+    "4": "4d6",
+    "5": "4d6",
+    "6": "5d6",
+    "7": "5d6",
+    "8": "6d6",
+    "9": "6d6"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "flame-strike": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "4d6",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "6": "5d6",
+    "7": "6d6",
+    "8": "7d6",
+    "9": "8d6"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "flaming-sphere": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d6",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "3": "3d6",
+    "4": "4d6",
+    "5": "5d6",
+    "6": "6d6",
+    "7": "7d6",
+    "8": "8d6",
+    "9": "9d6"
+   }
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "flesh-to-stone": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "restrained",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": true
+   },
+   {
+    "key": "petrified",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": true
+   }
+  ]
+ },
+ "fog-cloud": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "forbiddance": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "damage": {
+   "dice": "5d10",
+   "types": [
+    "necrotic",
+    "radiant"
+   ]
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": true,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "forcecage": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "save_success": "negates",
+  "range_ft": 100,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "freedom-of-movement": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "removes_conditions": [
+   "grappled",
+   "paralyzed",
+   "restrained"
+  ]
+ },
+ "freezing-sphere": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "10d6",
+   "types": [
+    "cold"
+   ],
+   "upcast": {
+    "7": "11d6",
+    "8": "12d6",
+    "9": "13d6"
+   }
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 60
+  },
+  "range_ft": 300,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "gaseous-form": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "negates",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "incapacitated",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   },
+   {
+    "key": "stunned",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   }
+  ]
+ },
+ "gate": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "geas": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "half",
+  "damage": {
+   "dice": "5d10",
+   "types": [
+    "psychic"
+   ]
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "30 days",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "giant-insect": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "globe-of-invulnerability": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "glyph-of-warding": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "int",
+  "save_success": "half",
+  "damage": {
+   "dice": "5d8",
+   "types": [
+    "acid",
+    "cold",
+    "fire",
+    "lightning",
+    "thunder"
+   ]
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "until dispelled or triggered",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  }
+ },
+ "grease": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "prone",
+    "polarity": "debuff",
+    "save": "dex",
+    "repeat_save": false
+   }
+  ]
+ },
+ "greater-invisibility": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "greater-restoration": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  },
+  "removes_conditions": [
+   "charmed",
+   "exhaustion",
+   "petrified"
+  ]
+ },
+ "guardian-of-faith": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "20",
+   "types": [
+    "radiant"
+   ]
+  },
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "8 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "guidance": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "guiding-bolt": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "4d6",
+   "types": [
+    "radiant"
+   ],
+   "upcast": {
+    "2": "5d6",
+    "3": "6d6",
+    "4": "7d6",
+    "5": "8d6",
+    "6": "9d6",
+    "7": "10d6",
+    "8": "11d6",
+    "9": "12d6"
+   }
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 round",
+   "rounds": 1
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "gust-of-wind": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "str",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "hallow": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "save_success": "negates",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "until dispelled",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "cha",
+    "repeat_save": false
+   }
+  ],
+  "removes_conditions": [
+   "charmed"
+  ]
+ },
+ "hallucinatory-terrain": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 150
+  },
+  "range_ft": 300,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "harm": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "14d6",
+   "types": [
+    "necrotic"
+   ]
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "haste": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "heat-metal": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d8",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "3": "3d8",
+    "4": "4d8",
+    "5": "5d8",
+    "6": "6d8",
+    "7": "7d8",
+    "8": "8d8",
+    "9": "9d8"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "hellish-rebuke": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d10",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "2": "3d10",
+    "3": "4d10",
+    "4": "5d10",
+    "5": "6d10",
+    "6": "7d10",
+    "7": "8d10",
+    "8": "9d10",
+    "9": "10d10"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "heroes-feast": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  },
+  "removes_conditions": [
+   "frightened"
+  ]
+ },
+ "heroism": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "frightened"
+  ]
+ },
+ "hex": {
+  "source": "open5e:srd-2024",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "1d6",
+   "types": [
+    "necrotic"
+   ]
+  },
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "hideous-laughter": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "incapacitated",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": true
+   },
+   {
+    "key": "prone",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": true
+   }
+  ]
+ },
+ "hold-monster": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "paralyzed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "hold-person": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "paralyzed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": true
+   }
+  ]
+ },
+ "holy-aura": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "negates",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "blinded",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   }
+  ]
+ },
+ "hunters-mark": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "hypnotic-pattern": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "area": {
+   "shape": "cube",
+   "size_ft": 30
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": false,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   },
+   {
+    "key": "incapacitated",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "ice-storm": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d8",
+   "types": [
+    "bludgeoning"
+   ],
+   "upcast": {
+    "5": "3d8",
+    "6": "4d8",
+    "7": "5d8",
+    "8": "6d8",
+    "9": "7d8"
+   }
+  },
+  "range_ft": 300,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "incendiary-cloud": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "10d8",
+   "types": [
+    "fire"
+   ]
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "inflict-wounds": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "damage": {
+   "dice": "3d10",
+   "types": [
+    "necrotic"
+   ],
+   "upcast": {
+    "2": "4d10",
+    "3": "5d10",
+    "4": "6d10",
+    "5": "7d10",
+    "6": "8d10",
+    "7": "9d10",
+    "8": "10d10",
+    "9": "11d10"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "insect-plague": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "4d10",
+   "types": [
+    "piercing"
+   ],
+   "upcast": {
+    "6": "5d10",
+    "7": "6d10",
+    "8": "7d10",
+    "9": "8d10"
+   }
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 300,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "invisibility": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "irresistible-dance": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "removes_conditions": [
+   "charmed"
+  ]
+ },
+ "lesser-restoration": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "blinded",
+   "deafened",
+   "paralyzed",
+   "poisoned"
+  ]
+ },
+ "levitate": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "light": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": true
+  }
+ },
+ "lightning-bolt": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "8d6",
+   "types": [
+    "lightning"
+   ],
+   "upcast": {
+    "4": "9d6",
+    "5": "10d6",
+    "6": "11d6",
+    "7": "12d6",
+    "8": "13d6",
+    "9": "14d6"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "locate-creature": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "locate-object": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "magic-circle": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "range_ft": 10,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  },
+  "removes_conditions": [
+   "charmed",
+   "frightened"
+  ]
+ },
+ "magic-jar": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "until dispelled",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "magic-weapon": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "major-image": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 20
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "mass-cure-wounds": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 30
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "mass-heal": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "blinded",
+   "deafened"
+  ]
+ },
+ "mass-suggestion": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 60,
+  "target_count": 12,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": true
+  },
+  "removes_conditions": [
+   "charmed"
+  ]
+ },
+ "maze": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "meteor-swarm": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "20d6",
+   "types": [
+    "fire"
+   ]
+  },
+  "area": {
+   "shape": "sphere",
+   "size_ft": 40
+  },
+  "range_ft": 1,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "mind-blank": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "charmed"
+  ]
+ },
+ "minor-illusion": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 5
+  },
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": false,
+   "s": true,
+   "m": true
+  }
+ },
+ "mislead": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": false,
+   "s": true,
+   "m": false
+  }
+ },
+ "modify-memory": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "charmed",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   },
+   {
+    "key": "incapacitated",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "moonbeam": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d10",
+   "types": [
+    "radiant"
+   ],
+   "upcast": {
+    "3": "3d10",
+    "4": "4d10",
+    "5": "5d10",
+    "6": "6d10",
+    "7": "7d10",
+    "8": "8d10",
+    "9": "9d10"
+   }
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "move-earth": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "2 hours",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "pass-without-trace": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "phantasmal-force": {
+  "source": "open5e:srd-2024",
+  "resolution": "saving_throw",
+  "save_ability": "int",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d8",
+   "types": [
+    "psychic"
+   ]
+  },
+  "area": {
+   "shape": "cube",
+   "size_ft": 10
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "phantasmal-killer": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "planar-binding": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  }
+ },
+ "plane-shift": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "save_ability": "cha",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "poison-spray": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "1d12",
+   "types": [],
+   "cantrip_scaling": {
+    "1": "1d12",
+    "5": "2d12",
+    "11": "3d12",
+    "17": "4d12"
+   }
+  },
+  "range_ft": 10,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "polymorph": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "removes_conditions": [
+   "unconscious"
+  ]
+ },
+ "power-word-stun": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "negates",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "stunned",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": true
+   }
+  ]
+ },
+ "prismatic-spray": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "10d6",
+   "types": [
+    "fire"
+   ]
+  },
+  "area": {
+   "shape": "cone",
+   "size_ft": 60
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "restrained",
+    "polarity": "debuff",
+    "save": "dex",
+    "repeat_save": true
+   },
+   {
+    "key": "petrified",
+    "polarity": "debuff",
+    "save": "dex",
+    "repeat_save": true
+   },
+   {
+    "key": "blinded",
+    "polarity": "debuff",
+    "save": "dex",
+    "repeat_save": true
+   }
+  ]
+ },
+ "prismatic-wall": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "10d6",
+   "types": [
+    "fire"
+   ]
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "blinded",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": true
+   },
+   {
+    "key": "restrained",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": true
+   },
+   {
+    "key": "petrified",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": true
+   }
+  ]
+ },
+ "produce-flame": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "1d8",
+   "types": [
+    "fire"
+   ],
+   "cantrip_scaling": {
+    "1": "1d8",
+    "5": "2d8",
+    "11": "3d8",
+    "17": "4d8"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "programmed-illusion": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 30
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "until dispelled",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "project-image": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 500,
+  "target_count": 1,
+  "duration": {
+   "text": "24 hours",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "protection-from-energy": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "protection-from-evil-and-good": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "protection-from-poison": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "poisoned"
+  ]
+ },
+ "purify-food-and-drink": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 5
+  },
+  "range_ft": 10,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": true,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "ray-of-enfeeblement": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "save_ability": "str",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "ray-of-frost": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "1d8",
+   "types": [
+    "cold"
+   ],
+   "cantrip_scaling": {
+    "1": "1d8",
+    "5": "2d8",
+    "11": "3d8",
+    "17": "4d8"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "ray-of-sickness": {
+  "source": "open5e:srd-2024",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "2d8",
+   "types": [
+    "poison"
+   ],
+   "upcast": {
+    "2": "3d8",
+    "3": "4d8",
+    "4": "5d8",
+    "5": "6d8",
+    "6": "7d8",
+    "7": "8d8",
+    "8": "9d8",
+    "9": "10d8"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "resilient-sphere": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "resistance": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "reverse-gravity": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "area": {
+   "shape": "cylinder",
+   "size_ft": 100
+  },
+  "range_ft": 100,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "sacred-flame": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "1d8",
+   "types": [],
+   "cantrip_scaling": {
+    "1": "1d8",
+    "5": "2d8",
+    "11": "3d8",
+    "17": "4d8"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "sanctuary": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "scorching-ray": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "2d6",
+   "types": [
+    "fire"
+   ]
+  },
+  "range_ft": 120,
+  "target_count": 3,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "scrying": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "searing-smite": {
+  "source": "open5e:srd-2024",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "1d6",
+   "types": [
+    "fire"
+   ],
+   "upcast": {
+    "2": "2d6",
+    "3": "3d6",
+    "4": "4d6",
+    "5": "5d6",
+    "6": "6d6",
+    "7": "7d6",
+    "8": "8d6",
+    "9": "9d6"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "seeming": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "8 hours",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "sequester": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "until dispelled",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true,
+   "consumed": true
+  },
+  "removes_conditions": [
+   "invisible"
+  ]
+ },
+ "shapechange": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "cha",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "removes_conditions": [
+   "unconscious"
+  ]
+ },
+ "shatter": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d8",
+   "types": [
+    "thunder"
+   ],
+   "upcast": {
+    "3": "4d8",
+    "4": "5d8",
+    "5": "6d8",
+    "6": "7d8",
+    "7": "8d8",
+    "8": "9d8",
+    "9": "10d8"
+   }
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "shield": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 round",
+   "rounds": 1
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "invisible"
+  ]
+ },
+ "shield-of-faith": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "shocking-grasp": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "1d8",
+   "types": [
+    "lightning"
+   ],
+   "cantrip_scaling": {
+    "1": "1d8",
+    "5": "2d8",
+    "11": "3d8",
+    "17": "4d8"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "silence": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": true,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "removes_conditions": [
+   "deafened"
+  ]
+ },
+ "silent-image": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "cube",
+   "size_ft": 15
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "sleep": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "removes_conditions": [
+   "charmed"
+  ]
+ },
+ "sleet-storm": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "negates",
+  "area": {
+   "shape": "cylinder",
+   "size_ft": 40
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "prone",
+    "polarity": "debuff",
+    "save": "dex",
+    "repeat_save": false
+   }
+  ]
+ },
+ "slow": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "area": {
+   "shape": "cube",
+   "size_ft": 40
+  },
+  "range_ft": 120,
+  "target_count": 6,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "spider-climb": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "spike-growth": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "damage": {
+   "dice": "2d4",
+   "types": [
+    "piercing"
+   ]
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "spirit-guardians": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d8",
+   "types": [
+    "radiant"
+   ],
+   "upcast": {
+    "4": "4d8",
+    "5": "5d8",
+    "6": "6d8",
+    "7": "7d8",
+    "8": "8d8",
+    "9": "9d8"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "spiritual-weapon": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "stinking-cloud": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 20
+  },
+  "range_ft": 90,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "stoneskin": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "storm-of-vengeance": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d6",
+   "types": [
+    "thunder"
+   ]
+  },
+  "range_ft": 2020,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "deafened",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   }
+  ]
+ },
+ "suggestion": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "8 hours",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": true
+  },
+  "removes_conditions": [
+   "charmed"
+  ]
+ },
+ "sunbeam": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "6d8",
+   "types": [
+    "radiant"
+   ]
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "blinded",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": false
+   }
+  ]
+ },
+ "sunburst": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "12d6",
+   "types": [
+    "radiant"
+   ]
+  },
+  "range_ft": 150,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "blinded",
+    "polarity": "debuff",
+    "save": "con",
+    "repeat_save": true
+   }
+  ]
+ },
+ "symbol": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "int",
+  "save_success": "negates",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 60
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "until dispelled or triggered",
+   "rounds": null
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "int",
+    "repeat_save": false
+   },
+   {
+    "key": "incapacitated",
+    "polarity": "debuff",
+    "save": "int",
+    "repeat_save": false
+   },
+   {
+    "key": "unconscious",
+    "polarity": "debuff",
+    "save": "int",
+    "repeat_save": false
+   },
+   {
+    "key": "stunned",
+    "polarity": "debuff",
+    "save": "int",
+    "repeat_save": false
+   }
+  ]
+ },
+ "telekinesis": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "teleport": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "damage": {
+   "dice": "3d10",
+   "types": [
+    "force"
+   ]
+  },
+  "area": {
+   "shape": "cube",
+   "size_ft": 10
+  },
+  "range_ft": 10,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": false,
+   "m": false
+  }
+ },
+ "thunderwave": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "con",
+  "save_success": "half",
+  "damage": {
+   "dice": "2d8",
+   "types": [
+    "thunder"
+   ],
+   "upcast": {
+    "2": "3d8",
+    "3": "4d8",
+    "4": "5d8",
+    "5": "6d8",
+    "6": "7d8",
+    "7": "8d8",
+    "8": "9d8",
+    "9": "10d8"
+   }
+  },
+  "area": {
+   "shape": "cube",
+   "size_ft": 15
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "instantaneous",
+   "rounds": 0
+  },
+  "concentration": false,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "tree-stride": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "true-polymorph": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "removes_conditions": [
+   "unconscious"
+  ]
+ },
+ "true-strike": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "range_ft": 30,
+  "target_count": 1,
+  "duration": {
+   "text": "1 round",
+   "rounds": 1
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": false,
+   "s": true,
+   "m": false
+  }
+ },
+ "tsunami": {
+  "source": "open5e:srd-2024",
+  "resolution": "saving_throw",
+  "save_ability": "str",
+  "save_success": "half",
+  "damage": {
+   "dice": "6d10",
+   "types": [
+    "bludgeoning"
+   ]
+  },
+  "range_ft": 5280,
+  "target_count": 1,
+  "duration": {
+   "text": "6 rounds",
+   "rounds": 6
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "vampiric-touch": {
+  "source": "open5e:srd-2014",
+  "resolution": "spell_attack",
+  "damage": {
+   "dice": "3d6",
+   "types": [
+    "necrotic"
+   ],
+   "upcast": {
+    "4": "4d6",
+    "5": "5d6",
+    "6": "6d6",
+    "7": "7d6",
+    "8": "8d6",
+    "9": "9d6"
+   }
+  },
+  "range_ft": 0,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  }
+ },
+ "wall-of-fire": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "5d8",
+   "types": [
+    "fire"
+   ]
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "wall-of-force": {
+  "source": "open5e:srd-2014",
+  "resolution": "none",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 10
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "wall-of-ice": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "10d6",
+   "types": [
+    "cold"
+   ]
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "wall-of-stone": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "wall-of-thorns": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "half",
+  "damage": {
+   "dice": "7d8",
+   "types": [
+    "piercing"
+   ]
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "10 minutes",
+   "rounds": 100
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ },
+ "web": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "dex",
+  "save_success": "negates",
+  "area": {
+   "shape": "cube",
+   "size_ft": 20
+  },
+  "range_ft": 60,
+  "target_count": 1,
+  "duration": {
+   "text": "1 hour",
+   "rounds": null
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  },
+  "inflicts_conditions": [
+   {
+    "key": "restrained",
+    "polarity": "debuff",
+    "save": "dex",
+    "repeat_save": false
+   }
+  ]
+ },
+ "weird": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "wis",
+  "save_success": "negates",
+  "area": {
+   "shape": "sphere",
+   "size_ft": 30
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": false
+  },
+  "inflicts_conditions": [
+   {
+    "key": "frightened",
+    "polarity": "debuff",
+    "save": "wis",
+    "repeat_save": false
+   }
+  ]
+ },
+ "wind-wall": {
+  "source": "open5e:srd-2014",
+  "resolution": "saving_throw",
+  "save_ability": "str",
+  "save_success": "half",
+  "damage": {
+   "dice": "3d8",
+   "types": [
+    "bludgeoning"
+   ]
+  },
+  "range_ft": 120,
+  "target_count": 1,
+  "duration": {
+   "text": "1 minute",
+   "rounds": 10
+  },
+  "concentration": true,
+  "ritual": false,
+  "components": {
+   "v": true,
+   "s": true,
+   "m": true
+  }
+ }
+}
