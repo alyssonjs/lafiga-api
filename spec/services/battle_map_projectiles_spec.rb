@@ -293,7 +293,7 @@ RSpec.describe BattleMapProjectiles do
     expect(map.reload.dropped_projectiles).to be_empty
   end
 
-  it 'impede recolher quando o token esta sobre a mesma celula do item' do
+  it 'permite recolher estando SOBRE a mesma celula do item (em cima)' do
     source = SheetItem.create!(
       sheet: sheet,
       item_name: 'Azagaia',
@@ -311,16 +311,17 @@ RSpec.describe BattleMapProjectiles do
     tokens.first['y'] = landing['row']
     map.update!(tokens: tokens)
 
-    expect {
-      described_class.pick_up!(
-        map: map,
-        user: player,
-        projectile_id: projectile['id'],
-        character_id: character.id,
-        token_id: 'attacker',
-        equip: false
-      )
-    }.to raise_error(BattleMapProjectiles::Invalid, 'Personagem precisa estar em uma celula adjacente ao item')
+    picked = described_class.pick_up!(
+      map: map,
+      user: player,
+      projectile_id: projectile['id'],
+      character_id: character.id,
+      token_id: 'attacker',
+      equip: false
+    )
+
+    expect(picked.item_name).to eq('Azagaia')
+    expect(map.reload.dropped_projectiles).to be_empty
   end
 
   it 'impede usar um token diferente do personagem informado' do

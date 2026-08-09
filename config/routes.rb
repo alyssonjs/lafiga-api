@@ -71,9 +71,12 @@ Rails.application.routes.draw do
             post :equip
             post :unequip
             post :allocate_ammunition
+            post :merge
+            post :split
           end
           collection do
             post :grant
+            post :reorder
           end
         end
         resources :races, only: [:index, :show, :create, :update, :destroy]
@@ -169,6 +172,7 @@ Rails.application.routes.draw do
             resources :combat_combatants, only: [:index, :create, :update, :destroy] do
               member do
                 post :apply_damage
+                post :apply_typed_damage          # SERVER-AUTH — ataque multi-parcela tipado (mitiga no servidor)
                 post :heal
                 post :record_death_save
                 post :cast_spell                  # Fase 6D — consome spell slot em runtime_state
@@ -238,6 +242,11 @@ Rails.application.routes.draw do
             post :equip
             post :unequip
             post :allocate_ammunition
+            post :merge
+            post :split
+          end
+          collection do
+            post :reorder
           end
         end
 

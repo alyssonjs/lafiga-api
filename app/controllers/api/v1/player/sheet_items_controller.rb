@@ -1,12 +1,12 @@
 class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
-  before_action :ensure_ownership_by_sheet, only: [:index, :create]
+  before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :allocate_ammunition]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :allocate_ammunition, :merge, :split]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
-    items = SheetItem.where(sheet_id: params[:sheet_id])
+    items = SheetItem.where(sheet_id: params[:sheet_id]).order(:position, :id)
     render json: { sheet_items: items.map(&:as_inventory_json) }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -76,6 +76,40 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/reorder
+  # body: { sheet_id, ordered_ids: [id, id, ...] }
+  def reorder
+    sheet = Sheet.find(params[:sheet_id])
+    items = SheetItems::ReorderService.new(sheet: sheet, ordered_ids: params[:ordered_ids]).call
+    render json: { sheet_items: items }, status: :ok
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Not found' }, status: :not_found
+  rescue SheetItems::ReorderService::InvalidReorder => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/merge
+  # body: { target_id } — soma esta pilha (:id) NA pilha destino e destrói a origem.
+  def merge
+    items = SheetItems::MergeStacksService.new(
+      sheet: @item.sheet,
+      source_id: @item.id,
+      target_id: params[:target_id]
+    ).call
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::MergeStacksService::InvalidMerge => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/split
+  # body: { quantity } — separa N unidades desta pilha numa nova pilha.
+  def split
+    items = SheetItems::SplitStackService.new(item: @item, quantity: params[:quantity]).call
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::SplitStackService::InvalidSplit => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   private

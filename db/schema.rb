@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_06_170000) do
+ActiveRecord::Schema.define(version: 2026_08_09_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -626,8 +626,10 @@ ActiveRecord::Schema.define(version: 2026_08_06_170000) do
     t.bigint "item_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "position"
     t.index ["item_id"], name: "index_sheet_items_on_item_id"
     t.index ["sheet_id", "item_index"], name: "index_sheet_items_on_sheet_id_and_item_index"
+    t.index ["sheet_id", "position"], name: "index_sheet_items_on_sheet_id_and_position"
     t.index ["sheet_id"], name: "index_sheet_items_on_sheet_id"
   end
 

@@ -96,7 +96,7 @@ module SheetItems
     end
 
     def inventory_for(sheet)
-      sheet.sheet_items.reload.order(:id).map(&:as_inventory_json)
+      sheet.sheet_items.reload.order(:position, :id).map(&:as_inventory_json)
     end
   end
 end

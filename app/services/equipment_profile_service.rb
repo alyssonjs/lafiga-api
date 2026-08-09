@@ -6,7 +6,7 @@ class EquipmentProfileService
   def call
     # Eager-load `items` to avoid N+1 em `EquipmentRules.weapon_props` / custo-peso
     # quando cada `SheetItem` resolve o catálogo por `api_index`.
-    items = SheetItem.where(sheet_id: @sheet.id).includes(:item)
+    items = SheetItem.where(sheet_id: @sheet.id).order(:position, :id).includes(:item)
     equipped = items.select { |it| it.equipped }
     armor = equipped.find { |it| (it.slot == 'armor') || armor_like?(it) }
     shield = equipped.find { |it| (it.slot == 'shield') || EquipmentRules.is_shield?(it) }

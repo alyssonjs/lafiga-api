@@ -3,11 +3,11 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
   # literal e dava 401 em prod para contas "Mestre" da plataforma.
   before_action :authorize_site_wide_dm
-  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :allocate_ammunition]
+  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :allocate_ammunition, :merge, :split]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID
   def index
-    items = params[:sheet_id].present? ? SheetItem.where(sheet_id: params[:sheet_id]) : SheetItem.all.limit(200)
+    items = params[:sheet_id].present? ? SheetItem.where(sheet_id: params[:sheet_id]).order(:position, :id) : SheetItem.all.limit(200)
     render json: { sheet_items: items.map(&:as_inventory_json) }, status: :ok
   end
 
@@ -117,6 +117,40 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/reorder
+  # body: { sheet_id, ordered_ids: [id, id, ...] }
+  def reorder
+    sheet = Sheet.find(params[:sheet_id])
+    items = SheetItems::ReorderService.new(sheet: sheet, ordered_ids: params[:ordered_ids]).call
+    render json: { sheet_items: items }, status: :ok
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Sheet not found' }, status: :not_found
+  rescue SheetItems::ReorderService::InvalidReorder => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/:id/merge
+  # body: { target_id }
+  def merge
+    items = SheetItems::MergeStacksService.new(
+      sheet: @item.sheet,
+      source_id: @item.id,
+      target_id: params[:target_id]
+    ).call
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::MergeStacksService::InvalidMerge => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/:id/split
+  # body: { quantity }
+  def split
+    items = SheetItems::SplitStackService.new(item: @item, quantity: params[:quantity]).call
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::SplitStackService::InvalidSplit => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
 

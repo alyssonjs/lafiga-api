@@ -210,6 +210,9 @@ module BattleMapProjectiles
     end
   end
 
+  # Alcance de coleta: o anel de 1 célula ao redor do token E a(s) célula(s)
+  # OCUPADA(S) pelo próprio token — pode pegar estando EM CIMA do item (mesma
+  # célula) ou adjacente.
   def adjacent_to_landing?(token, landing)
     return false unless landing.is_a?(Hash)
     x = token['x'].to_i
@@ -217,9 +220,7 @@ module BattleMapProjectiles
     size = [token['size'].to_i, 1].max
     col = landing['col'].to_i
     row = landing['row'].to_i
-    inside_reach = col >= x - 1 && col <= x + size && row >= y - 1 && row <= y + size
-    inside_token = col >= x && col < x + size && row >= y && row < y + size
-    inside_reach && !inside_token
+    col >= x - 1 && col <= x + size && row >= y - 1 && row <= y + size
   end
 
   def remove_equipped_snapshot(tokens, token_id, source)

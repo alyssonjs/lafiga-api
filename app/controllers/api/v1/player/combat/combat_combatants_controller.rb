@@ -13,11 +13,12 @@ module Api::V1::Player::Combat
   # Leitura: membro do grupo OU DM.
   # Mutação: APENAS DM.
   class CombatCombatantsController < BaseController
-    before_action :authorize_write!, except: [:index, :update, :record_death_save]
+    before_action :authorize_write!, except: [:index, :update, :record_death_save, :apply_typed_damage]
     before_action :ensure_combat_state!, only: [:create, :reorder]
     before_action :set_combatant,
-                  only: [:update, :destroy, :apply_damage, :heal, :record_death_save]
+                  only: [:update, :destroy, :apply_damage, :apply_typed_damage, :heal, :record_death_save]
     before_action :authorize_combatant_update!, only: [:update]
+    before_action :authorize_apply_typed_damage!, only: [:apply_typed_damage]
     before_action :authorize_record_death_save!, only: [:record_death_save]
 
     def index
@@ -139,6 +140,41 @@ module Api::V1::Player::Combat
         render json: {
           combatant: ::Combat::Serializers.combatant(payload[:combatant]),
           damage_applied: payload[:damage_applied],
+          concentration_check_required: payload[:concentration_check_required],
+          concentration_dc: payload[:concentration_dc],
+        }, status: :ok
+      else
+        render json: { errors: result.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    # SERVER-AUTHORITATIVE — ataque MULTI-PARCELA tipado. A mitigação por
+    # resistência/imunidade/vulnerabilidade do ALVO é feita no SERVIDOR (que tem a
+    # ficha do alvo via summary = raça + itens + feats), resolvendo o bug de
+    # multiplayer (o cliente do ATACANTE não tem os dados de defesa do alvo).
+    # Body: {
+    #   parcels: [{ amount:, damage_type?, magical? }],
+    #   attack_kind?: 'normal'|'critical',
+    #   extra_resistances?: [String], extra_immunities?: [String]  # condicionais do front (Fúria/Cicatriz/Elemental)
+    # }
+    def apply_typed_damage
+      result = ::Combat::TypedDamageService.call(
+        combatant: @combatant,
+        parcels: apply_typed_damage_parcels,
+        current_user: @current_user,
+        attack_kind: params[:attack_kind].presence || 'normal',
+        extra_resistances: Array(params[:extra_resistances]),
+        extra_immunities: Array(params[:extra_immunities]),
+      )
+      if result.success?
+        payload = result.result
+        ::Combat::Broadcaster.combatant_upserted(payload[:combatant])
+        render json: {
+          combatant: ::Combat::Serializers.combatant(payload[:combatant]),
+          damage_applied: payload[:damage_applied],
+          damage_raw: payload[:damage_raw],
+          breakdown: payload[:breakdown],
+          death_save_failures_added: payload[:death_save_failures_added],
           concentration_check_required: payload[:concentration_check_required],
           concentration_dc: payload[:concentration_dc],
         }, status: :ok
@@ -463,6 +499,44 @@ module Api::V1::Player::Combat
       return if player_applying_reaction_damage?
 
       render json: { error: 'apenas o DM da mesa ou o mestre da plataforma pode mutar combatentes' }, status: :forbidden
+    end
+
+    # Autz do apply_typed_damage: DM SEMPRE; o ATACANTE do turno atual aplica dano
+    # em QUALQUER alvo (espelha player_applying_combat_effect_on_own_turn?, sem a
+    # allowlist de params — este endpoint só aplica dano tipado via serviço, nunca
+    # escreve campos arbitrários); o REATOR de AO aplica no alvo da reação.
+    def authorize_apply_typed_damage!
+      return if site_or_table_dm?
+      return if current_turn_belongs_to_user?
+      return if reactor_targeting_this_combatant?
+
+      render json: { error: 'apenas o DM, o atacante do turno atual ou o reator de uma reação pode aplicar dano' }, status: :forbidden
+    end
+
+    # Variante de player_applying_reaction_damage? SEM depender de combatant_update_params
+    # (o apply_typed_damage não recebe `combatant`): o PC do jogador é o REATOR
+    # (source_id) de uma interação `opportunity_attack` ATIVA e ESTE combatente é o alvo.
+    def reactor_targeting_this_combatant?
+      ai = @combatant.combat_state&.active_interaction
+      return false unless ai.is_a?(Hash) && ai['kind'] == 'opportunity_attack'
+
+      reactor_char_id = ai['source_id'].to_s
+      return false if reactor_char_id.blank?
+      return false unless @current_user.characters.exists?(id: reactor_char_id)
+
+      mover_combatant_id = ai.dig('opportunity_attack', 'mover_combatant_id').to_s
+      target_ids = Array(ai['target_ids']).map(&:to_s)
+      (mover_combatant_id.present? && mover_combatant_id == @combatant.id.to_s) ||
+        target_ids.include?(@combatant.combatable_id.to_s)
+    end
+
+    # Parcelas do ataque: [{ amount:, damage_type?, magical? }]. Permite cada
+    # parcela (ActionController::Parameters) e devolve hashes limpos p/ o serviço.
+    def apply_typed_damage_parcels
+      Array(params[:parcels]).map do |p|
+        pp = p.respond_to?(:permit) ? p.permit(:amount, :damage_type, :magical) : p
+        { amount: pp[:amount], damage_type: pp[:damage_type], magical: pp[:magical] }
+      end
     end
 
     # O REATOR de uma reacao (ex.: Ataque de Oportunidade) aplica dano no ALVO da reacao —

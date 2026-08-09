@@ -53,9 +53,16 @@ class SheetItem < ApplicationRecord
         next [existing, false]
       end
 
+      item.position = next_position_for(item.sheet_id) if item.position.blank?
       item.save!
       [item, true]
     end
+  end
+
+  # Próxima posição livre (fim da lista) para a bolsa da ficha. Ordenamos sempre
+  # por `position, id`, então itens novos vão para o fim.
+  def self.next_position_for(sheet_id)
+    (where(sheet_id: sheet_id).maximum(:position) || 0) + 1
   end
 
   # Procura um SheetItem JÁ existente, NÃO-equipado e idêntico ao `item`
@@ -134,6 +141,7 @@ class SheetItem < ApplicationRecord
       props: props_json,
       weapon_props: weapon_props,
       notes: notes,
+      position: position,
     }
   end
 
