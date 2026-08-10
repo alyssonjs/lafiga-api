@@ -7,7 +7,7 @@ class Monster < ApplicationRecord
   #   `to_payload` devolve o objeto completo (camelCase no nivel certo) que o
   #   front consome direto em `MonsterContext` / `MONSTER_DATABASE` legacy.
 
-  SOURCES = %w[srd homebrew].freeze
+  SOURCES = %w[srd homebrew open5e].freeze
 
   before_validation :ensure_slug
   before_validation :sync_columns_from_payload

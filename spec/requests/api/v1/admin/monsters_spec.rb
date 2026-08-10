@@ -4,8 +4,10 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Admin::Monsters', type: :request do
   let(:admin_role)  { Role.find_by(name: 'Admin')  || create(:role, name: 'Admin') }
+  let(:dm_role)     { Role.find_by(name: 'DM')     || create(:role, name: 'DM') }
   let(:player_role) { Role.find_by(name: 'Player') || create(:role, name: 'Player') }
   let(:admin)       { create(:user, role: admin_role) }
+  let(:dm)          { create(:user, role: dm_role) }
   let(:player)      { create(:user, role: player_role) }
   let(:headers)     { bearer_headers_for(admin).merge('Content-Type' => 'application/json') }
 
@@ -34,9 +36,14 @@ RSpec.describe 'Api::V1::Admin::Monsters', type: :request do
   end
 
   describe 'GET /api/v1/admin/monsters' do
-    it 'requires admin' do
-      get '/api/v1/admin/monsters', headers: bearer_headers_for(player)
+    it 'sem token retorna 401' do
+      get '/api/v1/admin/monsters'
       expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'jogador comum retorna 403 (DM/Admin only — nao desloga)' do
+      get '/api/v1/admin/monsters', headers: bearer_headers_for(player).merge('Content-Type' => 'application/json')
+      expect(response).to have_http_status(:forbidden)
     end
 
     it 'lista monstros com payload completo' do
@@ -88,11 +95,11 @@ RSpec.describe 'Api::V1::Admin::Monsters', type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
-    it 'rejeita 401 para player' do
+    it 'rejeita jogador comum com 403 (nao desloga)' do
       post '/api/v1/admin/monsters',
            params: { monster: { name: 'Hijack' } }.to_json,
            headers: bearer_headers_for(player).merge('Content-Type' => 'application/json')
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
@@ -103,6 +110,15 @@ RSpec.describe 'Api::V1::Admin::Monsters', type: :request do
             headers: headers
       expect(response).to have_http_status(:ok)
       expect(goblin.reload.payload['hp']).to eq(12)
+    end
+
+    # O ponto do fix: DM (nao-Admin) pode salvar, como em magic_items/spells.
+    it 'permite o DM (nao-Admin) salvar' do
+      patch "/api/v1/admin/monsters/#{goblin.slug}",
+            params: { monster: { payload: { hp: 20 } } }.to_json,
+            headers: bearer_headers_for(dm).merge('Content-Type' => 'application/json')
+      expect(response).to have_http_status(:ok)
+      expect(goblin.reload.payload['hp']).to eq(20)
     end
   end
 

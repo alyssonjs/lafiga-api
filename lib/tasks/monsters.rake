@@ -31,4 +31,28 @@ namespace :monsters do
     Monster.where(source: 'srd').delete_all
     Rake::Task['monsters:import'].invoke
   end
+
+  desc 'Importa monstros SRD 5.1 da Open5e (snapshot db/seeds/open5e_srd_creatures.json) -> tabela monsters (source=open5e). Ver OPEN5E_MONSTER_IMPORT_PLAN.md'
+  task import_open5e: :environment do
+    path = Rails.root.join('db', 'seeds', 'open5e_srd_creatures.json')
+    unless File.exist?(path)
+      puts "Snapshot nao encontrado em #{path}"
+      puts 'Baixe o SRD paginando document__key=srd-2014 (ver OPEN5E_MONSTER_IMPORT_PLAN.md > Fase 1).'
+      next
+    end
+    snap      = JSON.parse(File.read(path))
+    creatures = snap['creatures'] || snap['results'] || []
+    rows      = creatures.map { |c| Open5eMonsterMapper.call(c) }
+    result    = MonsterEngineSyncService.call({ 'monsters' => rows }, default_source: 'open5e')
+
+    result.errors.first(20).each { |err| puts "Falhou #{err[:slug]}: #{err[:message]}" }
+    puts "Open5e SRD: sync #{result.upserted} (created=#{result.created}, updated=#{result.updated}, " \
+         "skipped=#{result.skipped}, errors=#{result.errors.size}) de #{rows.size} mapeados"
+  end
+
+  desc 'Reseed open5e: apaga source=open5e e reimporta'
+  task reseed_open5e: :environment do
+    Monster.where(source: 'open5e').delete_all
+    Rake::Task['monsters:import_open5e'].invoke
+  end
 end

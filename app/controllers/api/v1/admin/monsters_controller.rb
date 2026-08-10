@@ -1,5 +1,10 @@
 class Api::V1::Admin::MonstersController < ApplicationController
-  before_action :authorize_admin_request
+  # DM ou Admin do site (mesmo critério dos catálogos análogos magic_items e
+  # spells). Antes era `authorize_admin_request` (Admin-only), o que destoava
+  # dos irmãos e do front (que libera o editor de monstro para `isDM`), gerando
+  # 401 → redirect a login ao DM salvar. `authorize_site_wide_dm` devolve 403
+  # ao jogador comum (sem deslogar) e libera o DM.
+  before_action :authorize_site_wide_dm
   before_action :set_monster, only: [:show, :update, :destroy]
 
   def index

@@ -1,0 +1,293 @@
+{
+  "key": "srd_lich",
+  "name": "Lich",
+  "document": {
+    "name": "System Reference Document 5.1",
+    "key": "srd-2014",
+    "type": "SOURCE",
+    "display_name": "5e 2014 Rules",
+    "publisher": {
+      "name": "Wizards of the Coast",
+      "key": "wizards-of-the-coast"
+    },
+    "gamesystem": {
+      "name": "5th Edition 2014",
+      "key": "5e-2014"
+    },
+    "permalink": "https://dnd.wizards.com/resources/systems-reference-document"
+  },
+  "type": {
+    "name": "Undead",
+    "key": "undead"
+  },
+  "size": {
+    "name": "Medium",
+    "key": "medium"
+  },
+  "challenge_rating": 21.0,
+  "proficiency_bonus": null,
+  "speed": {
+    "walk": 30,
+    "unit": "feet"
+  },
+  "speed_all": {
+    "unit": "feet",
+    "walk": 30,
+    "crawl": 15,
+    "hover": false,
+    "fly": 0,
+    "burrow": 0,
+    "climb": 15,
+    "swim": 15
+  },
+  "category": "Monsters",
+  "subcategory": null,
+  "alignment": "any evil alignment",
+  "languages": {
+    "as_string": "Common plus up to five other languages",
+    "data": []
+  },
+  "armor_class": 17,
+  "armor_detail": "natural armor",
+  "hit_points": 135,
+  "hit_dice": "18d8+54",
+  "experience_points": 33000,
+  "ability_scores": {
+    "strength": 11,
+    "dexterity": 16,
+    "constitution": 16,
+    "intelligence": 20,
+    "wisdom": 14,
+    "charisma": 16
+  },
+  "modifiers": {
+    "strength": 0,
+    "dexterity": 3,
+    "constitution": 3,
+    "intelligence": 5,
+    "wisdom": 2,
+    "charisma": 3
+  },
+  "initiative_bonus": 3,
+  "saving_throws": {
+    "constitution": 10,
+    "intelligence": 12,
+    "wisdom": 9
+  },
+  "saving_throws_all": {
+    "strength": 0,
+    "dexterity": 3,
+    "constitution": 10,
+    "intelligence": 12,
+    "wisdom": 9,
+    "charisma": 3
+  },
+  "skill_bonuses": {
+    "arcana": 18,
+    "history": 12,
+    "insight": 9,
+    "perception": 9
+  },
+  "skill_bonuses_all": {
+    "acrobatics": 3,
+    "animal_handling": 2,
+    "arcana": 18,
+    "athletics": 0,
+    "deception": 3,
+    "history": 12,
+    "insight": 9,
+    "intimidation": 3,
+    "investigation": 5,
+    "medicine": 2,
+    "nature": 5,
+    "perception": 9,
+    "performance": 3,
+    "persuasion": 3,
+    "religion": 5,
+    "sleight_of_hand": 3,
+    "stealth": 3,
+    "survival": 2
+  },
+  "passive_perception": 19,
+  "resistances_and_immunities": {
+    "damage_immunities_display": "poison; bludgeoning, piercing, and slashing from nonmagical attacks",
+    "damage_immunities": [
+      {
+        "name": "Bludgeoning",
+        "key": "bludgeoning"
+      },
+      {
+        "name": "Piercing",
+        "key": "piercing"
+      },
+      {
+        "name": "Poison",
+        "key": "poison"
+      },
+      {
+        "name": "Slashing",
+        "key": "slashing"
+      }
+    ],
+    "damage_resistances_display": "cold, lightning, necrotic",
+    "damage_resistances": [
+      {
+        "name": "Cold",
+        "key": "cold"
+      },
+      {
+        "name": "Lightning",
+        "key": "lightning"
+      },
+      {
+        "name": "Necrotic",
+        "key": "necrotic"
+      }
+    ],
+    "damage_vulnerabilities_display": "",
+    "damage_vulnerabilities": [],
+    "condition_immunities_display": "charmed, exhaustion, frightened, paralyzed, poisoned",
+    "condition_immunities": [
+      {
+        "name": "Charmed",
+        "key": "charmed"
+      },
+      {
+        "name": "Exhaustion",
+        "key": "exhaustion"
+      },
+      {
+        "name": "Frightened",
+        "key": "frightened"
+      },
+      {
+        "name": "Paralyzed",
+        "key": "paralyzed"
+      },
+      {
+        "name": "Poisoned",
+        "key": "poisoned"
+      }
+    ]
+  },
+  "normal_sight_range": 10560,
+  "darkvision_range": null,
+  "blindsight_range": null,
+  "tremorsense_range": null,
+  "truesight_range": 120,
+  "actions": [
+    {
+      "name": "Cantrip",
+      "desc": "The lich casts a cantrip.",
+      "attacks": [],
+      "action_type": "LEGENDARY_ACTION",
+      "order_in_statblock": 0,
+      "legendary_action_cost": 1,
+      "limited_to_form": null,
+      "usage_limits": null
+    },
+    {
+      "name": "Disrupt Life",
+      "desc": "Each non-undead creature within 20 feet of the lich must make a DC 18 Constitution saving throw against this magic, taking 21 (6d6) necrotic damage on a failed save, or half as much damage on a successful one.",
+      "attacks": [],
+      "action_type": "LEGENDARY_ACTION",
+      "order_in_statblock": 3,
+      "legendary_action_cost": 3,
+      "limited_to_form": null,
+      "usage_limits": null
+    },
+    {
+      "name": "Frightening Gaze",
+      "desc": "The lich fixes its gaze on one creature it can see within 10 feet of it. The target must succeed on a DC 18 Wisdom saving throw against this magic or become frightened for 1 minute. The frightened target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a target's saving throw is successful or the effect ends for it, the target is immune to the lich's gaze for the next 24 hours.",
+      "attacks": [],
+      "action_type": "LEGENDARY_ACTION",
+      "order_in_statblock": 2,
+      "legendary_action_cost": 2,
+      "limited_to_form": null,
+      "usage_limits": null
+    },
+    {
+      "name": "Paralyzing Touch",
+      "desc": "The lich uses its Paralyzing Touch.",
+      "attacks": [],
+      "action_type": "LEGENDARY_ACTION",
+      "order_in_statblock": 1,
+      "legendary_action_cost": 2,
+      "limited_to_form": null,
+      "usage_limits": null
+    },
+    {
+      "name": "Paralyzing Touch",
+      "desc": "Melee Spell Attack: +12 to hit, reach 5 ft., one creature. Hit: 10 (3d6) cold damage. The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+      "attacks": [
+        {
+          "name": "Paralyzing Touch attack",
+          "attack_type": "SPELL",
+          "to_hit_mod": 12,
+          "reach": 5,
+          "range": null,
+          "long_range": null,
+          "target_creature_only": true,
+          "damage_die_count": null,
+          "damage_die_type": null,
+          "damage_bonus": null,
+          "damage_type": {
+            "name": "Thunder",
+            "key": "thunder"
+          },
+          "extra_damage_die_count": null,
+          "extra_damage_die_type": null,
+          "extra_damage_bonus": null,
+          "extra_damage_type": null,
+          "distance_unit": "feet"
+        }
+      ],
+      "action_type": "ACTION",
+      "order_in_statblock": 0,
+      "legendary_action_cost": 1,
+      "limited_to_form": null,
+      "usage_limits": null
+    }
+  ],
+  "traits": [
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "desc": "If the lich fails a saving throw, it can choose to succeed instead."
+    },
+    {
+      "name": "Rejuvenation",
+      "desc": "If it has a phylactery, a destroyed lich gains a new body in 1d10 days, regaining all its hit points and becoming active again. The new body appears within 5 feet of the phylactery."
+    },
+    {
+      "name": "Spellcasting",
+      "desc": "The lich is an 18th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 20, +12 to hit with spell attacks). The lich has the following wizard spells prepared:\n\n* Cantrips (at will): mage hand, prestidigitation, ray of frost\n* 1st level (4 slots): detect magic, magic missile, shield, thunderwave\n* 2nd level (3 slots): detect thoughts, invisibility, acid arrow, mirror image\n* 3rd level (3 slots): animate dead, counterspell, dispel magic, fireball\n* 4th level (3 slots): blight, dimension door\n* 5th level (3 slots): cloudkill, scrying\n* 6th level (1 slot): disintegrate, globe of invulnerability\n* 7th level (1 slot): finger of death, plane shift\n* 8th level (1 slot): dominate monster, power word stun\n* 9th level (1 slot): power word kill"
+    },
+    {
+      "name": "Turn Resistance",
+      "desc": "The lich has advantage on saving throws against any effect that turns undead."
+    }
+  ],
+  "creaturesets": [],
+  "environments": [
+    {
+      "name": "Laboratory",
+      "key": "laboratory"
+    },
+    {
+      "name": "Ruins",
+      "key": "ruins"
+    },
+    {
+      "name": "Shadowfell",
+      "key": "shadowfell"
+    },
+    {
+      "name": "Tomb",
+      "key": "tomb"
+    }
+  ],
+  "illustration": null,
+  "crossreferences": {
+    "to": []
+  }
+}
