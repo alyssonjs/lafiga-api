@@ -122,6 +122,79 @@ RSpec.describe 'Api::V1::Admin::Spells', type: :request do
     end
   end
 
+  describe 'combat_data (jsonb mecanico do editor)' do
+    let(:combat_payload) do
+      {
+        resolution: 'saving_throw', save_ability: 'dex', save_success: 'half',
+        damage: { dice: '8d6', types: ['fogo'], upcast: { '4' => '9d6', '5' => '10d6' } },
+        area: { shape: 'sphere', size_ft: 20 },
+        range_ft: 150, target_count: 1,
+        duration: { text: '1 minuto', rounds: 10 },
+        concentration: true,
+        components: { v: true, s: true, m: true, consumed: false },
+        inflicts_conditions: [{ key: 'paralyzed', polarity: 'debuff', save: 'wis', repeat_save: true }],
+        removes_conditions: %w[charmed petrified]
+      }
+    end
+
+    it 'persiste o combat_data completo (dano/upcast/area/TR/condicoes)' do
+      patch "/api/v1/admin/spells/#{spell.api_index}",
+            params: { spell: { combat_data: combat_payload } }.to_json, headers: headers
+      expect(response).to have_http_status(:ok)
+      cd = spell.reload.combat_data
+      expect(cd['resolution']).to eq('saving_throw')
+      expect(cd['save_ability']).to eq('dex')
+      expect(cd.dig('damage', 'dice')).to eq('8d6')
+      expect(cd.dig('damage', 'types')).to eq(['fogo'])
+      expect(cd.dig('damage', 'upcast')).to eq({ '4' => '9d6', '5' => '10d6' }) # chaves dinamicas preservadas
+      expect(cd.dig('area', 'shape')).to eq('sphere')
+      expect(cd['range_ft']).to eq(150)
+      expect(cd['inflicts_conditions']).to eq(
+        [{ 'key' => 'paralyzed', 'polarity' => 'debuff', 'save' => 'wis', 'repeat_save' => true }],
+      )
+      expect(cd['removes_conditions']).to eq(%w[charmed petrified])
+    end
+
+    it 'retorna o combat_data no corpo da resposta' do
+      patch "/api/v1/admin/spells/#{spell.api_index}",
+            params: { spell: { combat_data: combat_payload } }.to_json, headers: headers
+      expect(JSON.parse(response.body).dig('spell', 'combat_data', 'save_ability')).to eq('dex')
+    end
+
+    it 'strong params: descarta chaves nao permitidas dentro do combat_data' do
+      patch "/api/v1/admin/spells/#{spell.api_index}",
+            params: {
+              spell: { combat_data: {
+                resolution: 'saving_throw', evil_key: 'x',
+                damage: { dice: '1d6', types: ['fogo'], sneaky: 'y' }
+              } }
+            }.to_json, headers: headers
+      cd = spell.reload.combat_data
+      expect(cd).not_to have_key('evil_key')
+      expect(cd['damage']).not_to have_key('sneaky')
+      expect(cd['resolution']).to eq('saving_throw')
+    end
+
+    it 'omitir combat_data NAO apaga o valor existente' do
+      spell.update!(combat_data: { 'resolution' => 'spell_attack' })
+      patch "/api/v1/admin/spells/#{spell.api_index}",
+            params: { spell: { desc: 'so muda a desc' } }.to_json, headers: headers
+      expect(spell.reload.combat_data).to eq({ 'resolution' => 'spell_attack' })
+    end
+
+    it 'cria magia com combat_data' do
+      post '/api/v1/admin/spells',
+           params: { spell: {
+             name: 'Nova Com Combate', level: 2, school: 'Evocation', desc: 'x',
+             combat_data: { resolution: 'saving_throw', save_ability: 'con', damage: { dice: '3d8', types: ['trovao'] } }
+           } }.to_json, headers: headers
+      expect(response).to have_http_status(:created)
+      created = Spell.find_by(name: 'Nova Com Combate')
+      expect(created.combat_data.dig('damage', 'dice')).to eq('3d8')
+      expect(created.combat_data['save_ability']).to eq('con')
+    end
+  end
+
   describe 'DELETE /api/v1/admin/spells/:id' do
     it 'deletes when no SpellSource exists' do
       expect {

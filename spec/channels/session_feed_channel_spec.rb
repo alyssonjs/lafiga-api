@@ -520,6 +520,41 @@ RSpec.describe SessionFeedChannel, type: :channel do
     end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
   end
 
+  it 'relaya spell_fx (FX de área) com elemento/forma/bounds + sender_id autoritativo' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'spell_fx', 'id' => 'sfx-1', 'timestamp' => 1_700_000_000_030,
+      'sessionId' => schedule.id.to_s, 'element' => 'fire', 'shape' => 'circle',
+      'col' => 12, 'row' => 8, 'cells' => 4, 'direction' => 0,
+      'bounds' => { 'minCol' => 8, 'minRow' => 4, 'maxCol' => 16, 'maxRow' => 12 },
+      'clientId' => 'cli-xyz',
+    }
+    expect do
+      perform :feed_item, item: item
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'spell_fx', 'element' => 'fire', 'shape' => 'circle',
+        'col' => 12, 'row' => 8, 'cells' => 4.0, 'senderId' => player.id.to_s,
+        'clientId' => 'cli-xyz',
+        'bounds' => a_hash_including('minCol' => 8, 'maxRow' => 12),
+      ),
+    )
+  end
+
+  it 'descarta spell_fx com elemento OU forma inválidos' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    bad_element = {
+      'kind' => 'spell_fx', 'id' => 'sfx-2', 'timestamp' => 1_700_000_000_031,
+      'sessionId' => schedule.id.to_s, 'element' => 'plasma', 'shape' => 'circle',
+      'col' => 1, 'row' => 1, 'cells' => 3,
+    }
+    bad_shape = bad_element.merge('id' => 'sfx-3', 'element' => 'fire', 'shape' => 'blob')
+    expect do
+      perform :feed_item, item: bad_element
+      perform :feed_item, item: bad_shape
+    end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
   it 'does not broadcast junk kind' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     expect do

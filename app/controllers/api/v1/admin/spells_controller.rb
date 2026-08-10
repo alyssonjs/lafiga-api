@@ -116,12 +116,31 @@ class Api::V1::Admin::SpellsController < ApplicationController
     render json: { error: 'Spell not found' }, status: :not_found
   end
 
+  # Estrutura mecânica do combat_data (Open5e/editor). Chaves dinâmicas (upcast /
+  # cantrip_scaling têm níveis como chave) usam `{}` = hash de escalares arbitrário.
+  COMBAT_DATA_PERMIT = [
+    :source, :resolution, :save_ability, :save_success,
+    :range_ft, :target_count, :target_count_per_slot, :concentration, :ritual,
+    { target_count_cantrip_scaling: {} },
+    { damage: [:dice, { types: [], upcast: {}, cantrip_scaling: {} }] },
+    { area: [:shape, :size_ft] },
+    { duration: [:text, :rounds] },
+    { components: [:v, :s, :m, :consumed] },
+    { inflicts_conditions: [:key, :polarity, :save, :repeat_save] },
+    { removes_conditions: [] }
+  ].freeze
+
   def permitted
-    params.require(:spell).permit(
+    attrs = params.require(:spell).permit(
       :api_index, :name, :level, :school, :range,
       :components, :material, :ritual, :duration,
-      :concentration, :casting_time, :desc, :higher_level
+      :concentration, :casting_time, :desc, :higher_level,
+      combat_data: COMBAT_DATA_PERMIT
     )
+    # jsonb exige Hash puro; ActionController::Parameters (mesmo permitido) seria
+    # serializado com artefatos. `to_h` do permitido devolve só as chaves liberadas.
+    attrs[:combat_data] = attrs[:combat_data].to_h if attrs.key?(:combat_data)
+    attrs
   end
 
   # :missing = cliente nao enviou campo (nao altera SpellSource Klass)

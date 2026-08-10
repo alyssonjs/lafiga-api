@@ -43,8 +43,13 @@ class SessionFeedChannel < ApplicationCable::Channel
   MAX_AOE_SIZE_FT = 500
   # Kinds efêmeros de alta frequência (previews de arraste): bucket de rate-limit
   # próprio por-kind + NÃO persistem. Novo preview vivo = adicionar aqui.
-  EPHEMERAL_PREVIEW_KINDS = %w[aoe_preview oa_threat].freeze
+  # `spell_fx` = FX animado one-shot de magia de área (não persiste; some no fim do turno).
+  EPHEMERAL_PREVIEW_KINDS = %w[aoe_preview oa_threat spell_fx].freeze
   MAX_OA_THREATS = 24
+  # FX de magia de área (spell_fx): elementos/formas válidos (espelham SpellEffects).
+  SPELL_FX_ELEMENTS = %w[fire cold lightning acid radiant necrotic force thunder poison psychic].freeze
+  SPELL_FX_SHAPES = %w[circle cone line square].freeze
+  MAX_SPELL_FX_CELLS = 200
 
   def self.stream_name_for(schedule_id)
     "session_feed_#{schedule_id}"
@@ -176,6 +181,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_aoe_preview(h)
     when 'oa_threat'
       normalize_oa_threat(h)
+    when 'spell_fx'
+      normalize_spell_fx(h)
     when 'floating_fx'
       normalize_floating_fx(h)
     when 'damage_mitigation'
@@ -555,6 +562,55 @@ class SessionFeedChannel < ApplicationCable::Channel
   # que ameaçam (JÁ computados no emissor — a ameaça é definida na origem congelada, então
   # NÃO recomputar no receptor). Efêmero, não persiste. clientId (por aba) p/ echo-skip.
   # `phase:'end'` (soltou/cancelou) limpa as setas.
+  # FX animado de magia de área (one-shot). Valida elemento/forma + geometria; a
+  # bounding box (bounds) ancora círculo/quadrado sobre a hachura no receptor.
+  def normalize_spell_fx(h)
+    return nil unless h.is_a?(Hash)
+
+    h = h.stringify_keys
+    return nil unless h['kind'].to_s == 'spell_fx'
+
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    element = h['element'].to_s
+    return nil unless SPELL_FX_ELEMENTS.include?(element)
+
+    shape = h['shape'].to_s
+    return nil unless SPELL_FX_SHAPES.include?(shape)
+
+    cells = h['cells'].to_f
+    return nil unless cells.positive? && cells <= MAX_SPELL_FX_CELLS
+
+    out = {
+      'kind' => 'spell_fx',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'senderId' => @current_user.id.to_s,
+      'element' => element,
+      'shape' => shape,
+      'col' => h['col'].to_i,
+      'row' => h['row'].to_i,
+      'cells' => cells,
+      'direction' => h['direction'].to_f
+    }
+    b = h['bounds']
+    if b.is_a?(Hash)
+      b = b.stringify_keys
+      out['bounds'] = {
+        'minCol' => b['minCol'].to_i, 'minRow' => b['minRow'].to_i,
+        'maxCol' => b['maxCol'].to_i, 'maxRow' => b['maxRow'].to_i
+      }
+    end
+    client_id = h['clientId'].to_s
+    out['clientId'] = client_id.truncate(MAX_ID_LENGTH) if client_id.present?
+    out
+  end
+
   def normalize_oa_threat(h)
     return nil unless h.is_a?(Hash)
 
