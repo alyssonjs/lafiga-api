@@ -67,7 +67,12 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
     if @map.update(attrs)
       broadcast_update_diffs
-      render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :full) }, status: 200
+      # Resposta SLIM: o front (flushPatch) DESCARTA o corpo — a verdade chega via
+      # `broadcast_update_diffs` (diff realtime) e pelo estado otimista local. Antes
+      # reserializávamos o mapa FULL (base64 do fundo + matriz de 40k cells, MBs)
+      # a cada PATCH só para o cliente jogar fora. `broadcast_update_diffs` segue
+      # mandando o diff necessário aos outros clientes.
+      render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :slim) }, status: 200
     else
       render json: { errors: @map.errors.full_messages }, status: :unprocessable_entity
     end
@@ -176,7 +181,10 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     @map.update!(tokens: tokens)
 
     MapRealtime::Broadcaster.token_moved(@map, token_id, new_x, new_y, actor: @current_user)
-    render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :full) }, status: 200
+    # Resposta :tokens (base + tokens, sem cells/fundo/layers): o front reconcilia
+    # só `battle_map.tokens`. Antes serializava o mapa FULL (base64 + 40k cells) a
+    # CADA arrasto — o 'View ~1268ms' e a transferência de MBs no caminho mais quente.
+    render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :tokens) }, status: 200
   end
 
   def launch_projectile

@@ -6,7 +6,10 @@ class Api::V1::Player::SheetItemsController < ApplicationController
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
-    items = SheetItem.where(sheet_id: params[:sheet_id]).order(:position, :id)
+    # `includes(:item)` pré-carrega a associação belongs_to :item numa única
+    # query IN(...) — sem isto, `as_inventory_json` → `weapon_props` disparava 1
+    # SELECT por linha ao tocar `item.item` (N+1). Espelha EquipmentProfileService.
+    items = SheetItem.includes(:item).where(sheet_id: params[:sheet_id]).order(:position, :id)
     render json: { sheet_items: items.map(&:as_inventory_json) }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity

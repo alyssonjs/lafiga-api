@@ -357,7 +357,13 @@ class EquipmentRules
       key = normalize_index(item)
 
       db_item = item.respond_to?(:item) && item.item&.weapon? ? item.item : nil
-      if !db_item && defined?(Item)
+      # Guard do N+1: se o SheetItem já tem `item_id` (associação canônica
+      # resolvida — e, por includes(:item), pré-carregada), o `item.item` acima é
+      # a fonte de verdade. Se ele não é arma, NÃO vale um `find_by(api_index:)`
+      # por linha para adivinhar — o vínculo do FK já é definitivo. O fallback só
+      # serve a itens SEM vínculo (manuais/legado referenciados só por string).
+      already_resolved = item.respond_to?(:item_id) && item.item_id.present?
+      if !db_item && !already_resolved && defined?(Item)
         cand = Item.find_by(api_index: key)
         db_item = cand if cand&.weapon?
       end

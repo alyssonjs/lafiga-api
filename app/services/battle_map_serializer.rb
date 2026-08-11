@@ -2,10 +2,15 @@
 # (espelha a interface `BattleMap` em front-lafiga/src/app/data/mapData.ts).
 #
 # Modos:
-# - :slim  — sem `cells/tokens/fog/backgroundImage` (listagem). Evita
-#            payload de MBs em GET /battle_maps quando o usuario tem 30+ mapas
-#            com background images base64.
-# - :full  — payload completo (show, after-create, after-update).
+# - :slim   — sem `cells/tokens/fog/backgroundImage` (listagem). Evita
+#             payload de MBs em GET /battle_maps quando o usuario tem 30+ mapas
+#             com background images base64. Tambem serve de resposta de #update
+#             (o front descarta o corpo — a verdade vem do broadcast/otimista).
+# - :tokens — base + apenas `tokens` (SEM cells/fog/background/layers). Resposta
+#             do hot path #move_token: o front reconcilia so `battle_map.tokens`,
+#             entao evitamos serializar o base64 do fundo + a matriz de 40k cells
+#             que o cliente descartaria a cada arrasto.
+# - :full   — payload completo (show, after-create, after-duplicate).
 #
 # camelCase aqui (cellSizePx, gridOpacity, backgroundImage, schemaVersion,
 # createdAt, updatedAt) e proposital: o front nao precisa de mapper extra.
@@ -33,6 +38,10 @@ class BattleMapSerializer
     }
 
     return base if mode == :slim
+
+    # :tokens — base + só o array de tokens. Mantém o único campo que o
+    # #move_token do front consome, sem o peso de cells/fog/background/layers.
+    return base.merge(tokens: map.tokens || []) if mode == :tokens
 
     base.merge(
       cells: map.cells || [],

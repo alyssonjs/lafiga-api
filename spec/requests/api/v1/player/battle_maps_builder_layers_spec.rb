@@ -43,12 +43,22 @@ RSpec.describe 'Api::V1::Player::BattleMaps builder layers', type: :request do
           headers: headers, as: :json
 
     expect(response).to have_http_status(:ok), -> { response.body }
+    # PERF: #update agora responde SLIM (o front descarta o corpo — a verdade vem
+    # do broadcast realtime + estado otimista). O corpo traz a base (mapKind) mas
+    # OMITE os blobs pesados do builder. Persistência e camelCase :full seguem
+    # cobertos pelo GET /show abaixo e pelo m.reload.
     body = response.parsed_body['battle_map']
     expect(body['mapKind']).to eq('world')
-    expect(body['stamps'].first['assetId']).to eq('mountain-01')
-    expect(body['terrainLayers'].first['id']).to eq('T1')
-    expect(body['paths'].first['kind']).to eq('river')
-    expect(body['mapEffects']).to eq('vignette' => 0.3)
+    expect(body).not_to have_key('stamps')
+    expect(body).not_to have_key('cells')
+
+    # Serialização camelCase dos builder layers vive no :full (GET /show).
+    get "/api/v1/player/battle_maps/#{m.id}", headers: headers
+    full = response.parsed_body['battle_map']
+    expect(full['stamps'].first['assetId']).to eq('mountain-01')
+    expect(full['terrainLayers'].first['id']).to eq('T1')
+    expect(full['paths'].first['kind']).to eq('river')
+    expect(full['mapEffects']).to eq('vignette' => 0.3)
 
     m.reload
     expect(m.map_kind).to eq('world')
