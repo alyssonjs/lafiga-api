@@ -53,6 +53,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
       merged = (@item.props_json || {}).merge(pj || {})
       @item.update!(equipped: true, slot: slot, props_json: merged)
     end
+    sync_equipped_chibi_token(@item, equipping: true)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -61,6 +62,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # POST /api/v1/player/sheet_items/:id/unequip
   def unequip
     @item.update(equipped: false, slot: nil)
+    sync_equipped_chibi_token(@item, equipping: false)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -150,5 +152,46 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { error: 'Forbidden' }, status: :forbidden
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Not found' }, status: :not_found
+  end
+
+  # Espelha a arma de mão equipada no SNAPSHOT do token do personagem no mapa
+  # da sessão (`token['chibiEquipment']`), server-authoritative + broadcast, para
+  # que a camada de arma do chibi re-sincronize entre TODOS os clientes ao
+  # equipar/desequipar. Antes, só o fluxo de arremesso/coleta atualizava esse
+  # snapshot — um equip/unequip normal mudava a ficha mas NÃO o token, e o cliente
+  # do não-dono (que não tem o inventário alheio) nunca via a troca. O front passa
+  # o `battle_map_id` da sessão; achamos o token do personagem NESSE mapa. Best-
+  # effort: qualquer falha só perde a sincronização visual, não bloqueia o equip.
+  def sync_equipped_chibi_token(item, equipping:)
+    map_id = params[:battle_map_id]
+    return if map_id.blank?
+
+    character = item.sheet&.character
+    return unless character
+
+    map = BattleMap.find_by(id: map_id)
+    return unless map
+
+    tokens = Array(map.tokens)
+    token = tokens.find { |t| t['characterId'].to_s == character.id.to_s }
+    return unless token
+
+    token_id = token['id']
+    if equipping
+      # Só a arma de MÃO muda a camada de arma do chibi (armadura/escudo/acessórios
+      # não). add_equipped_snapshot substitui a entrada main_hand pela nova arma.
+      return unless item.slot.to_s == 'main_hand' && EquipmentRules.is_weapon?(item)
+
+      next_tokens = BattleMapProjectiles.add_equipped_snapshot(tokens, token_id, item)
+      changed = true
+    else
+      next_tokens, changed = BattleMapProjectiles.remove_equipped_snapshot(tokens, token_id, item)
+    end
+    return unless changed
+
+    map.update!(tokens: next_tokens)
+    MapRealtime::Broadcaster.tokens_changed(map, map.tokens, actor: @current_user)
+  rescue StandardError => e
+    Rails.logger.warn({ event: 'sheet_items.sync_chibi_token_failed', error: e.class.name, message: e.message }.to_json)
   end
 end

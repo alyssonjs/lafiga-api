@@ -119,6 +119,46 @@ RSpec.describe 'Api::V1::Player::SheetItemsController equip', type: :request do
       expect(wp['ammunition_index'] || wp[:ammunition_index]).to eq('flecha')
       expect(wp['damage_die'] || wp[:damage_die]).to eq('1d6')
     end
+
+    it 'com battle_map_id: sincroniza a arma de mão no snapshot do token (chibiEquipment) e remove no unequip' do
+      db_item = Item.create!(
+        api_index: "spec-sword-#{SecureRandom.hex(4)}",
+        name: 'Espada spec', kind: :weapon, category: 'martial',
+        props: { 'type' => 'melee', 'hands' => 1, 'damage_die' => '1d8', 'category' => 'martial' }
+      )
+      si = SheetItem.create!(
+        sheet: sheet, item_name: db_item.name, item_index: db_item.api_index, item_id: db_item.id,
+        category: 'Armas', quantity: 1, equipped: false, source: 'test', props_json: {}
+      )
+      map = create(:battle_map, user: user, tokens: [
+        { 'id' => 'tok-1', 'characterId' => character.id.to_s, 'x' => 1, 'y' => 1, 'size' => 1, 'name' => character.name },
+      ])
+
+      post "/api/v1/player/sheet_items/#{si.id}/equip",
+           params: { slot: 'main_hand', battle_map_id: map.id }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), -> { response.body }
+
+      main = Array(map.reload.tokens).find { |t| t['id'] == 'tok-1' }['chibiEquipment']&.find { |e| e['slot'] == 'main_hand' }
+      expect(main).to be_present
+      expect(main['name']).to eq('Espada spec')
+
+      post "/api/v1/player/sheet_items/#{si.id}/unequip",
+           params: { battle_map_id: map.id }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), -> { response.body }
+
+      after = Array(map.reload.tokens).find { |t| t['id'] == 'tok-1' }['chibiEquipment']
+      expect(Array(after).find { |e| e['slot'] == 'main_hand' }).to be_nil
+    end
+
+    it 'sem battle_map_id: equip funciona normalmente (sync é no-op)' do
+      item = SheetItem.create!(
+        sheet: sheet, item_name: 'Anel', item_index: 'anel-spec', category: 'Joias & Gemas',
+        quantity: 1, equipped: false, source: 'test', props_json: {}
+      )
+      post "/api/v1/player/sheet_items/#{item.id}/equip",
+           params: { slot: 'ring_left' }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), -> { response.body }
+    end
   end
 
   describe 'POST /api/v1/player/sheet_items/:id/allocate_ammunition' do
