@@ -189,7 +189,13 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
   def launch_projectile
     projectile = BattleMapProjectiles.launch!(map: @map, user: @current_user, params: params)
-    render json: { projectile: projectile, battle_map: BattleMapSerializer.serialize(@map, mode: :full) }, status: :created
+    # Resposta :slim (base, sem cells/fundo/tokens): o front só consome
+    # `response.projectile` — NUNCA `battle_map`. As mudanças (projétil + tokens)
+    # chegam a todos via broadcast (dropped_projectiles_changed/tokens_changed).
+    # Antes serializávamos o mapa FULL (base64 + 40k cells) a CADA tiro à
+    # distância: ~530ms de 'Views' + 180k allocations por disparo, o que sobrou
+    # da lentidão do ataque de besta.
+    render json: { projectile: projectile, battle_map: BattleMapSerializer.serialize(@map, mode: :slim) }, status: :created
   rescue BattleMapProjectiles::Forbidden => e
     render json: { error: e.message }, status: :forbidden
   rescue BattleMapProjectiles::NotFound => e
