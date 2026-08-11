@@ -11,6 +11,7 @@ class Api::V1::Admin::MapAssetsController < ApplicationController
   def index
     assets = MapAsset.all
     assets = assets.of_kind(params[:kind]) if MapAsset::KINDS.include?(params[:kind].to_s)
+    assets = assets.where(category: params[:category]) if params[:category].present?
     assets = assets.order(created_at: :desc)
     render json: { map_assets: MapAssetSerializer.serialize_collection(assets) }, status: :ok
   end
@@ -52,6 +53,6 @@ class Api::V1::Admin::MapAssetsController < ApplicationController
   end
 
   def map_asset_params
-    params.require(:map_asset).permit(:name, :kind, :category, :color, :enabled, :image)
+    params.require(:map_asset).permit(:name, :kind, :category, :color, :enabled, :image, :group_name, :variant_group, :variant_order)
   end
 end

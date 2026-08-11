@@ -10,7 +10,9 @@
 # leitura serve a biblioteca pra todos os DMs (recurso compartilhado, como
 # klasses). `enabled` esconde sem apagar (espelha `playable`).
 class MapAsset < ApplicationRecord
-  KINDS = %w[texture stamp path].freeze
+  # 'object' = item/objeto colocável no mapa (token-objeto). Ver migração
+  # add_object_kind_and_grouping_to_map_assets.
+  KINDS = %w[texture stamp path object].freeze
 
   belongs_to :user, optional: true
   has_one_attached :image
@@ -18,6 +20,10 @@ class MapAsset < ApplicationRecord
   validates :name, presence: true, length: { maximum: 80 }
   validates :kind, presence: true, inclusion: { in: KINDS }
   validates :category, presence: true, length: { maximum: 40 }
+  # group_name: nome do GRUPO de variantes (ex.: "Pedra Musgosa"). Opcional.
+  validates :group_name, length: { maximum: 60 }, allow_blank: true
+  # variant_group: agrupamento FINO de variantes dentro da subcategoria. Opcional.
+  validates :variant_group, length: { maximum: 80 }, allow_blank: true
   validates :color, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: 'deve ser hex #RRGGBB' },
                     allow_blank: true
   validate :image_present_and_valid
