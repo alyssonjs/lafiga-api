@@ -29,12 +29,16 @@ class MapAssetSerializer
     list.map { |a| serialize(a) }
   end
 
-  # Path relativo (sem host) — não depende de default_url_options[:host],
-  # que não está setado em test/jobs. Front prefixa com env.apiBaseUrl.
+  # Path relativo (sem host) — front prefixa com env.apiBaseUrl. Aponta para o
+  # endpoint PRÓPRIO (map_assets#image) que serve a imagem em 1 requisição com
+  # CACHE IMUTÁVEL — sem o redirect 302 do ActiveStorage (2 hits no Rails, sem
+  # cache), que é o gargalo ao abrir a biblioteca (46 imagens × 2 no box 1-CPU).
+  # `v=` = id do blob → muda só quando a imagem muda (re-upload) → cache eterno OK.
   def self.image_url_for(asset)
     return nil unless asset.respond_to?(:image) && asset.image.attached?
 
-    Rails.application.routes.url_helpers.rails_blob_path(asset.image, only_path: true)
+    ver = asset.image.blob&.id || asset.updated_at.to_i
+    "/api/v1/admin/map_assets/#{asset.id}/image?v=#{ver}"
   rescue StandardError
     nil
   end

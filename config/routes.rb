@@ -96,7 +96,11 @@ Rails.application.routes.draw do
           end
         end
         # Fase 2.6 — biblioteca de assets do Map Builder (upload do DM).
-        resources :map_assets, only: [:index, :create, :update, :destroy]
+        # `image` é PÚBLICO (serve a imagem com cache imutável — evita o redirect
+        # 302 do ActiveStorage); o resto exige DM site-wide.
+        resources :map_assets, only: [:index, :create, :update, :destroy] do
+          member { get :image }
+        end
         resources :backgrounds, only: [:index, :show, :create, :update, :destroy]
         resources :wiki_sections, only: %i[create update destroy] do
           collection do

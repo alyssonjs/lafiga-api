@@ -5,15 +5,35 @@
 # inteira (recurso compartilhado, como klasses). Espelha o padrão dos
 # demais controllers admin + upload multipart do GroupsController.
 class Api::V1::Admin::MapAssetsController < ApplicationController
-  before_action :authorize_site_wide_dm
+  # `image` é público (serve o blob com cache imutável — jogadores/DM carregam as
+  # imagens do mapa sem auth de DM, igual ao antigo redirect assinado).
+  before_action :authorize_site_wide_dm, except: :image
   before_action :set_map_asset, only: %i[update destroy]
 
   def index
-    assets = MapAsset.all
+    # with_attached_image: eager-load do attachment+blob → sem N+1 ao serializar a
+    # biblioteca inteira (46+ itens); antes eram ~2 queries por item só p/ a URL.
+    assets = MapAsset.with_attached_image
     assets = assets.of_kind(params[:kind]) if MapAsset::KINDS.include?(params[:kind].to_s)
     assets = assets.where(category: params[:category]) if params[:category].present?
     assets = assets.order(created_at: :desc)
     render json: { map_assets: MapAssetSerializer.serialize_collection(assets) }, status: :ok
+  end
+
+  # Serve a imagem do asset em 1 requisição, com CACHE IMUTÁVEL (o `?v=` no URL muda
+  # quando o blob muda). Elimina o redirect 302 do ActiveStorage e permite o browser/
+  # Caddy cachearem — o carregamento da biblioteca deixa de martelar o Rails.
+  def image
+    asset = MapAsset.with_attached_image.find_by(id: params[:id])
+    return head(:not_found) unless asset&.image&.attached?
+
+    # public → o Caddy também cacheia (menos hits no Rails). immutable → o browser
+    # nem revalida (o `?v=` já invalida quando a imagem muda).
+    expires_in 1.year, public: true
+    response.cache_control[:extras] = ['immutable']
+    send_data asset.image.download,
+              type: asset.image.blob.content_type || 'application/octet-stream',
+              disposition: 'inline'
   end
 
   def create

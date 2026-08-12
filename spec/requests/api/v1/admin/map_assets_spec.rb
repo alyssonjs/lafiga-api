@@ -33,8 +33,29 @@ RSpec.describe 'Api::V1::Admin::MapAssets', type: :request do
     expect(a['kind']).to eq('texture')
     expect(a['userId']).to eq(dm.id)
     expect(a['enabled']).to eq(true)
-    expect(a['imageUrl']).to include('rails/active_storage/blobs')
+    # imageUrl aponta p/ o endpoint próprio com cache imutável (map_assets#image),
+    # não mais o redirect do ActiveStorage.
+    expect(a['imageUrl']).to include("/api/v1/admin/map_assets/#{MapAsset.last.id}/image")
     expect(MapAsset.last.image).to be_attached
+  end
+
+  it 'serve a imagem pelo endpoint próprio (PÚBLICO, sem auth) com cache imutável' do
+    asset = MapAsset.new(name: 'Pedra', kind: 'object', category: 'Rochas', color: '#888888')
+    asset.image.attach(io: StringIO.new("\x89PNG\r\n\x1a\nfake"), filename: 'p.png', content_type: 'image/png')
+    asset.save!
+
+    get "/api/v1/admin/map_assets/#{asset.id}/image" # sem headers de auth
+
+    expect(response).to have_http_status(:ok)
+    expect(response.content_type).to include('image/png')
+    expect(response.headers['Cache-Control']).to include('public')
+    expect(response.headers['Cache-Control']).to include('immutable')
+    expect(response.body.bytesize).to be > 0
+  end
+
+  it 'image → 404 para asset inexistente' do
+    get '/api/v1/admin/map_assets/999999/image'
+    expect(response).to have_http_status(:not_found)
   end
 
   it 'rejeita player não-DM (403/401)' do
