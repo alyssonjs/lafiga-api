@@ -267,6 +267,8 @@ Rails.application.routes.draw do
         # path para arrasto de token, evita PATCH do tokens inteiro).
         resources :battle_maps, only: [:index, :show, :create, :update, :destroy] do
           member do
+            get :background          # serve o blob do fundo (Active Storage) p/ <img>, autz por sig
+            patch :thumbnail         # persiste a miniatura derivada (sem tocar updated_at)
             post :duplicate
             post :move_token
             post :launch_projectile

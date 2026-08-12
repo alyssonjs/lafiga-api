@@ -1,6 +1,14 @@
 class Api::V1::Player::BattleMapsController < ApplicationController
   before_action :authorize_request
-  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :move_token, :launch_projectile, :resolve_projectile, :pick_up_projectile]
+  # `background` serve a imagem do fundo p/ <img>/new Image() — sem header de auth
+  # possível. A autorização é pelo `sig` (signed_id do blob) presente na URL que só
+  # o viewer autorizado recebeu no payload :full. Ver #background / #valid_background_sig?.
+  skip_before_action :authorize_request, only: :background, raise: false
+  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :launch_projectile, :resolve_projectile, :pick_up_projectile]
+
+  # Teto p/ a miniatura inline (webp ~400px). Protege o payload :slim da lista de
+  # inflar caso alguém mande algo grande demais como "thumbnail".
+  MAX_THUMBNAIL_BYTES = 300 * 1024
 
   # GET /api/v1/player/battle_maps
   # Lista todos os mapas que o user pode ver: proprios + compartilhados via group.
@@ -16,12 +24,33 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :full) }, status: 200
   end
 
+  # GET /api/v1/player/battle_maps/:id/background?sig=<blob signed_id>
+  # Serve o blob do fundo p/ <img>/new Image() (sem header de auth possível). A
+  # autorização é pelo `sig`: só quem recebeu o payload :full autorizado do mapa
+  # tem o signed_id do blob (inadivinhável) — o id sequencial do mapa não basta,
+  # então não há IDOR. Cache PRIVADO (mapa é por-grupo); `sig` muda quando o blob
+  # muda (novo fundo) → seguro cachear no browser. Ação pública (sem authorize_request).
+  def background
+    map = BattleMap.with_attached_background_image.find_by(id: params[:id])
+    return head(:not_found) unless map&.background_image&.attached?
+
+    blob = map.background_image.blob
+    return head(:forbidden) unless valid_background_sig?(blob, params[:sig])
+
+    expires_in 1.year, public: false
+    response.cache_control[:extras] = ['immutable']
+    send_data blob.download,
+              type: blob.content_type || 'application/octet-stream',
+              disposition: 'inline'
+  end
+
   # POST /api/v1/player/battle_maps
   # DM pode criar mapas livremente; Player tambem pode criar (so seus proprios)
   # — quem joga sem DM ainda quer rascunhar mapas.
   def create
     map = BattleMap.new(write_attributes.merge(user_id: @current_user.id))
     if map.save
+      apply_background!(map)
       render json: { battle_map: BattleMapSerializer.serialize(map, mode: :full) }, status: :created
     else
       render json: { errors: map.errors.full_messages }, status: :unprocessable_entity
@@ -66,6 +95,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     end
 
     if @map.update(attrs)
+      apply_background!(@map)
       broadcast_update_diffs
       # Resposta SLIM: o front (flushPatch) DESCARTA o corpo — a verdade chega via
       # `broadcast_update_diffs` (diff realtime) e pelo estado otimista local. Antes
@@ -84,6 +114,20 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     @map.destroy
     MapRealtime::Broadcaster.map_deleted(map_id, actor: @current_user)
     render json: { message: 'Mapa removido com sucesso' }, status: 200
+  end
+
+  # PATCH /api/v1/player/battle_maps/:id/thumbnail  { background_thumbnail: <data uri webp> }
+  # Persiste a MINIATURA derivada (gerada client-side p/ mapas antigos, no backfill
+  # lazy do MapList). Usa update_column: NÃO toca updated_at (não reordena a lista)
+  # nem dispara broadcast — é dado derivado do fundo, não uma edição do mapa.
+  def thumbnail
+    return forbidden unless @map.writable_by?(@current_user)
+
+    thumb = params[:background_thumbnail].to_s
+    return head(:unprocessable_entity) if thumb.bytesize > MAX_THUMBNAIL_BYTES
+
+    @map.update_column(:background_thumbnail, thumb.presence)
+    head :no_content
   end
 
   # POST /api/v1/player/battle_maps/:id/duplicate
@@ -254,11 +298,18 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     raw = params.require(:battle_map)
     permitted = raw.permit(
       :name, :width, :height, :cell_size_px, :group_id,
-      :background_image_url, :background_image_offset_x, :background_image_offset_y,
+      :background_image_url, :background_thumbnail,
+      :background_image_offset_x, :background_image_offset_y,
       :background_image_pixel_width, :background_image_pixel_height,
       :grid_opacity, :schema_version, :distance_display_unit, :cell_world_ft,
       :fog_mode, :map_kind,
     ).to_h
+
+    # O fundo FULL NÃO é mais gravado na coluna text: quando vem um data URI, ele
+    # é decodificado e anexado ao Active Storage em `apply_background!` (após save).
+    # Removemos a chave aqui p/ o update/create não regravar o base64 gigante na
+    # coluna. (`background_thumbnail` — data URI pequeno — segue como coluna.)
+    permitted.delete('background_image_url')
 
     unsafe = raw.to_unsafe_h.with_indifferent_access
     permitted[:cells]        = unsafe[:cells]        if unsafe.key?(:cells)
@@ -349,7 +400,10 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     # Fase 2.0 — edições do Map Builder (layers/stamps/paths/effects) emitem
     # `map_updated` full por ora (DM-only, debounced). Diffs granulares por
     # camada virão na Fase 2.1 junto do painel de camadas.
-    structural = (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity group_id walls distance_display_unit cell_world_ft fog_mode layers terrain_layers stamps paths map_effects map_kind]).any?
+    # Troca de fundo via Active Storage (attach) NÃO aparece em previous_changes da
+    # coluna → @background_changed (setado em apply_background!) força o broadcast full.
+    structural = @background_changed ||
+      (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity group_id walls distance_display_unit cell_world_ft fog_mode layers terrain_layers stamps paths map_effects map_kind]).any?
 
     if structural
       payload = BattleMapSerializer.serialize(@map, mode: :full)
@@ -365,5 +419,62 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     MapRealtime::Broadcaster.drawings_changed(@map, @map.drawings, actor: @current_user)         if changes.key?('drawings')
   rescue StandardError => e
     Rails.logger.warn("[BattleMapsController#broadcast_update_diffs] #{e.class}: #{e.message}")
+  end
+
+  # Fundo → Active Storage: se o param `background_image_url` vier como data URI
+  # (base64), decodifica e anexa ao blob (`background_image`), zerando a coluna text
+  # legada; se vier VAZIO/nil, remove o fundo; se vier uma URL (eco do próprio
+  # endpoint), ignora (mantém o blob atual). Marca @background_changed p/ o broadcast
+  # (attach não mexe em previous_changes da coluna).
+  def apply_background!(map)
+    bm = params[:battle_map]
+    return unless bm.respond_to?(:key?) && bm.key?(:background_image_url)
+
+    raw = bm[:background_image_url]
+    if raw.is_a?(String) && raw.start_with?('data:')
+      decoded = decode_background_data_uri(raw)
+      return unless decoded
+
+      bytes, content_type, ext = decoded
+      map.background_image.attach(io: StringIO.new(bytes), filename: "bg-#{map.id}.#{ext}", content_type: content_type)
+      map.update_column(:background_image_url, nil) if map.background_image_url.present?
+      @background_changed = true
+    elsif raw.blank?
+      map.background_image.purge if map.background_image.attached?
+      map.update_column(:background_image_url, nil) if map.background_image_url.present?
+      @background_changed = true
+    end
+    # else: URL (não-data) → não faz nada (o fundo já está no blob).
+  rescue StandardError => e
+    Rails.logger.warn("[BattleMapsController#apply_background!] #{e.class}: #{e.message}")
+  end
+
+  BACKGROUND_DATA_URI_RE = %r{\Adata:image/(png|jpe?g|webp|gif);base64,([A-Za-z0-9+/=\s]+)\z}i.freeze
+
+  # data URI base64 → [bytes, content_type, ext]. Nil se não casar/decodificar.
+  def decode_background_data_uri(str)
+    m = BACKGROUND_DATA_URI_RE.match(str)
+    return nil unless m
+
+    fmt = m[1].downcase
+    mime = fmt == 'jpg' ? 'jpeg' : fmt
+    ext  = mime == 'jpeg' ? 'jpg' : mime
+    bytes = Base64.strict_decode64(m[2].gsub(/\s+/, ''))
+    return nil if bytes.blank?
+
+    [bytes, "image/#{mime}", ext]
+  rescue ArgumentError
+    nil # base64 malformado
+  end
+
+  # Valida a assinatura do fundo contra o blob deste mapa (autz do #background).
+  # Purpose DEVE bater com BattleMapSerializer::BACKGROUND_SIG_PURPOSE.
+  def valid_background_sig?(blob, sig)
+    return false if sig.blank?
+
+    verified = Rails.application.message_verifier('battle_map_background').verified(sig)
+    verified.to_s == blob.id.to_s
+  rescue StandardError
+    false
   end
 end

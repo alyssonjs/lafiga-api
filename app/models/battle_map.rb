@@ -43,6 +43,17 @@ class BattleMap < ApplicationRecord
   belongs_to :group, optional: true
   has_many :schedules, dependent: :nullify
 
+  # Fase perf — o fundo FULL do mapa passou a viver no Active Storage (antes era
+  # base64 inline na coluna text `background_image_url`, que estourava o payload
+  # :full — dezenas de MB → serialização de 40s). A coluna legada permanece como
+  # fallback até o backfill (rake battle_maps:backfill_background) migrar tudo.
+  has_one_attached :background_image
+
+  BACKGROUND_ALLOWED_CONTENT_TYPES = %w[image/png image/jpeg image/webp image/gif].freeze
+  BACKGROUND_MAX_BYTES = 25.megabytes
+
+  scope :with_attached_background_image, -> { includes(background_image_attachment: :blob) }
+
   validates :name, presence: true, length: { maximum: 80 }
   validates :width,  numericality: { only_integer: true, greater_than_or_equal_to: MIN_DIM, less_than_or_equal_to: MAX_DIM }
   validates :height, numericality: { only_integer: true, greater_than_or_equal_to: MIN_DIM, less_than_or_equal_to: MAX_DIM }
@@ -59,6 +70,7 @@ class BattleMap < ApplicationRecord
             numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 8192 },
             allow_nil: true
   validate :cell_world_ft_valid
+  validate :background_image_valid
 
   validate :cells_matrix_well_formed
   validate :tokens_well_formed
@@ -156,6 +168,10 @@ class BattleMap < ApplicationRecord
     copy.map_effects = source.map_effects.respond_to?(:deep_dup) ? source.map_effects.deep_dup : source.map_effects
     copy.dropped_projectiles = include_tokens ? deep_dup_nested_arrays(source.dropped_projectiles) : []
     copy.save!
+    # `dup` copia a coluna legada (background_image_url/background_thumbnail) mas
+    # NÃO o attachment. Reanexa o MESMO blob na cópia (Active Storage permite 1
+    # blob → N attachments → sem duplicar bytes no storage).
+    copy.background_image.attach(source.background_image.blob) if source.background_image.attached?
     copy
   end
 
@@ -395,6 +411,20 @@ class BattleMap < ApplicationRecord
     v = cell_world_ft.to_f
     unless ALLOWED_CELL_WORLD_FT.include?(v)
       errors.add(:cell_world_ft, "must be one of #{ALLOWED_CELL_WORLD_FT.join(', ')}")
+    end
+  end
+
+  # Fundo via Active Storage: valida tipo/tamanho só quando há blob anexado (o
+  # fundo é opcional). Fundos podem ser grandes (mapas 8k), daí o teto generoso.
+  def background_image_valid
+    return unless background_image.attached?
+
+    blob = background_image.blob
+    if blob.byte_size.to_i > BACKGROUND_MAX_BYTES
+      errors.add(:background_image, "muito grande (máx. #{BACKGROUND_MAX_BYTES / 1.megabyte} MB)")
+    end
+    unless BACKGROUND_ALLOWED_CONTENT_TYPES.include?(blob.content_type)
+      errors.add(:background_image, 'tipo inválido (use PNG, JPEG, WebP ou GIF)')
     end
   end
 

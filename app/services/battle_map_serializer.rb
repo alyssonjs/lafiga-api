@@ -35,6 +35,10 @@ class BattleMapSerializer
       mapKind: map.map_kind.presence || 'battle',
       createdAt: map.created_at&.iso8601,
       updatedAt: map.updated_at&.iso8601,
+      # Miniatura LEVE do fundo (data URI webp ~400px, gerada client-side no upload).
+      # Vai também no :slim → a LISTA de mapas renderiza a miniatura sem baixar o
+      # fundo FULL de cada mapa (que antes forçava um GET :full por card, de MBs).
+      backgroundThumbnail: map.try(:background_thumbnail),
     }
 
     return base if mode == :slim
@@ -51,7 +55,7 @@ class BattleMapSerializer
       aoePlacements: map.aoe_placements || [],
       drawings: map.drawings || [],
       fog: map.fog,
-      backgroundImage: map.background_image_url,
+      backgroundImage: background_image_src(map),
       backgroundImageOffsetX: map.background_image_offset_x,
       backgroundImageOffsetY: map.background_image_offset_y,
       backgroundImagePixelWidth: map.background_image_pixel_width,
@@ -69,5 +73,22 @@ class BattleMapSerializer
 
   def self.serialize_collection(maps, mode: :slim)
     maps.map { |m| serialize(m, mode: mode) }
+  end
+
+  # Purpose do verificador do fundo — DEVE bater com o do controller
+  # (Api::V1::Player::BattleMapsController#valid_background_sig?).
+  BACKGROUND_SIG_PURPOSE = 'battle_map_background'
+
+  # Fonte do fundo p/ o front (:full). Se há blob no Active Storage → path RELATIVO
+  # do endpoint assinado (o front prefixa com apiBaseUrl, igual a mapAssetImageUrl).
+  # Senão → coluna text legada (base64) p/ mapas ainda não migrados pelo backfill.
+  # `sig` = assinatura do blob.id (autz do endpoint, sem IDOR); `v=blob.id` reforça
+  # o cache-bust ao trocar o fundo. CGI.escape no sig (base64 tem +/=, inseguros em URL).
+  def self.background_image_src(map)
+    return map.background_image_url unless map.respond_to?(:background_image) && map.background_image.attached?
+
+    blob = map.background_image.blob
+    sig = Rails.application.message_verifier(BACKGROUND_SIG_PURPOSE).generate(blob.id)
+    "/api/v1/player/battle_maps/#{map.id}/background?v=#{blob.id}&sig=#{CGI.escape(sig)}"
   end
 end
