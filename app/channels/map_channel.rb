@@ -16,17 +16,42 @@ class MapChannel < ApplicationCable::Channel
   def subscribed
     token = params[:token].to_s
     @current_user = authenticate_token(token)
-    reject and return unless @current_user
+    unless @current_user
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'map', outcome: 'rejected',
+        aggregate_type: 'battle_map', aggregate_id: params[:map_id], error_class: 'authentication_failed'
+      )
+      reject and return
+    end
 
     @battle_map = BattleMap.find_by(id: params[:map_id])
-    reject and return unless @battle_map
-    reject and return unless @battle_map.readable_by?(@current_user)
+    unless @battle_map
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'map', outcome: 'rejected',
+        aggregate_type: 'battle_map', aggregate_id: params[:map_id], error_class: 'aggregate_not_found'
+      )
+      reject and return
+    end
+    unless @battle_map.readable_by?(@current_user)
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'map', outcome: 'rejected',
+        aggregate_type: 'battle_map', aggregate_id: @battle_map.id, error_class: 'authorization_failed'
+      )
+      reject and return
+    end
 
     stream_from stream_name_for(@battle_map)
+    trace_realtime(
+      stage: 'subscription_confirmed', domain: 'map', outcome: 'succeeded',
+      aggregate_type: 'battle_map', aggregate_id: @battle_map.id
+    )
   end
 
   def unsubscribed
-    # nada — broadcaster nao mantem presence (por enquanto)
+    trace_realtime(
+      stage: 'subscription_removed', domain: 'map', outcome: 'succeeded',
+      aggregate_type: 'battle_map', aggregate_id: @battle_map&.id || params[:map_id]
+    )
   end
 
   def self.stream_name(map_or_id)

@@ -18,6 +18,7 @@ module Api::V1::Player::Combat
     before_action :set_combatant,
                   only: [:update, :destroy, :apply_damage, :apply_typed_damage, :heal, :record_death_save]
     before_action :authorize_combatant_update!, only: [:update]
+    before_action :trace_apply_typed_damage_received!, only: [:apply_typed_damage]
     before_action :authorize_apply_typed_damage!, only: [:apply_typed_damage]
     before_action :authorize_record_death_save!, only: [:record_death_save]
 
@@ -168,7 +169,16 @@ module Api::V1::Player::Combat
       )
       if result.success?
         payload = result.result
-        ::Combat::Broadcaster.combatant_upserted(payload[:combatant])
+        event = ::Combat::Broadcaster.combatant_upserted(
+          payload[:combatant],
+          command_id: typed_damage_trace[:command_id],
+          client_id: typed_damage_trace[:client_id],
+        )
+        trace_apply_typed_damage(
+          stage: 'command_persisted',
+          outcome: 'succeeded',
+          event_id: event&.dig(:event_id),
+        )
         render json: {
           combatant: ::Combat::Serializers.combatant(payload[:combatant]),
           damage_applied: payload[:damage_applied],
@@ -177,8 +187,14 @@ module Api::V1::Player::Combat
           death_save_failures_added: payload[:death_save_failures_added],
           concentration_check_required: payload[:concentration_check_required],
           concentration_dc: payload[:concentration_dc],
+          realtime: {
+            commandId: typed_damage_trace[:command_id],
+            clientId: typed_damage_trace[:client_id],
+            eventId: event&.dig(:event_id),
+          }.compact,
         }, status: :ok
       else
+        trace_apply_typed_damage(stage: 'command_rejected', outcome: 'rejected', error_class: 'validation_failed')
         render json: { errors: result.errors.full_messages }, status: :unprocessable_entity
       end
     end
@@ -510,7 +526,36 @@ module Api::V1::Player::Combat
       return if current_turn_belongs_to_user?
       return if reactor_targeting_this_combatant?
 
+      trace_apply_typed_damage(stage: 'command_rejected', outcome: 'rejected', error_class: 'authorization_failed')
       render json: { error: 'apenas o DM, o atacante do turno atual ou o reator de uma reação pode aplicar dano' }, status: :forbidden
+    end
+
+    def trace_apply_typed_damage_received!
+      @typed_damage_trace_started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      @typed_damage_trace = Realtime::Telemetry.request_context(request)
+      trace_apply_typed_damage(stage: 'command_received', outcome: 'pending')
+    end
+
+    def typed_damage_trace
+      @typed_damage_trace ||= Realtime::Telemetry.request_context(request)
+    end
+
+    def trace_apply_typed_damage(stage:, outcome:, event_id: nil, error_class: nil)
+      started_at = @typed_damage_trace_started_at || Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      Realtime::Telemetry.emit(
+        stage: stage,
+        domain: 'combat',
+        event_type: 'typed_damage',
+        event_id: event_id,
+        command_id: typed_damage_trace[:command_id],
+        client_id: typed_damage_trace[:client_id],
+        aggregate_type: 'combatant',
+        aggregate_id: @combatant&.id,
+        actor_id: @current_user&.id,
+        duration_ms: (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000.0,
+        outcome: outcome,
+        error_class: error_class,
+      )
     end
 
     # Variante de player_applying_reaction_damage? SEM depender de combatant_update_params

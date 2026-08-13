@@ -198,6 +198,20 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # - Player so pode mover token cujo characterId e de um proprio Character.
   # - Token sem characterId (NPC efemero, marcador) so DM pode mexer.
   def move_token
+    trace = Realtime::Telemetry.request_context(request)
+    started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    Realtime::Telemetry.emit(
+      stage: 'command_received',
+      domain: 'map',
+      event_type: 'token_moved',
+      command_id: trace[:command_id],
+      client_id: trace[:client_id],
+      aggregate_type: 'battle_map_token',
+      aggregate_id: params[:token_id],
+      actor_id: @current_user&.id,
+      outcome: 'pending',
+    )
+
     return forbidden unless @map.readable_by?(@current_user)
     token_id = params[:token_id].to_s
     new_x = params[:x].to_i
@@ -224,11 +238,38 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     tokens[idx] = token
     @map.update!(tokens: tokens)
 
-    MapRealtime::Broadcaster.token_moved(@map, token_id, new_x, new_y, actor: @current_user)
+    Realtime::Telemetry.emit(
+      stage: 'command_persisted',
+      domain: 'map',
+      event_type: 'token_moved',
+      command_id: trace[:command_id],
+      client_id: trace[:client_id],
+      aggregate_type: 'battle_map_token',
+      aggregate_id: token_id,
+      actor_id: @current_user.id,
+      duration_ms: elapsed_ms(started_at),
+      outcome: 'succeeded',
+    )
+    event = MapRealtime::Broadcaster.token_moved(
+      @map,
+      token_id,
+      new_x,
+      new_y,
+      actor: @current_user,
+      command_id: trace[:command_id],
+      client_id: trace[:client_id],
+    )
     # Resposta :tokens (base + tokens, sem cells/fundo/layers): o front reconcilia
     # só `battle_map.tokens`. Antes serializava o mapa FULL (base64 + 40k cells) a
     # CADA arrasto — o 'View ~1268ms' e a transferência de MBs no caminho mais quente.
-    render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :tokens) }, status: 200
+    render json: {
+      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens),
+      realtime: {
+        commandId: trace[:command_id],
+        clientId: trace[:client_id],
+        eventId: event[:event_id],
+      }.compact,
+    }, status: 200
   end
 
   def launch_projectile
@@ -281,6 +322,10 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   end
 
   private
+
+  def elapsed_ms(started_at)
+    ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).round(2)
+  end
 
   def set_map
     @map = BattleMap.find_by(id: params[:id])

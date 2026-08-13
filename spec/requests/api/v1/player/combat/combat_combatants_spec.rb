@@ -754,6 +754,80 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
     end
   end
 
+  describe 'POST apply_typed_damage (correlação realtime)' do
+    let!(:combatant) do
+      create(
+        :combat_combatant,
+        combat_state: cs,
+        combatable: player_character,
+        position: 1,
+        hp_current: 20,
+        hp_max: 20,
+      )
+    end
+    let(:path) do
+      "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/apply_typed_damage"
+    end
+    let(:damage_params) do
+      { parcels: [{ amount: 6, damage_type: 'trovao', magical: true }] }
+    end
+
+    it 'propaga commandId/clientId no ACK e no broadcast confirmado' do
+      headers = dm_headers.merge(
+        'X-Lafiga-Client-Id' => 'cli-dm-desktop',
+        'X-Lafiga-Command-Id' => 'cmd-typed-damage-1',
+      )
+      event_id = nil
+
+      expect do
+        post path, params: damage_params, headers: headers, as: :json
+      end.to have_broadcasted_to(SessionRealtimeChannel.stream_name_for(schedule.id)).with { |raw|
+        event = raw.deep_stringify_keys
+        next false unless event['event'] == 'combatant_upserted'
+
+        event_id = event['event_id']
+        event['command_id'] == 'cmd-typed-damage-1' &&
+          event['client_id'] == 'cli-dm-desktop' &&
+          event.dig('payload', 'id') == combatant.id
+      }
+
+      expect(response).to have_http_status(:ok)
+      expect(combatant.reload.hp_current).to eq(14)
+      expect(response.parsed_body['realtime']).to include(
+        'commandId' => 'cmd-typed-damage-1',
+        'clientId' => 'cli-dm-desktop',
+        'eventId' => event_id,
+      )
+    end
+
+    it 'registra a rejeição quando o dono do alvo resolve o TR fora do próprio turno' do
+      attacker = create(:character, user: outsider, group: schedule.group)
+      create(:combat_combatant, combat_state: cs, combatable: attacker, position: 0)
+      cs.update_column(:current_turn_index, 0)
+      headers = player_headers.merge(
+        'X-Lafiga-Client-Id' => 'cli-player-phone',
+        'X-Lafiga-Command-Id' => 'cmd-pending-save-1',
+      )
+
+      expect(Realtime::Telemetry).to receive(:emit).with(hash_including(
+        stage: 'command_received',
+        command_id: 'cmd-pending-save-1',
+        client_id: 'cli-player-phone',
+      )).and_call_original
+      expect(Realtime::Telemetry).to receive(:emit).with(hash_including(
+        stage: 'command_rejected',
+        command_id: 'cmd-pending-save-1',
+        error_class: 'authorization_failed',
+      )).and_call_original
+
+      expect do
+        post path, params: damage_params, headers: headers, as: :json
+      end.not_to change { combatant.reload.hp_current }
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe 'POST heal' do
     let!(:combatant) {
       create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0,

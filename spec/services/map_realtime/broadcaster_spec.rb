@@ -20,6 +20,20 @@ RSpec.describe MapRealtime::Broadcaster, type: :service do
         expect(data['actor_id']).to eq(user.id)
       }
     end
+
+    it 'propagates correlation metadata without changing the payload' do
+      expect {
+        described_class.token_moved(
+          map, 'tok-1', 3, 4, actor: user,
+          command_id: 'cmd-map-123', client_id: 'cli-tab-123'
+        )
+      }.to have_broadcasted_to(stream).with { |data|
+        expect(data['event_id']).to be_present
+        expect(data['command_id']).to eq('cmd-map-123')
+        expect(data['client_id']).to eq('cli-tab-123')
+        expect(data['payload']).to eq('tokenId' => 'tok-1', 'x' => 3, 'y' => 4)
+      }
+    end
   end
 
   describe '.tokens_changed' do

@@ -31,21 +31,47 @@ module MapRealtime
     }.freeze
 
     class << self
-      def broadcast(map_or_id, event, payload, actor: nil)
+      def broadcast(map_or_id, event, payload, actor: nil, command_id: nil, client_id: nil)
         type = EVENTS.fetch(event) { raise ArgumentError, "evento desconhecido: #{event.inspect}" }
-        ActionCable.server.broadcast(
-          MapChannel.stream_name(map_or_id),
-          {
-            event: type,
-            payload: payload || {},
-            actor_id: actor&.id,
-            ts: Time.current.to_f
-          }
+        event_id = SecureRandom.uuid
+        envelope = {
+          event: type,
+          payload: payload || {},
+          actor_id: actor&.id,
+          ts: Time.current.to_f,
+          event_id: event_id,
+        }
+
+        safe_command_id = Realtime::Telemetry.identifier(command_id)
+        safe_client_id = Realtime::Telemetry.identifier(client_id)
+        envelope[:command_id] = safe_command_id if safe_command_id
+        envelope[:client_id] = safe_client_id if safe_client_id
+
+        ActionCable.server.broadcast(MapChannel.stream_name(map_or_id), envelope)
+        Realtime::Telemetry.emit(
+          stage: 'event_broadcast',
+          domain: 'map',
+          event_type: type,
+          event_id: event_id,
+          command_id: safe_command_id,
+          client_id: safe_client_id,
+          aggregate_type: 'battle_map',
+          aggregate_id: map_or_id.respond_to?(:id) ? map_or_id.id : map_or_id,
+          actor_id: actor&.id,
+          outcome: 'succeeded',
         )
+        envelope
       end
 
-      def token_moved(map, token_id, x, y, actor: nil)
-        broadcast(map, :token_moved, { tokenId: token_id, x: x, y: y }, actor: actor)
+      def token_moved(map, token_id, x, y, actor: nil, command_id: nil, client_id: nil)
+        broadcast(
+          map,
+          :token_moved,
+          { tokenId: token_id, x: x, y: y },
+          actor: actor,
+          command_id: command_id,
+          client_id: client_id,
+        )
       end
 
       def tokens_changed(map, tokens, actor: nil)

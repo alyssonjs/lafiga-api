@@ -351,6 +351,28 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
       expect(moved['y']).to eq(3)
     end
 
+    it 'correlaciona o comando HTTP com resposta e broadcast realtime' do
+      traced_headers = headers.merge(
+        'X-Lafiga-Client-Id' => 'cli-tab-123',
+        'X-Lafiga-Command-Id' => 'cmd-map-123',
+      )
+
+      expect {
+        post "/api/v1/player/battle_maps/#{map.id}/move_token",
+             params: { token_id: 't-mine', x: 2, y: 3 }, headers: traced_headers, as: :json
+      }.to have_broadcasted_to("map_#{map.id}").with { |data|
+        data['event'] == 'token_moved' &&
+          data['command_id'] == 'cmd-map-123' &&
+          data['client_id'] == 'cli-tab-123'
+      }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['realtime']).to include(
+        'commandId' => 'cmd-map-123',
+        'clientId' => 'cli-tab-123',
+      )
+    end
+
     it 'player nao pode mover token sem characterId (NPC)' do
       post "/api/v1/player/battle_maps/#{map.id}/move_token",
            params: { token_id: 't-npc', x: 2, y: 2 }, headers: headers, as: :json
@@ -368,6 +390,25 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
       post "/api/v1/player/battle_maps/#{map.id}/move_token",
            params: { token_id: 't-npc', x: 2, y: 2 }, headers: bearer_headers_for(dm), as: :json
       expect(response).to have_http_status(:ok)
+    end
+  end
+
+  describe 'PATCH /api/v1/player/battle_maps/:id com objeto sólido' do
+    it 'preserva blocksMovement no JSONB de tokens e no payload full' do
+      map = create(:battle_map, user: user)
+      object = {
+        'id' => 'obj-solid', 'name' => 'Rocha', 'color' => '#777',
+        'x' => 4.25, 'y' => 3.5, 'size' => 1, 'isObject' => true,
+        'objectWidth' => 2, 'objectHeight' => 1.5, 'blocksMovement' => true,
+      }
+
+      patch "/api/v1/player/battle_maps/#{map.id}",
+            params: { battle_map: { tokens: [object] } }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(map.reload.tokens.first['blocksMovement']).to be(true)
+
+      get "/api/v1/player/battle_maps/#{map.id}", headers: headers
+      expect(response.parsed_body.dig('battle_map', 'tokens', 0, 'blocksMovement')).to be(true)
     end
   end
 end

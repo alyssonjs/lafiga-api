@@ -17,6 +17,7 @@ module Api::V1::Player::Combat
   class InteractionsController < BaseController
     before_action :set_combat_state
     before_action :ensure_active_combat!, only: [:upsert, :respond]
+    around_action :trace_realtime_interaction_command, only: [:upsert, :respond, :clear]
 
     # PUT — corpo: { interaction: { kind:'contest', source_id, target_ids:[...],
     #   label?, attacker_roll? { total, ... }, pending_defender_owned_by_dm? } }
@@ -45,7 +46,7 @@ module Api::V1::Player::Combat
 
       @combat_state.set_active_interaction!(payload)
       @combat_state.reload
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -72,7 +73,7 @@ module Api::V1::Player::Combat
 
       @combat_state.set_active_interaction!(next_payload)
       @combat_state.reload
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -83,11 +84,84 @@ module Api::V1::Player::Combat
 
       @combat_state&.clear_active_interaction!
       @combat_state&.reload
-      ::Combat::Broadcaster.state_changed(@combat_state) if @combat_state
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context) if @combat_state
       render json: { active_interaction: @combat_state&.active_interaction }, status: :ok
     end
 
     private
+
+    def trace_realtime_interaction_command
+      @realtime_interaction_started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      @realtime_interaction_kind = interaction_kind_for_trace
+      @realtime_interaction_id = interaction_id_for_trace
+      emit_realtime_interaction_trace(stage: 'command_received', outcome: 'pending')
+
+      yield
+
+      if response.status.to_i.between?(200, 299)
+        # Um retry idempotente também devolve 2xx, mas pode não persistir nada
+        # novo. O broadcast correlacionado registra a publicação quando houver.
+        emit_realtime_interaction_trace(stage: 'command_acknowledged', outcome: 'succeeded')
+      else
+        emit_realtime_interaction_trace(
+          stage: 'command_rejected',
+          outcome: 'rejected',
+          error_class: "http_#{response.status}",
+        )
+      end
+    rescue StandardError => e
+      emit_realtime_interaction_trace(
+        stage: 'command_failed',
+        outcome: 'failed',
+        error_class: e.class.name,
+      )
+      raise
+    end
+
+    def realtime_interaction_context
+      @realtime_interaction_context ||= Realtime::Telemetry.request_context(request)
+    end
+
+    def realtime_broadcast_context
+      {
+        command_id: realtime_interaction_context[:command_id],
+        client_id: realtime_interaction_context[:client_id],
+      }
+    end
+
+    def interaction_kind_for_trace
+      kind = params.dig(:interaction, :kind).presence || @combat_state&.active_interaction&.dig('kind')
+      Realtime::Telemetry.identifier(kind)
+    end
+
+    def interaction_id_for_trace
+      candidate = params.dig(:interaction, :id).presence || @combat_state&.active_interaction&.dig('id')
+      Realtime::Telemetry.identifier(candidate)
+    end
+
+    def current_interaction_id_for_trace
+      @realtime_interaction_id || Realtime::Telemetry.identifier(@combat_state&.active_interaction&.dig('id'))
+    end
+
+    def emit_realtime_interaction_trace(stage:, outcome:, error_class: nil)
+      interaction_id = current_interaction_id_for_trace
+      event_type = ['interaction', action_name, @realtime_interaction_kind].compact.join('.')
+      started_at = @realtime_interaction_started_at || Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      Realtime::Telemetry.emit(
+        stage: stage,
+        domain: 'combat',
+        event_type: event_type,
+        command_id: realtime_interaction_context[:command_id],
+        client_id: realtime_interaction_context[:client_id],
+        aggregate_type: interaction_id ? 'active_interaction' : 'schedule',
+        aggregate_id: interaction_id || @schedule&.id,
+        actor_id: @current_user&.id,
+        duration_ms: (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000.0,
+        outcome: outcome,
+        error_class: error_class,
+      )
+    end
 
     def set_combat_state
       @combat_state = @schedule&.combat_state
@@ -415,9 +489,9 @@ module Api::V1::Player::Combat
       @combat_state.reload
       # Ordem: combatant_upserted (mover, se dano) → state_changed (já com
       # active_interaction=nil) → log_appended (feed server-side).
-      ::Combat::Broadcaster.combatant_upserted(mover_cc) if mover_cc && damage_applied
-      ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && reaction_consumed
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.combatant_upserted(mover_cc, **realtime_broadcast_context) if mover_cc && damage_applied
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc, **realtime_broadcast_context) if reactor_cc && reaction_consumed
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       log_oa_resolved(@schedule, log_data) if log_data
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
@@ -441,7 +515,7 @@ module Api::V1::Player::Combat
       end
 
       @combat_state.reload
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -479,8 +553,8 @@ module Api::V1::Player::Combat
       end
 
       @combat_state.reload
-      ::Combat::Broadcaster.combatant_upserted(protector_cc) if reaction_consumed
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.combatant_upserted(protector_cc, **realtime_broadcast_context) if reaction_consumed
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -516,7 +590,7 @@ module Api::V1::Player::Combat
       end
 
       @combat_state.reload
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -543,7 +617,7 @@ module Api::V1::Player::Combat
       log = schedule.session_logs.new(kind: :combat, actor: reactor, message: message)
       return unless log.save
 
-      ::Combat::Broadcaster.log_appended(log)
+      ::Combat::Broadcaster.log_appended(log, **realtime_broadcast_context)
     end
 
     # --- Consentimento de Alvo (respond server-side, fase única) ---------------
@@ -582,7 +656,7 @@ module Api::V1::Player::Combat
       end
 
       @combat_state.reload
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       log_target_consent(@schedule, log_data) if log_data
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
@@ -605,7 +679,7 @@ module Api::V1::Player::Combat
       log = schedule.session_logs.new(kind: :combat, actor: target, message: message)
       return unless log.save
 
-      ::Combat::Broadcaster.log_appended(log)
+      ::Combat::Broadcaster.log_appended(log, **realtime_broadcast_context)
     end
 
     # --- Fortitude Instintiva (respond server-side, fase única) ----------------
@@ -668,8 +742,8 @@ module Api::V1::Player::Combat
 
       @combat_state.reload
       # accept muta o combatant (HP/turn_state/reação) → broadcast antes do state.
-      ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && log_data && log_data[:kind] == 'accept'
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc, **realtime_broadcast_context) if reactor_cc && log_data && log_data[:kind] == 'accept'
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       log_instinctive_fortitude(@schedule, log_data) if log_data
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
@@ -754,8 +828,8 @@ module Api::V1::Player::Combat
 
       @combat_state.reload
       # accept (fase 2) consome a reação do Protetor → broadcast do combatant antes do state.
-      ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && log_data && log_data[:kind] == 'accepted'
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc, **realtime_broadcast_context) if reactor_cc && log_data && log_data[:kind] == 'accepted'
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -809,8 +883,8 @@ module Api::V1::Player::Combat
       end
 
       @combat_state.reload
-      ::Combat::Broadcaster.combatant_upserted(defender_cc) if defender_cc && log_data && log_data[:kind] == 'accepted'
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.combatant_upserted(defender_cc, **realtime_broadcast_context) if defender_cc && log_data && log_data[:kind] == 'accepted'
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
 
@@ -833,7 +907,7 @@ module Api::V1::Player::Combat
       log = schedule.session_logs.new(kind: :combat, actor: reactor, message: message)
       return unless log.save
 
-      ::Combat::Broadcaster.log_appended(log)
+      ::Combat::Broadcaster.log_appended(log, **realtime_broadcast_context)
     end
 
     # --- Frustrar Conjuração (respond server-side, 2 fases) --------------------
@@ -917,8 +991,8 @@ module Api::V1::Player::Combat
       end
 
       @combat_state.reload
-      ::Combat::Broadcaster.combatant_upserted(reactor_cc) if reactor_cc && reaction_consumed
-      ::Combat::Broadcaster.state_changed(@combat_state)
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc, **realtime_broadcast_context) if reactor_cc && reaction_consumed
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       log_hostile_casting(@schedule, log_data) if log_data
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
     end
@@ -956,7 +1030,7 @@ module Api::V1::Player::Combat
       log = schedule.session_logs.new(kind: :combat, actor: reactor, message: message)
       return unless log.save
 
-      ::Combat::Broadcaster.log_appended(log)
+      ::Combat::Broadcaster.log_appended(log, **realtime_broadcast_context)
     end
 
     # Tipo/magia do dano do OA (habilita mitigação tipada + Heavy Armor Master no

@@ -82,9 +82,13 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
       expect(response.parsed_body['active_interaction']['source_id']).to eq(attacker_char.id.to_s)
     end
 
-    it 'broadcasts state_changed carregando active_interaction' do
+    it 'broadcasts state_changed carregando active_interaction e a correlação do comando' do
+      headers = dm_headers.merge(
+        'X-Lafiga-Client-Id' => 'cli-dm-desktop',
+        'X-Lafiga-Command-Id' => 'cmd-interaction-upsert-1',
+      )
       envelopes = capture_envelopes do
-        put "#{base}/active_interaction", params: upsert_body, headers: dm_headers, as: :json
+        put "#{base}/active_interaction", params: upsert_body, headers: headers, as: :json
       end
       expect(response).to have_http_status(:ok)
 
@@ -92,12 +96,30 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
       expect(st).to be_present
       expect(st['payload']['active_interaction']).to be_present
       expect(st['payload']['active_interaction']['kind']).to eq('contest')
+      expect(st).to include(
+        'command_id' => 'cmd-interaction-upsert-1',
+        'client_id' => 'cli-dm-desktop',
+      )
+      expect(st['event_id']).to be_present
     end
 
     it '403 para um jogador que não é dono do PC atacante nem DM' do
-      put "#{base}/active_interaction", params: upsert_body, headers: defender_headers, as: :json
+      allow(Realtime::Telemetry).to receive(:emit).and_call_original
+      headers = defender_headers.merge(
+        'X-Lafiga-Client-Id' => 'cli-defender-phone',
+        'X-Lafiga-Command-Id' => 'cmd-interaction-forbidden-1',
+      )
+
+      put "#{base}/active_interaction", params: upsert_body, headers: headers, as: :json
+
       expect(response).to have_http_status(:forbidden)
       expect(cs.reload.active_interaction).to be_nil
+      expect(Realtime::Telemetry).to have_received(:emit).with(hash_including(
+        stage: 'command_rejected',
+        command_id: 'cmd-interaction-forbidden-1',
+        client_id: 'cli-defender-phone',
+        error_class: 'http_403',
+      ))
     end
 
     it '422 para payload inválido (sem source_id)' do
@@ -432,12 +454,20 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
           expect(cs.reload.active_interaction).to be_nil
         end
 
-        it 'idempotente: segundo respond não reaplica dano nem cria segundo log' do
+        it 'idempotente entre desktop e telefone: segundo respond não reaplica dano nem cria segundo log' do
+          desktop_headers = dm_headers.merge(
+            'X-Lafiga-Client-Id' => 'cli-dm-desktop',
+            'X-Lafiga-Command-Id' => 'cmd-oa-desktop-1',
+          )
+          phone_headers = dm_headers.merge(
+            'X-Lafiga-Client-Id' => 'cli-dm-phone',
+            'X-Lafiga-Command-Id' => 'cmd-oa-phone-1',
+          )
           # 1º respond: Mestre confirma acerto → aplica dano, cria log e LIMPA.
           expect do
             post "#{base}/active_interaction/respond",
                  params: { character_id: reactor_npc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 18 }, damage: 7, hit: true } },
-                 headers: dm_headers, as: :json
+                 headers: desktop_headers, as: :json
           end.to change { schedule.session_logs.where(kind: :combat).count }.by(1)
           expect(response).to have_http_status(:ok)
           expect(cs.reload.active_interaction).to be_nil
@@ -447,20 +477,29 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
           expect do
             post "#{base}/active_interaction/respond",
                  params: { character_id: reactor_npc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 18 }, damage: 7, hit: true } },
-                 headers: dm_headers, as: :json
+                 headers: phone_headers, as: :json
           end.not_to change { schedule.session_logs.where(kind: :combat).count }
           expect(response.status).to be < 500
           expect(mover_cc.reload.hp_current).to eq(13)        # aplicou só uma vez
         end
 
-        it 'broadcasts: combatant_upserted(mover) → state_changed(nil) → log_appended' do
+        it 'broadcasts correlacionados: combatant_upserted → state_changed(nil) → log_appended' do
+          headers = dm_headers.merge(
+            'X-Lafiga-Client-Id' => 'cli-dm-desktop',
+            'X-Lafiga-Command-Id' => 'cmd-oa-resolve-1',
+          )
           envelopes = capture_envelopes do
             post "#{base}/active_interaction/respond",
                  params: { character_id: reactor_npc_cc.combatable_id.to_s, opportunity_attack: { roll: { total: 18 }, damage: 7, hit: true } },
-                 headers: dm_headers, as: :json
+                 headers: headers, as: :json
           end
           events = envelopes.map { |e| e['event'] }
           expect(events).to include('combatant_upserted', 'state_changed', 'log_appended')
+          expect(envelopes).to all(include(
+            'command_id' => 'cmd-oa-resolve-1',
+            'client_id' => 'cli-dm-desktop',
+          ))
+          expect(envelopes.map { |e| e['event_id'] }).to all(be_present)
 
           st = envelopes.find { |h| h['event'] == 'state_changed' }
           expect(st['payload']['active_interaction']).to be_nil

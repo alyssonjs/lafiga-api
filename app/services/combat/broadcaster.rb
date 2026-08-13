@@ -27,14 +27,26 @@ module Combat
 
     module_function
 
-    def state_changed(combat_state)
+    def state_changed(combat_state, command_id: nil, client_id: nil)
       return if suppressed? || combat_state.nil?
-      broadcast(combat_state.schedule_id, 'state_changed', Combat::Serializers.state(combat_state))
+      broadcast(
+        combat_state.schedule_id,
+        'state_changed',
+        Combat::Serializers.state(combat_state),
+        command_id: command_id,
+        client_id: client_id,
+      )
     end
 
-    def combatant_upserted(combatant)
+    def combatant_upserted(combatant, command_id: nil, client_id: nil)
       return if suppressed? || combatant.nil?
-      broadcast(combatant.combat_state.schedule_id, 'combatant_upserted', Combat::Serializers.combatant(combatant))
+      broadcast(
+        combatant.combat_state.schedule_id,
+        'combatant_upserted',
+        Combat::Serializers.combatant(combatant),
+        command_id: command_id,
+        client_id: client_id,
+      )
     end
 
     def combatant_destroyed(schedule_id:, combatant_id:)
@@ -52,9 +64,15 @@ module Combat
       broadcast(schedule_id, 'npc_destroyed', { id: npc_id })
     end
 
-    def log_appended(log)
+    def log_appended(log, command_id: nil, client_id: nil)
       return if suppressed? || log.nil?
-      broadcast(log.schedule_id, 'log_appended', Combat::Serializers.log(log))
+      broadcast(
+        log.schedule_id,
+        'log_appended',
+        Combat::Serializers.log(log),
+        command_id: command_id,
+        client_id: client_id,
+      )
     end
 
     # Fase 6F — emitido após `record_concentration_save` quando o save falha.
@@ -106,11 +124,35 @@ module Combat
     end
 
     # Wrapper testável; specs podem substituir via stub.
-    def broadcast(schedule_id, event, payload)
+    def broadcast(schedule_id, event, payload, command_id: nil, client_id: nil)
+      event_id = SecureRandom.uuid
+      envelope = {
+        event: event,
+        payload: payload,
+        emitted_at: Time.current.iso8601,
+        event_id: event_id,
+      }
+      safe_command_id = Realtime::Telemetry.identifier(command_id)
+      safe_client_id = Realtime::Telemetry.identifier(client_id)
+      envelope[:command_id] = safe_command_id if safe_command_id
+      envelope[:client_id] = safe_client_id if safe_client_id
+
       ActionCable.server.broadcast(
         SessionRealtimeChannel.stream_name_for(schedule_id),
-        { event: event, payload: payload, emitted_at: Time.current.iso8601 },
+        envelope,
       )
+      Realtime::Telemetry.emit(
+        stage: 'event_broadcast',
+        domain: 'combat',
+        event_type: event,
+        event_id: event_id,
+        command_id: safe_command_id,
+        client_id: safe_client_id,
+        aggregate_type: 'schedule',
+        aggregate_id: schedule_id,
+        outcome: 'succeeded',
+      )
+      envelope
     end
   end
 end

@@ -58,22 +58,67 @@ class SessionFeedChannel < ApplicationCable::Channel
   def subscribed
     token = params[:token].to_s
     @current_user = authenticate_token(token)
-    return reject unless @current_user
+    unless @current_user
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'feed', outcome: 'rejected',
+        aggregate_type: 'schedule', aggregate_id: params[:schedule_id], error_class: 'authentication_failed'
+      )
+      return reject
+    end
 
     schedule = find_schedule_from_params
-    return reject unless schedule
-    return reject unless can_read?(schedule, @current_user)
+    unless schedule
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'feed', outcome: 'rejected',
+        aggregate_type: 'schedule', aggregate_id: params[:schedule_id], error_class: 'aggregate_not_found'
+      )
+      return reject
+    end
+    unless can_read?(schedule, @current_user)
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'feed', outcome: 'rejected',
+        aggregate_type: 'schedule', aggregate_id: schedule.id, error_class: 'authorization_failed'
+      )
+      return reject
+    end
 
     @schedule_id = schedule.id
     stream_from self.class.stream_name_for(@schedule_id)
+    trace_realtime(
+      stage: 'subscription_confirmed', domain: 'feed', outcome: 'succeeded',
+      aggregate_type: 'schedule', aggregate_id: @schedule_id
+    )
+  end
+
+  def unsubscribed
+    trace_realtime(
+      stage: 'subscription_removed', domain: 'feed', outcome: 'succeeded',
+      aggregate_type: 'schedule', aggregate_id: @schedule_id || params[:schedule_id]
+    )
   end
 
   def feed_item(data)
     return unless @schedule_id && @current_user
 
+    started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     payload = data.is_a?(Hash) ? data.stringify_keys : {}
     item = payload['item']
-    kind = item.is_a?(Hash) ? (item['kind'] || item[:kind]).to_s : ''
+    item_hash = item.is_a?(Hash) ? item.stringify_keys : {}
+    kind = item_hash['kind'].to_s
+    trace = feed_trace(item_hash)
+
+    Realtime::Telemetry.emit(
+      stage: 'command_received',
+      domain: 'feed',
+      event_type: kind,
+      command_id: trace[:command_id],
+      client_id: trace[:client_id],
+      connection_id: realtime_connection_id,
+      aggregate_type: 'schedule',
+      aggregate_id: @schedule_id,
+      actor_id: @current_user.id,
+      outcome: 'pending',
+    )
 
     # Previews efêmeros (mouse-move / arraste) são de alta frequência → cada kind tem
     # bucket de rate-limit PRÓPRIO e generoso, separado do chat/rolls (bucket default).
@@ -85,6 +130,7 @@ class SessionFeedChannel < ApplicationCable::Channel
         SessionFeed::RateLimit.allow?(@current_user.id, @schedule_id)
       end
     unless rate_ok
+      trace_feed_rejection(kind, trace, 'rate_limited', started_at)
       Rails.logger.warn(
         {
           event: 'session_feed.throttled',
@@ -97,17 +143,59 @@ class SessionFeedChannel < ApplicationCable::Channel
     end
 
     normalized = normalize_item(item)
-    return if normalized.blank?
+    if normalized.blank?
+      trace_feed_rejection(kind, trace, 'invalid_payload', started_at)
+      return
+    end
+
+    event_id = SecureRandom.uuid
+    normalized['clientId'] = trace[:client_id] if trace[:client_id]
+    normalized['commandId'] = trace[:command_id] if trace[:command_id]
+    normalized['eventId'] = event_id
 
     if normalized.to_json.bytesize > MAX_PAYLOAD_BYTES
+      trace_feed_rejection(kind, trace, 'payload_too_large', started_at)
       Rails.logger.warn({ event: 'session_feed.rejected_oversize', schedule_id: @schedule_id }.to_json)
       return
     end
 
-    # Previews efêmeros NÃO persistem (alta frequência) — evita Persist 20×/s.
-    persist_item(normalized) unless EPHEMERAL_PREVIEW_KINDS.include?(normalized['kind'])
+    # Só os kinds duráveis entram no histórico. Eventos de coordenação válidos,
+    # como save_prompt_resolved e damage_mitigation, são broadcast-only; tratá-los
+    # como falha de persistência criaria falsos positivos na telemetria.
+    if SessionFeedItem::KINDS.include?(normalized['kind'])
+      persisted = persist_item(normalized)
+      Realtime::Telemetry.emit(
+        stage: persisted ? 'command_persisted' : 'command_failed',
+        domain: 'feed',
+        event_type: normalized['kind'],
+        event_id: event_id,
+        command_id: trace[:command_id],
+        client_id: trace[:client_id],
+        connection_id: realtime_connection_id,
+        aggregate_type: 'schedule',
+        aggregate_id: @schedule_id,
+        actor_id: @current_user.id,
+        duration_ms: elapsed_ms(started_at),
+        outcome: persisted ? 'succeeded' : 'failed',
+        error_class: persisted ? nil : 'persistence_failed',
+      )
+    end
 
     ActionCable.server.broadcast(self.class.stream_name_for(@schedule_id), normalized)
+    Realtime::Telemetry.emit(
+      stage: 'event_broadcast',
+      domain: 'feed',
+      event_type: normalized['kind'],
+      event_id: event_id,
+      command_id: trace[:command_id],
+      client_id: trace[:client_id],
+      connection_id: realtime_connection_id,
+      aggregate_type: 'schedule',
+      aggregate_id: @schedule_id,
+      actor_id: @current_user.id,
+      duration_ms: elapsed_ms(started_at),
+      outcome: 'succeeded',
+    )
   end
 
   private
@@ -115,7 +203,7 @@ class SessionFeedChannel < ApplicationCable::Channel
   # Persiste o item já normalizado. Falha aqui não bloqueia o broadcast —
   # histórico fica off-line para esta mensagem mas a sessão continua.
   def persist_item(normalized)
-    SessionFeed::Persist.call(schedule_id: @schedule_id, normalized: normalized)
+    SessionFeed::Persist.call(schedule_id: @schedule_id, normalized: normalized).present?
   rescue StandardError => e
     Rails.logger.warn(
       { event: 'session_feed.persist_failed',
@@ -123,6 +211,37 @@ class SessionFeedChannel < ApplicationCable::Channel
         error: e.class.name,
         message: e.message }.to_json,
     )
+    false
+  end
+
+  def feed_trace(item)
+    {
+      command_id: Realtime::Telemetry.identifier(item['commandId']) ||
+        Realtime::Telemetry.identifier(item['rollGroupId']) ||
+        Realtime::Telemetry.identifier(item['id']),
+      client_id: Realtime::Telemetry.identifier(item['clientId']) || realtime_client_id,
+    }
+  end
+
+  def trace_feed_rejection(kind, trace, error_class, started_at)
+    Realtime::Telemetry.emit(
+      stage: 'command_rejected',
+      domain: 'feed',
+      event_type: kind,
+      command_id: trace[:command_id],
+      client_id: trace[:client_id],
+      connection_id: realtime_connection_id,
+      aggregate_type: 'schedule',
+      aggregate_id: @schedule_id,
+      actor_id: @current_user.id,
+      duration_ms: elapsed_ms(started_at),
+      outcome: 'rejected',
+      error_class: error_class,
+    )
+  end
+
+  def elapsed_ms(started_at)
+    ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).round(2)
   end
 
   # Aceita id numérico ou prefixo UI `api-123` (mesmo contrato que scheduleAdapters no front).

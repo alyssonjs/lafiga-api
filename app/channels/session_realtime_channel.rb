@@ -29,17 +29,42 @@ class SessionRealtimeChannel < ApplicationCable::Channel
   def subscribed
     token = params[:token].to_s
     @current_user = authenticate_token(token)
-    return reject unless @current_user
+    unless @current_user
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'combat', outcome: 'rejected',
+        aggregate_type: 'schedule', aggregate_id: params[:schedule_id], error_class: 'authentication_failed'
+      )
+      return reject
+    end
 
     @schedule = Schedule.find_by(id: params[:schedule_id])
-    return reject unless @schedule
-    return reject unless can_read?(@schedule, @current_user)
+    unless @schedule
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'combat', outcome: 'rejected',
+        aggregate_type: 'schedule', aggregate_id: params[:schedule_id], error_class: 'aggregate_not_found'
+      )
+      return reject
+    end
+    unless can_read?(@schedule, @current_user)
+      trace_realtime(
+        stage: 'subscription_rejected', domain: 'combat', outcome: 'rejected',
+        aggregate_type: 'schedule', aggregate_id: @schedule.id, error_class: 'authorization_failed'
+      )
+      return reject
+    end
 
     stream_from self.class.stream_name_for(@schedule.id)
+    trace_realtime(
+      stage: 'subscription_confirmed', domain: 'combat', outcome: 'succeeded',
+      aggregate_type: 'schedule', aggregate_id: @schedule.id
+    )
   end
 
   def unsubscribed
-    # Hook reservado para Fase 1D (presence). Por ora, no-op.
+    trace_realtime(
+      stage: 'subscription_removed', domain: 'combat', outcome: 'succeeded',
+      aggregate_type: 'schedule', aggregate_id: @schedule&.id || params[:schedule_id]
+    )
   end
 
   private

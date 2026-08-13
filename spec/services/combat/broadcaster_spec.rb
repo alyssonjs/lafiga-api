@@ -20,6 +20,25 @@ RSpec.describe Combat::Broadcaster, type: :service do
         expect(data['event']).to eq('state_changed')
         expect(data['payload']).to include('id' => cs.id, 'active' => true, 'round' => 2)
         expect(data['emitted_at']).to be_present
+        expect(data['event_id']).to be_present
+      }
+    end
+
+    it 'propaga a correlação do comando sem expor valores inválidos' do
+      expect {
+        described_class.state_changed(cs, command_id: 'cmd-reaction-1', client_id: 'cli-phone-1')
+      }.to have_broadcasted_to(stream).with { |data|
+        expect(data).to include(
+          'command_id' => 'cmd-reaction-1',
+          'client_id' => 'cli-phone-1',
+        )
+      }
+
+      expect {
+        described_class.state_changed(cs, command_id: 'Bearer secret', client_id: '<script>')
+      }.to have_broadcasted_to(stream).with { |data|
+        expect(data).not_to have_key('command_id')
+        expect(data).not_to have_key('client_id')
       }
     end
 
@@ -71,6 +90,15 @@ RSpec.describe Combat::Broadcaster, type: :service do
       }.to have_broadcasted_to(stream).with { |data|
         expect(data['event']).to eq('log_appended')
         expect(data['payload']).to include('id' => log.id, 'message' => 'Algo aconteceu')
+      }
+    end
+
+    it 'mantém a correlação da reação no evento de log' do
+      log = create(:session_log, schedule: schedule, message: 'Ataque de oportunidade')
+      expect {
+        described_class.log_appended(log, command_id: 'cmd-oa-1', client_id: 'cli-desktop-1')
+      }.to have_broadcasted_to(stream).with { |data|
+        expect(data).to include('command_id' => 'cmd-oa-1', 'client_id' => 'cli-desktop-1')
       }
     end
   end
