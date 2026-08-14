@@ -63,6 +63,13 @@ RSpec.describe SessionFeed::Persist do
       expect(SessionFeedItem.where(schedule_id: schedule.id, client_id: 'msg-1').count).to eq(1)
     end
 
+    it 'mantém o primeiro payload quando um retry usa o mesmo id com conteúdo diferente' do
+      described_class.call(schedule_id: schedule.id, normalized: chat_payload(text: 'primeiro'))
+      result = described_class.call(schedule_id: schedule.id, normalized: chat_payload(text: 'atrasado'))
+
+      expect(result.payload['text']).to eq('primeiro')
+    end
+
     it 'recusa kind desconhecido' do
       bad = chat_payload.merge('kind' => 'unknown')
       expect(described_class.call(schedule_id: schedule.id, normalized: bad)).to be_nil
@@ -106,6 +113,27 @@ RSpec.describe SessionFeed::Persist do
       expect(SessionFeedItem.where(schedule_id: schedule.id, kind: 'attack_hit_resolution').count).to eq(0)
     end
 
+    it 'mantem a primeira decisao quando outra aba envia resultado oposto' do
+      described_class.call(schedule_id: schedule.id, normalized: roll_payload)
+      base = {
+        'kind' => 'attack_hit_resolution',
+        'timestamp' => 1_700_000_002_000,
+        'sessionId' => schedule.id.to_s,
+        'rollGroupId' => 'rg-1',
+      }
+
+      described_class.call(
+        schedule_id: schedule.id,
+        normalized: base.merge('id' => 'ahr-first', 'outcome' => 'miss')
+      )
+      result = described_class.call(
+        schedule_id: schedule.id,
+        normalized: base.merge('id' => 'ahr-late', 'outcome' => 'hit')
+      )
+
+      expect(result.payload['attackHitOutcome']).to eq('miss')
+    end
+
     it 'no-op quando o roll referenciado não existe' do
       resolution = {
         'kind' => 'attack_hit_resolution',
@@ -116,6 +144,22 @@ RSpec.describe SessionFeed::Persist do
         'outcome' => 'hit',
       }
       expect(described_class.call(schedule_id: schedule.id, normalized: resolution)).to be_nil
+    end
+  end
+
+  describe '.resolve_save_prompt' do
+    it 'marca savePrompt.resolved no roll persistido e e idempotente' do
+      payload = roll_payload(rg: 'rg-save').merge(
+        'type' => 'save',
+        'savePrompt' => { 'dc' => 15, 'ability' => 'con', 'targetName' => 'Lira' },
+      )
+      described_class.call(schedule_id: schedule.id, normalized: payload)
+
+      first = described_class.resolve_save_prompt(schedule_id: schedule.id, roll_group_id: 'rg-save')
+      second = described_class.resolve_save_prompt(schedule_id: schedule.id, roll_group_id: 'rg-save')
+
+      expect(first.reload.payload.dig('savePrompt', 'resolved')).to be(true)
+      expect(second.id).to eq(first.id)
     end
   end
 end

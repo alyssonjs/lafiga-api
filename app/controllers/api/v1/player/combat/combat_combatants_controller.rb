@@ -13,10 +13,10 @@ module Api::V1::Player::Combat
   # Leitura: membro do grupo OU DM.
   # Mutação: APENAS DM.
   class CombatCombatantsController < BaseController
-    before_action :authorize_write!, except: [:index, :update, :record_death_save, :apply_typed_damage]
+    before_action :authorize_write!, except: [:index, :update, :record_death_save, :apply_typed_damage, :resolve_pending_save]
     before_action :ensure_combat_state!, only: [:create, :reorder]
     before_action :set_combatant,
-                  only: [:update, :destroy, :apply_damage, :apply_typed_damage, :heal, :record_death_save]
+                  only: [:update, :destroy, :apply_damage, :apply_typed_damage, :resolve_pending_save, :heal, :record_death_save]
     before_action :authorize_combatant_update!, only: [:update]
     before_action :trace_apply_typed_damage_received!, only: [:apply_typed_damage]
     before_action :authorize_apply_typed_damage!, only: [:apply_typed_damage]
@@ -196,6 +196,59 @@ module Api::V1::Player::Combat
       else
         trace_apply_typed_damage(stage: 'command_rejected', outcome: 'rejected', error_class: 'validation_failed')
         render json: { errors: result.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    # Resolve um pendingTargetSave de DANO. O browser envia apenas o d20 e a
+    # identidade do pending; CD, bonus, dano e regra de metade sao lidos do
+    # turn_state persistido. O servico faz lock e altera HP + limpa pending +
+    # grava log na mesma transacao, evitando dupla resolucao por abas/aparelhos.
+    def resolve_pending_save
+      trace = Realtime::Telemetry.request_context(request)
+      result = ::Combat::PendingSaveResolutionService.call(
+        combatant: @combatant,
+        current_user: @current_user,
+        d20: params[:d20],
+        save_id: params[:save_id],
+        card_roll_group_id: params[:card_roll_group_id],
+      )
+
+      if result.success?
+        payload = result.result
+        event = ::Combat::Broadcaster.combatant_upserted(
+          payload[:combatant],
+          command_id: trace[:command_id],
+          client_id: trace[:client_id],
+        )
+        ::Combat::Broadcaster.log_appended(
+          payload[:log],
+          command_id: trace[:command_id],
+          client_id: trace[:client_id],
+        )
+        broadcast_save_prompt_resolved(payload[:save], payload[:card_roll_group_id], trace)
+
+        render json: {
+          combatant: ::Combat::Serializers.combatant(payload[:combatant]),
+          log: ::Combat::Serializers.log(payload[:log]),
+          save: payload[:save],
+          save_id: payload[:save_id],
+          card_roll_group_id: payload[:card_roll_group_id],
+          damage_applied: payload[:damage_applied],
+          damage_raw: payload[:damage_raw],
+          breakdown: payload[:breakdown],
+          death_save_failures_added: payload[:death_save_failures_added],
+          concentration_check_required: payload[:concentration_check_required],
+          concentration_dc: payload[:concentration_dc],
+          realtime: {
+            commandId: trace[:command_id],
+            clientId: trace[:client_id],
+            eventId: event&.dig(:event_id),
+          }.compact,
+        }, status: :ok
+      else
+        status = result.errors.key?(:authorization) ? :forbidden :
+          (result.errors.key?(:conflict) ? :conflict : :unprocessable_entity)
+        render json: { errors: result.errors.full_messages }, status: status
       end
     end
 
@@ -582,6 +635,25 @@ module Api::V1::Player::Combat
         pp = p.respond_to?(:permit) ? p.permit(:amount, :damage_type, :magical) : p
         { amount: pp[:amount], damage_type: pp[:damage_type], magical: pp[:magical] }
       end
+    end
+
+    def broadcast_save_prompt_resolved(save, roll_group_id, trace)
+      rg = roll_group_id.to_s.presence
+      return unless rg
+
+      ActionCable.server.broadcast(
+        SessionFeedChannel.stream_name_for(@schedule.id),
+        {
+          'kind' => 'save_prompt_resolved',
+          'id' => "spr-server-#{SecureRandom.uuid}",
+          'timestamp' => (Time.current.to_f * 1000).to_i,
+          'sessionId' => @schedule.id.to_s,
+          'rollGroupId' => rg,
+          'clientId' => trace[:client_id],
+          'commandId' => trace[:command_id],
+          'save' => save,
+        }.compact,
+      )
     end
 
     # O REATOR de uma reacao (ex.: Ataque de Oportunidade) aplica dano no ALVO da reacao —

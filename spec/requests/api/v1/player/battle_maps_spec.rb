@@ -393,7 +393,49 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
     end
   end
 
-  describe 'PATCH /api/v1/player/battle_maps/:id com objeto sólido' do
+  describe 'POST /api/v1/player/battle_maps/:id/mutate_tokens' do
+    let(:map) do
+      create(:battle_map, user: user, tokens: [
+        {
+          'id' => 't1', 'name' => 'Heroi', 'color' => '#fff',
+          'x' => 1, 'y' => 1, 'size' => 1,
+          'chibiEquipment' => [{ 'id' => 'sword', 'name' => 'Espada' }],
+        },
+      ])
+    end
+
+    it 'persiste e transmite apenas os campos mutados' do
+      expect {
+        post "/api/v1/player/battle_maps/#{map.id}/mutate_tokens",
+             params: {
+               token_mutation: {
+                 patches: [{ token_id: 't1', changes: { x: 4 }, unset: [] }],
+               },
+             },
+             headers: headers, as: :json
+      }.to have_broadcasted_to("map_#{map.id}").with { |data|
+        data['event'] == 'tokens_patched' &&
+          data.dig('payload', 'patches', 0, 'changes', 'x') == 4 &&
+          data.dig('payload', 'version').is_a?(Integer)
+      }
+
+      expect(response).to have_http_status(:ok)
+      token = map.reload.tokens.first
+      expect(token).to include('x' => 4, 'y' => 1)
+      expect(token['chibiEquipment']).to eq([{ 'id' => 'sword', 'name' => 'Espada' }])
+    end
+
+    it 'rejeita snapshot completo no update legado para uma aba antiga nao sobrescrever a sessao' do
+      patch "/api/v1/player/battle_maps/#{map.id}",
+            params: { battle_map: { tokens: [{ id: 't1', x: 99, y: 99 }] } },
+            headers: headers, as: :json
+
+      expect(response).to have_http_status(:conflict)
+      expect(map.reload.tokens.first).to include('x' => 1, 'y' => 1)
+    end
+  end
+
+  describe 'POST /api/v1/player/battle_maps/:id/mutate_tokens com objeto sólido' do
     it 'preserva blocksMovement no JSONB de tokens e no payload full' do
       map = create(:battle_map, user: user)
       object = {
@@ -402,8 +444,8 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
         'objectWidth' => 2, 'objectHeight' => 1.5, 'blocksMovement' => true,
       }
 
-      patch "/api/v1/player/battle_maps/#{map.id}",
-            params: { battle_map: { tokens: [object] } }, headers: headers, as: :json
+      post "/api/v1/player/battle_maps/#{map.id}/mutate_tokens",
+           params: { token_mutation: { additions: [object] } }, headers: headers, as: :json
       expect(response).to have_http_status(:ok)
       expect(map.reload.tokens.first['blocksMovement']).to be(true)
 

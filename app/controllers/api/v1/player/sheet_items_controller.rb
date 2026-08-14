@@ -20,6 +20,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   def create
     item = SheetItem.new(item_params)
     record, created = SheetItem.stack_or_create!(item)
+    broadcast_inventory_changed(record)
     render json: { sheet_item: record.as_inventory_json }, status: (created ? :created : :ok)
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
@@ -28,6 +29,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # PUT /api/v1/player/sheet_items/:id
   def update
     if @item.update(item_params)
+      broadcast_inventory_changed(@item)
       render json: { sheet_item: @item.as_inventory_json }, status: :ok
     else
       render json: { errors: @item.errors.full_messages }, status: :unprocessable_entity
@@ -36,7 +38,9 @@ class Api::V1::Player::SheetItemsController < ApplicationController
 
   # DELETE /api/v1/player/sheet_items/:id
   def destroy
+    item = @item
     @item.destroy
+    broadcast_inventory_changed(item)
     head :no_content
   end
 
@@ -53,7 +57,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
       merged = (@item.props_json || {}).merge(pj || {})
       @item.update!(equipped: true, slot: slot, props_json: merged)
     end
-    sync_equipped_chibi_token(@item, equipping: true)
+    broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -62,7 +66,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # POST /api/v1/player/sheet_items/:id/unequip
   def unequip
     @item.update(equipped: false, slot: nil)
-    sync_equipped_chibi_token(@item, equipping: false)
+    broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -76,6 +80,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
       quiver_id: params[:quiver_id],
       quantity: params[:quantity]
     ).call
+    broadcast_inventory_changed(@item)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::AllocateAmmunitionService::InvalidAllocation => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -88,6 +93,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   def reorder
     sheet = Sheet.find(params[:sheet_id])
     items = SheetItems::ReorderService.new(sheet: sheet, ordered_ids: params[:ordered_ids]).call
+    broadcast_inventory_changed(sheet)
     render json: { sheet_items: items }, status: :ok
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Not found' }, status: :not_found
@@ -103,6 +109,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
       source_id: @item.id,
       target_id: params[:target_id]
     ).call
+    broadcast_inventory_changed(@item.sheet)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::MergeStacksService::InvalidMerge => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -112,6 +119,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # body: { quantity } — separa N unidades desta pilha numa nova pilha.
   def split
     items = SheetItems::SplitStackService.new(item: @item, quantity: params[:quantity]).call
+    broadcast_inventory_changed(@item.sheet)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::SplitStackService::InvalidSplit => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -154,44 +162,31 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { error: 'Not found' }, status: :not_found
   end
 
-  # Espelha a arma de mão equipada no SNAPSHOT do token do personagem no mapa
-  # da sessão (`token['chibiEquipment']`), server-authoritative + broadcast, para
-  # que a camada de arma do chibi re-sincronize entre TODOS os clientes ao
-  # equipar/desequipar. Antes, só o fluxo de arremesso/coleta atualizava esse
-  # snapshot — um equip/unequip normal mudava a ficha mas NÃO o token, e o cliente
-  # do não-dono (que não tem o inventário alheio) nunca via a troca. O front passa
-  # o `battle_map_id` da sessão; achamos o token do personagem NESSE mapa. Best-
-  # effort: qualquer falha só perde a sincronização visual, não bloqueia o equip.
-  def sync_equipped_chibi_token(item, equipping:)
-    map_id = params[:battle_map_id]
-    return if map_id.blank?
+  def broadcast_inventory_changed(item_or_sheet)
+    map = BattleMap.find_by(id: params[:battle_map_id])
+    return unless map&.readable_by?(@current_user)
 
-    character = item.sheet&.character
+    sheet = item_or_sheet.is_a?(Sheet) ? item_or_sheet : item_or_sheet.sheet
+    character = sheet&.character
     return unless character
 
-    map = BattleMap.find_by(id: map_id)
-    return unless map
-
-    tokens = Array(map.tokens)
-    token = tokens.find { |t| t['characterId'].to_s == character.id.to_s }
-    return unless token
-
-    token_id = token['id']
-    if equipping
-      # Só a arma de MÃO muda a camada de arma do chibi (armadura/escudo/acessórios
-      # não). add_equipped_snapshot substitui a entrada main_hand pela nova arma.
-      return unless item.slot.to_s == 'main_hand' && EquipmentRules.is_weapon?(item)
-
-      next_tokens = BattleMapProjectiles.add_equipped_snapshot(tokens, token_id, item)
-      changed = true
-    else
-      next_tokens, changed = BattleMapProjectiles.remove_equipped_snapshot(tokens, token_id, item)
+    changes = BattleMapTokenEquipment.sync!(map: map, character: character)
+    changes.each do |changed|
+      MapRealtime::Broadcaster.token_equipment_changed(
+        map,
+        changed[:token_id],
+        changed[:chibi_equipment],
+        actor: @current_user,
+      )
     end
-    return unless changed
 
-    map.update!(tokens: next_tokens)
-    MapRealtime::Broadcaster.tokens_changed(map, map.tokens, actor: @current_user)
+    MapRealtime::Broadcaster.character_inventory_changed(
+      map,
+      character.id,
+      sheet.id,
+      actor: @current_user,
+    )
   rescue StandardError => e
-    Rails.logger.warn({ event: 'sheet_items.sync_chibi_token_failed', error: e.class.name, message: e.message }.to_json)
+    Rails.logger.warn({ event: 'sheet_items.broadcast_inventory_failed', error: e.class.name, message: e.message }.to_json)
   end
 end

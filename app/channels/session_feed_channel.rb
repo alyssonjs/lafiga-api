@@ -12,8 +12,8 @@
 #      roll_pending → roll, atualização in-place de attack_hit_resolution).
 #   4. ActionCable.server.broadcast para os subscribers.
 #
-# Falhas em (3) NÃO bloqueiam o broadcast (degrada para comportamento
-# anterior — efêmero) mas são logadas. Histórico via REST:
+# Falhas em (3) bloqueiam eventos duráveis: nenhum cliente deve observar como
+# confirmado algo que o servidor não conseguiu persistir. Histórico via REST:
 # GET /api/v1/player/schedules/:id/session_feed_items.
 class SessionFeedChannel < ApplicationCable::Channel
   # Stickers locais (data URL base64) precisam de folga; ainda rate-limited por utilizador.
@@ -153,6 +153,22 @@ class SessionFeedChannel < ApplicationCable::Channel
     normalized['commandId'] = trace[:command_id] if trace[:command_id]
     normalized['eventId'] = event_id
 
+    # A confirmação V/X é uma decisão do Mestre. Além de impedir que outro
+    # participante falsifique o resultado, resolver o projétil aqui garante o
+    # voo e a queda mesmo se a aba que exibe o card perder o callback REST. Isso
+    # vale para acerto e erro e independe do estado local do atacante. O serviço
+    # é idempotente, portanto o REST do cliente pode repetir.
+    if normalized['kind'] == 'attack_hit_resolution'
+      unless Group.user_is_dm?(@current_user)
+        trace_feed_rejection(kind, trace, 'authorization_failed', started_at)
+        return
+      end
+      unless resolve_attack_projectile(normalized)
+        trace_feed_rejection(kind, trace, 'projectile_resolution_failed', started_at)
+        return
+      end
+    end
+
     if normalized.to_json.bytesize > MAX_PAYLOAD_BYTES
       trace_feed_rejection(kind, trace, 'payload_too_large', started_at)
       Rails.logger.warn({ event: 'session_feed.rejected_oversize', schedule_id: @schedule_id }.to_json)
@@ -163,7 +179,8 @@ class SessionFeedChannel < ApplicationCable::Channel
     # como save_prompt_resolved e damage_mitigation, são broadcast-only; tratá-los
     # como falha de persistência criaria falsos positivos na telemetria.
     if SessionFeedItem::KINDS.include?(normalized['kind'])
-      persisted = persist_item(normalized)
+      persisted_item = persist_item(normalized)
+      persisted = persisted_item.present?
       Realtime::Telemetry.emit(
         stage: persisted ? 'command_persisted' : 'command_failed',
         domain: 'feed',
@@ -179,6 +196,23 @@ class SessionFeedChannel < ApplicationCable::Channel
         outcome: persisted ? 'succeeded' : 'failed',
         error_class: persisted ? nil : 'persistence_failed',
       )
+      unless persisted
+        trace_feed_rejection(kind, trace, 'persistence_failed', started_at)
+        return
+      end
+
+      # Para confirmações persistidas, o resultado gravado é a autoridade. Uma
+      # segunda aba que tente inverter a primeira decisão não pode emitir um eco
+      # contraditório. Rolls órfãos ainda degradam para broadcast efêmero.
+      if normalized['kind'] == 'attack_hit_resolution' && persisted_item.present? &&
+         persisted_item.payload['attackHitOutcome'].to_s != normalized['outcome'].to_s
+        trace_feed_rejection(kind, trace, 'attack_outcome_conflict', started_at)
+        return
+      end
+
+      # Chat/roll/pending usam o payload first-write-wins persistido. Um retry
+      # concorrente com o mesmo id jamais pode transmitir outro total/texto.
+      normalized = persisted_item.payload unless normalized['kind'] == 'attack_hit_resolution'
     end
 
     ActionCable.server.broadcast(self.class.stream_name_for(@schedule_id), normalized)
@@ -186,7 +220,7 @@ class SessionFeedChannel < ApplicationCable::Channel
       stage: 'event_broadcast',
       domain: 'feed',
       event_type: normalized['kind'],
-      event_id: event_id,
+      event_id: normalized['eventId'] || event_id,
       command_id: trace[:command_id],
       client_id: trace[:client_id],
       connection_id: realtime_connection_id,
@@ -200,10 +234,10 @@ class SessionFeedChannel < ApplicationCable::Channel
 
   private
 
-  # Persiste o item já normalizado. Falha aqui não bloqueia o broadcast —
-  # histórico fica off-line para esta mensagem mas a sessão continua.
+  # Persiste o item já normalizado. Retorna o registro para decisões que precisam
+  # reconciliar o valor autoritativo antes do broadcast.
   def persist_item(normalized)
-    SessionFeed::Persist.call(schedule_id: @schedule_id, normalized: normalized).present?
+    SessionFeed::Persist.call(schedule_id: @schedule_id, normalized: normalized)
   rescue StandardError => e
     Rails.logger.warn(
       { event: 'session_feed.persist_failed',
@@ -211,7 +245,7 @@ class SessionFeedChannel < ApplicationCable::Channel
         error: e.class.name,
         message: e.message }.to_json,
     )
-    false
+    nil
   end
 
   def feed_trace(item)
@@ -412,85 +446,7 @@ class SessionFeedChannel < ApplicationCable::Channel
   end
 
   def normalize_roll(h)
-    type = h['type'].to_s
-    return nil unless ROLL_TYPES.include?(type)
-
-    id = h['id'].to_s
-    return nil if id.empty? || id.length > MAX_ID_LENGTH
-
-    ts = h['timestamp']
-    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
-
-    label = h['label'].to_s
-    return nil if label.empty? || label.length > 500
-
-    total = h['total']
-    total_i = total.is_a?(Numeric) ? total.to_i : Integer(total, exception: false)
-    return nil if total_i.nil?
-
-    out = {
-      'kind' => 'roll',
-      'id' => id,
-      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
-      'sessionId' => @schedule_id.to_s,
-      'playerName' => h['playerName'].to_s.truncate(120),
-      'characterName' => h['characterName'].to_s.truncate(120),
-      'type' => type,
-      'label' => label.truncate(500),
-      'total' => total_i,
-      'breakdown' => h['breakdown'].to_s.truncate(2_000),
-    }
-
-    rg = h['rollGroupId'].to_s
-    out['rollGroupId'] = rg.truncate(MAX_ID_LENGTH) if rg.present?
-
-    %w[d20 d20Alt advantage isNat20 isNat1 isCrit damageType].each do |key|
-      next unless h.key?(key)
-
-      out[key] = h[key]
-    end
-
-    if h['dice'].is_a?(Array)
-      out['dice'] = h['dice'].filter_map { |x| x.is_a?(Numeric) ? x.to_i : Integer(x, exception: false) }.compact.first(40)
-    end
-
-    # Quebra de dano POR TIPO (arma + riders elementais) p/ o card exibir um chip
-    # por tipo cross-device (ex.: concussão + fogo). Só em rolagens de dano.
-    if type == 'damage'
-      lines = sanitize_damage_lines(h['damageLines'])
-      out['damageLines'] = lines if lines.present?
-    end
-
-    sr = h['senderRole'].to_s
-    out['senderRole'] = sr if CHAT_ROLES.include?(sr)
-    accent = sanitize_hex_color(h['cardAccentColor'])
-    out['cardAccentColor'] = accent if accent.present?
-
-    if type == 'attack'
-      aho = h['attackHitOutcome'].to_s
-      out['attackHitOutcome'] = aho if ATTACK_HIT_OUTCOMES.include?(aho)
-    end
-
-    # Card de PROMPT de teste de resistência (TR): substitui o modal. Preserva o
-    # objeto `savePrompt` (sanitizado) para o card renderizar cross-device.
-    if type == 'save' && h['savePrompt'].is_a?(Hash)
-      sp = h['savePrompt'].stringify_keys
-      dc = sp['dc']
-      dc_i = dc.is_a?(Numeric) ? dc.to_i : Integer(dc, exception: false)
-      if dc_i
-        prompt = {
-          'dc' => dc_i,
-          'ability' => sp['ability'].to_s.slice(0, 8),
-          'targetName' => sp['targetName'].to_s.truncate(120),
-        }
-        prompt['sourceName'] = sp['sourceName'].to_s.truncate(120) if sp['sourceName'].present?
-        prompt['mode'] = sp['mode'] if %w[apply-on-fail remove-on-success].include?(sp['mode'].to_s)
-        prompt['resolved'] = true if sp['resolved'] == true
-        out['savePrompt'] = prompt
-      end
-    end
-
-    out
+    SessionFeed::RollNormalizer.call(schedule_id: @schedule_id, item: h)
   end
 
   # Sanitiza a quebra de dano POR TIPO ({type, raw, final, mult}[]) — usada tanto
@@ -587,7 +543,46 @@ class SessionFeedChannel < ApplicationCable::Channel
       result['dodgeAttackerTokenId'] = atk if atk.present? && atk.length <= MAX_ID_LENGTH
     end
 
+    projectile_id = h['projectileId'].to_s
+    result['projectileId'] = projectile_id if projectile_id.present? && projectile_id.length <= MAX_ID_LENGTH
+
     result
+  end
+
+  def resolve_attack_projectile(resolution)
+    schedule = Schedule.includes(:battle_map).find_by(id: @schedule_id)
+    map = schedule&.battle_map
+    return true unless map
+
+    has_projectile = resolution['projectileId'].present? || Array(map.dropped_projectiles).any? do |projectile|
+      projectile['rollGroupId'].to_s == resolution['rollGroupId'].to_s
+    end
+    return true unless has_projectile
+
+    BattleMapProjectiles.resolve!(
+      map: map,
+      user: @current_user,
+      projectile_id: resolution['projectileId'],
+      roll_group_id: resolution['rollGroupId'],
+      outcome: resolution['outcome'],
+    )
+    true
+  rescue BattleMapProjectiles::NotFound
+    # Ataques corpo a corpo tambem possuem rollGroupId e naturalmente nao têm
+    # projetil. Nao e erro de transporte nem deve bloquear o V/X no feed.
+    true
+  rescue BattleMapProjectiles::Error, ActiveRecord::RecordInvalid => e
+    Rails.logger.warn(
+      {
+        event: 'session_feed.projectile_resolution_failed',
+        schedule_id: @schedule_id,
+        roll_group_id: resolution['rollGroupId'],
+        projectile_id: resolution['projectileId'],
+        error: e.class.name,
+        message: e.message,
+      }.to_json,
+    )
+    false
   end
 
   # Resolução de PROMPT de TR: quando o dono do alvo (ou o Mestre) rola/dispensa o

@@ -85,6 +85,13 @@ class Api::V1::Player::CharacterDraftsController < ApplicationController
         return render(json: { error: 'destructive_change', requires_confirmation: result.requires_confirmation }, status: :conflict)
       end
 
+      # Viewers de outro dono nao podem hidratar a ficha completa e dependem do
+      # snapshot no token. Propaga apenas a customizacao, preservando qualquer
+      # movimento/equipamento concorrente no mesmo mapa.
+      if step_key == 'avatar'
+        BattleMapCharacterCustomization.sync!(character: @character, actor: @current_user)
+      end
+
       log_step(:patch, step_key, mode: 'edit', warnings: result.warnings.length, cleared: result.cleared_keys.length)
       render json: response_envelope(step_key, svc.read, mode: 'edit', warnings: result.warnings, cleared: result.cleared_keys)
     end

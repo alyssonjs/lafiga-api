@@ -49,4 +49,50 @@ RSpec.describe 'Api::V1::Admin::SheetItemsController create — stacking', type:
     expect(granted.count).to eq(1)
     expect(granted.first.quantity).to eq(2)
   end
+
+  it 'sincroniza em tempo real a troca de arma feita pelo mestre na ficha do player' do
+    old_weapon = SheetItem.create!(
+      sheet: sheet, item_name: 'Espada antiga', category: 'Armas', quantity: 1,
+      equipped: true, slot: 'main_hand', source: 'test', props_json: {},
+    )
+    new_weapon = SheetItem.create!(
+      sheet: sheet, item_name: 'Machadinha nova', category: 'Armas', quantity: 1,
+      equipped: false, source: 'test', props_json: {},
+    )
+    map = create(
+      :battle_map,
+      user: dm_user,
+      tokens: [{
+        'id' => 'player-token', 'characterId' => character.id.to_s,
+        'name' => character.name, 'x' => 2, 'y' => 3, 'size' => 1,
+        'chibiEquipment' => [{ 'id' => old_weapon.id.to_s, 'name' => old_weapon.item_name, 'slot' => 'main_hand' }],
+      }],
+    )
+    allow(MapRealtime::Broadcaster).to receive(:token_equipment_changed).and_call_original
+    allow(MapRealtime::Broadcaster).to receive(:character_inventory_changed).and_call_original
+
+    post "/api/v1/admin/sheet_items/#{new_weapon.id}/equip",
+         params: { slot: 'main_hand', battle_map_id: map.id },
+         headers: dm_headers,
+         as: :json
+
+    expect(response).to have_http_status(:ok), -> { response.body }
+    expect(old_weapon.reload).not_to be_equipped
+    expect(new_weapon.reload).to be_equipped
+
+    equipment = map.reload.tokens.first.fetch('chibiEquipment')
+    expect(equipment.map { |item| item['name'] }).to eq(['Machadinha nova'])
+    expect(MapRealtime::Broadcaster).to have_received(:token_equipment_changed).with(
+      map,
+      'player-token',
+      equipment,
+      actor: dm_user,
+    )
+    expect(MapRealtime::Broadcaster).to have_received(:character_inventory_changed).with(
+      map,
+      character.id,
+      sheet.id,
+      actor: dm_user,
+    )
+  end
 end

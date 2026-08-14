@@ -6,7 +6,10 @@
 ##
 ## Eventos suportados (seguem o EVENTS hash):
 ##   - :token_moved      { tokenId, x, y, by_user_id }
+##   - :tokens_patched   { additions, patches, deleteIds, version }
 ##   - :tokens_changed   { tokens: [...] }     # qualquer alteracao no array
+##   - :token_equipment_changed { tokenId, chibiEquipment } # patch por campo
+##   - :character_inventory_changed { characterId, sheetId } # invalidacao
 ##   - :cells_changed    { cells: [[..]] }     # full matrix (debounced no client)
 ##   - :fog_changed      { fog: [[..]] }
 ##   - :map_updated      { battle_map: <full payload> }
@@ -18,6 +21,9 @@ module MapRealtime
   class Broadcaster
     EVENTS = {
       token_moved:          'token_moved',
+      tokens_patched:       'tokens_patched',
+      token_equipment_changed: 'token_equipment_changed',
+      character_inventory_changed: 'character_inventory_changed',
       tokens_changed:       'tokens_changed',
       cells_changed:        'cells_changed',
       fog_changed:          'fog_changed',
@@ -67,7 +73,15 @@ module MapRealtime
         broadcast(
           map,
           :token_moved,
-          { tokenId: token_id, x: x, y: y },
+          {
+            tokenId: token_id,
+            x: x,
+            y: y,
+            # O broadcast acontece depois que o row lock e liberado. Sob carga,
+            # um movimento mais novo pode ser transmitido antes de um antigo.
+            # A versao persistida permite ao cliente descartar esse evento tardio.
+            version: (map.updated_at.to_f * 1_000_000).round,
+          },
           actor: actor,
           command_id: command_id,
           client_id: client_id,
@@ -75,7 +89,55 @@ module MapRealtime
       end
 
       def tokens_changed(map, tokens, actor: nil)
-        broadcast(map, :tokens_changed, { tokens: tokens }, actor: actor)
+        broadcast(
+          map,
+          :tokens_changed,
+          { tokens: tokens, version: persistence_version(map) },
+          actor: actor,
+        )
+      end
+
+      def tokens_patched(map, mutation, version:, actor: nil)
+        patches = Array(mutation[:patches]).map do |patch|
+          {
+            tokenId: patch[:token_id],
+            changes: patch[:changes],
+            unset: patch[:unset],
+          }
+        end
+        broadcast(
+          map,
+          :tokens_patched,
+          {
+            additions: mutation[:additions],
+            patches: patches,
+            deleteIds: mutation[:delete_ids],
+            version: version,
+          },
+          actor: actor,
+        )
+      end
+
+      def token_equipment_changed(map, token_id, chibi_equipment, actor: nil)
+        broadcast(
+          map,
+          :token_equipment_changed,
+          {
+            tokenId: token_id,
+            chibiEquipment: chibi_equipment,
+            version: persistence_version(map),
+          },
+          actor: actor,
+        )
+      end
+
+      def character_inventory_changed(map, character_id, sheet_id, actor: nil)
+        broadcast(
+          map,
+          :character_inventory_changed,
+          { characterId: character_id, sheetId: sheet_id },
+          actor: actor,
+        )
       end
 
       def cells_changed(map, cells, actor: nil)
@@ -112,6 +174,12 @@ module MapRealtime
 
       def map_deleted(map_id, actor: nil)
         broadcast(map_id, :map_deleted, { id: map_id }, actor: actor)
+      end
+
+      private
+
+      def persistence_version(map)
+        (map.updated_at.to_f * 1_000_000).round
       end
     end
   end

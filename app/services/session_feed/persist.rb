@@ -34,6 +34,32 @@ module SessionFeed
         end
       end
 
+      # Marca de forma duravel o card de TR correspondente. O evento realtime
+      # continua sendo emitido pelo controller, mas um reload tambem deve trazer
+      # `savePrompt.resolved=true` do historico.
+      def resolve_save_prompt(schedule_id:, roll_group_id:)
+        return nil if schedule_id.blank? || roll_group_id.blank?
+
+        roll = SessionFeedItem.where(
+          schedule_id: schedule_id,
+          kind: 'roll',
+          roll_group_id: roll_group_id,
+        ).first
+        return nil unless roll
+
+        roll.with_lock do
+          roll.reload
+          prompt = roll.payload['savePrompt']
+          next unless prompt.is_a?(Hash)
+          next if ActiveModel::Type::Boolean.new.cast(prompt['resolved'])
+
+          roll.update!(payload: roll.payload.merge(
+            'savePrompt' => prompt.merge('resolved' => true),
+          ))
+        end
+        roll
+      end
+
       private
 
       def timestamp_to_time(ms_or_s)
@@ -61,8 +87,12 @@ module SessionFeed
           schedule_id: schedule_id,
           client_id:   normalized['id'],
         )
+        # Retries HTTP/ActionCable recebem a primeira resposta confirmada. Um
+        # snapshot atrasado nunca pode trocar o resultado da mesma rolagem.
+        return item if item.persisted?
+
         item.assign_attributes(attrs_for(schedule_id, normalized))
-        item.save
+        item.save!
         trigger_safety_net_cleanup(schedule_id)
         item
       rescue ActiveRecord::RecordNotUnique
@@ -77,7 +107,11 @@ module SessionFeed
         rg = normalized['rollGroupId'].presence
         ActiveRecord::Base.transaction do
           if rg
-            pending = SessionFeedItem.where(schedule_id: schedule_id, kind: 'roll_pending', roll_group_id: rg).first
+            pending = SessionFeedItem.where(
+              schedule_id: schedule_id,
+              kind: 'roll_pending',
+              roll_group_id: rg,
+            ).lock.first
             if pending
               merged = attrs_for(schedule_id, normalized).merge(posted_at: pending.posted_at)
               pending.assign_attributes(merged)
@@ -99,10 +133,16 @@ module SessionFeed
 
         roll = SessionFeedItem.where(schedule_id: schedule_id, kind: 'roll', roll_group_id: rg).first
         return nil unless roll
-        return roll if roll.payload['attackHitOutcome'] == outcome
 
-        new_payload = roll.payload.merge('attackHitOutcome' => outcome)
-        roll.update(payload: new_payload)
+        roll.with_lock do
+          roll.reload
+          # First-write-wins: duas abas do Mestre podem repetir a confirmação,
+          # mas uma mensagem atrasada não inverte um resultado já finalizado.
+          next if %w[hit miss].include?(roll.payload['attackHitOutcome'])
+
+          new_payload = roll.payload.merge('attackHitOutcome' => outcome)
+          roll.update!(payload: new_payload)
+        end
         roll
       end
 

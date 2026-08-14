@@ -69,4 +69,63 @@ RSpec.describe 'Api::V1::Player::SessionFeedItemsController', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
   end
+
+  describe 'POST create' do
+    let(:roll) do
+      {
+        kind: 'roll', id: 'roll-http-1', rollGroupId: 'rg-http-1',
+        timestamp: 1_700_000_000_000, revealAt: 1_700_000_001_650,
+        sessionId: schedule.id.to_s, playerName: 'Lira', characterName: 'Lira',
+        senderRole: 'player', type: 'attack', label: 'Lira → alvo · Arco',
+        total: 17, breakdown: '13 + 4 = 17', attackHitOutcome: 'pending',
+      }
+    end
+
+    it 'persiste antes de transmitir e devolve ACK correlacionado' do
+      expect do
+        post "/api/v1/player/schedules/#{schedule.id}/session_feed_items",
+             params: { item: roll },
+             headers: headers.merge(
+               'X-Lafiga-Client-Id' => 'cli-lira-browser',
+               'X-Lafiga-Command-Id' => 'rg-http-1',
+             ),
+             as: :json
+      end.to have_broadcasted_to(SessionFeedChannel.stream_name_for(schedule.id)).with(
+        a_hash_including(
+          'kind' => 'roll', 'id' => 'roll-http-1', 'total' => 17,
+          'commandId' => 'rg-http-1', 'clientId' => 'cli-lira-browser',
+        ),
+      )
+
+      expect(response).to have_http_status(:ok), -> { response.body }
+      stored = SessionFeedItem.find_by!(schedule: schedule, client_id: 'roll-http-1')
+      expect(stored.payload).to include('total' => 17, 'revealAt' => 1_700_000_001_650)
+      expect(response.parsed_body.dig('realtime', 'commandId')).to eq('rg-http-1')
+    end
+
+    it 'é idempotente e mantém o primeiro total quando duas abas repetem o id' do
+      post "/api/v1/player/schedules/#{schedule.id}/session_feed_items",
+           params: { item: roll }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), -> { response.body }
+
+      post "/api/v1/player/schedules/#{schedule.id}/session_feed_items",
+           params: { item: roll.merge(total: 2, breakdown: 'retry obsoleto') },
+           headers: headers,
+           as: :json
+
+      expect(response).to have_http_status(:ok), -> { response.body }
+      expect(response.parsed_body.dig('item', 'total')).to eq(17)
+      expect(SessionFeedItem.where(schedule: schedule, client_id: 'roll-http-1').count).to eq(1)
+    end
+
+    it 'rejeita payload que não é uma rolagem válida' do
+      post "/api/v1/player/schedules/#{schedule.id}/session_feed_items",
+           params: { item: { kind: 'chat', id: 'x' } },
+           headers: headers,
+           as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(SessionFeedItem.where(schedule: schedule)).to be_empty
+    end
+  end
 end

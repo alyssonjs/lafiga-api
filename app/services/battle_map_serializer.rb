@@ -49,7 +49,10 @@ class BattleMapSerializer
 
     base.merge(
       cells: map.cells || [],
-      tokens: map.tokens || [],
+      # O snapshot visual gravado no token pode ter sido criado antes da ultima
+      # edicao do personagem. No carregamento FULL, a ficha e a fonte canonica:
+      # isso corrige mapas legados sem transformar um GET em escrita no JSONB.
+      tokens: tokens_with_current_customizations(map),
       walls: map.walls || [],
       measurements: map.measurements || [],
       aoePlacements: map.aoe_placements || [],
@@ -74,6 +77,34 @@ class BattleMapSerializer
   def self.serialize_collection(maps, mode: :slim)
     maps.map { |m| serialize(m, mode: mode) }
   end
+
+  def self.tokens_with_current_customizations(map)
+    tokens = Array(map.tokens).map(&:deep_dup)
+    character_ids = tokens.filter_map do |token|
+      raw = token['characterId'] || token[:characterId]
+      raw.to_s if raw.present?
+    end.uniq
+    return tokens if character_ids.empty?
+
+    characters_by_id = Character
+      .where(id: character_ids)
+      .includes(sheet: { sheet_items: :item })
+      .each_with_object({}) do |character, out|
+        out[character.id.to_s] = character
+      end
+
+    tokens.each do |token|
+      character_id = (token['characterId'] || token[:characterId]).to_s
+      character = characters_by_id[character_id]
+      next unless character
+
+      customization = character.sheet&.avatar_customization
+      token['chibiCustomization'] = customization.deep_dup if customization
+      token['chibiEquipment'] = BattleMapTokenEquipment.snapshot_for(character)
+    end
+    tokens
+  end
+  private_class_method :tokens_with_current_customizations
 
   # Purpose do verificador do fundo — DEVE bater com o do controller
   # (Api::V1::Player::BattleMapsController#valid_background_sig?).

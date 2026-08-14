@@ -4,7 +4,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # possível. A autorização é pelo `sig` (signed_id do blob) presente na URL que só
   # o viewer autorizado recebeu no payload :full. Ver #background / #valid_background_sig?.
   skip_before_action :authorize_request, only: :background, raise: false
-  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :launch_projectile, :resolve_projectile, :pick_up_projectile]
+  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile]
 
   # Teto p/ a miniatura inline (webp ~400px). Protege o payload :slim da lista de
   # inflar caso alguém mande algo grande demais como "thumbnail".
@@ -55,6 +55,48 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     else
       render json: { errors: map.errors.full_messages }, status: :unprocessable_entity
     end
+
+  end
+
+  # POST /api/v1/player/battle_maps/:id/mutate_tokens
+  # DM-only field-level mutation for additions/removals, multi-token movement,
+  # object transforms and token metadata. Single player movement remains on the
+  # narrower #move_token endpoint.
+  def mutate_tokens
+    return forbidden unless @map.writable_by?(@current_user)
+
+    result = BattleMapTokenMutations.call(
+      map: @map,
+      mutation: params[:token_mutation] || {},
+    )
+    unless result.mutation.values.all?(&:empty?)
+      MapRealtime::Broadcaster.tokens_patched(
+        @map,
+        result.mutation,
+        version: result.version,
+        actor: @current_user,
+      )
+    end
+
+    render json: {
+      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens),
+      token_mutation: {
+        additions: result.mutation[:additions],
+        patches: result.mutation[:patches].map do |patch|
+          {
+            tokenId: patch[:token_id],
+            changes: patch[:changes],
+            unset: patch[:unset],
+          }
+        end,
+        deleteIds: result.mutation[:delete_ids],
+        version: result.version,
+      },
+    }, status: :ok
+  rescue BattleMapTokenMutations::Invalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   def update
@@ -92,6 +134,17 @@ class Api::V1::Player::BattleMapsController < ApplicationController
         non_ephemeral_removed = removed.reject { |p| p['ephemeral'] || p[:ephemeral] }
         return forbidden if non_ephemeral_removed.any?
       end
+    end
+
+    # Full token snapshots are not concurrency-safe: a delayed tab can restore
+    # stale positions, equipment and customization for every token. All current
+    # clients use #mutate_tokens; rejecting this legacy contract also prevents an
+    # already-open old tab from corrupting the session after a deploy.
+    if attrs.key?(:tokens)
+      return render(
+        json: { error: 'Snapshot completo de tokens desativado; recarregue a pagina' },
+        status: :conflict,
+      )
     end
 
     if @map.update(attrs)
@@ -217,26 +270,31 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     new_x = params[:x].to_i
     new_y = params[:y].to_i
 
-    tokens = Array(@map.tokens)
-    idx = tokens.index { |t| (t['id'] || t[:id]).to_s == token_id }
-    return render(json: { error: 'Token nao encontrado' }, status: :not_found) unless idx
+    # O token e relido dentro do row lock. Sem isso, dois clientes podiam ler o
+    # mesmo array e o ultimo save reaplicava posicao/equipamento/customizacao
+    # antigos do outro. O lock serializa a escrita e a operacao altera apenas x/y.
+    @map.with_lock do
+      @map.reload
+      tokens = Array(@map.tokens).map(&:deep_dup)
+      idx = tokens.index { |t| (t['id'] || t[:id]).to_s == token_id }
+      return render(json: { error: 'Token nao encontrado' }, status: :not_found) unless idx
 
-    token = tokens[idx]
-    character_id = token['characterId'] || token[:characterId]
+      token = tokens[idx]
+      character_id = token['characterId'] || token[:characterId]
 
-    unless Group.user_is_dm?(@current_user)
-      owns = character_id.present? && @current_user.characters.exists?(id: character_id.to_s)
-      return forbidden unless owns
+      unless Group.user_is_dm?(@current_user)
+        owns = character_id.present? && @current_user.characters.exists?(id: character_id.to_s)
+        return forbidden unless owns
+      end
+
+      size = (token['size'] || token[:size] || 1).to_i
+      if new_x < 0 || new_y < 0 || new_x + size > @map.width || new_y + size > @map.height
+        return render(json: { error: 'Posicao fora dos limites' }, status: :unprocessable_entity)
+      end
+
+      tokens[idx] = token.merge('x' => new_x, 'y' => new_y)
+      @map.update!(tokens: tokens)
     end
-
-    size = (token['size'] || token[:size] || 1).to_i
-    if new_x < 0 || new_y < 0 || new_x + size > @map.width || new_y + size > @map.height
-      return render(json: { error: 'Posicao fora dos limites' }, status: :unprocessable_entity)
-    end
-
-    token = token.merge('x' => new_x, 'y' => new_y)
-    tokens[idx] = token
-    @map.update!(tokens: tokens)
 
     Realtime::Telemetry.emit(
       stage: 'command_persisted',
@@ -292,7 +350,8 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   def resolve_projectile
     projectile = BattleMapProjectiles.resolve!(
       map: @map, user: @current_user,
-      projectile_id: params[:projectile_id], outcome: params[:outcome]
+      projectile_id: params[:projectile_id], roll_group_id: params[:roll_group_id],
+      outcome: params[:outcome]
     )
     render json: { projectile: projectile }, status: :ok
   rescue BattleMapProjectiles::Forbidden => e

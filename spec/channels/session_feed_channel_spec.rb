@@ -120,6 +120,20 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'preserva revealAt curto para persistir o resultado antes da animação terminar' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    roll = valid_roll.merge('revealAt' => valid_roll['timestamp'] + 1_650)
+
+    expect do
+      perform :feed_item, item: roll
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('kind' => 'roll', 'revealAt' => valid_roll['timestamp'] + 1_650),
+    )
+
+    expect(SessionFeedItem.find_by!(schedule: schedule, client_id: 'roll-1').payload['revealAt'])
+      .to eq(valid_roll['timestamp'] + 1_650)
+  end
+
   it 'preserva savePrompt em roll type save (card de prompt de TR, substitui o modal)' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     save_roll = valid_roll.merge(
@@ -343,6 +357,10 @@ RSpec.describe SessionFeedChannel, type: :channel do
     roll = valid_roll.merge(
       'rollGroupId' => 'rg-atk-1',
       'attackHitOutcome' => 'pending',
+      'targetAC' => 17,
+      'targetTokenId' => 'tok-target',
+      'attackerTokenId' => 'tok-attacker',
+      'projectile' => { 'id' => 'projectile-arrow', 'kind' => 'arrow', 'itemName' => 'Flecha' },
     )
     expect do
       perform :feed_item, item: roll
@@ -352,12 +370,20 @@ RSpec.describe SessionFeedChannel, type: :channel do
         'type' => 'attack',
         'rollGroupId' => 'rg-atk-1',
         'attackHitOutcome' => 'pending',
+        'targetAC' => 17,
+        'targetTokenId' => 'tok-target',
+        'attackerTokenId' => 'tok-attacker',
+        'projectile' => a_hash_including('id' => 'projectile-arrow', 'kind' => 'arrow'),
       ),
     )
   end
 
   it 'broadcasts attack_hit_resolution from the DM to all clients' do
-    subscribe(token: token_for(player), schedule_id: schedule.id)
+    SessionFeed::Persist.call(
+      schedule_id: schedule.id,
+      normalized: valid_roll.merge('rollGroupId' => 'rg-atk-1', 'attackHitOutcome' => 'pending'),
+    )
+    subscribe(token: token_for(dm), schedule_id: schedule.id)
     resolution = {
       'kind' => 'attack_hit_resolution',
       'id' => 'ahr-1',
@@ -378,7 +404,11 @@ RSpec.describe SessionFeedChannel, type: :channel do
   end
 
   it 'relaya dodge target/attacker no ERRO (miss)' do
-    subscribe(token: token_for(player), schedule_id: schedule.id)
+    SessionFeed::Persist.call(
+      schedule_id: schedule.id,
+      normalized: valid_roll.merge('id' => 'roll-atk-2', 'rollGroupId' => 'rg-atk-2', 'attackHitOutcome' => 'pending'),
+    )
+    subscribe(token: token_for(dm), schedule_id: schedule.id)
     resolution = {
       'kind' => 'attack_hit_resolution', 'id' => 'ahr-2', 'timestamp' => 1_700_000_000_007,
       'sessionId' => schedule.id.to_s, 'rollGroupId' => 'rg-atk-2', 'outcome' => 'miss',
@@ -392,7 +422,11 @@ RSpec.describe SessionFeedChannel, type: :channel do
   end
 
   it 'descarta dodge target/attacker no ACERTO (hit)' do
-    subscribe(token: token_for(player), schedule_id: schedule.id)
+    SessionFeed::Persist.call(
+      schedule_id: schedule.id,
+      normalized: valid_roll.merge('id' => 'roll-atk-3', 'rollGroupId' => 'rg-atk-3', 'attackHitOutcome' => 'pending'),
+    )
+    subscribe(token: token_for(dm), schedule_id: schedule.id)
     resolution = {
       'kind' => 'attack_hit_resolution', 'id' => 'ahr-3', 'timestamp' => 1_700_000_000_008,
       'sessionId' => schedule.id.to_s, 'rollGroupId' => 'rg-atk-3', 'outcome' => 'hit',
@@ -403,6 +437,52 @@ RSpec.describe SessionFeedChannel, type: :channel do
     end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
       satisfy { |p| p['outcome'] == 'hit' && !p.key?('dodgeTargetTokenId') && !p.key?('dodgeAttackerTokenId') },
     )
+  end
+
+
+  it 'rejeita confirmacao de acerto enviada por jogador' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    resolution = {
+      'kind' => 'attack_hit_resolution', 'id' => 'ahr-player', 'timestamp' => 1_700_000_000_009,
+      'sessionId' => schedule.id.to_s, 'rollGroupId' => 'rg-player', 'outcome' => 'hit',
+    }
+
+    expect do
+      perform :feed_item, item: resolution
+    end.not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
+  %w[hit miss].each do |outcome|
+    it "resolve projectile on #{outcome} by roll group before broadcasting" do
+      battle_map = create(:battle_map, user: dm)
+      schedule.update!(battle_map: battle_map)
+      allow(BattleMapProjectiles).to receive(:resolve!).and_return(
+        'id' => 'projectile-arrow', 'kind' => 'arrow', 'state' => 'landed', 'outcome' => outcome
+      )
+      SessionFeed::Persist.call(
+        schedule_id: schedule.id,
+        normalized: valid_roll.merge('id' => "roll-arrow-#{outcome}", 'rollGroupId' => 'rg-arrow', 'attackHitOutcome' => 'pending'),
+      )
+      subscribe(token: token_for(dm), schedule_id: schedule.id)
+      resolution = {
+        'kind' => 'attack_hit_resolution', 'id' => "ahr-arrow-#{outcome}",
+        'timestamp' => 1_700_000_000_010, 'sessionId' => schedule.id.to_s,
+        'rollGroupId' => 'rg-arrow', 'projectileId' => 'projectile-arrow', 'outcome' => outcome,
+      }
+
+      expect do
+        perform :feed_item, item: resolution
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including('projectileId' => 'projectile-arrow', 'outcome' => outcome),
+      )
+      expect(BattleMapProjectiles).to have_received(:resolve!).with(
+        map: battle_map,
+        user: dm,
+        projectile_id: 'projectile-arrow',
+        roll_group_id: 'rg-arrow',
+        outcome: outcome,
+      )
+    end
   end
 
   it 'relaya save_prompt_resolved para todos os clientes (resolução de TR)' do
@@ -691,12 +771,22 @@ RSpec.describe SessionFeedChannel, type: :channel do
         .not_to change(SessionFeedItem, :count)
     end
 
-    it 'broadcast continua mesmo quando persistência levanta' do
+    it 'não confirma no broadcast quando a persistência levanta' do
       subscribe(token: token_for(player), schedule_id: schedule.id)
       allow(SessionFeed::Persist).to receive(:call).and_raise(StandardError.new('boom'))
       expect { perform :feed_item, item: valid_chat }
-        .to have_broadcasted_to("session_feed_#{schedule.id}")
-        .with(a_hash_including('kind' => 'chat', 'text' => 'Olá'))
+        .not_to have_broadcasted_to("session_feed_#{schedule.id}")
+    end
+
+    it 'reenvio conflitante da mesma rolagem transmite o primeiro resultado persistido' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      perform :feed_item, item: valid_roll
+
+      expect do
+        perform :feed_item, item: valid_roll.merge('total' => 2, 'breakdown' => 'retry obsoleto')
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including('kind' => 'roll', 'id' => 'roll-1', 'total' => 18),
+      )
     end
   end
 end

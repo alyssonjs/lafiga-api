@@ -15,6 +15,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   def create
     item = SheetItem.new(item_params)
     record, created = SheetItem.stack_or_create!(item)
+    broadcast_inventory_changed(record)
     render json: { sheet_item: record.as_inventory_json }, status: (created ? :created : :ok)
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
@@ -23,6 +24,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # PUT /api/v1/admin/sheet_items/:id
   def update
     if @item.update(item_params)
+      broadcast_inventory_changed(@item)
       render json: { sheet_item: @item.as_inventory_json }, status: :ok
     else
       render json: { errors: @item.errors.full_messages }, status: :unprocessable_entity
@@ -31,7 +33,9 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
 
   # DELETE /api/v1/admin/sheet_items/:id
   def destroy
+    item = @item
     @item.destroy
+    broadcast_inventory_changed(item)
     head :no_content
   end
 
@@ -47,6 +51,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
       merged = (@item.props_json || {}).merge(pj || {})
       @item.update!(equipped: true, slot: slot, props_json: merged)
     end
+    broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -55,6 +60,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # POST /api/v1/admin/sheet_items/:id/unequip
   def unequip
     @item.update(equipped: false, slot: nil)
+    broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -67,6 +73,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
       quiver_id: params[:quiver_id],
       quantity: params[:quantity]
     ).call
+    broadcast_inventory_changed(@item)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::AllocateAmmunitionService::InvalidAllocation => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -111,6 +118,8 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
       end
     end
 
+    broadcast_inventory_changed(item)
+
     render json: { sheet_item: item.as_inventory_json }, status: :created
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Sheet not found' }, status: :not_found
@@ -125,6 +134,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   def reorder
     sheet = Sheet.find(params[:sheet_id])
     items = SheetItems::ReorderService.new(sheet: sheet, ordered_ids: params[:ordered_ids]).call
+    broadcast_inventory_changed(sheet)
     render json: { sheet_items: items }, status: :ok
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Sheet not found' }, status: :not_found
@@ -140,6 +150,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
       source_id: @item.id,
       target_id: params[:target_id]
     ).call
+    broadcast_inventory_changed(@item.sheet)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::MergeStacksService::InvalidMerge => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -149,6 +160,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # body: { quantity }
   def split
     items = SheetItems::SplitStackService.new(item: @item, quantity: params[:quantity]).call
+    broadcast_inventory_changed(@item.sheet)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::SplitStackService::InvalidSplit => e
     render json: { error: e.message }, status: :unprocessable_entity
@@ -164,5 +176,34 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
 
   def item_params
     params.require(:sheet_item).permit(:sheet_id, :item_index, :item_name, :category, :quantity, :equipped, :slot, :source, :notes, props_json: {})
+  end
+
+  def broadcast_inventory_changed(item_or_sheet)
+    map_id = params[:battle_map_id].presence || params.dig(:grant, :battle_map_id)
+    map = BattleMap.find_by(id: map_id)
+    return unless map
+
+    sheet = item_or_sheet.is_a?(Sheet) ? item_or_sheet : item_or_sheet.sheet
+    character = sheet&.character
+    return unless character
+
+    changes = BattleMapTokenEquipment.sync!(map: map, character: character)
+    changes.each do |changed|
+      MapRealtime::Broadcaster.token_equipment_changed(
+        map,
+        changed[:token_id],
+        changed[:chibi_equipment],
+        actor: @current_user,
+      )
+    end
+
+    MapRealtime::Broadcaster.character_inventory_changed(
+      map,
+      character.id,
+      sheet.id,
+      actor: @current_user,
+    )
+  rescue StandardError => e
+    Rails.logger.warn({ event: 'admin.sheet_items.broadcast_inventory_failed', error: e.class.name, message: e.message }.to_json)
   end
 end

@@ -59,28 +59,52 @@ module BattleMapProjectiles
       end
     end
 
-    MapRealtime::Broadcaster.tokens_changed(map, map.tokens, actor: user) if tokens_changed
+    if tokens_changed
+      attacker_token = Array(map.tokens).find { |token| token['id'].to_s == attacker['id'].to_s }
+      MapRealtime::Broadcaster.token_equipment_changed(
+        map,
+        attacker['id'],
+        attacker_token && attacker_token['chibiEquipment'],
+        actor: user,
+      )
+    end
     MapRealtime::Broadcaster.dropped_projectiles_changed(map, map.dropped_projectiles, actor: user)
+    MapRealtime::Broadcaster.character_inventory_changed(map, character.id, character.sheet.id, actor: user)
     projectile
   end
 
-  def resolve!(map:, user:, projectile_id:, outcome:)
+  def resolve!(map:, user:, projectile_id: nil, roll_group_id: nil, outcome:)
     raise Forbidden, 'Sem permissao' unless map.readable_by?(user)
     normalized_outcome = outcome.to_s
     raise Invalid, 'Resultado invalido' unless %w[hit miss].include?(normalized_outcome)
-    projectile = Array(map.dropped_projectiles).find { |entry| entry['id'].to_s == projectile_id.to_s }
-    raise NotFound, 'Projetil nao encontrado' unless projectile
-    unless Group.user_is_dm?(user) ||
-           (normalized_outcome == 'hit' && projectile_attacker_owned_by?(map, projectile, user))
-      raise Forbidden, 'Apenas o mestre resolve o erro; o atacante resolve o acerto ao rolar dano'
-    end
+    projectile_id = projectile_id.to_s.presence
+    roll_group_id = roll_group_id.to_s.presence
+    raise Invalid, 'projectile_id ou roll_group_id e obrigatorio' unless projectile_id || roll_group_id
 
     resolved = nil
+    changed = false
     map.with_lock do
+      map.reload
       list = Array(map.dropped_projectiles).map(&:deep_dup)
-      idx = list.index { |p| p['id'].to_s == projectile_id.to_s }
+      idx = list.index { |p| projectile_id && p['id'].to_s == projectile_id }
+      idx ||= list.index { |p| roll_group_id && p['rollGroupId'].to_s == roll_group_id }
       raise NotFound, 'Projetil nao encontrado' unless idx
-      raise Invalid, 'Projetil ja resolvido' unless list[idx]['state'].to_s == 'pending'
+
+      projectile = list[idx]
+      unless Group.user_is_dm?(user) ||
+             (normalized_outcome == 'hit' && projectile_attacker_owned_by?(map, projectile, user))
+        raise Forbidden, 'Apenas o mestre resolve o erro; o atacante resolve o acerto ao rolar dano'
+      end
+
+      if projectile['state'].to_s == 'landed'
+        if projectile['outcome'].to_s == normalized_outcome
+          resolved = projectile
+          next
+        end
+        raise Invalid, 'Projetil ja resolvido com outro resultado'
+      end
+      raise Invalid, 'Estado de projetil invalido' unless projectile['state'].to_s == 'pending'
+
       resolved = list[idx].merge(
         'state' => 'landed',
         'outcome' => normalized_outcome,
@@ -88,10 +112,13 @@ module BattleMapProjectiles
       )
       list[idx] = resolved
       map.update!(dropped_projectiles: list)
+      changed = true
     end
 
-    MapRealtime::Broadcaster.dropped_projectiles_changed(map, map.dropped_projectiles, actor: user)
-    MapRealtime::Broadcaster.projectile_resolved(map, resolved, actor: user)
+    if changed
+      MapRealtime::Broadcaster.dropped_projectiles_changed(map, map.dropped_projectiles, actor: user)
+      MapRealtime::Broadcaster.projectile_resolved(map, resolved, actor: user)
+    end
     resolved
   end
 
@@ -147,8 +174,17 @@ module BattleMapProjectiles
       map.update!(dropped_projectiles: list, tokens: next_tokens)
     end
 
-    MapRealtime::Broadcaster.tokens_changed(map, map.tokens, actor: user) if created.equipped?
+    if created.equipped?
+      collector = Array(map.tokens).find { |token| token['id'].to_s == token_id.to_s }
+      MapRealtime::Broadcaster.token_equipment_changed(
+        map,
+        token_id,
+        collector && collector['chibiEquipment'],
+        actor: user,
+      )
+    end
     MapRealtime::Broadcaster.dropped_projectiles_changed(map, map.dropped_projectiles, actor: user)
+    MapRealtime::Broadcaster.character_inventory_changed(map, character.id, character.sheet.id, actor: user)
     created
   end
 
@@ -238,8 +274,8 @@ module BattleMapProjectiles
         same_id || (same_catalog && same_name)
       end
       changed ||= filtered.length != equipment.length
-      token['chibiEquipment'] = filtered.presence
-      token.compact
+      token['chibiEquipment'] = filtered
+      token
     end
     [next_tokens, changed]
   end

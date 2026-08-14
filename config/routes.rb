@@ -177,6 +177,7 @@ Rails.application.routes.draw do
               member do
                 post :apply_damage
                 post :apply_typed_damage          # SERVER-AUTH — ataque multi-parcela tipado (mitiga no servidor)
+                post :resolve_pending_save        # SERVER-AUTH — TR + dano + clear do pending atomicos
                 post :heal
                 post :record_death_save
                 post :cast_spell                  # Fase 6D — consome spell slot em runtime_state
@@ -197,9 +198,9 @@ Rails.application.routes.draw do
             resources :session_logs, only: [:index, :create]
           end
 
-          # Histórico do feed da sessão (chat + dice rolls). Writes via
-          # ActionCable (SessionFeedChannel); aqui só leitura paginada.
-          resources :session_feed_items, only: [:index]
+          # Histórico + comando durável de rolagem. ActionCable distribui os
+          # resultados confirmados e continua atendendo eventos efêmeros.
+          resources :session_feed_items, only: [:index, :create]
         end
         resources :schedule_characters, only: [:index, :show, :update]
         resources :groups, only: [:index, :show, :create, :update, :destroy] do
@@ -271,6 +272,7 @@ Rails.application.routes.draw do
             patch :thumbnail         # persiste a miniatura derivada (sem tocar updated_at)
             post :duplicate
             post :move_token
+            post :mutate_tokens
             post :launch_projectile
             post :resolve_projectile
             post :pick_up_projectile

@@ -22,7 +22,7 @@ RSpec.describe BattleMapProjectiles do
   end
 
   before do
-    allow(MapRealtime::Broadcaster).to receive(:tokens_changed)
+    allow(MapRealtime::Broadcaster).to receive(:token_equipment_changed)
     allow(MapRealtime::Broadcaster).to receive(:dropped_projectiles_changed)
     allow(MapRealtime::Broadcaster).to receive(:projectile_resolved)
   end
@@ -78,8 +78,9 @@ RSpec.describe BattleMapProjectiles do
     expect((projectile.dig('landing', 'row') - 5).abs).to be <= 1
     expect(projectile['landing']).not_to eq('col' => 5, 'row' => 5)
     expect(map.reload.dropped_projectiles).to contain_exactly(projectile)
-    expect(map.tokens.first['chibiEquipment']).to be_nil
-    expect(MapRealtime::Broadcaster).to have_received(:tokens_changed).with(map, map.tokens, actor: player)
+    expect(map.tokens.first['chibiEquipment']).to eq([])
+    expect(MapRealtime::Broadcaster).to have_received(:token_equipment_changed)
+      .with(map, 'attacker', [], actor: player)
   end
 
   it 'consome a ultima flecha e a devolve ao inventario quando um personagem adjacente a recolhe' do
@@ -143,6 +144,61 @@ RSpec.describe BattleMapProjectiles do
 
     expect(resolved).to include('state' => 'landed', 'outcome' => 'hit')
     expect(MapRealtime::Broadcaster).to have_received(:projectile_resolved).with(map, resolved, actor: player)
+  end
+
+  it 'resolve flecha por roll_group_id em acerto e transmite o voo uma unica vez' do
+    source = SheetItem.create!(
+      sheet: sheet,
+      item_index: 'arrow',
+      item_name: 'Flecha',
+      category: 'Municao',
+      quantity: 2,
+      equipped: false,
+      props_json: {}
+    )
+    described_class.launch!(map: map, user: player, params: launch_params(source, kind: 'arrow'))
+
+    resolved = described_class.resolve!(
+      map: map,
+      user: dm,
+      roll_group_id: 'roll-1',
+      outcome: 'hit'
+    )
+    repeated = described_class.resolve!(
+      map: map,
+      user: dm,
+      roll_group_id: 'roll-1',
+      outcome: 'hit'
+    )
+
+    expect(resolved).to include('kind' => 'arrow', 'state' => 'landed', 'outcome' => 'hit')
+    expect(repeated).to eq(resolved)
+    expect(MapRealtime::Broadcaster).to have_received(:projectile_resolved).once
+  end
+
+  it 'resolve flecha por roll_group_id no erro e impede inverter o resultado depois' do
+    source = SheetItem.create!(
+      sheet: sheet,
+      item_index: 'arrow',
+      item_name: 'Flecha',
+      category: 'Municao',
+      quantity: 1,
+      equipped: false,
+      props_json: {}
+    )
+    described_class.launch!(map: map, user: player, params: launch_params(source, kind: 'arrow'))
+
+    resolved = described_class.resolve!(
+      map: map,
+      user: dm,
+      roll_group_id: 'roll-1',
+      outcome: 'miss'
+    )
+
+    expect(resolved).to include('kind' => 'arrow', 'state' => 'landed', 'outcome' => 'miss')
+    expect {
+      described_class.resolve!(map: map, user: dm, roll_group_id: 'roll-1', outcome: 'hit')
+    }.to raise_error(BattleMapProjectiles::Invalid, 'Projetil ja resolvido com outro resultado')
   end
 
   it 'mantem a confirmacao de erro exclusiva do mestre' do
@@ -223,7 +279,8 @@ RSpec.describe BattleMapProjectiles do
         'slot' => 'main_hand'
       )
     )
-    expect(MapRealtime::Broadcaster).to have_received(:tokens_changed).with(map, map.tokens, actor: player)
+    expect(MapRealtime::Broadcaster).to have_received(:token_equipment_changed)
+      .with(map, 'attacker', map.tokens.first['chibiEquipment'], actor: player)
   end
 
   it 'impede recolher quando o personagem esta a mais de uma celula do item' do

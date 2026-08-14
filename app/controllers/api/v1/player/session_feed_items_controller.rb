@@ -13,8 +13,8 @@ module Api::V1::Player
   # cliente reordena para render (chat sobe items mais novos no scroll bottom).
   #
   # Autorização (espelha SessionFeedChannel#can_read?): qualquer usuário
-  # autenticado pode ler — mesma regra do hub. Endpoint só de leitura;
-  # writes seguem via ActionCable.
+  # autenticado pode ler. Rolagens usam POST com ACK; ActionCable distribui
+  # somente o resultado já persistido.
   class SessionFeedItemsController < ApplicationController
     before_action :authorize_request
     before_action :set_schedule
@@ -54,6 +54,79 @@ module Api::V1::Player
           next_cursor: next_cursor,
         },
       }, status: :ok
+    end
+
+    # POST /api/v1/player/schedules/:schedule_id/session_feed_items
+    # body: { item: <DiceRollEvent> }
+    #
+    # `item.id` é a chave idempotente. Retry, segunda aba ou timeout devolvem o
+    # primeiro resultado persistido em vez de executar uma segunda rolagem.
+    def create
+      raw_item = params[:item]
+      raw_item = raw_item.to_unsafe_h if raw_item.is_a?(ActionController::Parameters)
+      normalized = SessionFeed::RollNormalizer.call(schedule_id: @schedule.id, item: raw_item)
+      return render(json: { error: 'rolagem inválida' }, status: :unprocessable_entity) unless normalized
+
+      unless SessionFeed::RateLimit.allow?(
+        @current_user.id,
+        @schedule.id,
+        bucket: 'roll-command',
+        limit: 120,
+      )
+        return render json: { error: 'muitas rolagens; tente novamente' }, status: :too_many_requests
+      end
+
+      trace = Realtime::Telemetry.request_context(request)
+      client_id = trace[:client_id] || Realtime::Telemetry.identifier(raw_item['clientId'])
+      command_id = trace[:command_id] ||
+        Realtime::Telemetry.identifier(raw_item['commandId']) ||
+        Realtime::Telemetry.identifier(normalized['rollGroupId']) ||
+        Realtime::Telemetry.identifier(normalized['id'])
+      normalized['clientId'] = client_id if client_id
+      normalized['commandId'] = command_id if command_id
+      normalized['eventId'] = SecureRandom.uuid
+
+      Realtime::Telemetry.emit(
+        stage: 'command_received', domain: 'feed', event_type: 'roll',
+        command_id: command_id, client_id: client_id,
+        aggregate_type: 'schedule', aggregate_id: @schedule.id,
+        actor_id: @current_user.id, outcome: 'pending',
+      )
+
+      record = SessionFeed::Persist.call(schedule_id: @schedule.id, normalized: normalized)
+      unless record&.persisted?
+        Realtime::Telemetry.emit(
+          stage: 'command_failed', domain: 'feed', event_type: 'roll',
+          command_id: command_id, client_id: client_id,
+          aggregate_type: 'schedule', aggregate_id: @schedule.id,
+          actor_id: @current_user.id, outcome: 'failed', error_class: 'persistence_failed',
+        )
+        return render json: { error: 'não foi possível confirmar a rolagem' }, status: :service_unavailable
+      end
+
+      authoritative = record.payload
+      ActionCable.server.broadcast(SessionFeedChannel.stream_name_for(@schedule.id), authoritative)
+      Realtime::Telemetry.emit(
+        stage: 'command_acknowledged', domain: 'feed', event_type: 'roll',
+        event_id: authoritative['eventId'], command_id: command_id, client_id: client_id,
+        aggregate_type: 'schedule', aggregate_id: @schedule.id,
+        actor_id: @current_user.id, outcome: 'succeeded',
+      )
+
+      render json: {
+        item: authoritative,
+        realtime: {
+          commandId: authoritative['commandId'],
+          clientId: authoritative['clientId'],
+          eventId: authoritative['eventId'],
+        }.compact,
+      }, status: :ok
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+      Rails.logger.warn(
+        { event: 'session_feed.roll_command_failed', schedule_id: @schedule&.id,
+          error: e.class.name, message: e.message }.to_json,
+      )
+      render json: { error: 'não foi possível confirmar a rolagem' }, status: :service_unavailable
     end
 
     private
