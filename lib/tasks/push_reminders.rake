@@ -32,11 +32,12 @@ namespace :push do
     schedules.find_each do |sched|
       sent = sched.reminders_sent.is_a?(Hash) ? sched.reminders_sent.dup : {}
 
-      # Nome do PERSONAGEM por usuário (1º PC dele nesta sessão); o Mestre (sem PC)
-      # cai em "Mestre". Sufixo de hora reaproveitado no corpo.
+      # Nome do PERSONAGEM por usuário (1º PC dele nesta sessão). O Mestre (sem PC)
+      # não entra na lista → cai só em grupo + hora. Grupo e hora vão no corpo.
       char_by_user = {}
       sched.characters.each { |c| char_by_user[c.user_id] ||= c.name if c.user_id.present? }
-      time_suffix = sched.scheduled_time.present? ? " · às #{sched.scheduled_time}" : ''
+      group_name = sched.group&.name.presence
+      time_part  = sched.scheduled_time.present? ? "às #{sched.scheduled_time}" : nil
 
       jobs = [] # [tipo, title] — o corpo é montado por usuário (personagem + hora).
 
@@ -62,8 +63,9 @@ namespace :push do
       jobs.each do |type, title|
         delivered = 0
         users.find_each do |u|
-          who = char_by_user[u.id].presence || 'Mestre'
-          body = "#{who}#{time_suffix}" # ex.: "Aberama Gold · às 19:00"
+          who   = char_by_user[u.id].presence # personagem do jogador; nil p/ o Mestre
+          # jogador: "Aberama Gold · Batutinhas · às 19:00" | mestre: "Batutinhas · às 19:00"
+          body = [who, group_name, time_part].compact.join(' · ')
           delivered += Push::Sender.call(user: u, title: title, body: body, url: "/sessions/api-#{sched.id}", tag: "session-#{sched.id}-#{type}")
         end
         sent[type] = today_s
