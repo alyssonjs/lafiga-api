@@ -177,6 +177,47 @@ RSpec.describe CombatCombatant, type: :model do
       expect(c.actions_used).to include('action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false)
     end
 
+    # Rede de segurança anti-deadlock: uma decisão de Inspiração Bárdica deixada
+    # aberta (aba fechada, jogador ausente) travaria a hotbar do portador. Quando o
+    # turno dele volta, a janela da regra já fechou — some junto com as demais
+    # chaves por-turno. O DADO em si (`bardicInspiration`) NÃO é por-turno e fica.
+    it 'limpa a decisão pendente de Inspiração Bárdica, mas preserva o dado concedido' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 turn_state: {
+                   'pendingBardicInspiration' => { 'rollGroupId' => 'rg-1', 'die' => 'd6' },
+                   'bardicInspiration' => { 'die' => 'd6', 'grantedBy' => 'cb-bard' },
+                 })
+      c.reset_turn_actions!
+
+      c.reload
+      expect(c.turn_state).not_to have_key('pendingBardicInspiration')
+      expect(c.turn_state['bardicInspiration']).to include('die' => 'd6')
+    end
+
+    it 'varre a Inspiração Bárdica vencida (10 min = 100 rodadas)' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 turn_state: {
+                   'bardicInspiration' => { 'die' => 'd6', 'grantedBy' => 'cb-bard', 'expiresAtRound' => 3 },
+                   'outraChave' => 'fica',
+                 })
+      combat_state.update!(round: 3)
+      c.reset_turn_actions!
+
+      expect(c.reload.turn_state).not_to have_key('bardicInspiration')
+      expect(c.turn_state['outraChave']).to eq('fica')
+    end
+
+    it 'mantém o dado enquanto o prazo não venceu' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 turn_state: {
+                   'bardicInspiration' => { 'die' => 'd6', 'grantedBy' => 'cb-bard', 'expiresAtRound' => 108 },
+                 })
+      combat_state.update!(round: 11)
+      c.reset_turn_actions!
+
+      expect(c.reload.turn_state['bardicInspiration']).to include('die' => 'd6')
+    end
+
     it 'é seguro quando turn_state está vazio' do
       c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0)
       expect { c.reset_turn_actions! }.not_to raise_error

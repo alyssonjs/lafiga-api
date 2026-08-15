@@ -842,6 +842,52 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
     end
   end
 
+  describe 'POST consume_bardic_inspiration' do
+    let!(:combatant) do
+      create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0,
+             turn_state: {
+               'bardicInspiration' => { 'die' => 'd8', 'grantedBy' => 'cb-bardo', 'expiresAtRound' => 101 },
+               'pendingBardicInspiration' => { 'rollGroupId' => 'rg-1', 'die' => 'd8' },
+               'attacksMade' => 1,
+             })
+    end
+
+    def consume(headers)
+      post "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/consume_bardic_inspiration",
+           headers: headers, as: :json
+    end
+
+    it 'gasta o dado, fecha a decisão e devolve qual dado era' do
+      consume(dm_headers)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['die']).to eq('d8')
+      expect(combatant.reload.turn_state).not_to have_key('bardicInspiration')
+      expect(combatant.turn_state).not_to have_key('pendingBardicInspiration')
+      # o resto do turn_state sobrevive
+      expect(combatant.turn_state['attacksMade']).to eq(1)
+    end
+
+    it 'a SEGUNDA tentativa recebe 409 (o dado é gasto uma vez só)' do
+      consume(dm_headers)
+      expect(response).to have_http_status(:ok)
+
+      consume(dm_headers)
+      expect(response).to have_http_status(:conflict)
+    end
+
+    it 'o dono do PC pode gastar o próprio dado' do
+      consume(player_headers)
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'quem não é da mesa não consegue' do
+      consume(outsider_headers)
+      expect(response.status).to be_between(401, 404)
+      expect(combatant.reload.turn_state).to have_key('bardicInspiration')
+    end
+  end
+
   describe 'POST record_death_save' do
     let!(:combatant) {
       create(:combat_combatant, combat_state: cs, combatable: player_character, position: 0,

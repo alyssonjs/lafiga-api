@@ -13,14 +13,15 @@ module Api::V1::Player::Combat
   # Leitura: membro do grupo OU DM.
   # Mutação: APENAS DM.
   class CombatCombatantsController < BaseController
-    before_action :authorize_write!, except: [:index, :update, :record_death_save, :apply_typed_damage, :resolve_pending_save]
+    before_action :authorize_write!, except: [:index, :update, :record_death_save, :apply_typed_damage, :resolve_pending_save, :consume_bardic_inspiration]
     before_action :ensure_combat_state!, only: [:create, :reorder]
     before_action :set_combatant,
-                  only: [:update, :destroy, :apply_damage, :apply_typed_damage, :resolve_pending_save, :heal, :record_death_save]
+                  only: [:update, :destroy, :apply_damage, :apply_typed_damage, :resolve_pending_save, :consume_bardic_inspiration, :heal, :record_death_save]
     before_action :authorize_combatant_update!, only: [:update]
     before_action :trace_apply_typed_damage_received!, only: [:apply_typed_damage]
     before_action :authorize_apply_typed_damage!, only: [:apply_typed_damage]
     before_action :authorize_record_death_save!, only: [:record_death_save]
+    before_action :authorize_consume_bardic_inspiration!, only: [:consume_bardic_inspiration]
 
     def index
       cs = @schedule.combat_state
@@ -199,6 +200,48 @@ module Api::V1::Player::Combat
       end
     end
 
+    # Gasta o dado de Inspiracao Bardica do combatente sob LOCK.
+    #
+    # O consumo precisa ser server-authoritative porque `turn_state` e gravado por
+    # substituicao integral: um `combatant_upserted` atrasado (ex.: PATCH de dano
+    # com snapshot anterior) pode repor um dado ja gasto, e o portador usaria de
+    # novo. Aqui a leitura e a remocao acontecem na mesma transacao, entao a
+    # segunda tentativa recebe 409.
+    def consume_bardic_inspiration
+      combatant = @combatant
+      return render json: { errors: 'combatente inexistente' }, status: :not_found if combatant.nil?
+
+      consumed = nil
+      combatant.with_lock do
+        combatant.reload
+        ts = Hash(combatant.turn_state)
+        consumed = ts['bardicInspiration']
+        break unless consumed.is_a?(Hash)
+
+        combatant.update!(turn_state: ts.except('bardicInspiration', 'pendingBardicInspiration'))
+      end
+
+      unless consumed.is_a?(Hash)
+        return render json: { errors: 'sem dado de Inspiracao Bardica para gastar' }, status: :conflict
+      end
+
+      trace = Realtime::Telemetry.request_context(request)
+      event = ::Combat::Broadcaster.combatant_upserted(
+        combatant,
+        command_id: trace[:command_id],
+        client_id: trace[:client_id],
+      )
+      render json: {
+        combatant: ::Combat::Serializers.combatant(combatant),
+        die: consumed['die'],
+        realtime: {
+          commandId: trace[:command_id],
+          clientId: trace[:client_id],
+          eventId: event&.dig(:event_id),
+        }.compact,
+      }, status: :ok
+    end
+
     # Resolve um pendingTargetSave de DANO. O browser envia apenas o d20 e a
     # identidade do pending; CD, bonus, dano e regra de metade sao lidos do
     # turn_state persistido. O servico faz lock e altera HP + limpa pending +
@@ -211,6 +254,7 @@ module Api::V1::Player::Combat
         d20: params[:d20],
         save_id: params[:save_id],
         card_roll_group_id: params[:card_roll_group_id],
+        bardic_bonus: params[:bardic_bonus],
       )
 
       if result.success?
@@ -691,6 +735,18 @@ module Api::V1::Player::Combat
     # Teste de morte: DM sempre; jogador só grava o teste do PRÓPRIO combatente
     # (PC dele) e só quando é o turno desse combatente. Espelha o padrão de
     # efeitos de combate no próprio turno. NPC fica exclusivamente com o DM.
+    # Gastar o dado e decisao de QUEM O CARREGA: o DM da mesa, ou o dono do PC
+    # portador. Sem esta checagem o endpoint ficaria aberto a qualquer usuario
+    # autenticado (o `authorize_write!` foi dispensado para o dono poder gastar).
+    def authorize_consume_bardic_inspiration!
+      return if site_or_table_dm?
+      return if @combatant&.combatable_type == 'Character' &&
+                @combatant.combatable&.user_id == @current_user&.id
+
+      render json: { error: 'apenas o DM ou o dono do personagem pode gastar a Inspiração Bárdica' },
+             status: :forbidden
+    end
+
     def authorize_record_death_save!
       return if site_or_table_dm?
       # Jogador só grava o teste de morte do PRÓPRIO combatente, e só quando é o turno dele.

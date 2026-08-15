@@ -41,13 +41,14 @@ RSpec.describe Combat::PendingSaveResolutionService, type: :service do
     )
   end
 
-  def resolve(d20:, user: owner)
+  def resolve(d20:, user: owner, bardic_bonus: nil)
     described_class.call(
       combatant: combatant,
       current_user: user,
       d20: d20,
       save_id: 'aoe-save',
       card_roll_group_id: roll_group_id,
+      bardic_bonus: bardic_bonus,
     )
   end
 
@@ -123,5 +124,51 @@ RSpec.describe Combat::PendingSaveResolutionService, type: :service do
 
     expect(result.result[:save]).to include(auto_fail: true, d20: 0, success: false)
     expect(result.result[:damage_applied]).to eq(15)
+  end
+
+  describe 'Inspiração Bárdica somada ao TR (server-authoritative)' do
+    let(:inspired_turn_state) do
+      {
+        'pendingTargetSave' => pending,
+        'bardicInspiration' => { 'die' => 'd8', 'grantedBy' => 'cb-bardo', 'expiresAtRound' => 103 },
+      }
+    end
+
+    it 'soma o dado ao total e CONSOME a inspiração na mesma transação' do
+      combatant.update!(turn_state: inspired_turn_state)
+      # d20 12 + saveBonus 2 = 14 (falha vs CD 15); com +5 do dado = 19 → sucesso.
+      result = resolve(d20: 12, bardic_bonus: 5)
+
+      expect(result).to be_success
+      expect(result.result[:save][:total]).to eq(19)
+      expect(result.result[:save][:success]).to be(true)
+      expect(combatant.reload.turn_state).not_to have_key('bardicInspiration')
+      expect(combatant.turn_state).not_to have_key('pendingTargetSave')
+    end
+
+    it 'limita o bônus às faces do dado concedido (cliente não inventa)' do
+      combatant.update!(turn_state: inspired_turn_state)
+      result = resolve(d20: 12, bardic_bonus: 99)
+
+      expect(result).to be_success
+      # d8 → no máximo 8: 12 + 2 + 8 = 22
+      expect(result.result[:save][:total]).to eq(22)
+    end
+
+    it 'recusa o bônus quando o alvo não carrega dado nenhum' do
+      result = resolve(d20: 12, bardic_bonus: 5)
+
+      expect(result).not_to be_success
+      expect(result.errors).to have_key(:bardic_bonus)
+      # nada foi aplicado: o pending continua para ser resolvido de novo
+      expect(combatant.reload.turn_state).to have_key('pendingTargetSave')
+    end
+
+    it 'sem bônus, o dado do alvo continua intacto' do
+      combatant.update!(turn_state: inspired_turn_state)
+      resolve(d20: 18)
+
+      expect(combatant.reload.turn_state['bardicInspiration']).to include('die' => 'd8')
+    end
   end
 end

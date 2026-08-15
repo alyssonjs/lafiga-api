@@ -237,6 +237,45 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'relaya roll_total_adjusted (Inspiração Bárdica somada depois do d20)' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    adj = {
+      'kind' => 'roll_total_adjusted',
+      'id' => 'radj-1',
+      'timestamp' => 1_700_000_000_010,
+      'sessionId' => schedule.id.to_s,
+      'rollGroupId' => 'rg-abc',
+      'adjustedTotal' => 17,
+      'adjustedBreakdown' => '(1d20) 9 + (3) 3 = 12 + (Inspiração d6) 5 = 17',
+      'tag' => 'INSPIRAÇÃO d6',
+    }
+    expect do
+      perform :feed_item, item: adj
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including(
+        'kind' => 'roll_total_adjusted',
+        'rollGroupId' => 'rg-abc',
+        'adjustedTotal' => 17,
+        'tag' => 'INSPIRAÇÃO d6',
+      ),
+    )
+  end
+
+  it 'descarta roll_total_adjusted sem rollGroupId ou com total não numérico' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    base = {
+      'kind' => 'roll_total_adjusted',
+      'id' => 'radj-2',
+      'timestamp' => 1_700_000_000_011,
+      'sessionId' => schedule.id.to_s,
+      'adjustedTotal' => 17,
+    }
+    expect { perform :feed_item, item: base }
+      .not_to have_broadcasted_to("session_feed_#{schedule.id}")
+    expect { perform :feed_item, item: base.merge('rollGroupId' => 'rg-x', 'adjustedTotal' => 'muito') }
+      .not_to have_broadcasted_to("session_feed_#{schedule.id}")
+  end
+
   it 'saneia damage_mitigation: mult fora de {0,0.5,1,2} vira 1 e linha malformada é descartada' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     mit = {

@@ -340,6 +340,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_floating_fx(h)
     when 'damage_mitigation'
       normalize_damage_mitigation(h)
+    when 'roll_total_adjusted'
+      normalize_roll_total_adjusted(h)
     else
       nil
     end
@@ -504,6 +506,38 @@ class SessionFeedChannel < ApplicationCable::Channel
     }
     lines = sanitize_damage_lines(h['lines'])
     out['lines'] = lines if lines.present?
+    out
+  end
+
+  # Atualização in-place do TOTAL de uma rolagem já postada (eco p/ todos os
+  # clientes). Nasceu para a Inspiração Bárdica: o portador do dado decide somá-lo
+  # DEPOIS de ver o d20, então o card precisa passar a mostrar o total final.
+  # Mesmo formato do `damage_mitigation`, mas para o total de qualquer rolagem.
+  def normalize_roll_total_adjusted(h)
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    rg = h['rollGroupId'].to_s
+    return nil if rg.empty? || rg.length > MAX_ID_LENGTH
+
+    at = h['adjustedTotal']
+    at_i = at.is_a?(Numeric) ? at.to_i : Integer(at, exception: false)
+    return nil if at_i.nil?
+
+    out = {
+      'kind' => 'roll_total_adjusted',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'rollGroupId' => rg,
+      'adjustedTotal' => at_i,
+      'tag' => h['tag'].to_s.slice(0, 32),
+    }
+    breakdown = h['adjustedBreakdown'].to_s
+    out['adjustedBreakdown'] = breakdown.slice(0, 300) if breakdown.present?
     out
   end
 

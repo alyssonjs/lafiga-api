@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_12_120000) do
+ActiveRecord::Schema.define(version: 2026_08_13_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -507,6 +507,19 @@ ActiveRecord::Schema.define(version: 2026_08_12_120000) do
     t.index ["source"], name: "index_monsters_on_source"
   end
 
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "endpoint", null: false
+    t.string "p256dh_key", null: false
+    t.string "auth_key", null: false
+    t.string "user_agent"
+    t.datetime "last_seen_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
   create_table "race_traits", force: :cascade do |t|
     t.bigint "race_id", null: false
     t.bigint "trait_id", null: false
@@ -566,6 +579,7 @@ ActiveRecord::Schema.define(version: 2026_08_12_120000) do
     t.bigint "created_by_user_id"
     t.boolean "sandbox", default: false, null: false
     t.jsonb "combat_groups", default: {}, null: false
+    t.jsonb "reminders_sent", default: {}, null: false
     t.index ["battle_map_id"], name: "index_schedules_on_battle_map_id"
     t.index ["campaign_name"], name: "index_schedules_on_campaign_name"
     t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_open_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])) AND (sandbox = false))"
@@ -845,6 +859,7 @@ ActiveRecord::Schema.define(version: 2026_08_12_120000) do
     t.jsonb "progression_settings", default: {}, null: false
     t.datetime "password_changed_at"
     t.jsonb "ui_preferences", default: {}, null: false
+    t.boolean "notify_session_reminders", default: true, null: false
     t.index ["role_id"], name: "index_users_on_role_id"
   end
 
@@ -910,6 +925,7 @@ ActiveRecord::Schema.define(version: 2026_08_12_120000) do
   add_foreign_key "map_assets", "users"
   add_foreign_key "messages", "channels"
   add_foreign_key "messages", "users"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "race_traits", "races"
   add_foreign_key "race_traits", "sub_races"
   add_foreign_key "race_traits", "traits"

@@ -11,6 +11,8 @@ module Combat
     prepend SimpleCommand
 
     PENDING_KEY = 'pendingTargetSave'
+    BARDIC_KEY = 'bardicInspiration'
+    BARDIC_PENDING_KEY = 'pendingBardicInspiration'
     AUTO_FAIL_CONDITIONS = %w[paralyzed petrified stunned unconscious].freeze
     CONDITION_ALIASES = {
       'paralisado' => 'paralyzed',
@@ -19,12 +21,17 @@ module Combat
       'inconsciente' => 'unconscious',
     }.freeze
 
-    def initialize(combatant:, current_user:, d20:, save_id:, card_roll_group_id: nil)
+    def initialize(combatant:, current_user:, d20:, save_id:, card_roll_group_id: nil, bardic_bonus: nil)
       @combatant = combatant
       @current_user = current_user
       @d20 = d20.to_i
       @save_id = save_id.to_s
       @card_roll_group_id = card_roll_group_id.to_s.presence
+      # Inspiração Bárdica somada ao TR (a regra deixa decidir depois de ver o d20).
+      # O valor vem do cliente, mas quem MANDA é o servidor: só é aceito se o alvo
+      # realmente carrega o dado, é limitado pelas faces dele, e o dado é consumido
+      # na MESMA transação — assim um eco atrasado não devolve um dado já gasto.
+      @bardic_bonus = bardic_bonus.to_i
     end
 
     def call
@@ -49,13 +56,20 @@ module Combat
           return reject(:d20, 'deve estar entre 1 e 20')
         end
 
-        save = resolve_save(pending, auto_fail: auto_fail)
+        bardic = bardic_inspiration_bonus
+        return reject(:bardic_bonus, 'sem dado de Inspiração Bárdica para somar') if @bardic_bonus.positive? && bardic.zero?
+
+        save = resolve_save(pending, auto_fail: auto_fail, bardic_bonus: bardic)
         damage_before_mitigation = resolve_damage_before_mitigation(pending, save)
         damage_result = apply_damage(pending, damage_before_mitigation)
         raise ActiveRecord::Rollback unless damage_result
 
         next_turn_state = Hash(@combatant.turn_state).deep_dup
         next_turn_state.delete(PENDING_KEY)
+        if bardic.positive?
+          next_turn_state.delete(BARDIC_KEY)
+          next_turn_state.delete(BARDIC_PENDING_KEY)
+        end
         if damage_result[:damage_applied].positive?
           next_turn_state['rageTookDamageSinceLastTurn'] = true
         end
@@ -137,9 +151,23 @@ module Combat
       CONDITION_ALIASES.fetch(normalized, normalized)
     end
 
-    def resolve_save(pending, auto_fail:)
+    # Bônus EFETIVO da Inspiração: 0 quando não há dado, e nunca acima das faces
+    # dele (o cliente pede, o servidor limita).
+    def bardic_inspiration_bonus
+      return 0 unless @bardic_bonus.positive?
+
+      insp = Hash(@combatant.turn_state)[BARDIC_KEY]
+      return 0 unless insp.is_a?(Hash)
+
+      faces = insp['die'].to_s[/\d+/].to_i
+      return 0 if faces.zero?
+
+      [@bardic_bonus, faces].min
+    end
+
+    def resolve_save(pending, auto_fail:, bardic_bonus: 0)
       d20 = auto_fail ? 0 : @d20
-      bonus = pending['saveBonus'].to_i
+      bonus = pending['saveBonus'].to_i + bardic_bonus
       total = auto_fail ? 0 : d20 + bonus
       critical_failure = !auto_fail && d20 == 1
       critical_success = !auto_fail && d20 == 20

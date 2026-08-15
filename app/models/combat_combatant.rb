@@ -18,7 +18,14 @@ class CombatCombatant < ApplicationRecord
   # `protectiveRageAcActive`: Fúria Protetora (Protetor Tribal L3) — ação bônus
   # concede +2 CA vs corpo-a-corpo "até o início do seu PRÓXIMO turno"; zerar no
   # início do turno do dono é exatamente essa expiração.
-  PER_TURN_TURN_STATE_KEYS = %w[attacksMade bearFormAttacks protectiveRageAcActive].freeze
+  # `pendingBardicInspiration`: decisão aberta da Inspiração Bárdica (somar o dado
+  # ao d20 que acabou de sair). A janela da regra é "antes do resultado ser
+  # declarado" — quando o turno do portador volta, ela já fechou. Limpar aqui é a
+  # rede de segurança contra a decisão órfã que travaria a hotbar dele para sempre
+  # (ex.: o jogador fechou a aba com a carta aberta).
+  PER_TURN_TURN_STATE_KEYS = %w[
+    attacksMade bearFormAttacks protectiveRageAcActive pendingBardicInspiration
+  ].freeze
 
   belongs_to :combat_state
   belongs_to :combatable, polymorphic: true
@@ -97,7 +104,24 @@ class CombatCombatant < ApplicationRecord
     # de reação vive em `actions_used.reaction` + `reactionUsedRound` (round-lock).
     next_ts = ts.except(*PER_TURN_TURN_STATE_KEYS, 'reaction')
     next_ts = next_ts.except('reactionUsedRound') unless keep_reaction
+    next_ts = sweep_expired_bardic_inspiration(next_ts, cur_round)
     update!(actions_used: next_actions, turn_state: next_ts)
+  end
+
+  # Inspiração Bárdica dura 10 minutos (100 rodadas) — passado esse prazo o dado
+  # simplesmente não vale mais. Sem esta varredura ele ficaria no jsonb para
+  # sempre: o front esconde o badge e recusa a oferta, mas o estado morto seguia
+  # viajando em todo `combatant_upserted`. Roda no início do turno do portador,
+  # que é quando já mexemos no `turn_state` dele.
+  def sweep_expired_bardic_inspiration(ts, current_round)
+    insp = ts['bardicInspiration']
+    return ts unless insp.is_a?(Hash)
+
+    expires = insp['expiresAtRound']
+    return ts unless expires.is_a?(Integer) && current_round.is_a?(Integer)
+    return ts if current_round < expires
+
+    ts.except('bardicInspiration', 'pendingBardicInspiration')
   end
 
   # Decrementa `turns_left` no fim da rodada (ciclo completo da iniciativa), PHB.

@@ -129,6 +129,11 @@ Rails.application.routes.draw do
       namespace :player do
         patch 'password', to: 'passwords#update'
         patch 'profile', to: 'profiles#update'
+
+        # Web Push (lembretes de sessão) — assinatura por device do usuário.
+        get    'push_subscriptions/vapid_public_key', to: 'push_subscriptions#vapid_public_key'
+        post   'push_subscriptions',                  to: 'push_subscriptions#create'
+        delete 'push_subscriptions',                  to: 'push_subscriptions#destroy'
         resources :characters, only: [:index, :show, :create, :update, :destroy] do
           collection do
             post :provision
@@ -178,6 +183,7 @@ Rails.application.routes.draw do
                 post :apply_damage
                 post :apply_typed_damage          # SERVER-AUTH — ataque multi-parcela tipado (mitiga no servidor)
                 post :resolve_pending_save        # SERVER-AUTH — TR + dano + clear do pending atomicos
+                post :consume_bardic_inspiration  # SERVER-AUTH — gasta o dado sob lock (1 vez só)
                 post :heal
                 post :record_death_save
                 post :cast_spell                  # Fase 6D — consome spell slot em runtime_state

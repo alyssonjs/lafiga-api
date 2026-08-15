@@ -31,6 +31,7 @@ class User < ApplicationRecord
     has_many :sheets, through: :characters
     has_many :sheet_klasses, through: :sheets
     has_many :campaign_notes
+    has_many :push_subscriptions, dependent: :destroy
 
     belongs_to :role
 

@@ -30,6 +30,9 @@ gem 'bcrypt', '~> 3.1.16'
 
 gem 'whenever', require: false
 
+# Web Push (notificações no navegador/PWA — lembretes de sessão)
+gem 'web-push'
+
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 gem 'geocoder'
