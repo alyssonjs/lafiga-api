@@ -81,6 +81,8 @@ class Api::V1::Player::SchedulesController < ApplicationController
     result = ScheduleService.new(attrs, current_user: @current_user).call
     if result.success?
       sched = result.result
+      # Push "nova sessão marcada" p/ participantes + Mestre (fora do request).
+      SessionPushJob.perform_later(sched.id, 'created', @current_user&.id)
       include_dm = schedule_dm_notes_visible_to?(@current_user, sched)
       render json: { schedule: ScheduleSerializer.serialize(sched, include_dm_notes: include_dm) }, status: :created
     else
@@ -239,7 +241,10 @@ class Api::V1::Player::SchedulesController < ApplicationController
 
   # Cancela a sessão (sem distribuir XP). Body opcional: { reason: String }.
   def cancel
+    was_cancelled = @schedule.cancelled?
     @schedule.cancel!(reason: params[:reason].presence)
+    # Push "sessão cancelada" só na transição real (cancel! é idempotente).
+    SessionPushJob.perform_later(@schedule.id, 'cancelled', @current_user&.id) unless was_cancelled
     render json: { schedule: serialize_schedule_for_current_user(@schedule) }, status: 200
   rescue Schedule::StateError => e
     render json: { error: e.message }, status: :unprocessable_entity

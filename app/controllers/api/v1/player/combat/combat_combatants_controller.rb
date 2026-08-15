@@ -255,6 +255,8 @@ module Api::V1::Player::Combat
         save_id: params[:save_id],
         card_roll_group_id: params[:card_roll_group_id],
         bardic_bonus: params[:bardic_bonus],
+        d20_alt: params[:d20_alt],
+        advantage: params[:advantage],
       )
 
       if result.success?

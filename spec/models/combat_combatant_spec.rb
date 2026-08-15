@@ -218,6 +218,30 @@ RSpec.describe CombatCombatant, type: :model do
       expect(c.reload.turn_state['bardicInspiration']).to include('die' => 'd6')
     end
 
+    # Canção de Proteção: o reset roda no INÍCIO do turno do Bardo, mas a atuação
+    # dura até o FIM do próximo turno dele — varrer cedo demais roubaria um turno.
+    it 'mantém a Canção de Proteção na rodada seguinte à ativação' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 turn_state: { 'countercharm' => { 'activatedRound' => 3, 'bardTurnIndex' => 0 } })
+      combat_state.update!(round: 4)
+      c.reset_turn_actions!
+
+      expect(c.reload.turn_state['countercharm']).to include('activatedRound' => 3)
+    end
+
+    it 'varre a Canção de Proteção quando o prazo já passou' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 turn_state: {
+                   'countercharm' => { 'activatedRound' => 3, 'bardTurnIndex' => 0 },
+                   'outraChave' => 'fica',
+                 })
+      combat_state.update!(round: 5)
+      c.reset_turn_actions!
+
+      expect(c.reload.turn_state).not_to have_key('countercharm')
+      expect(c.turn_state['outraChave']).to eq('fica')
+    end
+
     it 'é seguro quando turn_state está vazio' do
       c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0)
       expect { c.reset_turn_actions! }.not_to raise_error

@@ -41,7 +41,7 @@ RSpec.describe Combat::PendingSaveResolutionService, type: :service do
     )
   end
 
-  def resolve(d20:, user: owner, bardic_bonus: nil)
+  def resolve(d20:, user: owner, bardic_bonus: nil, d20_alt: nil, advantage: nil)
     described_class.call(
       combatant: combatant,
       current_user: user,
@@ -49,6 +49,8 @@ RSpec.describe Combat::PendingSaveResolutionService, type: :service do
       save_id: 'aoe-save',
       card_roll_group_id: roll_group_id,
       bardic_bonus: bardic_bonus,
+      d20_alt: d20_alt,
+      advantage: advantage,
     )
   end
 
@@ -169,6 +171,57 @@ RSpec.describe Combat::PendingSaveResolutionService, type: :service do
       resolve(d20: 18)
 
       expect(combatant.reload.turn_state['bardicInspiration']).to include('die' => 'd8')
+    end
+  end
+
+  # Fase 0 da Cancao de Protecao (Bardo L6): o TR imposto passa a aceitar duas
+  # faces. QUEM ESCOLHE e o servidor — o cliente so rola e diz o modo.
+  describe 'vantagem/desvantagem no TR' do
+    it 'vantagem usa a MAIOR face e registra a descartada' do
+      # d20 4 + bonus 2 = 6 (falha vs CD 15); com a face 17 vira 19 -> sucesso
+      result = resolve(d20: 4, d20_alt: 17, advantage: 'advantage')
+
+      expect(result).to be_success
+      save = result.result[:save]
+      expect(save[:d20]).to eq(17)
+      expect(save[:d20_alt]).to eq(4)
+      expect(save[:advantage]).to eq('advantage')
+      expect(save[:total]).to eq(19)
+      expect(save[:success]).to be(true)
+      expect(save[:breakdown]).to include('descartado 4')
+    end
+
+    it 'desvantagem usa a MENOR face' do
+      result = resolve(d20: 19, d20_alt: 3, advantage: 'disadvantage')
+
+      save = result.result[:save]
+      expect(save[:d20]).to eq(3)
+      expect(save[:success]).to be(false)
+    end
+
+    it 'o cliente NAO escolhe: mandar so a face boa sem a 2a nao vira vantagem' do
+      result = resolve(d20: 17, advantage: 'advantage')
+
+      save = result.result[:save]
+      expect(save[:advantage]).to eq('normal')
+      expect(save[:d20]).to eq(17)
+      expect(save[:d20_alt]).to be_nil
+    end
+
+    it 'face alternativa fora de 1..20 e recusada' do
+      result = resolve(d20: 10, d20_alt: 44, advantage: 'advantage')
+
+      expect(result).not_to be_success
+      expect(result.errors).to have_key(:d20_alt)
+      expect(combatant.reload.turn_state).to have_key('pendingTargetSave')
+    end
+
+    it 'Nat 20 vale pela face ESCOLHIDA (vantagem transforma o TR em critico)' do
+      result = resolve(d20: 2, d20_alt: 20, advantage: 'advantage')
+
+      save = result.result[:save]
+      expect(save[:critical_success]).to be(true)
+      expect(result.result[:damage_applied]).to eq(0)
     end
   end
 end

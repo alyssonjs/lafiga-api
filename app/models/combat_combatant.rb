@@ -105,7 +105,24 @@ class CombatCombatant < ApplicationRecord
     next_ts = ts.except(*PER_TURN_TURN_STATE_KEYS, 'reaction')
     next_ts = next_ts.except('reactionUsedRound') unless keep_reaction
     next_ts = sweep_expired_bardic_inspiration(next_ts, cur_round)
+    next_ts = sweep_expired_countercharm(next_ts, cur_round)
     update!(actions_used: next_actions, turn_state: next_ts)
+  end
+
+  # Canção de Proteção (Bardo Nv 6) dura até o FIM do próximo turno do Bardo.
+  # Este reset roda no INÍCIO do turno dele — então na rodada seguinte à ativação a
+  # atuação AINDA VALE (só acaba quando aquele turno terminar). Limpar aqui de forma
+  # incondicional (como as PER_TURN_TURN_STATE_KEYS) cortaria um turno inteiro de
+  # duração; por isso a varredura só age a partir da rodada +2.
+  def sweep_expired_countercharm(ts, current_round)
+    cc = ts['countercharm']
+    return ts unless cc.is_a?(Hash)
+
+    activated = cc['activatedRound']
+    return ts unless activated.is_a?(Integer) && current_round.is_a?(Integer)
+    return ts if current_round <= activated + 1
+
+    ts.except('countercharm')
   end
 
   # Inspiração Bárdica dura 10 minutos (100 rodadas) — passado esse prazo o dado

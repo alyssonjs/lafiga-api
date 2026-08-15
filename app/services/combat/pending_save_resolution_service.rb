@@ -21,10 +21,16 @@ module Combat
       'inconsciente' => 'unconscious',
     }.freeze
 
-    def initialize(combatant:, current_user:, d20:, save_id:, card_roll_group_id: nil, bardic_bonus: nil)
+    def initialize(combatant:, current_user:, d20:, save_id:, card_roll_group_id: nil, bardic_bonus: nil,
+                   d20_alt: nil, advantage: nil)
       @combatant = combatant
       @current_user = current_user
       @d20 = d20.to_i
+      # Vantagem/desvantagem no TR imposto (ex.: Cancao de Protecao do Bardo).
+      # O cliente rola AS DUAS faces e diz o modo; QUEM ESCOLHE e o servidor —
+      # senao bastaria mandar sempre a face boa dizendo que houve vantagem.
+      @d20_alt = d20_alt.present? ? d20_alt.to_i : nil
+      @advantage = %w[advantage disadvantage].include?(advantage.to_s) ? advantage.to_s : 'normal'
       @save_id = save_id.to_s
       @card_roll_group_id = card_roll_group_id.to_s.presence
       # Inspiração Bárdica somada ao TR (a regra deixa decidir depois de ver o d20).
@@ -54,6 +60,9 @@ module Combat
         auto_fail = auto_fail?(pending['ability'])
         unless auto_fail || (1..20).cover?(@d20)
           return reject(:d20, 'deve estar entre 1 e 20')
+        end
+        if @d20_alt && !auto_fail && !(1..20).cover?(@d20_alt)
+          return reject(:d20_alt, 'deve estar entre 1 e 20')
         end
 
         bardic = bardic_inspiration_bonus
@@ -166,14 +175,15 @@ module Combat
     end
 
     def resolve_save(pending, auto_fail:, bardic_bonus: 0)
-      d20 = auto_fail ? 0 : @d20
+      chosen, dropped, mode = choose_face(auto_fail: auto_fail)
+      d20 = auto_fail ? 0 : chosen
       bonus = pending['saveBonus'].to_i + bardic_bonus
       total = auto_fail ? 0 : d20 + bonus
       critical_failure = !auto_fail && d20 == 1
       critical_success = !auto_fail && d20 == 20
       success = !auto_fail && !critical_failure && (critical_success || total >= pending['dc'].to_i)
 
-      {
+      out = {
         d20: d20,
         save_bonus: bonus,
         total: total,
@@ -182,13 +192,28 @@ module Combat
         auto_fail: auto_fail,
         critical_failure: critical_failure,
         critical_success: critical_success,
-        breakdown: auto_fail ? 'falha automatica' : format_breakdown(d20, bonus, total),
+        advantage: mode,
+        breakdown: auto_fail ? 'falha automatica' : format_breakdown(d20, bonus, total, dropped: dropped),
       }
+      out[:d20_alt] = dropped if dropped
+      out
     end
 
-    def format_breakdown(d20, bonus, total)
+    # Face escolhida, face descartada e modo EFETIVO. Sem a 2a face o modo cai
+    # para 'normal' — um dado so nao vira vantagem por decreto do cliente.
+    def choose_face(auto_fail:)
+      return [0, nil, 'normal'] if auto_fail
+      return [@d20, nil, 'normal'] if @d20_alt.nil? || @advantage == 'normal'
+
+      chosen = @advantage == 'advantage' ? [@d20, @d20_alt].max : [@d20, @d20_alt].min
+      dropped = chosen == @d20 ? @d20_alt : @d20
+      [chosen, dropped, @advantage]
+    end
+
+    def format_breakdown(d20, bonus, total, dropped: nil)
       sign = bonus >= 0 ? "+#{bonus}" : bonus.to_s
-      "[#{d20}]#{sign} = #{total}"
+      faces = dropped ? "[#{d20}] (descartado #{dropped})" : "[#{d20}]"
+      "#{faces}#{sign} = #{total}"
     end
 
     def resolve_damage_before_mitigation(pending, save)
