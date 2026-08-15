@@ -32,22 +32,23 @@ namespace :push do
     schedules.find_each do |sched|
       sent = sched.reminders_sent.is_a?(Hash) ? sched.reminders_sent.dup : {}
 
-      jobs = [] # [tipo, title, body]
+      # Nome do PERSONAGEM por usuário (1º PC dele nesta sessão); o Mestre (sem PC)
+      # cai em "Mestre". Sufixo de hora reaproveitado no corpo.
+      char_by_user = {}
+      sched.characters.each { |c| char_by_user[c.user_id] ||= c.name if c.user_id.present? }
+      time_suffix = sched.scheduled_time.present? ? " · às #{sched.scheduled_time}" : ''
+
+      jobs = [] # [tipo, title] — o corpo é montado por usuário (personagem + hora).
 
       # (a) lembrete "do dia"
       if morning && sent['day'] != today_s
-        jobs << ['day',
-                 "Sessão hoje — #{sched.title}",
-                 [("às #{sched.scheduled_time}" if sched.scheduled_time.present?),
-                  sched.group&.name].compact.join(' · ').presence || 'Você tem sessão hoje']
+        jobs << ['day', "Sessão hoje: #{sched.title}"]
       end
 
       # (b) lembrete "começa em breve" (<= ~60min, ainda no futuro)
       start_at = parse_start(today, sched.scheduled_time)
       if start_at && sent['hour'] != today_s && start_at > now && (start_at - now) <= 60.minutes
-        jobs << ['hour',
-                 'Sua sessão começa em breve',
-                 "#{sched.title}#{" · às #{sched.scheduled_time}" if sched.scheduled_time.present?}"]
+        jobs << ['hour', "Começa em breve: #{sched.title}"]
       end
 
       next if jobs.empty?
@@ -58,9 +59,11 @@ namespace :push do
       users = User.where(id: user_ids, notify_session_reminders: true)
                   .where(id: PushSubscription.select(:user_id))
 
-      jobs.each do |type, title, body|
+      jobs.each do |type, title|
         delivered = 0
         users.find_each do |u|
+          who = char_by_user[u.id].presence || 'Mestre'
+          body = "#{who}#{time_suffix}" # ex.: "Aberama Gold · às 19:00"
           delivered += Push::Sender.call(user: u, title: title, body: body, url: "/sessions/api-#{sched.id}", tag: "session-#{sched.id}-#{type}")
         end
         sent[type] = today_s
