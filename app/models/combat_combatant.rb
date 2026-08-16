@@ -44,6 +44,7 @@ class CombatCombatant < ApplicationRecord
   validate  :combatable_belongs_to_session  # G13
 
   before_validation :ensure_default_jsonb
+  before_save       :bump_turn_state_rev       # versiona TODA escrita do turn_state
   before_save       :auto_resolve_death_saves  # G15
   after_save        :sync_npc_defeated_state   # G8
 
@@ -108,6 +109,84 @@ class CombatCombatant < ApplicationRecord
     next_ts = sweep_expired_countercharm(next_ts, cur_round)
     next_ts = sweep_orphan_bardic_decision(next_ts)
     update!(actions_used: next_actions, turn_state: next_ts)
+  end
+
+  # Erro de concorrencia: alguem gravou o `turn_state` entre a leitura do cliente
+  # e esta escrita. Vira 409 no controller, com o combatente atual no corpo para
+  # o cliente reconciliar sem um GET extra.
+  class TurnStateRevisionConflict < StandardError
+    attr_reader :current_rev
+
+    def initialize(current_rev)
+      @current_rev = current_rev
+      super("turn_state foi alterado por outra escrita (rev atual: #{current_rev})")
+    end
+  end
+
+  TURN_STATE_OPS = %w[set merge delete].freeze
+
+  # Aplica MUTACOES GRANULARES ao `turn_state`, todas na mesma transacao e sob
+  # lock da linha.
+  #
+  # Por que existe: o caminho antigo (`update` com o hash INTEIRO montado no
+  # cliente) perde escritas concorrentes por construcao — quem grava por ultimo
+  # ressuscita as chaves que o outro apagou. Aqui o cliente declara a INTENCAO
+  # ("apaga `pendingTargetSave`", "grava `bardicInspiration`") e o servidor aplica
+  # sobre o estado FRESCO, entao duas intencoes disjuntas nunca se desfazem.
+  #
+  # `base_rev` e OPCIONAL e serve para operacoes que dependem do que foi lido
+  # (ex.: "gasta o dado que eu vi"): se a revisao mudou, levanta conflito em vez
+  # de gravar sobre premissa velha. Ops idempotentes (delete de pending) podem
+  # omitir.
+  #
+  # Ops (apenas chaves de PRIMEIRO NIVEL — e a granularidade dos pendings, que e
+  # onde a concorrencia dói; caminhos aninhados seriam complexidade sem demanda):
+  #   { 'op' => 'set',    'key' => 'pendingTargetSave', 'value' => {...} }
+  #   { 'op' => 'merge',  'key' => 'turnFlags',         'value' => {...} }  # merge raso
+  #   { 'op' => 'delete', 'key' => 'pendingTargetSave' }
+  #
+  # Retorna a nova revisao.
+  def apply_turn_state_ops!(ops, base_rev: nil)
+    raise ArgumentError, 'ops deve ser um array' unless ops.is_a?(Array)
+
+    new_rev = nil
+    with_lock do
+      reload
+      if base_rev.present? && Integer(base_rev) != turn_state_rev
+        raise TurnStateRevisionConflict, turn_state_rev
+      end
+
+      next_ts = Hash(turn_state)
+      ops.each { |op| next_ts = apply_turn_state_op(next_ts, op) }
+      new_rev = turn_state_rev + 1
+      update!(turn_state: next_ts, turn_state_rev: new_rev)
+    end
+    new_rev
+  end
+
+  def apply_turn_state_op(ts, op)
+    o = op.respond_to?(:to_unsafe_h) ? op.to_unsafe_h : op
+    o = o.stringify_keys if o.respond_to?(:stringify_keys)
+    raise ArgumentError, 'op malformada' unless o.is_a?(Hash)
+
+    kind = o['op'].to_s
+    key  = o['key'].to_s
+    raise ArgumentError, "op invalida: #{kind}" unless TURN_STATE_OPS.include?(kind)
+    raise ArgumentError, 'key obrigatoria' if key.empty?
+
+    case kind
+    when 'delete'
+      ts.except(key)
+    when 'set'
+      ts.merge(key => o['value'])
+    when 'merge'
+      current = ts[key]
+      value   = o['value']
+      raise ArgumentError, 'merge exige value do tipo objeto' unless value.is_a?(Hash)
+
+      base = current.is_a?(Hash) ? current : {}
+      ts.merge(key => base.merge(value))
+    end
   end
 
   # Decisão de Inspiração Bárdica não resolvida até o turno do portador voltar: a
@@ -186,6 +265,17 @@ class CombatCombatant < ApplicationRecord
   end
 
   private
+
+  # A revisao acompanha TODA escrita do `turn_state`, nao so a via de ops — senao
+  # a valvula REPLACE antiga (`PATCH combatant`) avancaria o estado sem avancar a
+  # versao, e o cliente descartaria como "stale" um eco que na verdade e novo.
+  # Nao re-incrementa quando `apply_turn_state_ops!` ja definiu a revisao.
+  def bump_turn_state_rev
+    return unless turn_state_changed?
+    return if turn_state_rev_changed?
+
+    self.turn_state_rev = turn_state_rev.to_i + 1
+  end
 
   def ensure_default_jsonb
     self.conditions   = []                       if conditions.nil?

@@ -56,6 +56,11 @@ module Combat
         # turn_state (válvula genérica): estado de turno opaco gerenciado pelo
         # front. Defensivo p/ CombatCombatant legado sem a coluna persistida.
         turn_state: c.respond_to?(:turn_state) ? Hash(c.turn_state) : {},
+        # Revisão monotônica do turn_state. Viaja em TODO eco para o cliente
+        # descartar `combatant_upserted` mais VELHO que o estado que ele já tem
+        # (eco atrasado devolvia dado gasto / CA expirada) e para mandar
+        # `base_rev` em ops que dependem do que leu.
+        turn_state_rev: c.respond_to?(:turn_state_rev) ? c.turn_state_rev.to_i : 0,
         death_saves: Hash(c.death_saves),
         updated_at: c.updated_at,
       }

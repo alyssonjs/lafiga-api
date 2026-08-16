@@ -184,6 +184,7 @@ Rails.application.routes.draw do
                 post :apply_typed_damage          # SERVER-AUTH — ataque multi-parcela tipado (mitiga no servidor)
                 post :resolve_pending_save        # SERVER-AUTH — TR + dano + clear do pending atomicos
                 post :consume_bardic_inspiration  # SERVER-AUTH — gasta o dado sob lock (1 vez só)
+                patch :turn_state                 # SERVER-AUTH — ops granulares versionadas (set/merge/delete)
                 post :heal
                 post :record_death_save
                 post :cast_spell                  # Fase 6D — consome spell slot em runtime_state

@@ -13,15 +13,20 @@ module Api::V1::Player::Combat
   # Leitura: membro do grupo OU DM.
   # Mutação: APENAS DM.
   class CombatCombatantsController < BaseController
-    before_action :authorize_write!, except: [:index, :update, :record_death_save, :apply_typed_damage, :resolve_pending_save, :consume_bardic_inspiration]
+    # Teto defensivo: uma resolucao real usa 2-4 ops (limpar pending + gravar
+    # resultado). Numero alto so viria de cliente com bug ou abuso.
+    MAX_TURN_STATE_OPS = 32
+
+    before_action :authorize_write!, except: [:index, :update, :turn_state, :record_death_save, :apply_typed_damage, :resolve_pending_save, :consume_bardic_inspiration]
     before_action :ensure_combat_state!, only: [:create, :reorder]
     before_action :set_combatant,
-                  only: [:update, :destroy, :apply_damage, :apply_typed_damage, :resolve_pending_save, :consume_bardic_inspiration, :heal, :record_death_save]
+                  only: [:update, :turn_state, :destroy, :apply_damage, :apply_typed_damage, :resolve_pending_save, :consume_bardic_inspiration, :heal, :record_death_save]
     before_action :authorize_combatant_update!, only: [:update]
     before_action :trace_apply_typed_damage_received!, only: [:apply_typed_damage]
     before_action :authorize_apply_typed_damage!, only: [:apply_typed_damage]
     before_action :authorize_record_death_save!, only: [:record_death_save]
     before_action :authorize_consume_bardic_inspiration!, only: [:consume_bardic_inspiration]
+    before_action :authorize_turn_state_ops!, only: [:turn_state]
 
     def index
       cs = @schedule.combat_state
@@ -234,6 +239,58 @@ module Api::V1::Player::Combat
       render json: {
         combatant: ::Combat::Serializers.combatant(combatant),
         die: consumed['die'],
+        realtime: {
+          commandId: trace[:command_id],
+          clientId: trace[:client_id],
+          eventId: event&.dig(:event_id),
+        }.compact,
+      }, status: :ok
+    end
+
+    # MUTACAO GRANULAR do turn_state — ops atomicas e versionadas.
+    #
+    # Body: { ops: [{op:'set'|'merge'|'delete', key:, value?}, ...], base_rev?: N }
+    #
+    # Existe para acabar com a classe de bug do REPLACE integral: com `PATCH
+    # combatant { turn_state: {...} }`, duas escritas concorrentes se desfazem —
+    # a que chega por ultimo foi montada sobre uma leitura anterior e RESSUSCITA
+    # as chaves que a primeira apagou (foi assim que um TR imposto ficou preso
+    # quando o alvo gastou a Inspiracao Bardica). Aqui o cliente manda a INTENCAO
+    # e o servidor aplica sobre o estado fresco, sob lock.
+    #
+    # `base_rev` e opcional: mande quando a op depende do que voce leu ("gasta o
+    # dado que eu vi") e queira 409 em vez de gravar sobre premissa velha. Ops
+    # idempotentes (delete de pending) podem omitir.
+    def turn_state
+      ops = params[:ops]
+      ops = ops.respond_to?(:to_unsafe_h) ? ops.to_unsafe_h.values : ops
+      unless ops.is_a?(Array)
+        return render json: { errors: 'ops deve ser um array' }, status: :unprocessable_entity
+      end
+      if ops.size > MAX_TURN_STATE_OPS
+        return render json: { errors: "no maximo #{MAX_TURN_STATE_OPS} ops por chamada" },
+                      status: :unprocessable_entity
+      end
+
+      begin
+        @combatant.apply_turn_state_ops!(ops, base_rev: params[:base_rev])
+      rescue CombatCombatant::TurnStateRevisionConflict => e
+        return render json: {
+          errors: e.message,
+          combatant: ::Combat::Serializers.combatant(@combatant.reload),
+        }, status: :conflict
+      rescue ArgumentError => e
+        return render json: { errors: e.message }, status: :unprocessable_entity
+      end
+
+      trace = Realtime::Telemetry.request_context(request)
+      event = ::Combat::Broadcaster.combatant_upserted(
+        @combatant,
+        command_id: trace[:command_id],
+        client_id: trace[:client_id],
+      )
+      render json: {
+        combatant: ::Combat::Serializers.combatant(@combatant),
         realtime: {
           commandId: trace[:command_id],
           clientId: trace[:client_id],
@@ -604,6 +661,21 @@ module Api::V1::Player::Combat
     # dele, o conjurante nunca a gasta. Escopo seguro: so no PROPRIO turno do jogador
     # (current_turn_belongs_to_user?), com o DM sempre autoritativo por cima.
     COMBAT_EFFECT_ON_TURN_FIELDS = (COMBAT_EFFECT_FIELDS + %w[turn_state]).freeze
+
+    # Autz do turn_state granular: MESMA politica do `update`, so que o endpoint
+    # escreve EXCLUSIVAMENTE `turn_state` (nunca hp/condicoes/iniciativa), entao o
+    # escopo e estritamente mais estreito que o do PATCH que ele substitui.
+    # DM sempre; o dono do combatente em qualquer turno (resolver o proprio TR
+    # fora do turno); o ator do turno atual (impor pending a um alvo); e o reator
+    # de AO/Retaliacao (escreve no alvo da reacao).
+    def authorize_turn_state_ops!
+      return if site_or_table_dm?
+      return if player_owns_combatant?
+      return if current_turn_belongs_to_user?
+      return if reactor_targeting_this_combatant?
+
+      render json: { error: 'sem permissao para mutar o turn_state deste combatente' }, status: :forbidden
+    end
 
     def authorize_combatant_update!
       return if site_or_table_dm?

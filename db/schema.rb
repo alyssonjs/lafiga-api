@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_13_120000) do
+ActiveRecord::Schema.define(version: 2026_08_15_200000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -244,6 +244,7 @@ ActiveRecord::Schema.define(version: 2026_08_13_120000) do
     t.datetime "updated_at", precision: 6, null: false
     t.integer "tie_break_dex", default: 10, null: false
     t.jsonb "turn_state", default: {}, null: false
+    t.integer "turn_state_rev", default: 0, null: false
     t.index ["combat_state_id", "position"], name: "index_combat_combatants_on_state_and_position", unique: true
     t.index ["combat_state_id"], name: "index_combat_combatants_on_combat_state_id"
     t.index ["combatable_type", "combatable_id"], name: "index_combat_combatants_on_combatable"
