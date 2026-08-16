@@ -181,7 +181,7 @@ RSpec.describe CombatCombatant, type: :model do
     # aberta (aba fechada, jogador ausente) travaria a hotbar do portador. Quando o
     # turno dele volta, a janela da regra já fechou — some junto com as demais
     # chaves por-turno. O DADO em si (`bardicInspiration`) NÃO é por-turno e fica.
-    it 'limpa a decisão pendente de Inspiração Bárdica, mas preserva o dado concedido' do
+    it 'descarta a decisão pendente de Inspiração Bárdica, preservando o dado concedido' do
       c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
                  turn_state: {
                    'pendingBardicInspiration' => { 'rollGroupId' => 'rg-1', 'die' => 'd6' },
@@ -240,6 +240,38 @@ RSpec.describe CombatCombatant, type: :model do
 
       expect(c.reload.turn_state).not_to have_key('countercharm')
       expect(c.turn_state['outraChave']).to eq('fica')
+    end
+
+    # Bug de campo: a decisão de Inspiração num TR IMPOSTO é a chave da 2ª fase.
+    # Apagá-la sozinha deixava o `pendingTargetSave` órfão — card "resolvido", efeito
+    # nunca aplicado e hotbar do conjurador travada. Some junto com o TR.
+    it 'decisão que segurava um TR imposto leva o TR junto (nada fica órfão)' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 turn_state: {
+                   'pendingBardicInspiration' => { 'rollGroupId' => 'rg-1', 'die' => 'd8', 'resumeSaveD20' => 9 },
+                   'pendingTargetSave' => { 'saveId' => 'medo-1', 'ability' => 'wis', 'dc' => 17 },
+                   'outraChave' => 'fica',
+                 })
+      c.reset_turn_actions!
+
+      c.reload
+      expect(c.turn_state).not_to have_key('pendingBardicInspiration')
+      expect(c.turn_state).not_to have_key('pendingTargetSave')
+      expect(c.turn_state['outraChave']).to eq('fica')
+    end
+
+    it 'decisão de rolagem COMUM (sem TR imposto) não mexe em outros pendings' do
+      c = create(:combat_combatant, combat_state: combat_state, combatable: character, position: 0,
+                 turn_state: {
+                   'pendingBardicInspiration' => { 'rollGroupId' => 'rg-2', 'die' => 'd6' },
+                   'pendingTargetSave' => { 'saveId' => 'outro', 'ability' => 'dex', 'dc' => 12 },
+                 })
+      c.reset_turn_actions!
+
+      c.reload
+      expect(c.turn_state).not_to have_key('pendingBardicInspiration')
+      # este TR não estava preso à decisão — continua para ser rolado
+      expect(c.turn_state).to have_key('pendingTargetSave')
     end
 
     it 'é seguro quando turn_state está vazio' do

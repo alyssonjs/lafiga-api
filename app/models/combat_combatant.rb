@@ -18,13 +18,13 @@ class CombatCombatant < ApplicationRecord
   # `protectiveRageAcActive`: Fúria Protetora (Protetor Tribal L3) — ação bônus
   # concede +2 CA vs corpo-a-corpo "até o início do seu PRÓXIMO turno"; zerar no
   # início do turno do dono é exatamente essa expiração.
-  # `pendingBardicInspiration`: decisão aberta da Inspiração Bárdica (somar o dado
-  # ao d20 que acabou de sair). A janela da regra é "antes do resultado ser
-  # declarado" — quando o turno do portador volta, ela já fechou. Limpar aqui é a
-  # rede de segurança contra a decisão órfã que travaria a hotbar dele para sempre
-  # (ex.: o jogador fechou a aba com a carta aberta).
+  # `pendingBardicInspiration` NÃO entra aqui: quando a decisão vem de um TR
+  # IMPOSTO, ela é a CHAVE que destrava a 2ª fase (aplicar dano/condição). Apagá-la
+  # sozinha deixava o `pendingTargetSave` órfão — o card dizia "resolvido", o efeito
+  # nunca era aplicado e a hotbar de quem conjurou ficava travada para sempre.
+  # A varredura dela mora em `sweep_orphan_bardic_decision`, que descarta o TR junto.
   PER_TURN_TURN_STATE_KEYS = %w[
-    attacksMade bearFormAttacks protectiveRageAcActive pendingBardicInspiration
+    attacksMade bearFormAttacks protectiveRageAcActive
   ].freeze
 
   belongs_to :combat_state
@@ -106,7 +106,22 @@ class CombatCombatant < ApplicationRecord
     next_ts = next_ts.except('reactionUsedRound') unless keep_reaction
     next_ts = sweep_expired_bardic_inspiration(next_ts, cur_round)
     next_ts = sweep_expired_countercharm(next_ts, cur_round)
+    next_ts = sweep_orphan_bardic_decision(next_ts)
     update!(actions_used: next_actions, turn_state: next_ts)
+  end
+
+  # Decisão de Inspiração Bárdica não resolvida até o turno do portador voltar: a
+  # janela da regra ("antes do resultado ser declarado") já fechou. Descarta a
+  # decisão E, se ela segurava um TR imposto (`resumeSaveD20`), o próprio TR —
+  # senão o pending fica órfão e trava a hotbar de quem impôs o teste. Descartar
+  # equivale ao "Dispensar TRs" do Mestre: o efeito simplesmente não se aplica.
+  def sweep_orphan_bardic_decision(ts)
+    pending = ts['pendingBardicInspiration']
+    return ts unless pending.is_a?(Hash)
+
+    next_ts = ts.except('pendingBardicInspiration')
+    next_ts = next_ts.except('pendingTargetSave') if pending.key?('resumeSaveD20')
+    next_ts
   end
 
   # Canção de Proteção (Bardo Nv 6) dura até o FIM do próximo turno do Bardo.
