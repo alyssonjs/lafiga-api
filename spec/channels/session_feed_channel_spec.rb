@@ -828,4 +828,83 @@ RSpec.describe SessionFeedChannel, type: :channel do
       )
     end
   end
+  # A quebra por tipo REVISADA viaja no ajuste de total: quando o top-up SOMA
+  # dano (Inspiracao em Combate / Melodia Flamejante), o chip do tipo tem que
+  # acompanhar o numero grande — senao o card mostra "21" com o chip "FOGO 11".
+  # ⚠️ Campo novo no payload = linha no normalizer + caso AQUI, no mesmo commit:
+  # a whitelist do feed e POR CAMPO, e o que nao esta nela morre no canal (so o
+  # cliente que emitiu ve o card certo).
+  describe 'roll_total_adjusted com quebra por tipo revisada' do
+    let(:adjust) do
+      {
+        'kind' => 'roll_total_adjusted', 'id' => 'radj-1', 'timestamp' => 1_700_000_000_000,
+        'sessionId' => schedule.id.to_s, 'rollGroupId' => 'rg-1', 'adjustedTotal' => 21,
+        'tag' => 'MELODIA FLAMEJANTE D10',
+        'adjustedBreakdown' => '3d8[1+6+4] = 11 + d10(10) = 21'
+      }
+    end
+
+    it 'preserva `lines` sanitizadas' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+      item = adjust.merge('lines' => [{ 'type' => 'fogo', 'raw' => 21, 'final' => 21, 'mult' => 1 }])
+
+      expect do
+        perform :feed_item, item: item
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including(
+          'kind' => 'roll_total_adjusted',
+          'adjustedTotal' => 21,
+          'lines' => [{ 'type' => 'fogo', 'raw' => 21, 'final' => 21, 'mult' => 1.0 }],
+        ),
+      )
+    end
+
+    it 'ajuste sem `lines` continua valido (campo opcional)' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+
+      expect do
+        perform :feed_item, item: adjust
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including('kind' => 'roll_total_adjusted', 'adjustedTotal' => 21),
+      )
+    end
+  end
+
+  # O FX do RAIO manda so o `element` + `spellId`; cada cliente resolve cor,
+  # ritmo e forma pelo catalogo local (`data/spellBeamProfiles`). Sem o campo na
+  # whitelist, o perfil por MAGIA morre no canal e so quem emitiu ve o raio certo.
+  describe 'spell_fx do raio (shape projectile + spellId)' do
+    let(:beam) do
+      {
+        'kind' => 'spell_fx', 'id' => 'sfx-1', 'timestamp' => 1_700_000_000_000,
+        'sessionId' => schedule.id.to_s, 'element' => 'fire', 'shape' => 'projectile',
+        'col' => 4, 'row' => 7, 'cells' => 9.0, 'direction' => 45.0,
+        'spellId' => 'melodia-flamejante'
+      }
+    end
+
+    it 'preserva shape `projectile` e o `spellId`' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+
+      expect do
+        perform :feed_item, item: beam
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including(
+          'kind' => 'spell_fx', 'shape' => 'projectile',
+          'element' => 'fire', 'spellId' => 'melodia-flamejante',
+        ),
+      )
+    end
+
+    it 'FX sem `spellId` continua valido (cai no perfil do elemento)' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+
+      expect do
+        perform :feed_item, item: beam.except('spellId')
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including('kind' => 'spell_fx', 'shape' => 'projectile'),
+      )
+    end
+  end
+
 end

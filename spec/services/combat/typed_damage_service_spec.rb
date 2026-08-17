@@ -194,4 +194,38 @@ RSpec.describe Combat::TypedDamageService, type: :service do
       expect(result.success?).to be(false)
     end
   end
+  # ⚠️ Bug de campo (16/08): dois danos no MESMO combatente, disparados quase no
+  # mesmo instante (dano base da cancao + parcela do dado de Inspiracao), liam o
+  # mesmo `hp_current` e a ULTIMA escrita vencia — o outro dano SUMIA. Alvo com
+  # 22 PV levou 32+5 e ficou com 17 (= 22-5): os 32 se perderam.
+  describe 'aplicacoes em sequencia nao se perdem' do
+    it 'dois danos seguidos DESCONTAM os dois (nao sobrescrevem)' do
+      character, _sheet = build_pc(hp: 40)
+      combatant = build_combatant(character, hp_max: 40)
+      combatant.update!(hp_current: 22)
+
+      described_class.call(combatant: combatant, parcels: [{ amount: 32, damage_type: 'fogo' }])
+      described_class.call(combatant: combatant, parcels: [{ amount: 5, damage_type: 'fogo' }])
+
+      # 22-32 = 0 (piso), depois 0-5 = 0. O que NAO pode acontecer e sobrar 17
+      # (= 22-5, com os 32 ignorados).
+      expect(combatant.reload.hp_current).to eq(0)
+    end
+
+    it 'somam na ordem quando nao chegam ao piso' do
+      character, _sheet = build_pc(hp: 40)
+      combatant = build_combatant(character, hp_max: 40)
+
+      described_class.call(combatant: combatant, parcels: [{ amount: 11, damage_type: 'fogo' }])
+      described_class.call(combatant: combatant, parcels: [{ amount: 10, damage_type: 'fogo' }])
+
+      expect(combatant.reload.hp_current).to eq(19)
+    end
+
+    it 'a aplicacao acontece SOB LOCK (serializa danos concorrentes)' do
+      src = File.read(Rails.root.join('app/services/combat/typed_damage_service.rb'))
+      expect(src).to match(/@combatant\.with_lock do/)
+    end
+  end
+
 end

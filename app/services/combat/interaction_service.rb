@@ -40,6 +40,7 @@ module Combat
     KIND_INSTINCTIVE_FORTITUDE = 'instinctive_fortitude'
     KIND_PROTECTIVE_SWAP = 'protective_swap'
     KIND_TRIBE_DEFENDER = 'tribe_defender'
+    KIND_COMBAT_INSPIRATION_AC = 'combat_inspiration_ac'
     DEFENDER_SKILL_OPTIONS = %w[Atletismo Acrobacia].freeze
     ATTACKER_SKILL = 'Atletismo'
 
@@ -329,6 +330,80 @@ module Combat
         'tribe_defender' => td,
         'label' => presence(p['label']) || 'Defensor da Tribo',
       }
+    end
+
+    # ---- upsert Inspiração em Combate: CA (Bardo, Colégio da Bravura L3) ------
+    # O DISPARO vem do ATACANTE (dono do turno; NPC → Mestre já coberto), logo
+    # depois da rolagem de ataque. O `source_id` é o ALVO (o REATOR que carrega o
+    # dado), único pending responder (`need:'offer_reaction'`), fase única
+    # `declared`.
+    #
+    # ⚠️ A interação NÃO decide acerto/erro. Neste projeto o V/X é do MESTRE, no
+    # card do chat; aqui só entra a CA EFETIVA contra ESTE ataque (base + dado).
+    # Aceitar → o respond consome a reação E o dado (server-side) e resolve com
+    # `final_ac`; recusar → `declined` e NADA é consumido (F3.18). Enquanto a
+    # janela está aberta o front segura o V/X — senão o Mestre decidiria contra
+    # uma CA que está prestes a mudar.
+    #
+    # Retorna o hash normalizado, ou `nil` se inválido (caller → 422).
+    def build_combat_inspiration_ac(params)
+      p = stringify(params)
+
+      kind = (p['kind'] || KIND_COMBAT_INSPIRATION_AC).to_s
+      return nil unless kind == KIND_COMBAT_INSPIRATION_AC
+
+      ci = normalize_combat_inspiration_ac(dig(p, 'combat_inspiration_ac'))
+      return nil if ci.nil?
+
+      reactor_id = presence(p['source_id']) || ci['target_char_id']
+      return nil if reactor_id.nil?
+
+      raw = Array(dig(p, 'pending_responders')).find { |r| stringify(r)['character_id'].to_s == reactor_id.to_s }
+      owned = truthy(stringify(raw || {})['owned_by_dm'])
+
+      {
+        'id' => presence(p['id']) || SecureRandom.uuid,
+        'kind' => KIND_COMBAT_INSPIRATION_AC,
+        'phase' => 'declared',
+        'source_id' => reactor_id.to_s,
+        'target_ids' => [reactor_id.to_s],
+        'pending_responders' => [
+          { 'character_id' => reactor_id.to_s, 'need' => 'offer_reaction', 'owned_by_dm' => owned, 'responded' => false },
+        ],
+        'combat_inspiration_ac' => ci,
+        'label' => presence(p['label']) || 'Inspiração em Combate: CA',
+      }
+    end
+
+    # Bloco descritivo + os números que o prompt e o log precisam. `die_roll`/
+    # `final_ac`/`outcome` só entram no respond. `base_ac` e `die` são
+    # OBRIGATÓRIOS: sem eles não há CA efetiva para calcular, e uma janela que não
+    # muda nada seria pior que janela nenhuma (gastaria a reação à toa).
+    def normalize_combat_inspiration_ac(raw)
+      return nil if raw.nil?
+      h = stringify(raw)
+
+      target = presence(h['target_char_id'])
+      die    = presence(h['die'])
+      return nil if target.nil? || die.nil?
+      return nil unless die.to_s.match?(/\Ad\d+\z/)
+      return nil unless h['base_ac'].to_s.match?(/\A\d+\z/)
+
+      out = {
+        'target_char_id' => target.to_s,
+        'die' => die.to_s,
+        'base_ac' => h['base_ac'].to_i,
+      }
+      out['attacker_name']    = presence(h['attacker_name']).to_s    if presence(h['attacker_name'])
+      out['target_name']      = presence(h['target_name']).to_s      if presence(h['target_name'])
+      out['attack_name']      = presence(h['attack_name']).to_s      if presence(h['attack_name'])
+      out['attack_roll_total'] = h['attack_roll_total'].to_i if h['attack_roll_total'].to_s.match?(/\A-?\d+\z/)
+      # Card do ataque no feed: é por ele que o front repõe a CA exibida ao Mestre.
+      out['roll_group_id']    = presence(h['roll_group_id']).to_s    if presence(h['roll_group_id'])
+      out['die_roll'] = nil
+      out['final_ac'] = nil
+      out['outcome'] = nil
+      out
     end
 
     def normalize_tribe_defender(raw)

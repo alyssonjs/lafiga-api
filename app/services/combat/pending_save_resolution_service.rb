@@ -69,8 +69,7 @@ module Combat
         return reject(:bardic_bonus, 'sem dado de Inspiração Bárdica para somar') if @bardic_bonus.positive? && bardic.zero?
 
         save = resolve_save(pending, auto_fail: auto_fail, bardic_bonus: bardic)
-        damage_before_mitigation = resolve_damage_before_mitigation(pending, save)
-        damage_result = apply_damage(pending, damage_before_mitigation)
+        damage_result = apply_damage(resolve_damage_parcels(pending, save))
         raise ActiveRecord::Rollback unless damage_result
 
         next_turn_state = Hash(@combatant.turn_state).deep_dup
@@ -177,7 +176,12 @@ module Combat
     def resolve_save(pending, auto_fail:, bardic_bonus: 0)
       chosen, dropped, mode = choose_face(auto_fail: auto_fail)
       d20 = auto_fail ? 0 : chosen
-      bonus = pending['saveBonus'].to_i + bardic_bonus
+      # PENALIDADE imposta pela fonte (ex.: dado de Inspiracao da Antifona do
+      # Bardo Busca da Cancao): SUBTRAI do TR. Fica separada do `saveBonus` de
+      # proposito — somar as duas esconderia a penalidade do jogador, que
+      # precisa ver POR QUE o teste ficou mais dificil.
+      penalty = [pending['savePenalty'].to_i, 0].max
+      bonus = pending['saveBonus'].to_i + bardic_bonus - penalty
       total = auto_fail ? 0 : d20 + bonus
       critical_failure = !auto_fail && d20 == 1
       critical_success = !auto_fail && d20 == 20
@@ -193,6 +197,7 @@ module Combat
         critical_failure: critical_failure,
         critical_success: critical_success,
         advantage: mode,
+        save_penalty: penalty,
         breakdown: auto_fail ? 'falha automatica' : format_breakdown(d20, bonus, total, dropped: dropped),
       }
       out[:d20_alt] = dropped if dropped
@@ -216,17 +221,42 @@ module Combat
       "#{faces}#{sign} = #{total}"
     end
 
-    def resolve_damage_before_mitigation(pending, save)
-      group_damage = [pending['aoeDamage'].to_i, 0].max
-      return group_damage * 2 if save[:critical_failure]
-      return 0 if save[:critical_success]
-      return group_damage unless save[:success]
+    # Parcelas TIPADAS do dano de area, ja com o veredito do TR aplicado.
+    #
+    # Uma magia pode causar mais de um tipo (Antifona do Trovao e do Relampago:
+    # 4d8 trovejante + 4d6 eletrico). Somar tudo num tipo so quebraria a
+    # mitigacao — um alvo resistente a eletrico pagaria cheio pelos dois.
+    #
+    # O veredito vale POR PARCELA (a metade arredonda para baixo em cada uma),
+    # e nao no total: assim os chips por tipo do card SOMAM exatamente o total
+    # aplicado, sem sobra de arredondamento a explicar na mesa.
+    def resolve_damage_parcels(pending, save)
+      parcels = [{ amount: [pending['aoeDamage'].to_i, 0].max, type: pending['aoeDamageType'].presence }]
+      Array(pending['aoeExtraDamage']).each do |extra|
+        next unless extra.is_a?(Hash)
 
-      ActiveModel::Type::Boolean.new.cast(pending['aoeHalfOnSave']) ? group_damage / 2 : 0
+        parcels << { amount: [extra['amount'].to_i, 0].max, type: extra['type'].presence }
+      end
+
+      half = ActiveModel::Type::Boolean.new.cast(pending['aoeHalfOnSave'])
+      parcels.filter_map do |parcel|
+        amount = verdict_amount(parcel[:amount], save, half: half)
+        next if amount.zero?
+
+        { amount: amount, damage_type: parcel[:type], magical: true }
+      end
     end
 
-    def apply_damage(pending, amount)
-      if amount.zero?
+    def verdict_amount(amount, save, half:)
+      return amount * 2 if save[:critical_failure]
+      return 0 if save[:critical_success]
+      return amount unless save[:success]
+
+      half ? amount / 2 : 0
+    end
+
+    def apply_damage(parcels)
+      if parcels.empty?
         return {
           damage_applied: 0,
           damage_raw: 0,
@@ -239,11 +269,7 @@ module Combat
 
       result = Combat::TypedDamageService.call(
         combatant: @combatant,
-        parcels: [{
-          amount: amount,
-          damage_type: pending['aoeDamageType'].presence,
-          magical: true,
-        }],
+        parcels: parcels,
         current_user: @current_user,
         attack_kind: 'normal',
         extra_resistances: runtime_resistances,
@@ -274,7 +300,44 @@ module Combat
         out.concat(%w[contundente perfurante cortante])
       end
 
+      out.concat(wayfinder_refrain_resistances(turn_state))
+
       out.uniq
+    end
+
+    # Refrao de Desbravador (Bardo Busca da Cancao L6): o ALVO carrega o buff no
+    # proprio turn_state, com validade por RODADA ABSOLUTA. O mapa cancao ->
+    # resistencias e DADO, espelhando `WAYFINDER_REFRAIN_BENEFITS` do front.
+    #
+    # ⚠️ Precisa existir AQUI: o TR de area e resolvido no servidor, entao um
+    # Refrao so no TypeScript nao protegeria ninguem em multiplayer.
+    WAYFINDER_REFRAIN_RESISTANCES = {
+      'melodia-flamejante' => %w[fogo],
+      'cancao-de-reestruturacao' => ['concussao (nao-magico)', 'cortante (nao-magico)',
+                                     'perfurante (nao-magico)'],
+      'cantico-da-perda-gelida' => %w[frio],
+      'cancao-da-vida' => %w[necrotico],
+      'antifona-do-trovao-e-do-relampago' => %w[relampago trovejante],
+      'balada-do-ressurgimento-agoniante' => %w[acido veneno],
+    }.freeze
+
+    # ⚠️ Refroes sao CUMULATIVOS (houserule 16/08 — a fonte manda substituir), por
+    # isso o valor e uma LISTA. Aceita tambem o formato ANTIGO (um Hash so):
+    # havia buff em campo quando o formato mudou, e ignora-lo apagaria uma
+    # resistencia ja paga com acao bonus.
+    def wayfinder_refrain_resistances(turn_state)
+      raw = turn_state['wayfinderRefrain']
+      entries = raw.is_a?(Array) ? raw : [raw]
+      round = @combatant.combat_state.round.to_i
+
+      entries.flat_map do |refrain|
+        next [] unless refrain.is_a?(Hash)
+        # Rodada ABSOLUTA: expirado nao protege, mesmo que o buff ainda esteja no
+        # turn_state (a limpeza e preguicosa de proposito).
+        next [] unless round < refrain['expiresAtRound'].to_i
+
+        WAYFINDER_REFRAIN_RESISTANCES.fetch(refrain['songId'].to_s, [])
+      end
     end
 
     def barbarian?
@@ -289,6 +352,31 @@ module Combat
       false
     end
 
+    MITIGATION_LABELS = {
+      resistant: 'resistencia',
+      immune: 'imunidade',
+      vulnerable: 'vulnerabilidade',
+    }.freeze
+
+    # "22 fogo -> 11 (resistencia)" — so das parcelas que a defesa MUDOU.
+    #
+    # ⚠️ Sem isto o log dizia apenas "sofre 11 de dano" e a mesa nao tinha como
+    # saber se a resistencia entrou: 11 e tanto "22 com resistencia" quanto
+    # "metade num TR bem-sucedido". Visto em campo (16/08) com o Refrao de
+    # Desbravador — a mitigacao estava CERTA e parecia bug.
+    def mitigation_note(damage_result)
+      changed = Array(damage_result[:breakdown]).select do |row|
+        MITIGATION_LABELS.key?(row[:modifier]&.to_sym)
+      end
+      return '' if changed.empty?
+
+      parts = changed.map do |row|
+        "#{row[:raw]} #{row[:damage_type]} → #{row[:final]} " \
+          "(#{MITIGATION_LABELS[row[:modifier].to_sym]})"
+      end
+      " [#{parts.join(', ')}]"
+    end
+
     def create_resolution_log!(pending, save, damage_result)
       target_name = @combatant.name.to_s.sub(/^\[[^\]]+\]\s*/, '')
       source_name = pending['sourceLabel'].presence || pending['sourceActorName'].presence || 'efeito'
@@ -297,7 +385,7 @@ module Combat
       message =
         "#{emoji} #{target_name} #{verdict} no TR de #{pending['ability'].to_s.upcase} " \
         "de #{source_name} (#{save[:total]} vs CD #{save[:dc]}) → sofre " \
-        "#{damage_result[:damage_applied]} de dano."
+        "#{damage_result[:damage_applied]} de dano#{mitigation_note(damage_result)}."
 
       @combatant.combat_state.schedule.session_logs.create!(
         kind: :combat,

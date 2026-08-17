@@ -48,7 +48,10 @@ class SessionFeedChannel < ApplicationCable::Channel
   MAX_OA_THREATS = 24
   # FX de magia de área (spell_fx): elementos/formas válidos (espelham SpellEffects).
   SPELL_FX_ELEMENTS = %w[fire cold lightning acid radiant necrotic force thunder poison psychic].freeze
-  SPELL_FX_SHAPES = %w[circle cone line square].freeze
+  # `projectile`: NAO e area — e um PROJETIL magico voando do conjurador ate o
+  # alvo (Melodia Flamejante), como a flecha/arma de arremesso. Reusa
+  # `col/row` (origem) + `direction`/`cells` (destino derivado) do mesmo payload.
+  SPELL_FX_SHAPES = %w[circle cone line square projectile].freeze
   MAX_SPELL_FX_CELLS = 200
 
   def self.stream_name_for(schedule_id)
@@ -342,6 +345,8 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalize_damage_mitigation(h)
     when 'roll_total_adjusted'
       normalize_roll_total_adjusted(h)
+    when 'target_ac_adjusted'
+      normalize_target_ac_adjusted(h)
     else
       nil
     end
@@ -538,7 +543,43 @@ class SessionFeedChannel < ApplicationCable::Channel
     }
     breakdown = h['adjustedBreakdown'].to_s
     out['adjustedBreakdown'] = breakdown.slice(0, 300) if breakdown.present?
+    # Quebra por tipo REVISADA. Quando o ajuste SOMA dano (top-up da Inspiracao
+    # em Combate / dado da Melodia Flamejante), o total muda e os chips por tipo
+    # tambem precisam mudar — senao o card mostra "21" com o chip "FOGO 11".
+    # ⚠️ Campo novo no payload = linha AQUI + caso no spec, no mesmo commit: a
+    # whitelist do feed e POR CAMPO, e o que nao esta nela morre no canal.
+    lines = sanitize_damage_lines(h['lines'])
+    out['lines'] = lines if lines.present?
     out
+  end
+
+  # Irmão do `roll_total_adjusted`: revisa a CA DO ALVO num card de ataque já
+  # postado. A Inspiração em Combate (Bardo, Colégio da Bravura) deixa o alvo
+  # somar um dado à CA contra AQUELE ataque, e o V/X do Mestre é julgado contra
+  # ela — sem o eco, só o cliente que resolveu veria a CA nova.
+  def normalize_target_ac_adjusted(h)
+    id = h['id'].to_s
+    return nil if id.empty? || id.length > MAX_ID_LENGTH
+
+    ts = h['timestamp']
+    return nil unless ts.is_a?(Numeric) || ts.to_s.match?(/\A\d+\z/)
+
+    rg = h['rollGroupId'].to_s
+    return nil if rg.empty? || rg.length > MAX_ID_LENGTH
+
+    ac = h['adjustedTargetAc']
+    ac_i = ac.is_a?(Numeric) ? ac.to_i : Integer(ac, exception: false)
+    return nil if ac_i.nil?
+
+    {
+      'kind' => 'target_ac_adjusted',
+      'id' => id,
+      'timestamp' => ts.is_a?(Numeric) ? ts : ts.to_i,
+      'sessionId' => @schedule_id.to_s,
+      'rollGroupId' => rg,
+      'adjustedTargetAc' => ac_i,
+      'tag' => h['tag'].to_s.slice(0, 48),
+    }
   end
 
   # Atualização in-place do `attackHitOutcome` numa rolagem de ataque (eco p/ todos os clientes).
@@ -754,6 +795,12 @@ class SessionFeedChannel < ApplicationCable::Channel
         'maxCol' => b['maxCol'].to_i, 'maxRow' => b['maxRow'].to_i
       }
     end
+    # Id da magia/cancao que originou o FX. Cada cliente resolve o PERFIL visual
+    # (cor/ritmo/forma) pelo catalogo local, entao raio novo NAO faz o payload
+    # crescer. ⚠️ Campo novo = linha aqui + caso no spec, no mesmo commit: a
+    # whitelist do feed e POR CAMPO e o que nao esta nela morre no canal.
+    spell_id = h['spellId'].to_s
+    out['spellId'] = spell_id.truncate(MAX_ID_LENGTH) if spell_id.present?
     client_id = h['clientId'].to_s
     out['clientId'] = client_id.truncate(MAX_ID_LENGTH) if client_id.present?
     out

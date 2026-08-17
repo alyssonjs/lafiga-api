@@ -23,8 +23,12 @@ class CombatCombatant < ApplicationRecord
   # sozinha deixava o `pendingTargetSave` órfão — o card dizia "resolvido", o efeito
   # nunca era aplicado e a hotbar de quem conjurou ficava travada para sempre.
   # A varredura dela mora em `sweep_orphan_bardic_decision`, que descarta o TR junto.
+  # `battleMagic` (Bardo, Colégio da Bravura L14): a janela de ataque com arma
+  # como AÇÃO BÔNUS nasce de uma magia conjurada com a AÇÃO — vale só naquele
+  # turno. Sem entrar aqui, um turno em que o Bardo conjurou deixaria a lane de
+  # bônus acesa nos turnos seguintes.
   PER_TURN_TURN_STATE_KEYS = %w[
-    attacksMade bearFormAttacks protectiveRageAcActive
+    attacksMade bearFormAttacks protectiveRageAcActive battleMagic
   ].freeze
 
   belongs_to :combat_state

@@ -33,4 +33,38 @@ RSpec.describe SessionFeed::RollNormalizer, type: :service do
     expect(result['revealAt']).to eq(base['timestamp'] + 5_000)
     expect(described_class.call(schedule_id: 69, item: base.merge('kind' => 'chat'))).to be_nil
   end
+
+  # As ofertas com DECISOR fora do cliente que rolou (Palavras de Interrupcao)
+  # sao avaliadas por OUTRO cliente lendo o item NORMALIZADO — os campos de
+  # identidade tem que sobreviver ao canal (bug de 16/08: o ataque escapava pelo
+  # attackerTokenId, so copiado p/ attack; o DANO chegava sem identidade nenhuma
+  # e a janela nunca abria no cliente do Mestre).
+  it 'preserva a identidade do rolador (actorCombatantId) em qualquer tipo' do
+    result = described_class.call(schedule_id: 69, item: base.merge('actorCombatantId' => 'comb-9'))
+
+    expect(result['actorCombatantId']).to eq('comb-9')
+  end
+
+  it 'rolagem de DANO preserva actorCombatantId e targetTokenId' do
+    result = described_class.call(
+      schedule_id: 69,
+      item: base.merge(
+        'type' => 'damage', 'label' => 'dano Besta de Mao',
+        'actorCombatantId' => 'comb-9', 'damageType' => 'perfurante',
+      ),
+    )
+
+    expect(result).to include(
+      'type' => 'damage',
+      'actorCombatantId' => 'comb-9',
+      'targetTokenId' => 'target',
+      'damageType' => 'perfurante',
+    )
+  end
+
+  it 'identificador gigante continua descartado (cap de tamanho)' do
+    result = described_class.call(schedule_id: 69, item: base.merge('actorCombatantId' => 'x' * 500))
+
+    expect(result).not_to have_key('actorCombatantId')
+  end
 end

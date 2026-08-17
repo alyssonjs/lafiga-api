@@ -642,4 +642,83 @@ RSpec.describe Combat::InteractionService do
       expect(described_class.build_tribe_defender(td_params.merge(kind: 'contest'))).to be_nil
     end
   end
+
+  # ---- Inspiração em Combate: CA (Bardo, Colégio da Bravura L3) --------------
+  # Diretriz: front-lafiga/src/docs/class-feature-directives/bard/subclasses/
+  #           colegio-da-bravura.md (âncoras F3.15..F3.19)
+  describe '.build_combat_inspiration_ac' do
+    let(:ci_params) do
+      {
+        kind: 'combat_inspiration_ac',
+        source_id: 'alvo-1',
+        combat_inspiration_ac: {
+          target_char_id: 'alvo-1',
+          die: 'd8',
+          base_ac: 15,
+          attacker_name: 'Goblin',
+          target_name: 'Bellamy',
+          attack_name: 'Cimitarra',
+          attack_roll_total: 17,
+          roll_group_id: 'rg-atk-1',
+        },
+      }
+    end
+
+    it 'F3.15 — abre na fase declared com o ALVO como único responder da reação' do
+      ai = described_class.build_combat_inspiration_ac(ci_params)
+      expect(ai['kind']).to eq('combat_inspiration_ac')
+      expect(ai['phase']).to eq('declared')
+      # O `source_id` é o REATOR (o alvo que carrega o dado), não o atacante —
+      # mesmo desenho do Ataque de Oportunidade.
+      expect(ai['source_id']).to eq('alvo-1')
+      expect(ai['target_ids']).to eq(['alvo-1'])
+      expect(ai['pending_responders']).to eq([
+        { 'character_id' => 'alvo-1', 'need' => 'offer_reaction', 'owned_by_dm' => false, 'responded' => false },
+      ])
+      expect(ai['id']).to be_present
+      expect(ai['label']).to eq('Inspiração em Combate: CA')
+    end
+
+    it 'F3.16 — preserva CA base, dado e o card do ataque; desfecho começa vazio' do
+      ci = described_class.build_combat_inspiration_ac(ci_params)['combat_inspiration_ac']
+      expect(ci['base_ac']).to eq(15)
+      expect(ci['die']).to eq('d8')
+      expect(ci['attack_roll_total']).to eq(17)
+      expect(ci['roll_group_id']).to eq('rg-atk-1')
+      expect(ci['attacker_name']).to eq('Goblin')
+      expect(ci['target_name']).to eq('Bellamy')
+      # Só o respond preenche estes três.
+      expect(ci['die_roll']).to be_nil
+      expect(ci['final_ac']).to be_nil
+      expect(ci['outcome']).to be_nil
+    end
+
+    it 'F3.17 — NPC alvo (owned_by_dm) mantém o roteamento ao Mestre' do
+      ai = described_class.build_combat_inspiration_ac(
+        ci_params.merge(pending_responders: [{ character_id: 'alvo-1', owned_by_dm: true }]),
+      )
+      expect(ai['pending_responders'].first['owned_by_dm']).to be true
+    end
+
+    it 'F3.19 — recusa payload sem os insumos da CA efetiva' do
+      # Sem `base_ac` ou sem `die` não há CA nova a calcular: uma janela assim
+      # gastaria a reação do jogador sem mudar nada.
+      no_ac = ci_params.deep_dup.tap { |h| h[:combat_inspiration_ac].delete(:base_ac) }
+      no_die = ci_params.deep_dup.tap { |h| h[:combat_inspiration_ac].delete(:die) }
+      no_target = ci_params.deep_dup.tap do |h|
+        h[:combat_inspiration_ac].delete(:target_char_id)
+        h.delete(:source_id)
+      end
+      expect(described_class.build_combat_inspiration_ac(no_ac)).to be_nil
+      expect(described_class.build_combat_inspiration_ac(no_die)).to be_nil
+      expect(described_class.build_combat_inspiration_ac(no_target)).to be_nil
+      expect(described_class.build_combat_inspiration_ac(ci_params.merge(combat_inspiration_ac: nil))).to be_nil
+      expect(described_class.build_combat_inspiration_ac(ci_params.merge(kind: 'contest'))).to be_nil
+    end
+
+    it 'F3.19b — dado com formato inválido não passa (o rótulo vira texto no chat)' do
+      bad = ci_params.deep_dup.tap { |h| h[:combat_inspiration_ac][:die] = '8' }
+      expect(described_class.build_combat_inspiration_ac(bad)).to be_nil
+    end
+  end
 end

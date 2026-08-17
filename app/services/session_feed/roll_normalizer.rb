@@ -54,6 +54,12 @@ module SessionFeed
 
         copy_identifier(h, out, 'rollGroupId')
         copy_identifier(h, out, 'interactionId')
+        # Identidade de QUEM rolou. Sem ela, ofertas avaliadas em OUTRO cliente
+        # (Palavras de Interrupcao: o dono do Bardo decide sobre a rolagem alheia)
+        # nao conseguem medir distancia nem faccao — o ataque escapava pelo
+        # `attackerTokenId` (so copiado p/ type=attack) e o DANO chegava sem nada
+        # (bug de 16/08: janela nunca abria no cliente do Mestre).
+        copy_identifier(h, out, 'actorCombatantId')
         resolution_text = h['resolutionText'].to_s
         out['resolutionText'] = resolution_text.truncate(500) if resolution_text.present?
 
@@ -68,6 +74,9 @@ module SessionFeed
         if type == 'damage'
           lines = sanitize_damage_lines(h['damageLines'])
           out['damageLines'] = lines if lines.present?
+          # Alvo do dano: a reversao das Palavras de Interrupcao (F3.21) e o
+          # top-up da Bravura precisam saber em quem o dano aterrissou.
+          copy_identifier(h, out, 'targetTokenId')
         end
 
         sender_role = h['senderRole'].to_s

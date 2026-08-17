@@ -224,4 +224,218 @@ RSpec.describe Combat::PendingSaveResolutionService, type: :service do
       expect(result.result[:damage_applied]).to eq(0)
     end
   end
+
+  # PENALIDADE imposta pela fonte — Antifona do Trovao e do Relampago (Bardo
+  # Busca da Cancao): o dado de Inspiracao SUBTRAI do TR do alvo.
+  describe 'penalidade no TR (savePenalty)' do
+    before { combatant.update!(turn_state: { 'pendingTargetSave' => pending.merge('savePenalty' => 7) }) }
+
+    it 'subtrai do total e pode virar sucesso em falha' do
+      # 14 + 2 = 16 passaria a CD 15; com -7 o total cai para 9 e falha.
+      result = resolve(d20: 14)
+
+      save = result.result[:save]
+      expect(save[:total]).to eq(9)
+      expect(save[:success]).to be(false)
+      expect(save[:save_penalty]).to eq(7)
+    end
+
+    it 'aparece no breakdown — o jogador precisa VER por que ficou mais dificil' do
+      # Somar a penalidade dentro do `saveBonus` esconderia a causa: a mesa veria
+      # so um bonus estranhamente baixo, sem nada explicando de onde veio.
+      expect(resolve(d20: 14).result[:save][:breakdown]).to eq('[14]-5 = 9')
+    end
+
+    it 'penalidade ausente ou negativa nao mexe no TR' do
+      combatant.update!(turn_state: { 'pendingTargetSave' => pending.merge('savePenalty' => -4) })
+
+      expect(resolve(d20: 14).result[:save][:total]).to eq(16)
+    end
+
+    it 'a Inspiracao Bardica do ALVO ainda contra-ataca a penalidade' do
+      combatant.update!(
+        turn_state: {
+          'pendingTargetSave' => pending.merge('savePenalty' => 7),
+          'bardicInspiration' => { 'die' => 'd8', 'fromName' => 'Jordan' },
+        },
+      )
+
+      expect(resolve(d20: 14, bardic_bonus: 6).result[:save][:total]).to eq(15)
+    end
+  end
+
+  # REFRAO DE DESBRAVADOR (Bardo Busca da Cancao L6): o buff mora no turn_state
+  # do ALVO e precisa valer NO SERVIDOR — o TR de area e resolvido aqui, entao um
+  # Refrao so no TypeScript nao protegeria ninguem em multiplayer.
+  describe 'resistencia do Refrao de Desbravador' do
+    def arm_refrain(song_id, expires_at:, damage_type: 'fogo')
+      arm_refrains([{ 'songId' => song_id, 'expiresAtRound' => expires_at }], damage_type: damage_type)
+    end
+
+    def arm_refrains(list, damage_type: 'fogo')
+      combatant.update!(
+        hp_current: 60,
+        turn_state: {
+          'pendingTargetSave' => pending.merge('aoeDamage' => 20, 'aoeDamageType' => damage_type),
+          'wayfinderRefrain' => list,
+        },
+      )
+    end
+
+    it 'a Melodia Flamejante da resistencia a FOGO (dano cai pela metade)' do
+      arm_refrain('melodia-flamejante', expires_at: 13)
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(10)
+    end
+
+    it 'o LOG diz que houve mitigacao — senao a mesa nao distingue de um TR passado' do
+      # Bug de leitura em campo (16/08): "sofre 11 de dano" e o MESMO numero que
+      # sairia de um TR bem-sucedido sem resistencia nenhuma. A mitigacao estava
+      # certa e parecia bug porque o log nao contava a historia.
+      arm_refrain('melodia-flamejante', expires_at: 13)
+      resolve(d20: 3)
+
+      log = combatant.combat_state.schedule.session_logs.order(:created_at).last
+      expect(log.message).to include('sofre 10 de dano')
+      expect(log.message).to include('20 fogo → 10 (resistencia)')
+    end
+
+    it 'sem mitigacao o log NAO ganha ruido' do
+      combatant.update!(
+        hp_current: 60,
+        turn_state: { 'pendingTargetSave' => pending.merge('aoeDamage' => 20, 'aoeDamageType' => 'fogo') },
+      )
+      resolve(d20: 3)
+
+      log = combatant.combat_state.schedule.session_logs.order(:created_at).last
+      expect(log.message).to end_with('sofre 20 de dano.')
+    end
+
+    it 'a resistencia vale so para o TIPO da cancao', :aggregate_failures do
+      arm_refrain('melodia-flamejante', expires_at: 13, damage_type: 'frio')
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(20)
+    end
+
+    it 'EXPIRADO nao protege (rodada absoluta, combate na 3)' do
+      # A limpeza do buff e preguicosa de proposito: o que decide e a rodada, nao
+      # a presenca da chave.
+      arm_refrain('melodia-flamejante', expires_at: 3)
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(20)
+    end
+
+    it 'cancao fora do mapa nao inventa resistencia' do
+      arm_refrain('cancao-inexistente', expires_at: 13)
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(20)
+    end
+
+    it 'refroes CUMULATIVOS: cada um protege o SEU tipo (houserule)' do
+      # A fonte manda substituir; a mesa decidiu empilhar. Os dois valem.
+      arm_refrains(
+        [{ 'songId' => 'melodia-flamejante', 'expiresAtRound' => 13 },
+         { 'songId' => 'cantico-da-perda-gelida', 'expiresAtRound' => 13 }],
+        damage_type: 'frio',
+      )
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(10)
+    end
+
+    it 'na LISTA, um refrao expirado nao protege mesmo com outro valido ao lado' do
+      arm_refrains(
+        [{ 'songId' => 'melodia-flamejante', 'expiresAtRound' => 3 },
+         { 'songId' => 'cantico-da-perda-gelida', 'expiresAtRound' => 13 }],
+        damage_type: 'fogo',
+      )
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(20)
+    end
+
+    it 'formato ANTIGO (Hash unico) continua valendo' do
+      # Havia buff em campo quando o formato virou lista.
+      combatant.update!(
+        hp_current: 60,
+        turn_state: {
+          'pendingTargetSave' => pending.merge('aoeDamage' => 20, 'aoeDamageType' => 'fogo'),
+          'wayfinderRefrain' => { 'songId' => 'melodia-flamejante', 'expiresAtRound' => 13 },
+        },
+      )
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(10)
+    end
+
+    it 'buff malformado nao quebra a resolucao' do
+      combatant.update!(
+        hp_current: 60,
+        turn_state: {
+          'pendingTargetSave' => pending.merge('aoeDamage' => 20, 'aoeDamageType' => 'fogo'),
+          'wayfinderRefrain' => 'sim',
+        },
+      )
+
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(20)
+    end
+  end
+
+  # DANO MULTI-TIPO — a Antifona causa 4d8 trovejante + 4d6 eletrico. Somar tudo
+  # num tipo so quebraria a mitigacao por tipo do alvo.
+  describe 'dano de area com MAIS DE UM TIPO (aoeExtraDamage)' do
+    let(:two_types) do
+      pending.merge(
+        'aoeDamage' => 18, 'aoeDamageType' => 'trovejante',
+        'aoeExtraDamage' => [{ 'amount' => 14, 'type' => 'eletrico' }],
+      )
+    end
+
+    # Cada resolucao CONSOME o pending (e por isso que duas abas nao aplicam o
+    # mesmo dano duas vezes). Para medir outro d20 e preciso repor o estado.
+    def rearm(state = two_types, hp: 60)
+      combatant.update!(hp_current: hp, turn_state: { 'pendingTargetSave' => state })
+    end
+
+    before { rearm }
+
+    it 'aplica as DUAS parcelas na falha' do
+      expect(resolve(d20: 3).result[:damage_applied]).to eq(32)
+    end
+
+    it 'a metade do sucesso vale POR PARCELA (os chips somam o total)' do
+      # 18/2 + 14/2 = 9 + 7 = 16. Metade no TOTAL daria 16 tambem aqui, mas com
+      # numeros impares os chips por tipo nao fechariam com o total do card.
+      expect(resolve(d20: 19).result[:damage_applied]).to eq(16)
+
+      rearm(two_types.merge('aoeDamage' => 9, 'aoeExtraDamage' => [{ 'amount' => 9, 'type' => 'eletrico' }]))
+      # 9/2 + 9/2 = 4 + 4 = 8 (e nao 18/2 = 9): a metade arredonda POR PARCELA.
+      expect(resolve(d20: 19).result[:damage_applied]).to eq(8)
+    end
+
+    it 'Nat 20 zera as duas parcelas' do
+      expect(resolve(d20: 20).result[:damage_applied]).to eq(0)
+    end
+
+    it 'falha critica dobra as duas parcelas' do
+      expect(resolve(d20: 1).result[:damage_applied]).to eq(64)
+    end
+
+    it 'cada tipo entra SEPARADO na mitigacao (uma linha por tipo)' do
+      # E o ponto da mudanca: um alvo resistente a raio paga cheio no trovejante
+      # e metade no eletrico. Uma parcela unica cobraria o tipo errado nos dois.
+      breakdown = resolve(d20: 3).result[:breakdown]
+
+      expect(breakdown.size).to eq(2)
+      types = breakdown.map { |row| row[:damage_type] || row['damage_type'] }
+      # O servico CANONIZA o tipo ('eletrico' -> 'relâmpago') — o teste segue o
+      # vocabulario real da mitigacao, nao o que o emissor escreveu.
+      expect(types).to contain_exactly('trovejante', 'relâmpago')
+    end
+
+    it 'pending sem extras segue com UMA parcela (compatibilidade)' do
+      rearm(pending)
+
+      result = resolve(d20: 3)
+      expect(result.result[:damage_applied]).to eq(15)
+      expect(result.result[:breakdown].size).to eq(1)
+    end
+  end
 end

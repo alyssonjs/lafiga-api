@@ -37,6 +37,8 @@ module Api::V1::Player::Combat
           ::Combat::InteractionService.build_protective_swap(ip)
         when ::Combat::InteractionService::KIND_TRIBE_DEFENDER
           ::Combat::InteractionService.build_tribe_defender(ip)
+        when ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
+          ::Combat::InteractionService.build_combat_inspiration_ac(ip)
         else
           ::Combat::InteractionService.build_contest(ip)
         end
@@ -65,6 +67,9 @@ module Api::V1::Player::Combat
       return respond_instinctive_fortitude(current) if current['kind'] == ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
       return respond_protective_swap(current) if current['kind'] == ::Combat::InteractionService::KIND_PROTECTIVE_SWAP
       return respond_tribe_defender(current) if current['kind'] == ::Combat::InteractionService::KIND_TRIBE_DEFENDER
+      if current['kind'] == ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
+        return respond_combat_inspiration_ac(current)
+      end
 
       next_payload, err = ::Combat::InteractionService.apply_response(current, respond_params)
       if err
@@ -211,6 +216,12 @@ module Api::V1::Player::Combat
           :defender_char_id, :ally_char_id, :ally_owned_by_dm,
           :defender_token_id, :ally_token_id, :downed_name,
         ],
+        # Inspiração em Combate: CA (Bardo, Colégio da Bravura L3) — alvo, dado
+        # congelado, CA base e o card do ataque a repor.
+        combat_inspiration_ac: [
+          :target_char_id, :die, :base_ac, :attacker_name, :target_name,
+          :attack_name, :attack_roll_total, :roll_group_id,
+        ],
       ).to_h.tap do |p|
         lists = permitted_opportunity_attack_lists
         p[:opportunity_attack] = (p[:opportunity_attack] || {}).merge(lists) if lists.present?
@@ -263,6 +274,9 @@ module Api::V1::Player::Combat
         ],
         # Defensor da Tribo: o Defensor `accept` (move + protege) ou `decline`.
         tribe_defender: [:accept, :decline],
+        # Inspiração em Combate: CA — o alvo `accept` (manda o `die_roll` que
+        # rolou) ou `decline`.
+        combat_inspiration_ac: [:accept, :decline, :die_roll],
       ).to_h
     end
 
@@ -295,6 +309,12 @@ module Api::V1::Player::Combat
         # O DISPARO vem de QUEM APLICOU o dano (atacante do turno, ou Mestre por
         # NPC). O `source_id` é o Defensor (reator). Mirror da Fortitude Instintiva.
         current_turn_belongs_to_user? || owns_character?(payload['source_id'])
+      when ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
+        # O DISPARO vem do ATACANTE (dono do turno; NPC → Mestre já coberto). O
+        # `source_id` é o ALVO (reator) → "dono do source" barraria o atacante.
+        # Mirror do OA. O `|| owns_character?` cobre o alvo reabrindo a própria
+        # janela após um reload.
+        current_turn_belongs_to_user? || owns_character?(payload['source_id'])
       else
         owns_character?(payload['source_id'])
       end
@@ -310,6 +330,11 @@ module Api::V1::Player::Combat
       # Defensor da Tribo: quem LIMPA (após mover+proteger) é o aplicador do dano,
       # dono do turno. Mirror.
       return current_turn_belongs_to_user? if current['kind'] == ::Combat::InteractionService::KIND_TRIBE_DEFENDER
+      # Inspiração em Combate: CA — quem LIMPA (após ler a CA efetiva e decidir o
+      # V/X) é o ATACANTE, dono do turno. Mirror.
+      if current['kind'] == ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
+        return current_turn_belongs_to_user? || owns_character?(current['source_id'])
+      end
       owns_character?(current['source_id'])
     end
 
@@ -373,9 +398,13 @@ module Api::V1::Player::Combat
     # `reset_turn_actions!` (model — a mesma regra na virada server-side).
     # `extra_turn_state` funde chaves adicionais no MESMO update, atômico com o
     # consumo (ex.: `guardingAlly` do Defensor, estado de Fúria da Fortitude).
-    def consume_reaction!(cc, extra_turn_state = {})
+    # `drop_turn_state_keys` remove chaves no MESMO update (ex.: gastar o dado da
+    # Inspiração Bárdica junto com a reação). Merge não apaga — sem isto, o dado
+    # sobreviveria e poderia ser gasto de novo por uma segunda janela.
+    def consume_reaction!(cc, extra_turn_state = {}, drop_turn_state_keys: [])
       au = Hash(cc.actions_used).merge('reaction' => true)
       ts = Hash(cc.turn_state).merge(extra_turn_state).merge('reactionUsedRound' => @combat_state.round.to_i)
+      ts = ts.except(*Array(drop_turn_state_keys))
       cc.update(actions_used: au, turn_state: ts)
     end
 
@@ -728,9 +757,12 @@ module Api::V1::Player::Combat
           # reseta death saves, grava o turn_state de fúria e consome a reação.
           reactor_cc.death_saves = CombatCombatant::RESET_DEATH_SAVES.dup
           reactor_cc.heal!(1) # persiste hp_current=1 + is_dead/is_stabilized=false + death_saves
+          # ⚠️ Chaves EXPLÍCITAS: `consume_reaction!` tem keyword arg
+          # (`drop_turn_state_keys`), então um hash sem chaves seria lido como
+          # keywords e estouraria `unknown keyword: "rageRoundsRemaining"`.
           consume_reaction!(reactor_cc,
-                            'rageRoundsRemaining' => 10,
-                            'rageTookDamageSinceLastTurn' => false)
+                            { 'rageRoundsRemaining' => 10,
+                              'rageTookDamageSinceLastTurn' => false })
           log_data = { kind: 'accept', reactor_name: reactor_name }
         else
           # Recusa (ou aceitou sem combatant resolvido): não muta nada.
@@ -868,7 +900,8 @@ module Api::V1::Player::Combat
             # ATÔMICO: consome a reação (com o marcador da houserule por-rodada)
             # E marca quem o Defensor guarda — o front NÃO deve repatchar
             # actions_used depois (sobrescreveria o consumo).
-            consume_reaction!(defender_cc, 'guardingAlly' => blk['ally_token_id'].to_s)
+            # Chaves explícitas — ver a nota em respond_instinctive_fortitude.
+            consume_reaction!(defender_cc, { 'guardingAlly' => blk['ally_token_id'].to_s })
           end
           resolved = current.merge('phase' => 'resolved', 'pending_responders' => [],
                                    'tribe_defender' => blk.merge('outcome' => 'accepted'))
@@ -886,6 +919,123 @@ module Api::V1::Player::Combat
       ::Combat::Broadcaster.combatant_upserted(defender_cc, **realtime_broadcast_context) if defender_cc && log_data && log_data[:kind] == 'accepted'
       ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # --- Inspiração em Combate: CA (respond server-side, fase única) -----------
+    #
+    # O ALVO do ataque (`character_id` pendente) decide (M2/M3):
+    #   `accept:true`  → soma o `die_roll` à CA CONTRA ESTE ATAQUE: consome a
+    #                    reação E o dado (atômico, no mesmo update) e resolve com
+    #                    `final_ac`. O V/X continua sendo do MESTRE, agora contra
+    #                    a CA nova.
+    #   `decline:true` → `outcome:'declined'`; NADA é consumido (F3.18) — nem a
+    #                    reação, nem o dado.
+    #
+    # NÃO limpa a interação: resolve para `phase:'resolved'`. O front do ATACANTE
+    # (ou o Mestre) lê o desfecho, repõe a CA no card e então limpa (DELETE).
+    # `with_lock` serializa; idempotente se a interação já mudou.
+    def respond_combat_inspiration_ac(current)
+      rp = respond_params
+      ci_resp = rp['combat_inspiration_ac'].is_a?(Hash) ? rp['combat_inspiration_ac'] : {}
+      accept  = ActiveModel::Type::Boolean.new.cast(ci_resp['accept'])
+      decline = ActiveModel::Type::Boolean.new.cast(ci_resp['decline'])
+      die_roll = ci_resp['die_roll']
+      character_id = rp['character_id'].to_s
+      reactor_cc = nil
+      log_data = nil
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        if current.blank? || current['kind'] != ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
+          return render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+        end
+
+        responder = Array(current['pending_responders']).find do |r|
+          r['character_id'].to_s == character_id && ![true, 1, '1', 'true'].include?(r['responded'])
+        end
+        return render(json: { active_interaction: current }, status: :ok) if responder.nil?
+        return render(json: { error: 'informe accept ou decline' }, status: :unprocessable_entity) unless accept || decline
+
+        blk = current['combat_inspiration_ac'] || {}
+
+        if accept
+          # O dado é rolado no cliente que decide (mesmo desenho do OA), mas o
+          # SERVIDOR valida a faixa: um `die_roll` fora dela viraria CA inventada.
+          sides = blk['die'].to_s.delete_prefix('d').to_i
+          roll = die_roll.to_i
+          unless die_roll.to_s.match?(/\A\d+\z/) && roll.between?(1, sides)
+            return render(json: { error: "die_roll inválido para #{blk['die']}" }, status: :unprocessable_entity)
+          end
+
+          reactor_cc = resolve_combatant_by_identity(character_id)
+          if reactor_cc
+            # ATÔMICO: a reação (com o marcador da houserule por-rodada) E o dado
+            # gasto saem no MESMO update. Separar abriria a janela para o dado ser
+            # reusado por uma segunda oferta antes do primeiro PATCH chegar.
+            # `pendingBardicInspiration` cai junto: sem o dado, uma decisão aberta
+            # sobre outra rolagem ficaria órfã travando a hotbar do portador.
+            consume_reaction!(
+              reactor_cc, {},
+              drop_turn_state_keys: %w[bardicInspiration pendingBardicInspiration],
+            )
+          end
+
+          resolved = current.merge(
+            'phase' => 'resolved',
+            'pending_responders' => [],
+            'combat_inspiration_ac' => blk.merge(
+              'outcome' => 'accepted',
+              'die_roll' => roll,
+              'final_ac' => blk['base_ac'].to_i + roll,
+            ),
+          )
+          @combat_state.set_active_interaction!(resolved)
+          log_data = {
+            kind: 'accepted',
+            target_name: reactor_cc&.name.to_s.presence || blk['target_name'].to_s,
+            attacker_name: blk['attacker_name'].to_s,
+            die: blk['die'].to_s,
+            die_roll: roll,
+            base_ac: blk['base_ac'].to_i,
+            final_ac: blk['base_ac'].to_i + roll,
+          }
+        else
+          resolved = current.merge(
+            'phase' => 'resolved',
+            'pending_responders' => [],
+            'combat_inspiration_ac' => blk.merge('outcome' => 'declined'),
+          )
+          @combat_state.set_active_interaction!(resolved)
+          log_data = { kind: 'declined', target_name: blk['target_name'].to_s }
+        end
+      end
+
+      @combat_state.reload
+      ::Combat::Broadcaster.combatant_upserted(reactor_cc, **realtime_broadcast_context) if reactor_cc && log_data && log_data[:kind] == 'accepted'
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
+      log_combat_inspiration_ac(@schedule, log_data) if log_data
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # Feed server-side da Inspiração em Combate: CA. O log CITA a CA nova porque é
+    # ela que o Mestre usa para decidir o V/X.
+    def log_combat_inspiration_ac(schedule, data)
+      return if schedule.blank? || data.blank?
+
+      target = data[:target_name].to_s.presence || 'O alvo'
+      message =
+        if data[:kind] == 'accepted'
+          attacker = data[:attacker_name].to_s.presence || 'o atacante'
+          "🎵 Inspiração em Combate: #{target} usa a reação e soma 1#{data[:die]} → #{data[:die_roll]} à CA contra o ataque de #{attacker} (CA #{data[:base_ac]} → #{data[:final_ac]} só para este ataque)."
+        else
+          "🎵 #{target} guarda a Inspiração Bárdica — a CA contra este ataque não muda."
+        end
+
+      log = schedule.session_logs.new(kind: :combat, actor: target, message: message)
+      return unless log.save
+
+      ::Combat::Broadcaster.log_appended(log, **realtime_broadcast_context)
     end
 
     def truthy(val)

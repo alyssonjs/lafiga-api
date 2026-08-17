@@ -175,14 +175,17 @@ class LevelUpGuardService
       cantrips_limit = sc.cantrips_known
       Rails.logger.info "Spell limits: known=#{known_limit}, cantrips=#{cantrips_limit}"
       if known_limit
-        known_count = SheetKnownSpell.where(sheet_klass_id: sk.id).joins(:spell).where('spells.level > 0').count
+        # MESMO criterio de `SpellRules.known_counts_for`: as magias que a
+        # subclasse concede FORA do limite (Conhecimento L6) nao podem SATISFAZER
+        # o limite — senao mascaram um deficit real de magias conhecidas.
+        known_count = SpellRules.known_counts_for(sk)[:spells]
         Rails.logger.info "Known spells count: #{known_count}/#{known_limit}"
         if known_count < known_limit.to_i
           missing << "Magias conhecidas: selecione #{known_limit} (restam #{known_limit.to_i - known_count})"
         end
       end
       if cantrips_limit
-        cantrip_count = SheetKnownSpell.where(sheet_klass_id: sk.id).joins(:spell).where('spells.level = 0').count
+        cantrip_count = SpellRules.known_counts_for(sk)[:cantrips]
         Rails.logger.info "Cantrips count: #{cantrip_count}/#{cantrips_limit}"
         if cantrip_count < cantrips_limit.to_i
           missing << "Truques (cantrips): selecione #{cantrips_limit} (restam #{cantrips_limit.to_i - cantrip_count})"

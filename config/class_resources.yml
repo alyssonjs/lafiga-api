@@ -35,6 +35,11 @@ bardic_inspiration:
   recharge_at_level:
     5: short
   classes: [bard]
+# Bardo / Colegio da Busca da Cancao L6 — Refrao de Desbravador.
+# Usos = mod. CAR (min 1), recupera em descanso LONGO (F6.7).
+wayfinder_refrain:
+  recharge: long
+  classes: [bard]
 channel_divinity:
   recharge: short
   classes: [cleric, paladin]

@@ -33,38 +33,48 @@ module Combat
       return errors.add(:parcels, 'vazio') && nil if normalized.empty?
       return errors.add(:parcels, 'amount deve ser >= 0') && nil if normalized.any? { |p| p[:amount].negative? }
 
-      was_concentrating = @combatant.is_concentrating
+      # ⚠️ SOB LOCK a partir daqui: `apply_damage!` decrementa do `hp_current`
+      # CARREGADO EM MEMÓRIA. Dois danos concorrentes no MESMO combatente liam o
+      # mesmo HP e a última escrita vencia — o outro dano SUMIA.
+      #
+      # Caso real (16/08): Melodia Flamejante com o dado no dano disparou duas
+      # aplicações no mesmo instante (32 base + 5 do dado) num alvo com 22 PV.
+      # Resultado gravado: 22−5 = 17, com os 32 perdidos. Vale para qualquer
+      # concorrência — dano em área, dois atacantes, rider + base.
+      @combatant.with_lock do
+        was_concentrating = @combatant.is_concentrating
 
-      # Coleta as defesas do alvo UMA vez (força o summary — há vários tipos) e
-      # une as resistências/imunidades condicionais vindas do front.
-      mods = DamageMitigationRules.collect_defenses(@combatant, force_summary: true)
-      mods[:resistances] |= @extra_resistances
-      mods[:immunities]  |= @extra_immunities
+        # Coleta as defesas do alvo UMA vez (força o summary — há vários tipos) e
+        # une as resistências/imunidades condicionais vindas do front.
+        mods = DamageMitigationRules.collect_defenses(@combatant, force_summary: true)
+        mods[:resistances] |= @extra_resistances
+        mods[:immunities]  |= @extra_immunities
 
-      applied = normalized.map do |p|
-        DamageMitigationRules.mitigate_parcel(p[:amount], p[:damage_type], p[:magical], mods)
+        applied = normalized.map do |p|
+          DamageMitigationRules.mitigate_parcel(p[:amount], p[:damage_type], p[:magical], mods)
+        end
+
+        final_total = applied.sum { |a| a[:final] }
+        raw_total   = normalized.sum { |p| p[:amount] }
+
+        # PHB p. 197 — alvo PC a 0 HP atingido: +1 falha de death save (crítico +2).
+        # ANTES do apply_damage! (estado relevante = "0 HP no momento do ataque").
+        death_save_failures_added = compute_death_save_failures_from_attack
+        death_save_failures_added.times { @combatant.record_death_save!(:failure) }
+
+        @combatant.apply_damage!(final_total)
+
+        next {
+          combatant: @combatant,
+          damage_applied: final_total,
+          damage_raw: raw_total,
+          breakdown: applied, # [{ damage_type:, raw:, final:, modifier: }]
+          attack_kind: @attack_kind,
+          death_save_failures_added: death_save_failures_added,
+          concentration_check_required: was_concentrating && final_total.positive? && !@combatant.is_dead,
+          concentration_dc: was_concentrating && final_total.positive? ? [10, final_total / 2].max : nil,
+        }
       end
-
-      final_total = applied.sum { |a| a[:final] }
-      raw_total   = normalized.sum { |p| p[:amount] }
-
-      # PHB p. 197 — alvo PC a 0 HP atingido: +1 falha de death save (crítico +2).
-      # ANTES do apply_damage! (estado relevante = "0 HP no momento do ataque").
-      death_save_failures_added = compute_death_save_failures_from_attack
-      death_save_failures_added.times { @combatant.record_death_save!(:failure) }
-
-      @combatant.apply_damage!(final_total)
-
-      {
-        combatant: @combatant,
-        damage_applied: final_total,
-        damage_raw: raw_total,
-        breakdown: applied, # [{ damage_type:, raw:, final:, modifier: }]
-        attack_kind: @attack_kind,
-        death_save_failures_added: death_save_failures_added,
-        concentration_check_required: was_concentrating && final_total.positive? && !@combatant.is_dead,
-        concentration_dc: was_concentrating && final_total.positive? ? [10, final_total / 2].max : nil,
-      }
     rescue ArgumentError => e
       errors.add(:base, e.message)
       nil

@@ -1264,4 +1264,151 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
       end
     end
   end
+
+  # ── Inspiração em Combate: CA (Bardo, Colégio da Bravura L3) ────────────────
+  # Diretriz: front-lafiga/src/docs/class-feature-directives/bard/subclasses/
+  #           colegio-da-bravura.md (âncoras F3.15..F3.19)
+  describe 'Inspiração em Combate: CA (combat_inspiration_ac)' do
+    # Atacante = NPC do DM, no turno atual (position 0 = current_turn_index).
+    let!(:foe_npc) { create(:combat_npc, schedule: schedule) }
+    let!(:foe_cc) do
+      create(:combat_combatant, :npc, combat_state: cs, combatable: foe_npc, position: 0)
+    end
+    # ALVO = PC do defender_user; carrega o dado da Bravura no turn_state.
+    let!(:target_cc) do
+      create(:combat_combatant, :pc, combat_state: cs, combatable: defender_char,
+             position: 1, ac: 15, hp_current: 20, hp_max: 20,
+             turn_state: {
+               'bardicInspiration' => {
+                 'die' => 'd8', 'grantedBy' => 'cb-bard',
+                 'expiresAtRound' => 101, 'combatInspiration' => true
+               }
+             })
+    end
+
+    def ci_upsert_body
+      {
+        interaction: {
+          kind: 'combat_inspiration_ac',
+          source_id: defender_char.id.to_s,
+          pending_responders: [
+            { character_id: defender_char.id.to_s, need: 'offer_reaction', owned_by_dm: false, responded: false },
+          ],
+          combat_inspiration_ac: {
+            target_char_id: defender_char.id.to_s,
+            die: 'd8',
+            base_ac: 15,
+            attacker_name: 'Ogro',
+            target_name: 'Bellamy',
+            attack_name: 'Machado',
+            attack_roll_total: 17,
+            roll_group_id: 'rg-atk-1',
+          },
+        },
+      }
+    end
+
+    def ci_respond_body(accept:, die_roll: nil)
+      decision = accept ? { accept: true, die_roll: die_roll } : { decline: true }
+      { character_id: defender_char.id.to_s, combat_inspiration_ac: decision }
+    end
+
+    describe 'PUT (upsert)' do
+      it 'F3.15 — o Mestre abre a janela pelo atacante NPC → declared, alvo pendente' do
+        put "#{base}/active_interaction", params: ci_upsert_body, headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        ai = response.parsed_body['active_interaction']
+        expect(ai['kind']).to eq('combat_inspiration_ac')
+        expect(ai['phase']).to eq('declared')
+        expect(ai['pending_responders'].first['character_id']).to eq(defender_char.id.to_s)
+        expect(ai['pending_responders'].first['need']).to eq('offer_reaction')
+        expect(ai['combat_inspiration_ac']['base_ac']).to eq(15)
+      end
+
+      it 'F3.15b — quem não é DM nem dono do PC do turno atual leva 403' do
+        put "#{base}/active_interaction", params: ci_upsert_body, headers: outsider_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    describe 'POST (respond)' do
+      before do
+        put "#{base}/active_interaction", params: ci_upsert_body, headers: dm_headers, as: :json
+      end
+
+      it 'F3.16 — aceitar soma o dado à CA e consome reação + dado no MESMO update' do
+        post "#{base}/active_interaction/respond",
+             params: ci_respond_body(accept: true, die_roll: 5), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('resolved')
+        expect(ai['combat_inspiration_ac']['outcome']).to eq('accepted')
+        expect(ai['combat_inspiration_ac']['die_roll']).to eq(5)
+        expect(ai['combat_inspiration_ac']['final_ac']).to eq(20)
+
+        target_cc.reload
+        expect(target_cc.actions_used['reaction']).to be_truthy
+        # A houserule "1 reação por RODADA" carimba a rodada do uso.
+        expect(target_cc.turn_state['reactionUsedRound']).to eq(1)
+        # O dado foi GASTO — não sobra para uma segunda janela.
+        expect(target_cc.turn_state).not_to have_key('bardicInspiration')
+      end
+
+      it 'F3.18 — recusar não consome NADA (nem reação, nem dado)' do
+        post "#{base}/active_interaction/respond",
+             params: ci_respond_body(accept: false), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+
+        ai = response.parsed_body['active_interaction']
+        expect(ai['phase']).to eq('resolved')
+        expect(ai['combat_inspiration_ac']['outcome']).to eq('declined')
+        expect(ai['combat_inspiration_ac']['final_ac']).to be_nil
+
+        target_cc.reload
+        expect(target_cc.actions_used['reaction']).to be_falsey
+        expect(target_cc.turn_state['bardicInspiration']).to be_present
+      end
+
+      it 'F3.19 — die_roll fora da faixa do dado é recusado (CA inventada)' do
+        post "#{base}/active_interaction/respond",
+             params: ci_respond_body(accept: true, die_roll: 12), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+        target_cc.reload
+        expect(target_cc.actions_used['reaction']).to be_falsey
+        expect(target_cc.turn_state['bardicInspiration']).to be_present
+      end
+
+      it 'F3.19b — accept sem die_roll é recusado' do
+        post "#{base}/active_interaction/respond",
+             params: ci_respond_body(accept: true), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'F3.17 — quem não controla o alvo não responde (403)' do
+        post "#{base}/active_interaction/respond",
+             params: ci_respond_body(accept: true, die_roll: 3), headers: outsider_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it 'F3.19c — a segunda resposta não re-rola nem regasta (responder já saiu)' do
+        post "#{base}/active_interaction/respond",
+             params: ci_respond_body(accept: true, die_roll: 4), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        first_ac = response.parsed_body['active_interaction']['combat_inspiration_ac']['final_ac']
+        expect(first_ac).to eq(19)
+
+        # Resolver ESVAZIA `pending_responders`; a 2ª tentativa não encontra
+        # responder pendente e é barrada na autorização. O importante é o efeito:
+        # a CA não muda e nada é consumido de novo (dois cliques rápidos, ou o
+        # eco atrasado, não podem inventar uma CA maior).
+        post "#{base}/active_interaction/respond",
+             params: ci_respond_body(accept: true, die_roll: 8), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:forbidden)
+
+        cs.reload
+        expect(cs.active_interaction['combat_inspiration_ac']['final_ac']).to eq(first_ac)
+      end
+    end
+  end
 end

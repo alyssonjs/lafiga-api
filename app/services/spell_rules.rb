@@ -145,11 +145,42 @@ class SpellRules
   end
 
   # Returns current counts of known spells (level > 0) and cantrips (level == 0) for a given SheetKlass
+  #
+  # EXCLUI as magias que a subclasse concede FORA do limite normal (hoje: os
+  # "Segredos Magicos Adicionais" do Colegio do Conhecimento, L6). Sem isso elas
+  # inflavam a contagem e mascaravam um deficit real de magias conhecidas: o
+  # guard de level-up (`known_count < known_limit`) passava cedo demais e o
+  # auto-preenchimento achava a ficha cheia. Contrastar com os Segredos Magicos
+  # da CLASSE (L10/14/18), que pelo PHB ESTAO inclusos na coluna Magias
+  # Conhecidas — esses continuam contando.
   def self.known_counts_for(sheet_klass)
     scope = SheetKnownSpell.where(sheet_klass_id: sheet_klass.id).joins(:spell)
+    excluded = subclass_extra_known_spell_ids(sheet_klass)
+    scope = scope.where.not(spell_id: excluded) if excluded.any?
     spells = scope.where('spells.level > 0').count
     cantrips = scope.where('spells.level = 0').count
     { spells: spells, cantrips: cantrips }
+  end
+
+  # Nivel em que cada subclasse concede magias extras FORA do limite, por
+  # `api_index`. Chave nova aqui = a subclasse entra na regra sem tocar em
+  # nenhum consumidor.
+  SUBCLASS_EXTRA_SPELLS_LEVEL = { 'lore' => 6 }.freeze
+
+  # Ids das magias concedidas por essas features, lidos do MESMO lugar onde o
+  # front as grava (`metadata.class_choices.per_level[N].learn_any_class_spells`).
+  # Derivar do metadata evita migracao/backfill: fichas que ja existem passam a
+  # contar certo na proxima leitura.
+  def self.subclass_extra_known_spell_ids(sheet_klass)
+    sub_api = sheet_klass.sub_klass&.api_index.to_s
+    level = SUBCLASS_EXTRA_SPELLS_LEVEL[sub_api]
+    return [] unless level
+
+    per = (sheet_klass.sheet&.metadata || {}).dig('class_choices', 'per_level') || {}
+    Array(per.dig(level.to_s, 'learn_any_class_spells')).filter_map do |entry|
+      raw = entry.is_a?(Hash) ? (entry['id'] || entry[:id]) : entry
+      raw.to_s =~ /\A\d+\z/ ? raw.to_i : nil
+    end
   end
 
   def self.parse_slots(slots)
