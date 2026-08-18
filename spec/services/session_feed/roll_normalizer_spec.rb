@@ -67,4 +67,22 @@ RSpec.describe SessionFeed::RollNormalizer, type: :service do
 
     expect(result).not_to have_key('actorCombatantId')
   end
+
+  it 'savePrompt preserva a IDENTIDADE do efeito (onFailCondition) — e só como slug' do
+    # O card gateia texto por identidade ('burning' etc.), não pelo mode; sem a
+    # whitelist aqui, só quem emitiu o prompt leria o card certo.
+    prompt = { 'dc' => 14, 'ability' => 'dex', 'targetName' => 'Ruric', 'mode' => 'remove-on-success' }
+
+    ok = described_class.call(
+      schedule_id: 69,
+      item: base.merge('type' => 'save', 'savePrompt' => prompt.merge('onFailCondition' => 'burning')),
+    )
+    expect(ok['savePrompt']).to include('onFailCondition' => 'burning')
+
+    lixo = described_class.call(
+      schedule_id: 69,
+      item: base.merge('type' => 'save', 'savePrompt' => prompt.merge('onFailCondition' => '<img src=x>')),
+    )
+    expect(lixo['savePrompt']).not_to have_key('onFailCondition')
+  end
 end

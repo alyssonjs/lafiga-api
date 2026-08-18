@@ -35,6 +35,16 @@ bardic_inspiration:
   recharge_at_level:
     5: short
   classes: [bard]
+# Bardo / Colegio da Fortuna L6 — Manipular a Sorte.
+# Usos = mod. CAR (min 1), recupera em descanso LONGO (F6.8).
+manipulate_luck:
+  recharge: long
+  classes: [bard]
+# Bardo / Colegio da Quietude L6 — Magia Imperceptivel.
+# 1 uso, recupera em descanso CURTO ou longo (F6.6).
+imperceptible_magic:
+  recharge: short
+  classes: [bard]
 # Bardo / Colegio da Busca da Cancao L6 — Refrao de Desbravador.
 # Usos = mod. CAR (min 1), recupera em descanso LONGO (F6.7).
 wayfinder_refrain:

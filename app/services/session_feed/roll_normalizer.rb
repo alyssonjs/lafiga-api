@@ -165,8 +165,17 @@ module SessionFeed
         prompt['sourceName'] = source['sourceName'].to_s.truncate(120) if source['sourceName'].present?
         prompt['mode'] = source['mode'] if %w[apply-on-fail remove-on-success].include?(source['mode'].to_s)
         prompt['resolved'] = true if source['resolved'] == true
+        # Card de TESTE (nao de resistencia) — ex.: Arcanismo para manter
+        # concentracao do IRRITADO. Sem este campo o card diria "Teste de
+        # Resistencia de INT", que e outra coisa.
+        check_label = source['checkLabel'].to_s
+        prompt['checkLabel'] = check_label.truncate(60) if check_label.present?
         match_key = source['matchKey'].to_s
         prompt['matchKey'] = match_key.truncate(MAX_ID_LENGTH) if match_key.present?
+        # Identidade do efeito (ex.: 'burning') — o card gateia texto especifico
+        # por ELA, nao pelo mode (que e uma forma compartilhada). Slug curto.
+        on_fail = source['onFailCondition'].to_s
+        prompt['onFailCondition'] = on_fail.slice(0, 24) if on_fail.match?(/\A[a-z][a-z0-9_-]*\z/)
         out['savePrompt'] = prompt
       end
 
