@@ -86,8 +86,20 @@ module Api::V1::Player::Combat
     def update
       combat_state = @combatant.combat_state
       attrs = combatant_update_params.to_h
-      apply_reaction_round_lock!(attrs)
-      if @combatant.update(attrs)
+      # LOCK + reload ANTES de materializar turn_state: `apply_reaction_round_lock!`
+      # constrói o turn_state INTEIRO a partir do lido — sem serializar com o
+      # endpoint de ops granulares, um PATCH concorrente (ex.: gasto de reação do
+      # Bardo disparado junto com a op que apaga a decisão e grava o recibo)
+      # commitava por cima e RESSUSCITAVA as chaves que a op apagou (caso Fritz,
+      # 18/08: pending zumbi prendeu a fila de TRs até o teto de 90s). Mesmo
+      # desenho do `consume_bardic_inspiration` logo abaixo.
+      updated = false
+      @combatant.with_lock do
+        @combatant.reload
+        apply_reaction_round_lock!(attrs)
+        updated = @combatant.update(attrs)
+      end
+      if updated
         if @combatant.saved_change_to_initiative? || @combatant.saved_change_to_tie_break_dex?
           ::Combat::SortInitiativePositionsService.call(combat_state: combat_state.reload)
           @combatant.reload
@@ -509,12 +521,18 @@ module Api::V1::Player::Combat
         return
       end
 
-      # STAMP: PATCH transicionando reaction false→true sem carimbo vivo → nasce o
-      # round-lock. Gate de TRANSIÇÃO (persistido falsy) evita re-carimbo espúrio
-      # quando um PATCH defensivo carrega `reaction:true` de outra rodada.
+      # STAMP: PATCH com reaction=true sem carimbo vivo → nasce o round-lock.
+      #
+      # TRANSIÇÃO EFETIVA, não literal: a flag persistida só é limpa no início
+      # do turno do PRÓPRIO combatente, e o reset da rodada do gasto é bloqueado
+      # pelo carimbo vivo — então `true` com carimbo MORTO é flag STALE (pela
+      # regra da mesa a reação já recarregou na virada). Um gasto novo nesta
+      # rodada PRECISA carimbar mesmo assim; o gate literal (persistido falsy)
+      # deixava o Bardo reagir infinitas vezes (caso Fritz, R154: gastos nunca
+      # carimbavam porque a flag da R153 seguia true). O re-carimbo espúrio de
+      # PATCH defensivo da MESMA rodada continua bloqueado pelo ramo PROTECT
+      # acima (carimbo vivo retorna antes de chegar aqui).
       return unless p[:actions_used].is_a?(Hash) && reaction_flag_truthy?(p[:actions_used]['reaction'])
-      persisted = @combatant.actions_used.is_a?(Hash) ? @combatant.actions_used['reaction'] : nil
-      return if reaction_flag_truthy?(persisted)
 
       # Materializa turn_state do existente para não zerar outras chaves quando o
       # PATCH mandou só actions_used.

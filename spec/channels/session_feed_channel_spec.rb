@@ -261,6 +261,72 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'relaya o `replace` do ajuste composto (sobreposição da regra da mesa 18/08)' do
+    # Sem o campo na whitelist, o cliente remoto fica no primeiro-vence e o
+    # card mostra só o total da rerrolagem — a penalidade some do chat.
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    adj = {
+      'kind' => 'roll_total_adjusted',
+      'id' => 'radj-r1',
+      'timestamp' => 1_700_000_000_012,
+      'sessionId' => schedule.id.to_s,
+      'rollGroupId' => 'rg-abc',
+      'adjustedTotal' => 14,
+      'tag' => 'SORTE D20 + SUBCONSCIENTE −6',
+      'replace' => true,
+    }
+    expect do
+      perform :feed_item, item: adj
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('kind' => 'roll_total_adjusted', 'adjustedTotal' => 14, 'replace' => true),
+    )
+  end
+
+  it 'relaya o `rerolledD20` (sinal do dado trocado) e descarta valor fora de 1..20' do
+    # É por este campo que o holder do TR seguro sabe que o d20 mudou. Sem ele
+    # no relay, o cliente remoto resolveria o teste com o dado velho.
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    base = {
+      'kind' => 'roll_total_adjusted',
+      'id' => 'radj-r2',
+      'timestamp' => 1_700_000_000_013,
+      'sessionId' => schedule.id.to_s,
+      'rollGroupId' => 'rg-abc',
+      'adjustedTotal' => 20,
+      'tag' => 'SORTE d20 16→20',
+    }
+    expect do
+      perform :feed_item, item: base.merge('rerolledD20' => 20)
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('rerolledD20' => 20),
+    )
+    expect do
+      perform :feed_item, item: base.merge('id' => 'radj-r3', 'rerolledD20' => 99)
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      ->(payload) { !payload.key?('rerolledD20') },
+    )
+  end
+
+  it 'relaya o `keepsWindowOpen` (ajuste parcial não encerra a decisão)' do
+    # Sem o relay, o cliente remoto trata o ajuste do 1º Bardo como "rolagem
+    # encerrada", some com a carta do 2º e o holder trava até o teto de 90 s.
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    expect do
+      perform :feed_item, item: {
+        'kind' => 'roll_total_adjusted',
+        'id' => 'radj-w1',
+        'timestamp' => 1_700_000_000_014,
+        'sessionId' => schedule.id.to_s,
+        'rollGroupId' => 'rg-abc',
+        'adjustedTotal' => 6,
+        'tag' => 'INSPIRAÇÃO SUBCONSCIENTE −10',
+        'keepsWindowOpen' => true,
+      }
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('keepsWindowOpen' => true),
+    )
+  end
+
   it 'descarta roll_total_adjusted sem rollGroupId ou com total não numérico' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     base = {

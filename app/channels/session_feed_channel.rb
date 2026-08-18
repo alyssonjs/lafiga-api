@@ -543,6 +543,20 @@ class SessionFeedChannel < ApplicationCable::Channel
     }
     breakdown = h['adjustedBreakdown'].to_s
     out['adjustedBreakdown'] = breakdown.slice(0, 300) if breakdown.present?
+    # SOBREPOSIÇÃO deliberada (reações que se compõem na mesma rolagem): sem
+    # passar pelo canal, o cliente remoto ficava no primeiro-vence e mostrava
+    # só o primeiro ajuste (regra da mesa 18/08: ajustes se sobrepõem).
+    out['replace'] = true if h['replace'] == true
+    # d20 SUBSTITUTO da rerrolagem — sinal explícito para o holder do TR seguro
+    # (antes ele deduzia invertendo o total, e a penalidade publicada na hora
+    # entrava nessa conta como se fosse dado novo).
+    rd = h['rerolledD20']
+    rd_i = rd.is_a?(Numeric) ? rd.to_i : Integer(rd, exception: false)
+    out['rerolledD20'] = rd_i if rd_i&.between?(1, 20)
+    # Ajuste PARCIAL de uma reação: revisa o card mas NÃO encerra a decisão —
+    # outras reações ainda entram no mesmo teste. Sem relay, o cliente remoto
+    # fecharia a janela do Bardo seguinte (travou 90 s no playtest de 18/08).
+    out['keepsWindowOpen'] = true if h['keepsWindowOpen'] == true
     # Quebra por tipo REVISADA. Quando o ajuste SOMA dano (top-up da Inspiracao
     # em Combate / dado da Melodia Flamejante), o total muda e os chips por tipo
     # tambem precisam mudar — senao o card mostra "21" com o chip "FOGO 11".

@@ -235,14 +235,66 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
         expect(json['turn_state']).to include('guardingAlly' => 'tk-x', 'reactionUsedRound' => cs.round)
       end
 
-      it 'STAMP: guard de transição — reaction JÁ true sem carimbo (legado) NÃO cria carimbo espúrio' do
+      # Caso Fritz (18/08/2026): o USO da reação do Bardo dispara DOIS requests —
+      # a op granular (apaga a decisão + grava o recibo da penalidade) e este
+      # PATCH de reação. O STAMP materializa o turn_state INTEIRO a partir do
+      # lido; sem o `with_lock` + reload no #update, o PATCH concorrente commitava
+      # sobre uma leitura anterior e RESSUSCITAVA o pending que a op apagou
+      # (fila de TRs presa até o teto de 90s). A corrida em si não é reproduzível
+      # em spec transacional — o lock serializa; aqui trancamos o CONTRATO
+      # sequencial das duas pontas compondo.
+      it 'STAMP: ops granulares seguidas do PATCH de reação — as DUAS escritas sobrevivem' do
+        combatant.update!(
+          turn_state: { 'pendingBardicInspiration' => { 'die' => 'd10' } },
+          actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => false },
+        )
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}/turn_state",
+              params: { ops: [
+                { op: 'delete', key: 'pendingBardicInspiration' },
+                { op: 'set', key: 'subconsciousPenalty', value: { 'rollGroupId' => 'rg-1', 'amount' => 2 } },
+              ] },
+              headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok)
+
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { actions_used: { action: false, bonus_action: false, movement: false, reaction: true } } },
+              headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        ts = response.parsed_body['combatant']['turn_state']
+        expect(ts).not_to have_key('pendingBardicInspiration') # a op APAGOU; o PATCH não ressuscita
+        expect(ts).to include('subconsciousPenalty' => hash_including('amount' => 2), 'reactionUsedRound' => cs.round)
+      end
+
+      # Caso Fritz (R154, 18/08): a flag persistida só limpa no turno do PRÓPRIO
+      # combatente e o reset da rodada do gasto é bloqueado pelo carimbo vivo —
+      # `true` com carimbo MORTO é flag STALE (a reação já recarregou na virada).
+      # O gate de transição LITERAL (persistido falsy) nunca re-carimbava e o
+      # Bardo reagia infinitas vezes: gasto novo tem que carimbar a rodada atual.
+      it 'STAMP: flag STALE (true com carimbo morto) — gasto novo RE-carimba a rodada atual' do
+        combatant.update!(
+          turn_state: { 'reactionUsedRound' => cs.round - 1 },
+          actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => true },
+        )
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: { combatant: { actions_used: { action: false, bonus_action: false, movement: false, reaction: true } } },
+              headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['combatant']['turn_state']).to include('reactionUsedRound' => cs.round)
+      end
+
+      it 'STAMP: reaction JÁ true SEM carimbo (legado) também carimba — gasto deliberado vale' do
+        # Sem carimbo não há como distinguir eco de gasto; carimbar trava a
+        # reação SÓ nesta rodada (autocorrige no turno do combatente) — o erro
+        # inverso (nunca carimbar) era reação infinita.
         combatant.update!(turn_state: {}, actions_used: { 'action' => false, 'bonus_action' => false, 'movement' => false, 'reaction' => true })
         patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
               params: { combatant: { actions_used: { action: false, bonus_action: false, movement: false, reaction: true } } },
               headers: dm_headers, as: :json
 
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body['combatant']['turn_state']).not_to have_key('reactionUsedRound')
+        expect(response.parsed_body['combatant']['turn_state']).to include('reactionUsedRound' => cs.round)
       end
     end
 
