@@ -19,6 +19,7 @@ class Api::V1::Player::SheetRuntimeStatesController < ApplicationController
   def update
     runtime = @sheet.runtime!
     runtime.apply_patch!(patch_params)
+    broadcast_runtime(runtime)
     render json: { runtime_state: runtime.as_payload }, status: :ok
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
@@ -29,6 +30,7 @@ class Api::V1::Player::SheetRuntimeStatesController < ApplicationController
 
   def short_rest
     runtime = Sheets::Runtime::ApplyShortRestService.call(@sheet)
+    broadcast_runtime(runtime)
     render json: { runtime_state: runtime.as_payload }, status: :ok
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
@@ -36,12 +38,24 @@ class Api::V1::Player::SheetRuntimeStatesController < ApplicationController
 
   def long_rest
     runtime = Sheets::Runtime::ApplyLongRestService.call(@sheet)
+    broadcast_runtime(runtime)
     render json: { runtime_state: runtime.as_payload }, status: :ok
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   private
+
+  # Avisa a mesa em tempo real. O jogador no outro dispositivo não tem como
+  # saber que o Mestre mexeu na ficha dele — sem isto, só descobre no reload.
+  def broadcast_runtime(runtime)
+    Sheets::Runtime::Broadcaster.broadcast_change(
+      @sheet,
+      runtime,
+      schedule_id: params[:schedule_id],
+      actor: @current_user
+    )
+  end
 
   def set_sheet
     # Mesmo critério que `Api::V1::Player::SheetsController#set_sheet`: mestre

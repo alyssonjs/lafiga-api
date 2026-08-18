@@ -156,4 +156,50 @@ RSpec.describe 'Api::V1::Player::SheetRuntimeStatesController', type: :request d
       expect(response.parsed_body['runtime_state']['class_resources_used']['rage']).to eq(1)
     end
   end
+
+  # ── Tempo real (18/08) ────────────────────────────────────────────────
+  # O PATCH era MUDO: quem mutava atualizava sozinho e o jogador no outro
+  # dispositivo só via a mudança recarregando. Sintoma na mesa: o Mestre tirava
+  # usos de Inspiração Bárdica e o celular do jogador seguia com tudo cheio.
+  describe 'broadcast de runtime para a mesa' do
+    let(:schedule) { create(:schedule) }
+
+    it 'emite `sheet_runtime_changed` no stream da sessão do personagem' do
+      ScheduleCharacter.create!(schedule: schedule, character: character, status: :confirmed)
+
+      expect(ActionCable.server).to receive(:broadcast) do |stream, envelope|
+        expect(stream).to eq(SessionRealtimeChannel.stream_name_for(schedule.id))
+        expect(envelope[:event]).to eq('sheet_runtime_changed')
+        expect(envelope[:payload][:character_id]).to eq(character.id)
+        expect(envelope[:payload][:runtime_state][:class_resources_used])
+          .to include('bardic_inspiration' => 2)
+      end
+
+      patch "/api/v1/player/sheets/#{sheet.id}/runtime",
+            params: { runtime_state: { class_resources_used: { bardic_inspiration: 2 } } },
+            headers: headers, as: :json
+      expect(response).to have_http_status(:ok), -> { response.body }
+    end
+
+    it 'sem sessão nenhuma, não transmite — mutar ficha solta não acorda mesa' do
+      expect(ActionCable.server).not_to receive(:broadcast)
+      patch "/api/v1/player/sheets/#{sheet.id}/runtime",
+            params: { runtime_state: { exhaustion: 1 } },
+            headers: headers, as: :json
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'falha no broadcast NÃO derruba o PATCH — persistir vem primeiro', :aggregate_failures do
+      ScheduleCharacter.create!(schedule: schedule, character: character, status: :confirmed)
+      allow(ActionCable.server).to receive(:broadcast).and_raise(StandardError, 'cable down')
+
+      patch "/api/v1/player/sheets/#{sheet.id}/runtime",
+            params: { runtime_state: { exhaustion: 3 } },
+            headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(sheet.runtime!.reload.exhaustion).to eq(3)
+    end
+  end
+
 end
