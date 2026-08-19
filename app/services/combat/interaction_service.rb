@@ -41,6 +41,7 @@ module Combat
     KIND_PROTECTIVE_SWAP = 'protective_swap'
     KIND_TRIBE_DEFENDER = 'tribe_defender'
     KIND_COMBAT_INSPIRATION_AC = 'combat_inspiration_ac'
+    KIND_STRONG_PERSONALITY = 'strong_personality'
     DEFENDER_SKILL_OPTIONS = %w[Atletismo Acrobacia].freeze
     ATTACKER_SKILL = 'Atletismo'
 
@@ -373,6 +374,74 @@ module Combat
         'combat_inspiration_ac' => ci,
         'label' => presence(p['label']) || 'Inspiração em Combate: CA',
       }
+    end
+
+    # ---- Personalidade Forte (Bardo · Virtuosismo L3) ------------------------
+    #
+    # HOUSERULE DA MESA (19/08): a fonte impressa manda gastar a AÇÃO, no turno
+    # seguinte do Bardo. A mesa trocou por REAÇÃO, decidida na hora.
+    #
+    # ⚠️ Por que isto PRECISA ser interação (e não turn_state do Bardo, que já
+    # existia): como reação, a condição é escrita no turno do AGRESSOR — em geral
+    # um NPC do Mestre. O cliente do Bardo levaria 403 nesse PATCH (`conditions`
+    # está fora de PLAYER_TURN_STATE_FIELDS e o gate exige turno próprio). O
+    # servidor é quem tem autorização para gravar; enquanto era AÇÃO isso passava
+    # despercebido porque o Bardo escrevia no próprio turno.
+    #
+    # UM agressor por interação, de propósito. A lista existia no desenho de AÇÃO
+    # porque a decisão era adiada e as janelas se acumulavam entre turnos; na
+    # reação cada TR tem um agressor (uma criatura age por turno), e com 1 reação
+    # por rodada um segundo botão seria natimorto.
+    #
+    # Retorna o hash normalizado, ou `nil` se inválido (caller → 422).
+    def build_strong_personality(params)
+      p = stringify(params)
+
+      kind = (p['kind'] || KIND_STRONG_PERSONALITY).to_s
+      return nil unless kind == KIND_STRONG_PERSONALITY
+
+      sp = normalize_strong_personality(dig(p, 'strong_personality'))
+      return nil if sp.nil?
+
+      reactor_id = presence(p['source_id']) || sp['bard_char_id']
+      return nil if reactor_id.nil?
+
+      raw = Array(dig(p, 'pending_responders')).find { |r| stringify(r)['character_id'].to_s == reactor_id.to_s }
+      owned = truthy(stringify(raw || {})['owned_by_dm'])
+
+      {
+        'id' => presence(p['id']) || SecureRandom.uuid,
+        'kind' => KIND_STRONG_PERSONALITY,
+        'phase' => 'declared',
+        'source_id' => reactor_id.to_s,
+        'target_ids' => [reactor_id.to_s],
+        'pending_responders' => [
+          { 'character_id' => reactor_id.to_s, 'need' => 'offer_reaction', 'owned_by_dm' => owned, 'responded' => false },
+        ],
+        'strong_personality' => sp,
+        'label' => presence(p['label']) || 'Personalidade Forte: desmoralizar',
+      }
+    end
+
+    # `aggressor_combatant_id` é OBRIGATÓRIO: sem ele o respond não teria em quem
+    # gravar a condição, e uma janela que gasta a reação sem efeito é pior que
+    # janela nenhuma (mesma disciplina do `base_ac`/`die` da Inspiração em Combate).
+    def normalize_strong_personality(raw)
+      return nil if raw.nil?
+      h = stringify(raw)
+
+      bard = presence(h['bard_char_id'])
+      aggressor_cc = presence(h['aggressor_combatant_id'])
+      return nil if bard.nil? || aggressor_cc.nil?
+
+      out = {
+        'bard_char_id' => bard.to_s,
+        'aggressor_combatant_id' => aggressor_cc.to_s,
+      }
+      out['bard_name']      = presence(h['bard_name']).to_s      if presence(h['bard_name'])
+      out['aggressor_name'] = presence(h['aggressor_name']).to_s if presence(h['aggressor_name'])
+      out['effect_label']   = presence(h['effect_label']).to_s   if presence(h['effect_label'])
+      out
     end
 
     # Bloco descritivo + os números que o prompt e o log precisam. `die_roll`/

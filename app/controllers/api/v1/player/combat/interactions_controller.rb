@@ -39,6 +39,8 @@ module Api::V1::Player::Combat
           ::Combat::InteractionService.build_tribe_defender(ip)
         when ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
           ::Combat::InteractionService.build_combat_inspiration_ac(ip)
+        when ::Combat::InteractionService::KIND_STRONG_PERSONALITY
+          ::Combat::InteractionService.build_strong_personality(ip)
         else
           ::Combat::InteractionService.build_contest(ip)
         end
@@ -69,6 +71,9 @@ module Api::V1::Player::Combat
       return respond_tribe_defender(current) if current['kind'] == ::Combat::InteractionService::KIND_TRIBE_DEFENDER
       if current['kind'] == ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
         return respond_combat_inspiration_ac(current)
+      end
+      if current['kind'] == ::Combat::InteractionService::KIND_STRONG_PERSONALITY
+        return respond_strong_personality(current)
       end
 
       next_payload, err = ::Combat::InteractionService.apply_response(current, respond_params)
@@ -222,6 +227,12 @@ module Api::V1::Player::Combat
           :target_char_id, :die, :base_ac, :attacker_name, :target_name,
           :attack_name, :attack_roll_total, :roll_group_id,
         ],
+        # Personalidade Forte (Bardo, Virtuosismo L3) — quem resistiu e quem
+        # tentou amedrontar. UM agressor: a reação é decidida na hora.
+        strong_personality: [
+          :bard_char_id, :aggressor_combatant_id, :bard_name, :aggressor_name,
+          :effect_label,
+        ],
       ).to_h.tap do |p|
         lists = permitted_opportunity_attack_lists
         p[:opportunity_attack] = (p[:opportunity_attack] || {}).merge(lists) if lists.present?
@@ -259,6 +270,9 @@ module Api::V1::Player::Combat
         hostile_casting: [:frustrate, :ignored, :saved],
         # Consentimento de alvo: o dono do PC `accept` ou `refuse`.
         target_consent: [:accept, :refuse],
+        # Personalidade Forte: o dono do Bardo `accept` (gasta a reação e
+        # desmoraliza) ou `decline` (nada é consumido).
+        strong_personality: [:accept, :decline],
         # Fortitude Instintiva: o dono do PC caído `accept` (entra em fúria/1 PV) ou `decline`.
         instinctive_fortitude: [:accept, :decline],
         # Fúria Protetora: Trocar de Lugar — Protetor (fase 1) e aliado (fase 2)
@@ -1016,6 +1030,116 @@ module Api::V1::Player::Combat
       ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
       log_combat_inspiration_ac(@schedule, log_data) if log_data
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # PERSONALIDADE FORTE — aceitar gasta a REAÇÃO do Bardo e grava `demoralized`
+    # no AGRESSOR; recusar não consome nada.
+    #
+    # ⚠️ A fonte vai em `turn_state['conditionSourceByActor']`, NÃO dentro da
+    # linha da condição. O leitor do front (`readConditionSourceMap`) só aceita
+    # `{ actorKey: String, round: Number }` naquela chave, e é de lá que sai o par
+    # vantagem/desvantagem. Gravar a fonte na condição faria o badge aparecer e o
+    # par nunca disparar — tudo "parece" funcionar, que é o pior modo de falhar.
+    #
+    # `appliedTurnKey` guarda a INSTÂNCIA de turno da aplicação. Como reação, a
+    # marca nasce dentro do turno do agressor; sem isso o sweeper do front a
+    # apagaria no fim desse mesmo turno e ele nunca atacaria com desvantagem.
+    def respond_strong_personality(current)
+      rp = respond_params
+      sp_resp = rp['strong_personality'].is_a?(Hash) ? rp['strong_personality'] : {}
+      accept  = ActiveModel::Type::Boolean.new.cast(sp_resp['accept'])
+      decline = ActiveModel::Type::Boolean.new.cast(sp_resp['decline'])
+      character_id = rp['character_id'].to_s
+      bard_cc = nil
+      aggressor_cc = nil
+      log_data = nil
+
+      @combat_state.with_lock do
+        @combat_state.reload
+        current = @combat_state.active_interaction
+        if current.blank? || current['kind'] != ::Combat::InteractionService::KIND_STRONG_PERSONALITY
+          return render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+        end
+
+        responder = Array(current['pending_responders']).find do |r|
+          r['character_id'].to_s == character_id && ![true, 1, '1', 'true'].include?(r['responded'])
+        end
+        return render(json: { active_interaction: current }, status: :ok) if responder.nil?
+        return render(json: { error: 'informe accept ou decline' }, status: :unprocessable_entity) unless accept || decline
+
+        blk = current['strong_personality'] || {}
+
+        if accept
+          bard_cc = resolve_combatant_by_identity(character_id)
+          aggressor_cc = @combat_state.combat_combatants.find_by(id: blk['aggressor_combatant_id'])
+          if aggressor_cc.nil?
+            return render(json: { error: 'agressor não está mais no combate' }, status: :unprocessable_entity)
+          end
+
+          consume_reaction!(bard_cc, {}) if bard_cc
+
+          conds = Array(aggressor_cc.conditions)
+          unless conds.any? { |c| c.is_a?(Hash) && c['id'].to_s == 'demoralized' }
+            conds += [{ 'id' => 'demoralized' }]
+          end
+          active_cc_id = @combat_state.combat_combatants
+                                      .order(:position).offset(@combat_state.current_turn_index.to_i).first&.id
+          ts = Hash(aggressor_cc.turn_state)
+          sources = Hash(ts['conditionSourceByActor'])
+          sources['demoralized'] = {
+            'actorKey' => bard_cc&.id.to_s,
+            'round' => @combat_state.round.to_i,
+            'label' => blk['effect_label'].to_s.presence || 'Personalidade Forte',
+            'appliedTurnKey' => "#{@combat_state.round.to_i}:#{active_cc_id}",
+          }
+          aggressor_cc.update(conditions: conds, turn_state: ts.merge('conditionSourceByActor' => sources))
+
+          resolved = current.merge(
+            'phase' => 'resolved',
+            'pending_responders' => [],
+            'strong_personality' => blk.merge('outcome' => 'accepted'),
+          )
+          @combat_state.set_active_interaction!(resolved)
+          log_data = {
+            kind: 'accepted',
+            bard_name: bard_cc&.name.to_s.presence || blk['bard_name'].to_s,
+            aggressor_name: aggressor_cc.name.to_s.presence || blk['aggressor_name'].to_s,
+          }
+        else
+          resolved = current.merge(
+            'phase' => 'resolved',
+            'pending_responders' => [],
+            'strong_personality' => blk.merge('outcome' => 'declined'),
+          )
+          @combat_state.set_active_interaction!(resolved)
+          log_data = { kind: 'declined', bard_name: blk['bard_name'].to_s, aggressor_name: blk['aggressor_name'].to_s }
+        end
+      end
+
+      @combat_state.reload
+      if log_data && log_data[:kind] == 'accepted'
+        ::Combat::Broadcaster.combatant_upserted(bard_cc, **realtime_broadcast_context) if bard_cc
+        ::Combat::Broadcaster.combatant_upserted(aggressor_cc, **realtime_broadcast_context) if aggressor_cc
+      end
+      ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
+      log_strong_personality(@schedule, log_data) if log_data
+      render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    def log_strong_personality(schedule, data)
+      return if schedule.blank? || data.blank?
+
+      bard = data[:bard_name].to_s.presence || 'O Bardo'
+      foe  = data[:aggressor_name].to_s.presence || 'o agressor'
+      message =
+        if data[:kind] == 'accepted'
+          "😤 Personalidade Forte: #{bard} usa a reação e DESMORALIZA #{foe} — ele ataca #{bard} com desvantagem, e #{bard} o ataca com vantagem, até o fim do próximo turno dele."
+        else
+          "😤 #{bard} encara #{foe} e deixa passar — a reação não foi gasta."
+        end
+
+      log = schedule.session_logs.new(kind: :combat, actor: bard, message: message)
+      log.save
     end
 
     # Feed server-side da Inspiração em Combate: CA. O log CITA a CA nova porque é

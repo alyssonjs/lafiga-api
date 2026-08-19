@@ -1268,6 +1268,136 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
   # ── Inspiração em Combate: CA (Bardo, Colégio da Bravura L3) ────────────────
   # Diretriz: front-lafiga/src/docs/class-feature-directives/bard/subclasses/
   #           colegio-da-bravura.md (âncoras F3.15..F3.19)
+  # Personalidade Forte (Bardo · Virtuosismo L3) — HOUSERULE da mesa: a fonte diz
+  # AÇÃO, a mesa trocou por REAÇÃO decidida na hora.
+  #
+  # ⚠️ O motivo de isto ser interação e não PATCH do cliente: como reação, a
+  # condição é escrita no turno do AGRESSOR (NPC do Mestre) — o cliente do Bardo
+  # levaria 403. O servidor é quem tem autorização.
+  describe 'Personalidade Forte (strong_personality)' do
+    # AGRESSOR = NPC do DM, no turno atual (position 0 = current_turn_index).
+    let!(:foe_npc_sp) { create(:combat_npc, schedule: schedule) }
+    let!(:foe_cc_sp) do
+      create(:combat_combatant, :npc, combat_state: cs, combatable: foe_npc_sp, position: 0)
+    end
+    # BARDO = PC do defender_user, que resistiu ao medo.
+    let!(:bard_cc_sp) do
+      create(:combat_combatant, :pc, combat_state: cs, combatable: defender_char,
+             position: 1, ac: 15, hp_current: 20, hp_max: 20)
+    end
+
+    def sp_upsert_body
+      {
+        interaction: {
+          kind: 'strong_personality',
+          source_id: defender_char.id.to_s,
+          pending_responders: [
+            { character_id: defender_char.id.to_s, need: 'offer_reaction', owned_by_dm: false, responded: false },
+          ],
+          strong_personality: {
+            bard_char_id: defender_char.id.to_s,
+            aggressor_combatant_id: foe_cc_sp.id.to_s,
+            bard_name: 'Rick Prince',
+            aggressor_name: 'Ogro',
+            effect_label: 'Personalidade Forte',
+          },
+        },
+      }
+    end
+
+    def sp_respond_body(accept:)
+      decision = accept ? { accept: true } : { decline: true }
+      { character_id: defender_char.id.to_s, strong_personality: decision }
+    end
+
+    describe 'PUT (upsert)' do
+      it 'abre a janela com o BARDO como responder (offer_reaction)' do
+        put "#{base}/active_interaction", params: sp_upsert_body, headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok), -> { response.body }
+        ai = response.parsed_body['active_interaction']
+        expect(ai['kind']).to eq('strong_personality')
+        expect(ai['phase']).to eq('declared')
+        expect(ai['pending_responders'].first['character_id']).to eq(defender_char.id.to_s)
+        expect(ai['pending_responders'].first['need']).to eq('offer_reaction')
+        expect(ai['strong_personality']['aggressor_combatant_id']).to eq(foe_cc_sp.id.to_s)
+      end
+
+      it 'sem agressor a janela NÃO abre — gastaria a reação sem efeito' do
+        body = sp_upsert_body
+        body[:interaction][:strong_personality].delete(:aggressor_combatant_id)
+        put "#{base}/active_interaction", params: body, headers: dm_headers, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+
+    describe 'POST (respond)' do
+      before do
+        put "#{base}/active_interaction", params: sp_upsert_body, headers: dm_headers, as: :json
+      end
+
+      it 'aceitar gasta a REAÇÃO do Bardo e desmoraliza o agressor' do
+        post "#{base}/active_interaction/respond",
+             params: sp_respond_body(accept: true), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok), -> { response.body }
+        expect(response.parsed_body['active_interaction']['phase']).to eq('resolved')
+
+        expect(bard_cc_sp.reload.actions_used['reaction']).to eq(true)
+        expect(bard_cc_sp.turn_state['reactionUsedRound']).to eq(cs.reload.round)
+
+        ids = Array(foe_cc_sp.reload.conditions).map { |c| c['id'] }
+        expect(ids).to include('demoralized')
+      end
+
+      it '⚠️ a FONTE vai em conditionSourceByActor, não dentro da condição' do
+        # O leitor do front só aceita { actorKey: String, round: Number } nessa
+        # chave, e é de lá que sai o par vantagem/desvantagem. Gravar a fonte na
+        # linha da condição faria o badge aparecer e o par nunca disparar.
+        post "#{base}/active_interaction/respond",
+             params: sp_respond_body(accept: true), headers: defender_headers, as: :json
+
+        src = foe_cc_sp.reload.turn_state['conditionSourceByActor']['demoralized']
+        expect(src['actorKey']).to eq(bard_cc_sp.id.to_s)
+        expect(src['round']).to be_a(Integer)
+        expect(src['label']).to eq('Personalidade Forte')
+      end
+
+      it '⚠️ carimba a INSTÂNCIA de turno — senão a marca morre no mesmo turno' do
+        # Como reação, ela nasce dentro do turno do agressor. O sweeper do front
+        # varre quem acabou de agir; sem o carimbo, apagaria antes de ele atacar.
+        post "#{base}/active_interaction/respond",
+             params: sp_respond_body(accept: true), headers: defender_headers, as: :json
+
+        src = foe_cc_sp.reload.turn_state['conditionSourceByActor']['demoralized']
+        expect(src['appliedTurnKey']).to eq("#{cs.reload.round}:#{foe_cc_sp.id}")
+      end
+
+      it 'recusar NÃO consome reação e NÃO desmoraliza' do
+        post "#{base}/active_interaction/respond",
+             params: sp_respond_body(accept: false), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['active_interaction']['strong_personality']['outcome']).to eq('declined')
+
+        expect(bard_cc_sp.reload.actions_used['reaction']).to be_falsey
+        expect(Array(foe_cc_sp.reload.conditions).map { |c| c['id'] }).not_to include('demoralized')
+      end
+
+      it 'sem accept nem decline, 422' do
+        post "#{base}/active_interaction/respond",
+             params: { character_id: defender_char.id.to_s, strong_personality: {} },
+             headers: defender_headers, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'não duplica a condição se o agressor já estiver desmoralizado' do
+        foe_cc_sp.update!(conditions: [{ 'id' => 'demoralized' }])
+        post "#{base}/active_interaction/respond",
+             params: sp_respond_body(accept: true), headers: defender_headers, as: :json
+        ids = Array(foe_cc_sp.reload.conditions).map { |c| c['id'] }
+        expect(ids.count('demoralized')).to eq(1)
+      end
+    end
+  end
+
   describe 'Inspiração em Combate: CA (combat_inspiration_ac)' do
     # Atacante = NPC do DM, no turno atual (position 0 = current_turn_index).
     let!(:foe_npc) { create(:combat_npc, schedule: schedule) }
