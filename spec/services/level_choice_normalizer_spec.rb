@@ -140,4 +140,56 @@ RSpec.describe LevelChoiceNormalizer do
       expect(out['invocations']).to match_array(%w[ei-old ei-new])
     end
   end
+
+
+  describe '.normalize_invocation_schedule' do
+    it 'moves legacy level 4 and 6 picks to the canonical warlock gain levels' do
+      per_level = {
+        '2' => { 'invocations' => %w[ei-armor-of-shadows ei-fiendish-vigor] },
+        '4' => { 'invocations' => %w[ei-devils-sight] },
+        '6' => { 'invocations' => %w[ei-thirsting-blade] },
+        '9' => { 'invocations' => %w[ei-mask-of-many-faces] }
+      }
+
+      result = described_class.normalize_invocation_schedule(
+        per_level,
+        klass_api_index: 'warlock',
+        current_level: 10
+      )
+
+      expect(result.dig('2', 'invocations')).to eq(%w[ei-armor-of-shadows ei-fiendish-vigor])
+      expect(result.dig('4', 'invocations')).to be_nil
+      expect(result.dig('5', 'invocations')).to eq(%w[ei-devils-sight])
+      expect(result.dig('6', 'invocations')).to be_nil
+      expect(result.dig('7', 'invocations')).to eq(%w[ei-thirsting-blade])
+      expect(result.dig('9', 'invocations')).to eq(%w[ei-mask-of-many-faces])
+    end
+
+    it 'does not change invocation placement for another class' do
+      per_level = { '4' => { 'invocations' => %w[homebrew-choice] } }
+
+      result = described_class.normalize_invocation_schedule(
+        per_level,
+        klass_api_index: 'wizard',
+        current_level: 4
+      )
+
+      expect(result).to eq(per_level)
+    end
+
+
+    it 'keeps excess picks visible at the last eligible gain level' do
+      per_level = {
+        '2' => { 'invocations' => %w[ei-a ei-b ei-c] }
+      }
+
+      result = described_class.normalize_invocation_schedule(
+        per_level,
+        klass_api_index: 'warlock',
+        current_level: 2
+      )
+
+      expect(result.dig('2', 'invocations')).to eq(%w[ei-a ei-b ei-c])
+    end
+  end
 end

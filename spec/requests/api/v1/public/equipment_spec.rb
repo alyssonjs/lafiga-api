@@ -35,7 +35,16 @@ RSpec.describe "Api::V1::Public::Equipment", type: :request do
           name: 'Espada Longa',
           kind: :weapon,
           category: 'martial',
-          props: { 'properties' => %w[versatile], 'type' => 'melee', 'hands' => 1, 'versatile' => true, 'damage_die' => '1d8', 'versatile_die' => '1d10' }
+          props: {
+            'properties' => %w[versatile],
+            'type' => 'melee',
+            'hands' => 1,
+            'versatile' => true,
+            'damage_die' => '1d8',
+            'versatile_die' => '1d10',
+            'chibi_weapon_svg_id' => 'sword-long',
+            'card_icon_id' => 'dagger'
+          }
         )
         it.save!
       end
@@ -48,6 +57,8 @@ RSpec.describe "Api::V1::Public::Equipment", type: :request do
       expect(json['index']).to eq('longsword')
       props = Array(json['properties']).map { |p| p['index'] }
       expect(props).to include('versatile')
+      expect(json['chibi_weapon_svg_id']).to eq('sword-long')
+      expect(json['card_icon_id']).to eq('dagger')
     end
   end
 
@@ -137,4 +148,3 @@ RSpec.describe "Api::V1::Public::Equipment", type: :request do
     end
   end
 end
-

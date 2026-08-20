@@ -154,7 +154,7 @@ elf:
         weapons: [espada longa, espada curta, arco curto, arco longo]
       languages:
         choiceCount: 1
-        choiceList: [Anão, Halfling, Dracônico, Gnômico, Orc, Infernal]
+        choiceList: [Anão, Gigante, Gnômico, Goblin, Halfling, Orc, Abissal, Celestial, "Dialeto Subterrâneo", Dracônico, Infernal, Primordial, Silvestre, Subcomum]
       traits:
         - key: high_elf_cantrip
           options:
@@ -209,7 +209,7 @@ human:
   languages:
     always: [Comum]
     choiceCount: 1
-    choiceList: [Anão, Élfico, Halfling, Dracônico, Gnômico, Orc, Infernal]
+    choiceList: [Anão, Élfico, Gigante, Gnômico, Goblin, Halfling, Orc, Abissal, Celestial, "Dialeto Subterrâneo", Dracônico, Infernal, Primordial, Silvestre, Subcomum]
   traits: []
   subraces:
     standard:
@@ -372,7 +372,7 @@ half_elf:
   languages:
     always: [Comum, Élfico]
     choiceCount: 1
-    choiceList: [Anão, Halfling, Dracônico, Gnômico, Orc, Infernal]
+    choiceList: [Anão, Gigante, Gnômico, Goblin, Halfling, Orc, Abissal, Celestial, "Dialeto Subterrâneo", Dracônico, Infernal, Primordial, Silvestre, Subcomum]
   proficiencies:
     skills:
       choiceCount: 2
@@ -455,7 +455,7 @@ tabaxi:
   languages:
     always: [Comum]
     choiceCount: 1
-    choiceList: [Anão, Élfico, Halfling, Dracônico, Gnômico, Orc, Infernal, Silvestre]
+    choiceList: [Anão, Élfico, Gigante, Gnômico, Goblin, Halfling, Orc, Abissal, Celestial, "Dialeto Subterrâneo", Dracônico, Infernal, Primordial, Silvestre, Subcomum]
   proficiencies:
     skills:
       fixed: [Percepção, Furtividade]

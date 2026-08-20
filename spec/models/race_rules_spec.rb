@@ -62,4 +62,18 @@ RSpec.describe 'RaceRules YAML integration' do
     expect(applied.dig(:proficiencies, :skills, :fixed)).to contain_exactly('Percepção', 'Furtividade')
     expect(keys).to include('darkvision', 'feline_agility', 'cat_claws_1d4_slashing', 'cats_talent')
   end
+
+  it 'exposes every standard and exotic extra language without known racial languages' do
+    expected = [
+      'Anão', 'Élfico', 'Gigante', 'Gnômico', 'Goblin', 'Halfling', 'Orc',
+      'Abissal', 'Celestial', 'Dialeto Subterrâneo', 'Dracônico', 'Infernal',
+      'Primordial', 'Silvestre', 'Subcomum'
+    ]
+
+    human = RaceRules.apply(race_id: 'human', subrace_id: 'variant', choices: {})
+    high_elf = RaceRules.apply(race_id: 'elf', subrace_id: 'high', choices: {})
+
+    expect(human.dig(:language_choices_required, :options)).to eq(expected)
+    expect(high_elf.dig(:language_choices_required, :options)).to eq(expected - ['Élfico'])
+  end
 end

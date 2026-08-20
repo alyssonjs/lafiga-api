@@ -27,6 +27,16 @@
 module LevelChoiceNormalizer
   module_function
 
+  WARLOCK_INVOCATION_GAIN_COUNTS = {
+    2 => 2,
+    5 => 1,
+    7 => 1,
+    9 => 1,
+    12 => 1,
+    15 => 1,
+    18 => 1
+  }.freeze
+
   # Maps `featGrantChoices` keys to the keys FeatRules.apply expects.
   GRANT_KEY_RENAMES = {
     'skills' => 'proficiencies'
@@ -73,6 +83,50 @@ module LevelChoiceNormalizer
       out['asi'] = build_asi(asi_choice)
     end
     out
+  end
+
+  def normalize_invocation_schedule(per_level, klass_api_index:, current_level:)
+    normalized = per_level.is_a?(Hash) ? per_level.deep_stringify_keys : {}
+    return normalized unless klass_api_index.to_s == 'warlock'
+
+    invocations = []
+    seen = {}
+    normalized.keys.sort_by { |level| level.to_i }.each do |level|
+      row = normalized[level]
+      next unless row.is_a?(Hash)
+
+      %w[invocation invocations eldritch_invocations].each do |key|
+        Array(row.delete(key)).each do |raw|
+          token = if raw.is_a?(Hash)
+                    value = raw.stringify_keys
+                    value['name'].presence || value['id'].presence || value['slug'].presence
+                  else
+                    raw
+                  end
+          token = token.to_s.strip
+          next if token.empty? || seen.key?(token)
+
+          seen[token] = true
+          invocations << token
+        end
+      end
+    end
+    return normalized if invocations.empty?
+
+    cursor = 0
+    eligible_gains = WARLOCK_INVOCATION_GAIN_COUNTS.select { |level, _count| level <= current_level.to_i }
+    eligible_gains.each_with_index do |(level, count), index|
+      last_gain = index == eligible_gains.length - 1
+      take = last_gain ? invocations.length - cursor : count
+      selected = invocations.slice(cursor, take) || []
+      break if selected.empty?
+
+      normalized[level.to_s] ||= {}
+      normalized[level.to_s]['invocations'] = selected
+      cursor += selected.length
+    end
+
+    normalized
   end
 
   # Inverso de `normalize_row`: converte uma `per_level` row canônica do backend

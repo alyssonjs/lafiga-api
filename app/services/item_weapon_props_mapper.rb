@@ -40,6 +40,8 @@ class ItemWeaponPropsMapper
         versatile_die: p['versatile_die'].presence,
         range: normalize_range(p['range'])
       }
+      out[:chibi_weapon_svg_id] = p['chibi_weapon_svg_id'].to_s if p['chibi_weapon_svg_id'].present?
+      out[:card_icon_id] = p['card_icon_id'].to_s if p['card_icon_id'].present?
       out[:ammunition] = true if ammunition_flag
       ammo_idx = p['ammunition_index'].presence || p['ammo_index'].presence
       out[:ammunition_index] = ammo_idx.to_s if ammunition_flag && ammo_idx.present?

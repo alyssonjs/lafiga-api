@@ -210,11 +210,13 @@ class Api::V1::Public::EquipmentController < ApplicationController
     case it.kind
     when 'weapon'
       wp = it.props || {}
-      props = []
+      props = Array(wp['properties']).map { |v| v.to_s.downcase }
       props << 'ammunition' if wp['type'] == 'ranged' && !wp['thrown']
       %w[finesse light heavy loading reach special thrown versatile two-handed].each do |p|
         props << p if wp[p]
       end
+      props << 'two-handed' if wp['hands'].to_i == 2 && !props.include?('versatile')
+      props.uniq!
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
       weight_kg = (defined?(EquipmentRules) ? EquipmentRules.item_weight_kg(it) : nil) rescue nil
       return {
@@ -223,12 +225,14 @@ class Api::V1::Public::EquipmentController < ApplicationController
         equipment_category: { index: 'weapon', name: 'Weapon' },
         weapon_category: it.category.to_s,
         weapon_range: wp['type'] == 'ranged' ? 'Ranged' : 'Melee',
-        damage: wp['damage_die'].to_s.empty? ? nil : { damage_dice: wp['damage_die'] },
+        damage: wp['damage_die'].to_s.empty? ? nil : { damage_dice: wp['damage_die'], damage_type: wp['damage_type'] },
         two_handed_damage: wp['versatile_die'] ? { damage_dice: wp['versatile_die'] } : nil,
         range: wp['range'] ? { normal: wp['range'].to_s.split('/').first.to_i, long: wp['range'].to_s.split('/').last.to_i } : nil,
         properties: props.map { |p| { index: p, name: weapon_property_name(p), url: "/api/v1/public/weapon_properties/#{p}" } },
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
         weight: weight_kg,
+        chibi_weapon_svg_id: wp['chibi_weapon_svg_id'],
+        card_icon_id: wp['card_icon_id'],
         url: "/api/v1/public/equipment/#{it.api_index}"
       }.compact
     when 'armor'

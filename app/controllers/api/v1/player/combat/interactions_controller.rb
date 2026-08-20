@@ -23,6 +23,14 @@ module Api::V1::Player::Combat
     #   label?, attacker_roll? { total, ... }, pending_defender_owned_by_dm? } }
     def upsert
       ip = interaction_params
+      if ip['kind'].to_s == ::Combat::InteractionService::KIND_HOSTILE_CASTING && truthy(ip['discover_reactors'])
+        return forbidden! unless authorized_hostile_casting_source?(ip['source_id'])
+
+        ip = enrich_hostile_casting_reactors(ip)
+        if Array(ip['target_ids']).empty?
+          return render json: { active_interaction: nil }, status: :ok
+        end
+      end
       payload =
         case ip['kind'].to_s
         when ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
@@ -185,7 +193,7 @@ module Api::V1::Player::Combat
 
     def interaction_params
       params.require(:interaction).permit(
-        :id, :kind, :source_id, :label, :pending_defender_owned_by_dm,
+        :id, :kind, :source_id, :label, :pending_defender_owned_by_dm, :discover_reactors,
         target_ids: [],
         pending_responders: [:character_id, :need, :owned_by_dm, :responded],
         attacker_roll: [:total, :formula, :advantage, :skill, :roll_group_id, :natural20, :natural1, { dice: [] }],
@@ -204,7 +212,11 @@ module Api::V1::Player::Combat
           # hash arbitrário). Allowlist estrita aqui; o service só repassa hashes.
         ],
         # Conjuração hostil (Frustrar Conjuração): bloco descritivo do cast.
-        hostile_casting: [:caster_id, :caster_name, :spell_name, :spell_level, :dc, :hostile],
+        hostile_casting: [
+          :caster_id, :caster_name, :spell_name, :spell_level, :dc, :hostile,
+          :caster_save_bonus, :held_cast, :held_by_client_id,
+          { reactors: {} },
+        ],
         # Consentimento de alvo (magia voluntária/benéfica): bloco descritivo.
         target_consent: [:caster_id, :caster_name, :spell_name, :beneficial, :auto_refuse],
         # Fortitude Instintiva (Furioso Imortal L14): bloco descritivo (nome do caído).
@@ -239,6 +251,52 @@ module Api::V1::Player::Combat
       end
     end
 
+    def enrich_hostile_casting_reactors(input)
+      payload = input.deep_stringify_keys
+      caster = resolve_combatant_by_identity(payload['source_id'])
+      candidates = ::Combat::DistractingChordCandidates.call(
+        schedule: @schedule,
+        combat_state: @combat_state,
+        caster: caster,
+      )
+
+      hostile = Hash(payload['hostile_casting']).deep_stringify_keys
+      existing_reactors = Hash(hostile['reactors']).deep_stringify_keys
+      # O servidor substitui toda entrada de Virtuosismo declarada pelo cliente.
+      # Metadados das outras famílias permanecem para compatibilidade do fluxo
+      # manual de Frustrar Conjuração.
+      reactors = existing_reactors.reject { |_id, meta| Hash(meta)['family'].to_s == 'virtuoso' }
+      candidates.each do |candidate|
+        reactors[candidate[:character_id]] = {
+          'family' => 'virtuoso',
+          'name' => candidate[:name],
+          'dc' => candidate[:dc],
+          'die' => candidate[:die],
+        }
+      end
+
+      preserved_ids = Array(payload['target_ids']).map(&:to_s).select do |id|
+        Hash(existing_reactors[id])['family'].to_s != 'virtuoso'
+      end
+      target_ids = (preserved_ids + candidates.map { |candidate| candidate[:character_id] }).uniq
+      existing_pending = Array(payload['pending_responders']).index_by { |row| Hash(row)['character_id'].to_s }
+      candidate_by_id = candidates.index_by { |candidate| candidate[:character_id] }
+
+      payload['target_ids'] = target_ids
+      payload['pending_responders'] = target_ids.map do |character_id|
+        existing = Hash(existing_pending[character_id]).deep_stringify_keys
+        candidate = candidate_by_id[character_id]
+        {
+          'character_id' => character_id,
+          'need' => 'offer_reaction',
+          'owned_by_dm' => candidate ? candidate[:owned_by_dm] : truthy(existing['owned_by_dm']),
+          'responded' => false,
+        }
+      end
+      payload['hostile_casting'] = hostile.merge('reactors' => reactors)
+      payload
+    end
+
     # `attacks`/`npc_attacks` vêm como arrays de hash livres (riders/parcelas de
     # dano que o front monta). `permit` não modela array de hash arbitrário sem
     # listar chaves, então puxamos o conteúdo cru e deixamos a normalização
@@ -267,7 +325,7 @@ module Api::V1::Player::Combat
         # no dano do OA (aplicado server-side). Opcionais — ausentes → dano cheio.
         opportunity_attack: [:damage, :ignored, :hit, :damage_type, :magical, :commit, :swap_applied, roll: [:total]],
         # Frustrar Conjuração: fase 1 (reator) `frustrate`/`ignored`; fase 2 (Mestre) `saved`.
-        hostile_casting: [:frustrate, :ignored, :saved],
+        hostile_casting: [:frustrate, :ignored, :saved, :distracting_chord, :die_roll],
         # Consentimento de alvo: o dono do PC `accept` ou `refuse`.
         target_consent: [:accept, :refuse],
         # Personalidade Forte: o dono do Bardo `accept` (gasta a reação e
@@ -307,7 +365,9 @@ module Api::V1::Player::Combat
       when ::Combat::InteractionService::KIND_OPPORTUNITY_ATTACK
         current_turn_belongs_to_user?
       when ::Combat::InteractionService::KIND_HOSTILE_CASTING
-        false # conjuração hostil de NPC é declarada só pelo Mestre
+        # NPC continua exclusivo do Mestre. Um PC no próprio turno pode abrir a
+        # janela automaticamente pela hotbar antes de confirmar a magia.
+        authorized_hostile_casting_source?(payload['source_id'])
       when ::Combat::InteractionService::KIND_INSTINCTIVE_FORTITUDE
         # O DISPARO vem de QUEM APLICOU o dano (o atacante do turno atual, ou o
         # Mestre por NPC — já coberto por site_or_table_dm). O `source_id` é o
@@ -334,6 +394,22 @@ module Api::V1::Player::Combat
       end
     end
 
+    def authorized_hostile_casting_source?(source_id)
+      return true if site_or_table_dm?
+      return false unless current_turn_belongs_to_user?
+
+      current = current_turn_combatant
+      return false unless current
+
+      raw = source_id.to_s
+      if raw.start_with?('pc-', 'npc-')
+        source = resolve_combatant_by_identity(raw)
+        source.present? && current.id == source.id
+      else
+        [current.id.to_s, current.combatable_id.to_s].include?(raw)
+      end
+    end
+
     def authorized_to_clear?
       return true if site_or_table_dm?
       current = @combat_state&.active_interaction
@@ -348,6 +424,9 @@ module Api::V1::Player::Combat
       # V/X) é o ATACANTE, dono do turno. Mirror.
       if current['kind'] == ::Combat::InteractionService::KIND_COMBAT_INSPIRATION_AC
         return current_turn_belongs_to_user? || owns_character?(current['source_id'])
+      end
+      if current['kind'] == ::Combat::InteractionService::KIND_HOSTILE_CASTING
+        return current_turn_belongs_to_user? || owns_character?(current.dig('hostile_casting', 'caster_id'))
       end
       owns_character?(current['source_id'])
     end
@@ -419,7 +498,7 @@ module Api::V1::Player::Combat
       au = Hash(cc.actions_used).merge('reaction' => true)
       ts = Hash(cc.turn_state).merge(extra_turn_state).merge('reactionUsedRound' => @combat_state.round.to_i)
       ts = ts.except(*Array(drop_turn_state_keys))
-      cc.update(actions_used: au, turn_state: ts)
+      cc.update!(actions_used: au, turn_state: ts)
     end
 
     def respond_opportunity_attack(current)
@@ -1071,7 +1150,9 @@ module Api::V1::Player::Combat
 
         if accept
           bard_cc = resolve_combatant_by_identity(character_id)
-          aggressor_cc = @combat_state.combat_combatants.find_by(id: blk['aggressor_combatant_id'])
+          # RESOLVEDOR TOLERANTE, não `find_by(id:)`. O front grava aqui o id de
+          # combatente DELE (`pc-<characterId>`), que não é a PK desta tabela.
+          aggressor_cc = resolve_combatant_by_identity(blk['aggressor_combatant_id'])
           if aggressor_cc.nil?
             return render(json: { error: 'agressor não está mais no combate' }, status: :unprocessable_entity)
           end
@@ -1082,36 +1163,37 @@ module Api::V1::Player::Combat
           unless conds.any? { |c| c.is_a?(Hash) && c['id'].to_s == 'demoralized' }
             conds += [{ 'id' => 'demoralized' }]
           end
-          active_cc_id = @combat_state.combat_combatants
-                                      .order(:position).offset(@combat_state.current_turn_index.to_i).first&.id
           ts = Hash(aggressor_cc.turn_state)
           sources = Hash(ts['conditionSourceByActor'])
+          # `actorKey` no espaço que o FRONT lê (personagem / `npc-<id>`), NUNCA
+          # `bard_cc.id`: a PK de `combat_combatants` não existe para o front, e a
+          # regra pareada (vantagem do Bardo × desvantagem do agressor) sai desta
+          # comparação — chave errada = feature cosmética.
+          # `round` é a âncora da expiração ("até o fim do PRÓXIMO turno dele"):
+          # nasce na rodada N durante o turno do agressor e só cai quando o turno
+          # dele terminar numa rodada maior.
           sources['demoralized'] = {
-            'actorKey' => bard_cc&.id.to_s,
+            'actorKey' => combatant_identity_key(bard_cc),
             'round' => @combat_state.round.to_i,
             'label' => blk['effect_label'].to_s.presence || 'Personalidade Forte',
-            'appliedTurnKey' => "#{@combat_state.round.to_i}:#{active_cc_id}",
           }
           aggressor_cc.update(conditions: conds, turn_state: ts.merge('conditionSourceByActor' => sources))
 
-          resolved = current.merge(
-            'phase' => 'resolved',
-            'pending_responders' => [],
-            'strong_personality' => blk.merge('outcome' => 'accepted'),
-          )
-          @combat_state.set_active_interaction!(resolved)
+          # LIMPA em vez de deixar `resolved` pendurada. O efeito (condição no
+          # agressor + reação consumida) já foi aplicado NESTE lock e ninguém
+          # consome o `outcome` desta janela — mantê-la ocupava o slot ÚNICO de
+          # `active_interaction` para sempre, e slot ocupado bloqueia toda janela
+          # nova (foi o que impediu o Acorde Distrativo de abrir, 19/08).
+          @combat_state.clear_active_interaction!
           log_data = {
             kind: 'accepted',
             bard_name: bard_cc&.name.to_s.presence || blk['bard_name'].to_s,
             aggressor_name: aggressor_cc.name.to_s.presence || blk['aggressor_name'].to_s,
           }
         else
-          resolved = current.merge(
-            'phase' => 'resolved',
-            'pending_responders' => [],
-            'strong_personality' => blk.merge('outcome' => 'declined'),
-          )
-          @combat_state.set_active_interaction!(resolved)
+          # Recusar não deixa efeito nenhum — some a janela junto (mesma razão
+          # do ramo de cima: `resolved` sem consumidor é slot ocupado à toa).
+          @combat_state.clear_active_interaction!
           log_data = { kind: 'declined', bard_name: blk['bard_name'].to_s, aggressor_name: blk['aggressor_name'].to_s }
         end
       end
@@ -1198,6 +1280,9 @@ module Api::V1::Player::Combat
     # `with_lock` serializa contra corrida; idempotente se a interação já mudou.
     def respond_hostile_casting(current)
       reactor_cc = nil
+      caster_touched = nil
+      chord_runtime_touched = nil
+      chord_sheet_touched = nil
       log_data = nil
       reaction_consumed = false
 
@@ -1226,7 +1311,139 @@ module Api::V1::Player::Combat
         if phase == 'declared'
           if ignored
             log_data = { kind: 'ignored', reactor_name: reactor_display_name(character_id, hc), caster_name: hc['caster_name'] }
-            @combat_state.clear_active_interaction!
+            # OFERTA SERIAL: a janela pode ter VÁRIOS reatores elegíveis (Desistentes
+            # + Bardos). Quem abre mão passa a vez ao próximo, e a janela só termina
+            # quando ninguém mais tem o que decidir. Com um responder único isto é
+            # idêntico ao comportamento anterior (limpava direto).
+            remaining = Array(current['pending_responders']).map do |r|
+              r['character_id'].to_s == character_id ? r.merge('responded' => true) : r
+            end
+            if remaining.any? { |r| ![true, 1, '1', 'true'].include?(r['responded']) }
+              @combat_state.set_active_interaction!(current.merge('pending_responders' => remaining))
+            else
+              # Ninguém interveio: a conjuração segue.
+              finish_hostile_casting!(current, hc, outcome: 'proceeds')
+            end
+          elsif ActiveModel::Type::Boolean.new.cast(hc_resp['distracting_chord'])
+            # ── ACORDE DISTRATIVO (Bardo Virtuosismo L6) ────────────────────────
+            # Mesma janela, outra resolução: em vez de o Mestre arbitrar um TR no
+            # olho, o Bardo gasta reação + 1 dado de Inspiração e o conjurador
+            # ganha um TR de SAB PENALIZADO pelo dado, pelo pipe único de TR.
+            reactor_meta = (hc['reactors'] || {})[character_id].to_h
+            unless reactor_meta['family'].to_s == 'virtuoso'
+              return render(json: { error: 'este reator não tem Acorde Distrativo' }, status: :unprocessable_entity)
+            end
+
+            reactor_cc = resolve_combatant_by_identity(character_id)
+            profile_command = ::Combat::DistractingChordProfile.call(combatant: reactor_cc)
+            unless profile_command.success?
+              return render(
+                json: { error: profile_command.errors.full_messages.to_sentence },
+                status: :unprocessable_entity,
+              )
+            end
+            profile = profile_command.result
+
+            die_roll = hc_resp['die_roll'].to_i
+            sides = profile[:die].delete_prefix('d').to_i
+            # O cliente ROLA e o servidor VALIDA a faixa (mesmo contrato da janela
+            # de CA da Inspiração em Combate): sem isto, um cliente adulterado
+            # mandaria uma penalidade arbitrária no TR do conjurador.
+            if sides <= 0 || die_roll < 1 || die_roll > sides
+              return render(json: { error: 'dado de Inspiração fora da faixa' }, status: :unprocessable_entity)
+            end
+
+            caster_cc = resolve_combatant_by_identity(hc['caster_id'].presence || current['source_id'])
+            if caster_cc.nil?
+              return render(json: { error: 'conjurador não está mais no combate' }, status: :unprocessable_entity)
+            end
+
+            if truthy(Hash(reactor_cc.actions_used)['reaction']) ||
+               Hash(reactor_cc.turn_state)['reactionUsedRound'].to_i == @combat_state.round.to_i
+              return render(json: { error: 'reação já utilizada nesta rodada' }, status: :conflict)
+            end
+
+
+            runtime = profile[:sheet].runtime!
+            runtime.lock!
+            used = Hash(runtime.class_resources_used)['bardic_inspiration'].to_i
+            if used >= profile[:total]
+              return render(json: { error: 'sem Inspiração Bárdica disponível' }, status: :conflict)
+            end
+
+            runtime.update!(
+              class_resources_used: Hash(runtime.class_resources_used).merge('bardic_inspiration' => used + 1),
+            )
+            chord_runtime_touched = runtime
+            chord_sheet_touched = profile[:sheet]
+            consume_reaction!(reactor_cc)
+            reaction_consumed = true
+
+            # Sobrescreve os dados declarados com a ficha real antes de persistir
+            # o TR e retransmitir a interação para os outros clientes.
+            reactor_meta = reactor_meta.merge(
+              'family' => 'virtuoso',
+              'name' => reactor_cc.name.to_s,
+              'dc' => profile[:dc],
+              'die' => profile[:die],
+            )
+            hc['reactors'] = Hash(hc['reactors']).merge(character_id => reactor_meta)
+
+            card_group_id = "hc-chord-#{current['id']}"
+            # ⚠️ O TR é do CONJURADOR, e quem escreve é o SERVIDOR. O cliente do
+            # Bardo não pode mutar o turn_state de outro combatente fora do próprio
+            # turno (403) — foi por isso que a Personalidade Forte também escreve
+            # server-side.
+            ts = Hash(caster_cc.turn_state)
+            caster_cc.update!(turn_state: ts.merge(
+              'pendingTargetSave' => {
+                'saveId' => 'distracting-chord',
+                'ability' => 'wis',
+                'dc' => profile[:dc],
+                'saveBonus' => hc['caster_save_bonus'].to_i,
+                # O dado NÃO soma na CD: subtrai do teste (F6.5).
+                'savePenalty' => die_roll,
+                'sourceActorKey' => combatant_identity_key(reactor_cc),
+                'sourceActorName' => reactor_cc&.name.to_s.presence || reactor_meta['name'].to_s,
+                'onFailCondition' => '',
+                'effectLabel' => 'MAGIA FALHA',
+                'sourceLabel' => 'Acorde Distrativo',
+                'emoji' => '🎸',
+                'appliedRound' => @combat_state.round.to_i,
+                'mode' => 'apply-on-fail',
+                # "perde a concentração" é literal na regra.
+                'onFailBreakConcentration' => true,
+                'cardRollGroupId' => card_group_id,
+                # Âncora que faz o resolvedor do TR FECHAR esta janela.
+                'hostileCasting' => {
+                  'interactionId' => current['id'].to_s,
+                  'responderId' => character_id,
+                },
+              },
+            ))
+            caster_touched = caster_cc
+
+            hc['frustrated_by'] = character_id
+            hc['frustrated_by_name'] = reactor_cc&.name.to_s.presence || reactor_meta['name'].to_s
+            hc['method'] = 'distracting_chord'
+            hc['die_roll'] = die_roll
+            hc['save_card_roll_group_id'] = card_group_id
+            # Fase `roll`: o card de TR segue o caminho normal, e a carta do
+            # Mestre continua como escape para arbitrar por cima dele.
+            @combat_state.set_active_interaction!(current.merge(
+              'phase' => 'roll',
+              'hostile_casting' => hc,
+              'pending_responders' => [
+                { 'character_id' => current['source_id'].to_s, 'need' => 'arbitrate', 'owned_by_dm' => true, 'responded' => false },
+              ],
+            ))
+            log_data = {
+              kind: 'chord_offer',
+              reactor_name: hc['frustrated_by_name'],
+              caster_name: hc['caster_name'],
+              die_roll: die_roll,
+              dc: reactor_meta['dc'],
+            }
           elsif frustrate
             reactor_cc = resolve_combatant_by_identity(character_id)
             if reactor_cc
@@ -1257,8 +1474,31 @@ module Api::V1::Player::Combat
             reactor_name: hc['frustrated_by_name'],
             caster_name: hc['caster_name'],
             spell_name: hc['spell_name'],
+            spell_level: hc['spell_level'],
+            method: hc['method'],
           }
-          @combat_state.clear_active_interaction!
+          if hc['method'].to_s == 'distracting_chord'
+            caster_cc = resolve_combatant_by_identity(hc['caster_id'].presence || current['source_id'])
+            if caster_cc
+              ts = Hash(caster_cc.turn_state)
+              patch = {}
+              # Limpa o TR pendente NOS DOIS desfechos: o Mestre pode arbitrar antes
+              # do card ser rolado, e um pending órfão travaria a hotbar do
+              # conjurador para sempre. Só o NOSSO pending — um TR de outra fonte
+              # que tenha chegado no meio não é nosso para apagar.
+              if ts.dig('pendingTargetSave', 'saveId').to_s == 'distracting-chord'
+                patch[:turn_state] = ts.except('pendingTargetSave')
+              end
+              # Falha pela ARBITRAGEM: o pipe do TR não rodou, então a quebra de
+              # concentração (que lá é a flag `onFailBreakConcentration`) sai daqui.
+              patch.merge!(is_concentrating: false, concentration_spell: nil) unless saved
+              if patch.present?
+                caster_cc.update(patch)
+                caster_touched = caster_cc
+              end
+            end
+          end
+          finish_hostile_casting!(current, hc, outcome: hc['outcome'])
         else
           return render(json: { active_interaction: current }, status: :ok)
         end
@@ -1266,9 +1506,45 @@ module Api::V1::Player::Combat
 
       @combat_state.reload
       ::Combat::Broadcaster.combatant_upserted(reactor_cc, **realtime_broadcast_context) if reactor_cc && reaction_consumed
+      # O CONJURADOR também mudou (TR pendente escrito/limpo, concentração
+      # derrubada) — sem este eco o card do TR não aparece para a mesa.
+      ::Combat::Broadcaster.combatant_upserted(caster_touched.reload, **realtime_broadcast_context) if caster_touched
       ::Combat::Broadcaster.state_changed(@combat_state, **realtime_broadcast_context)
+      if chord_runtime_touched && chord_sheet_touched
+        Sheets::Runtime::Broadcaster.broadcast_change(
+          chord_sheet_touched,
+          chord_runtime_touched.reload,
+          schedule_id: @schedule.id,
+          actor: @current_user,
+        )
+      end
       log_hostile_casting(@schedule, log_data) if log_data
       render json: { active_interaction: @combat_state.active_interaction }, status: :ok
+    end
+
+    # Fim da janela de conjuração hostil.
+    #
+    # Sem cast segurado (declaração manual do Mestre) a interação é LIMPA, como
+    # sempre foi. Com `held_cast`, ela precisa SOBREVIVER um instante em
+    # `phase:'resolved'` carregando o `outcome`: quem segurou a conjuração está do
+    # outro lado esperando para retomá-la ou falhá-la, e uma interação apagada não
+    # diria qual dos dois. Quem limpa, aí, é o disparador (mesmo desenho do
+    # Defensor da Tribo).
+    def finish_hostile_casting!(current, hc, outcome:)
+      hc = hc.merge('outcome' => outcome)
+      if truthy_flag?(hc['held_cast'])
+        @combat_state.set_active_interaction!(current.merge(
+          'phase' => 'resolved',
+          'hostile_casting' => hc,
+          'pending_responders' => [],
+        ))
+      else
+        @combat_state.clear_active_interaction!
+      end
+    end
+
+    def truthy_flag?(value)
+      [true, 1, '1', 'true'].include?(value)
     end
 
     # Nome do reator p/ o log/estado. Preferência: CombatCombatant resolvido;
@@ -1287,17 +1563,30 @@ module Api::V1::Player::Combat
       reactor = data[:reactor_name].to_s.presence || 'Desistente'
       caster  = data[:caster_name].to_s.presence || 'o conjurador'
       spell   = data[:spell_name].to_s.presence
+      # J4 — a janela serve duas famílias; o log nomeia a FEATURE de quem agiu.
+      chord = data[:method].to_s == 'distracting_chord'
+      emoji = chord ? '🎸' : '🌀'
+      # "gastando o espaço sem efeito" só faz sentido quando havia espaço: truque
+      # (nível 0) não tem o que gastar.
+      level = data[:spell_level]
+      slot_note = level.present? && level.to_i.zero? ? '' : ' e o espaço é gasto'
 
       message =
         case data[:kind]
         when 'ignored'
-          "🛡️ #{reactor} não frustrou a conjuração de #{caster}."
+          "🛡️ #{reactor} não interrompeu a conjuração de #{caster}."
         when 'frustrate_offer'
           "🌀 #{reactor} usa a reação para Frustrar Conjuração de #{caster}: TR de Sabedoria do conjurador."
+        when 'chord_offer'
+          "🎸 #{reactor} toca um Acorde Distrativo contra #{caster}: " \
+            "TR de Sabedoria CD #{data[:dc]} com penalidade de −#{data[:die_roll]}."
         when 'frustrated'
-          "🌀 #{reactor} FRUSTROU #{spell ? "#{spell} de " : ''}#{caster}: a magia falha e o espaço é gasto."
+          chord \
+            ? "🎸 #{reactor} interrompe #{spell ? "#{spell} de " : ''}#{caster} com o Acorde Distrativo: " \
+              "a conjuração falha, a concentração se perde#{slot_note}."
+            : "🌀 #{reactor} FRUSTROU #{spell ? "#{spell} de " : ''}#{caster}: a magia falha#{slot_note}."
         when 'proceeds'
-          "🌀 #{caster} resiste a #{reactor}: a #{spell || 'magia'} prossegue."
+          "#{emoji} #{caster} resiste a #{reactor}: a #{spell || 'magia'} prossegue."
         end
       return if message.blank?
 
@@ -1371,10 +1660,42 @@ module Api::V1::Player::Combat
       # prefixo, o reator NPC não resolvia e o consumo da reação (miss/respond) era
       # pulado. PC continua resolvendo por combatable_id (character_id).
       npc_id = id.start_with?('npc-') ? id.delete_prefix('npc-') : nil
+      # ⚠️ `pc-<n>` é o id de COMBATENTE do front, e o `n` é a PK DESTA tabela —
+      # não o characterId. O contrato está em `combatMappers.combatantIdFromApi`:
+      # `${type}-${api.id}` com `api.id` = combat_combatants.id (e o caminho de
+      # volta é `numericIdFromCombatantId`). Faltava esta metade: a Personalidade
+      # Forte gravava `aggressor_combatant_id:'pc-867'`, o respond fazia
+      # find_by(id: 'pc-867') → nil e devolvia 422 "agressor não está mais no
+      # combate" a CADA clique — o botão parecia morto (19/08).
+      #
+      # NÃO cair para `combatable_id` no ramo `pc-`: um id de PERSONAGEM que por
+      # acaso coincida com uma PK resolveria a criatura ERRADA, e alvo errado em
+      # silêncio é pior que o 422, que ao menos é alto.
+      pc_id = id.start_with?('pc-') ? id.delete_prefix('pc-') : nil
 
       @combat_state.combat_combatants.find_by(id: id) ||
         @combat_state.combat_combatants.find_by(combatable_id: id) ||
-        (npc_id && @combat_state.combat_combatants.find_by(combatable_type: 'CombatNpc', combatable_id: npc_id))
+        # `npc-<n>`: DOIS produtores. `resolveTargetIdentity` manda o CombatNpc.id
+        # (interpretação documentada, primeiro) e o `turnOrder` manda a PK.
+        (npc_id && @combat_state.combat_combatants.find_by(combatable_type: 'CombatNpc', combatable_id: npc_id)) ||
+        (npc_id && @combat_state.combat_combatants.find_by(id: npc_id)) ||
+        (pc_id && @combat_state.combat_combatants.find_by(id: pc_id))
+    end
+
+    # Identidade do combatente no espaço que o FRONT usa no `turnOrder`
+    # (`combatantIdFromApi`: `pc-<id>` / `npc-<id>`, com o id DESTA tabela).
+    #
+    # É essa string que vai no `conditionSourceByActor.actorKey`, de onde sai a
+    # regra pareada da Personalidade Forte. Gravar `cc.id` cru (só o número) não
+    # casa com nada que o front conheça: a marca existiria, a reação seria gasta
+    # e nenhum ataque mudaria. O leitor do front é tolerante
+    # (`combatantIdentityKeys` aceita combatente, personagem e token), mas o
+    # escritor tem que ser canônico.
+    def combatant_identity_key(cc)
+      return nil if cc.nil?
+
+      prefix = cc.combatable_type == 'CombatNpc' ? 'npc' : 'pc'
+      "#{prefix}-#{cc.id}"
     end
 
     def respond_error_message(err)

@@ -791,6 +791,19 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
         expect(response).to have_http_status(:forbidden)
         expect(cs.reload.active_interaction).to be_nil
       end
+
+      it 'permite ao jogador do turno declarar a própria conjuração' do
+        caster_cc.update!(position: 2)
+        desistente_cc.update!(position: 1)
+        create(:combat_combatant, :pc, combat_state: cs, combatable: attacker_char, position: 0)
+
+        put "#{base}/active_interaction",
+            params: hc_upsert_body(caster_identity: attacker_char.id, reactor_identity: defender_char.id),
+            headers: attacker_headers, as: :json
+
+        expect(response).to have_http_status(:ok), -> { response.body }
+        expect(cs.reload.active_interaction.dig('hostile_casting', 'caster_id')).to eq(attacker_char.id.to_s)
+      end
     end
 
     describe 'POST (respond) — 2 fases' do
@@ -850,6 +863,425 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
              params: { character_id: defender_char.id.to_s, hostile_casting: { frustrate: true } },
              headers: attacker_headers, as: :json
         expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    # ---- Acorde Distrativo (Bardo Virtuosismo L6) — 2.ª família da janela ----
+    # Mesma janela, outra resolução: o Bardo gasta reação + 1 dado de Inspiração e
+    # o conjurador ganha um TR de SAB PENALIZADO pelo dado, pelo pipe único de TR.
+    describe 'Acorde Distrativo' do
+      # O Bardo é o PC do defender_user (reusa `desistente_cc`, que é a linha de
+      # combate dele — aqui o papel é de Bardo).
+      let(:bard_identity) { defender_char.id.to_s }
+      let!(:bard_klass) do
+        Klass.find_or_create_by!(api_index: 'bard') do |klass|
+          klass.name = 'Bardo'
+          klass.hit_die = 8
+          klass.subclass_level = 3
+          klass.spellcasting_ability = 'CHA'
+        end
+      end
+      let!(:virtuoso_subklass) do
+        SubKlass.find_or_create_by!(api_index: 'colegio-virtuosismo') do |subklass|
+          subklass.klass = bard_klass
+          subklass.name = 'Colégio do Virtuosismo'
+          subklass.levels_json = '[]'
+        end
+      end
+      let!(:bard_sheet) { create(:sheet, character: defender_char, current_level: 6, cha: 18) }
+      let!(:bard_sheet_klass) do
+        create(:sheet_klass, sheet: bard_sheet, klass: bard_klass,
+                             sub_klass: virtuoso_subklass, level: 6)
+      end
+      let!(:bard_runtime) do
+        create(:sheet_runtime_state, sheet: bard_sheet, class_resources_used: {})
+      end
+
+      def chord_upsert_body(overrides = {})
+        body = hc_upsert_body(caster_identity: caster_cc.combatable_id, reactor_identity: bard_identity)
+        body[:interaction][:hostile_casting].merge!(
+          caster_save_bonus: 2,
+          reactors: { bard_identity => { family: 'virtuoso', name: 'Rick Prince', dc: 15, die: 'd8' } },
+        )
+        body[:interaction][:hostile_casting].merge!(overrides)
+        body
+      end
+
+      def declare!(overrides = {})
+        put "#{base}/active_interaction", params: chord_upsert_body(overrides),
+            headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok), -> { response.body }
+      end
+
+      describe 'PUT (upsert)' do
+        it 'normaliza o mapa de reatores e o mod. de TR do conjurador' do
+          declare!
+          hc = response.parsed_body['active_interaction']['hostile_casting']
+          expect(hc['caster_save_bonus']).to eq(2)
+          expect(hc['reactors'][bard_identity]).to include(
+            'family' => 'virtuoso', 'dc' => 15, 'die' => 'd8',
+          )
+        end
+
+        it 'reator com família inválida CAI — carta sem identidade é pior que sem carta' do
+          declare!(reactors: { bard_identity => { family: 'inventada', dc: 15 } })
+          hc = response.parsed_body['active_interaction']['hostile_casting']
+          expect(hc['reactors']).to be_blank
+        end
+
+        it 'player descobre no servidor um Bardo inimigo cuja ficha não recebe no frontend' do
+          caster_cc.update!(position: 2)
+          desistente_cc.update!(position: 1)
+          attacker_cc = create(:combat_combatant, :pc, combat_state: cs,
+                                combatable: attacker_char, position: 0)
+          schedule.update!(dm_temp_npc_character_ids: [defender_char.id])
+          body = chord_upsert_body
+          body[:interaction].merge!(
+            source_id: "pc-#{attacker_cc.id}",
+            target_ids: [],
+            pending_responders: [],
+            discover_reactors: true,
+          )
+          body[:interaction][:hostile_casting].merge!(
+            caster_id: "pc-#{attacker_cc.id}",
+            reactors: {},
+          )
+
+          put "#{base}/active_interaction", params: body,
+              headers: attacker_headers, as: :json
+
+          expect(response).to have_http_status(:ok), -> { response.body }
+          ai = response.parsed_body['active_interaction']
+          expect(ai['target_ids']).to eq([bard_identity])
+          expect(ai.dig('hostile_casting', 'reactors', bard_identity))
+            .to include('family' => 'virtuoso', 'dc' => 15, 'die' => 'd8')
+          expect(ai['pending_responders'].first)
+            .to include('character_id' => bard_identity, 'owned_by_dm' => true)
+        end
+
+        it 'player recebe null e não abre janela quando só existe Bardo aliado' do
+          caster_cc.update!(position: 2)
+          desistente_cc.update!(position: 1)
+          attacker_cc = create(:combat_combatant, :pc, combat_state: cs,
+                                combatable: attacker_char, position: 0)
+          body = chord_upsert_body
+          body[:interaction].merge!(
+            source_id: "pc-#{attacker_cc.id}",
+            discover_reactors: true,
+          )
+          body[:interaction][:hostile_casting].merge!(
+            caster_id: "pc-#{attacker_cc.id}",
+          )
+
+          put "#{base}/active_interaction", params: body,
+              headers: attacker_headers, as: :json
+
+          expect(response).to have_http_status(:ok), -> { response.body }
+          expect(response.parsed_body['active_interaction']).to be_nil
+          expect(cs.reload.active_interaction).to be_nil
+        end
+
+        it 'descoberta server-side respeita alcance e não abre janela fora de 18 m' do
+          caster_cc.update!(position: 2)
+          desistente_cc.update!(position: 1)
+          attacker_cc = create(:combat_combatant, :pc, combat_state: cs,
+                                combatable: attacker_char, position: 0)
+          map = create(
+            :battle_map,
+            user: dm,
+            width: 20,
+            height: 20,
+            cells: Array.new(20) { Array.new(20, 'empty') },
+            tokens: [
+              { 'id' => 'caster', 'characterId' => attacker_char.id.to_s, 'x' => 0, 'y' => 0 },
+              { 'id' => 'bard', 'characterId' => defender_char.id.to_s, 'x' => 9, 'y' => 9 },
+            ],
+          )
+          schedule.update!(battle_map: map, dm_temp_npc_character_ids: [defender_char.id])
+          body = chord_upsert_body
+          body[:interaction].merge!(
+            source_id: "pc-#{attacker_cc.id}",
+            target_ids: [],
+            pending_responders: [],
+            discover_reactors: true,
+          )
+          body[:interaction][:hostile_casting].merge!(
+            caster_id: "pc-#{attacker_cc.id}",
+            reactors: {},
+          )
+
+          put "#{base}/active_interaction", params: body,
+              headers: attacker_headers, as: :json
+
+          expect(response).to have_http_status(:ok), -> { response.body }
+          expect(response.parsed_body['active_interaction']).to be_nil
+          expect(cs.reload.active_interaction).to be_nil
+        end
+
+        it 'descoberta server-side não oferece Acorde sem Inspiração disponível' do
+          caster_cc.update!(position: 2)
+          desistente_cc.update!(position: 1)
+          attacker_cc = create(:combat_combatant, :pc, combat_state: cs,
+                                combatable: attacker_char, position: 0)
+          schedule.update!(dm_temp_npc_character_ids: [defender_char.id])
+          bard_runtime.update!(class_resources_used: { 'bardic_inspiration' => 4 })
+          body = chord_upsert_body
+          body[:interaction].merge!(
+            source_id: "pc-#{attacker_cc.id}",
+            target_ids: [],
+            pending_responders: [],
+            discover_reactors: true,
+          )
+          body[:interaction][:hostile_casting].merge!(
+            caster_id: "pc-#{attacker_cc.id}",
+            reactors: {},
+          )
+
+          put "#{base}/active_interaction", params: body,
+              headers: attacker_headers, as: :json
+
+          expect(response).to have_http_status(:ok), -> { response.body }
+          expect(response.parsed_body['active_interaction']).to be_nil
+          expect(cs.reload.active_interaction).to be_nil
+        end
+      end
+
+      describe 'POST (respond) — confirmar o Acorde' do
+        before { declare! }
+
+        it 'F6.4/F6.5 consome a reação e impõe o TR PENALIZADO ao conjurador' do
+          envelopes = capture_envelopes do
+            post "#{base}/active_interaction/respond",
+                 params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 6 } },
+                 headers: defender_headers, as: :json
+          end
+          expect(response).to have_http_status(:ok), -> { response.body }
+
+          ai = response.parsed_body['active_interaction']
+          expect(ai['phase']).to eq('roll')
+          expect(ai['hostile_casting']['method']).to eq('distracting_chord')
+          expect(desistente_cc.reload.actions_used['reaction']).to be true
+          expect(bard_runtime.reload.class_resources_used['bardic_inspiration']).to eq(1)
+          expect(envelopes).to include(hash_including(
+            'event' => 'sheet_runtime_changed',
+            'payload' => hash_including('character_id' => defender_char.id),
+          ))
+
+          # ⚠️ O TR é do CONJURADOR e quem escreve é o SERVIDOR: o cliente do Bardo
+          # levaria 403 tentando mutar outro combatente fora do próprio turno.
+          pts = caster_cc.reload.turn_state['pendingTargetSave']
+          expect(pts).to include(
+            'saveId' => 'distracting-chord',
+            'ability' => 'wis',
+            'dc' => 15,
+            'saveBonus' => 2,
+            'savePenalty' => 6,           # o dado SUBTRAI do teste, não soma na CD
+            'sourceLabel' => 'Acorde Distrativo',
+            'onFailBreakConcentration' => true,
+          )
+          # Âncora que faz o resolvedor do TR fechar ESTA janela.
+          expect(pts['hostileCasting']).to include(
+            'responderId' => bard_identity,
+          )
+          expect(pts['sourceActorKey']).to eq("pc-#{desistente_cc.id}")
+        end
+
+        it 'F6.8 dado fora da faixa → 422 e NADA consumido' do
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 9 } },
+               headers: defender_headers, as: :json
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(desistente_cc.reload.actions_used['reaction']).to be_falsey
+          expect(bard_runtime.reload.class_resources_used['bardic_inspiration']).to be_nil
+          expect(caster_cc.reload.turn_state['pendingTargetSave']).to be_nil
+          expect(cs.reload.active_interaction['phase']).to eq('declared')
+        end
+
+        it 'faz rollback de reação e Inspiração se o TR não puder ser persistido' do
+          # Simula dado legado inválido sem passar pelas validações. A criação do
+          # pending usa `update!`, portanto deve abortar a transação inteira.
+          caster_cc.update_column(:hp_current, -1)
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 4 } },
+               headers: defender_headers, as: :json
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(desistente_cc.reload.actions_used['reaction']).to be_falsey
+          expect(bard_runtime.reload.class_resources_used['bardic_inspiration']).to be_nil
+          expect(caster_cc.reload.turn_state['pendingTargetSave']).to be_nil
+          expect(cs.reload.active_interaction['phase']).to eq('declared')
+        end
+
+        it 'ignora CD/dado adulterados na declaração e usa a ficha real do Bardo' do
+          declare!(reactors: {
+            bard_identity => { family: 'virtuoso', name: 'Rick Prince', dc: 99, die: 'd20' },
+          })
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 8 } },
+               headers: defender_headers, as: :json
+
+          expect(response).to have_http_status(:ok), -> { response.body }
+          pending = caster_cc.reload.turn_state['pendingTargetSave']
+          expect(pending).to include('dc' => 15, 'savePenalty' => 8)
+          expect(cs.reload.active_interaction.dig('hostile_casting', 'reactors', bard_identity))
+            .to include('dc' => 15, 'die' => 'd8')
+        end
+
+        it 'sem Inspiração disponível rejeita sem consumir reação nem criar TR' do
+          bard_runtime.update!(class_resources_used: { 'bardic_inspiration' => 4 })
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 4 } },
+               headers: defender_headers, as: :json
+
+          expect(response).to have_http_status(:conflict)
+          expect(desistente_cc.reload.actions_used['reaction']).to be_falsey
+          expect(bard_runtime.reload.class_resources_used['bardic_inspiration']).to eq(4)
+          expect(caster_cc.reload.turn_state['pendingTargetSave']).to be_nil
+        end
+
+        it 'com reação já gasta rejeita sem consumir Inspiração' do
+          desistente_cc.update!(actions_used: Hash(desistente_cc.actions_used).merge('reaction' => true))
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 4 } },
+               headers: defender_headers, as: :json
+
+          expect(response).to have_http_status(:conflict)
+          expect(bard_runtime.reload.class_resources_used['bardic_inspiration']).to be_nil
+          expect(caster_cc.reload.turn_state['pendingTargetSave']).to be_nil
+        end
+
+        it 'personagem fora do Colégio do Virtuosismo não passa pela metadata enviada pelo cliente' do
+          outro_colegio = create(:sub_klass, klass: bard_klass, name: 'Colégio do Valor',
+                                             api_index: 'college-of-valor', levels_json: '[]')
+          bard_sheet_klass.update!(sub_klass: outro_colegio)
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 4 } },
+               headers: defender_headers, as: :json
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(desistente_cc.reload.actions_used['reaction']).to be_falsey
+          expect(bard_runtime.reload.class_resources_used['bardic_inspiration']).to be_nil
+        end
+
+        it 'reator de outra família não pode tocar o Acorde → 422' do
+          declare!(reactors: { bard_identity => { family: 'superstitious', name: 'Ruric', dc: 14 } })
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 4 } },
+               headers: defender_headers, as: :json
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(desistente_cc.reload.actions_used['reaction']).to be_falsey
+        end
+
+        it 'F6.6 arbitrar FALHA limpa o TR pendente e derruba a concentração' do
+          caster_cc.update!(is_concentrating: true, concentration_spell: 'Teia')
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 5 } },
+               headers: defender_headers, as: :json
+          post "#{base}/active_interaction/respond",
+               params: { character_id: caster_cc.combatable_id.to_s, hostile_casting: { saved: false } },
+               headers: dm_headers, as: :json
+          expect(response).to have_http_status(:ok), -> { response.body }
+
+          caster_cc.reload
+          expect(caster_cc.is_concentrating).to be false
+          # Pending órfão travaria a hotbar do conjurador para sempre.
+          expect(caster_cc.turn_state['pendingTargetSave']).to be_nil
+        end
+
+        it 'F6.7 arbitrar SUCESSO também limpa o pending, sem mexer na concentração' do
+          caster_cc.update!(is_concentrating: true, concentration_spell: 'Teia')
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 5 } },
+               headers: defender_headers, as: :json
+          post "#{base}/active_interaction/respond",
+               params: { character_id: caster_cc.combatable_id.to_s, hostile_casting: { saved: true } },
+               headers: dm_headers, as: :json
+          caster_cc.reload
+          expect(caster_cc.turn_state['pendingTargetSave']).to be_nil
+          expect(caster_cc.is_concentrating).to be true
+        end
+      end
+
+      describe 'oferta SERIAL e cast SEGURADO' do
+        it 'ignorar passa a vez ao próximo reator em vez de encerrar a janela' do
+          body = chord_upsert_body
+          body[:interaction][:target_ids] = [bard_identity, attacker_char.id.to_s]
+          body[:interaction][:pending_responders] = [
+            { character_id: bard_identity, need: 'offer_reaction', owned_by_dm: false, responded: false },
+            { character_id: attacker_char.id.to_s, need: 'offer_reaction', owned_by_dm: false, responded: false },
+          ]
+          put "#{base}/active_interaction", params: body, headers: dm_headers, as: :json
+
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { ignored: true } },
+               headers: defender_headers, as: :json
+          expect(response).to have_http_status(:ok)
+
+          ai = cs.reload.active_interaction
+          expect(ai).to be_present, 'a janela sumiu com um reator ainda por decidir'
+          pending_now = ai['pending_responders'].reject { |r| r['responded'] }
+          expect(pending_now.map { |r| r['character_id'] }).to eq([attacker_char.id.to_s])
+        end
+
+        it 'cast SEGURADO resolve com outcome em vez de limpar — o disparador retoma' do
+          declare!(held_cast: true)
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { ignored: true } },
+               headers: defender_headers, as: :json
+
+          ai = cs.reload.active_interaction
+          expect(ai).to be_present, 'a interação foi limpa e o cast segurado ficaria órfão'
+          expect(ai['phase']).to eq('resolved')
+          expect(ai['hostile_casting']['outcome']).to eq('proceeds')
+          expect(ai['hostile_casting']['held_cast']).to be true
+        end
+
+        it 'sem held_cast o fluxo manual continua LIMPANDO (nada regride)' do
+          declare!
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { ignored: true } },
+               headers: defender_headers, as: :json
+          expect(cs.reload.active_interaction).to be_nil
+        end
+
+        # Os outros DOIS finais da janela com cast segurado. Cada um tem de chegar
+        # ao disparador como `resolved` + `outcome`: é isso que diz a ele se a
+        # conjuração retoma ou falha. Limpar aqui deixaria o cast órfão.
+        it 'TR bem-sucedido resolve com `proceeds` (o cast retoma)' do
+          declare!(held_cast: true)
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 3 } },
+               headers: defender_headers, as: :json
+          post "#{base}/active_interaction/respond",
+               params: { character_id: caster_cc.combatable_id.to_s, hostile_casting: { saved: true } },
+               headers: dm_headers, as: :json
+
+          ai = cs.reload.active_interaction
+          expect(ai).to be_present
+          expect(ai['phase']).to eq('resolved')
+          expect(ai['hostile_casting']['outcome']).to eq('proceeds')
+        end
+
+        it 'TR falho resolve com `frustrated` (o cast falha e gasta o espaço)' do
+          declare!(held_cast: true)
+          post "#{base}/active_interaction/respond",
+               params: { character_id: bard_identity, hostile_casting: { distracting_chord: true, die_roll: 3 } },
+               headers: defender_headers, as: :json
+          post "#{base}/active_interaction/respond",
+               params: { character_id: caster_cc.combatable_id.to_s, hostile_casting: { saved: false } },
+               headers: dm_headers, as: :json
+
+          ai = cs.reload.active_interaction
+          expect(ai['phase']).to eq('resolved')
+          expect(ai['hostile_casting']['outcome']).to eq('frustrated')
+          # E o TR pendente sai do conjurador nos dois desfechos.
+          expect(caster_cc.reload.turn_state['pendingTargetSave']).to be_nil
+        end
       end
     end
   end
@@ -1296,7 +1728,7 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
           ],
           strong_personality: {
             bard_char_id: defender_char.id.to_s,
-            aggressor_combatant_id: foe_cc_sp.id.to_s,
+            aggressor_combatant_id: aggressor_identity,
             bard_name: 'Rick Prince',
             aggressor_name: 'Ogro',
             effect_label: 'Personalidade Forte',
@@ -1304,6 +1736,14 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
         },
       }
     end
+
+    # ⚠️ A identidade que o FRONT realmente manda: `combatantIdFromApi` monta
+    # `${type}-${api.id}` com o id DESTA tabela, e o emissor envia
+    # `String(agressorComb.id)`. Este spec nasceu com `foe_cc_sp.id.to_s` — o
+    # número certo no formato errado — e passava verde enquanto produção devolvia
+    # 422 a cada clique, porque testava a MINHA suposição, não o payload do
+    # cliente. O payload real veio do `development.log` (19/08).
+    let(:aggressor_identity) { "npc-#{foe_cc_sp.id}" }
 
     def sp_respond_body(accept:)
       decision = accept ? { accept: true } : { decline: true }
@@ -1319,7 +1759,7 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
         expect(ai['phase']).to eq('declared')
         expect(ai['pending_responders'].first['character_id']).to eq(defender_char.id.to_s)
         expect(ai['pending_responders'].first['need']).to eq('offer_reaction')
-        expect(ai['strong_personality']['aggressor_combatant_id']).to eq(foe_cc_sp.id.to_s)
+        expect(ai['strong_personality']['aggressor_combatant_id']).to eq(aggressor_identity)
       end
 
       it 'sem agressor a janela NÃO abre — gastaria a reação sem efeito' do
@@ -1339,7 +1779,10 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
         post "#{base}/active_interaction/respond",
              params: sp_respond_body(accept: true), headers: defender_headers, as: :json
         expect(response).to have_http_status(:ok), -> { response.body }
-        expect(response.parsed_body['active_interaction']['phase']).to eq('resolved')
+        # A janela LIMPA ao resolver. Ficar em `resolved` sem consumidor ocupava o
+        # slot ÚNICO de `active_interaction` para sempre — e slot ocupado bloqueia
+        # toda janela nova (matou o auto-hold do Acorde Distrativo em 19/08).
+        expect(cs.reload.active_interaction).to be_nil
 
         expect(bard_cc_sp.reload.actions_used['reaction']).to eq(true)
         expect(bard_cc_sp.turn_state['reactionUsedRound']).to eq(cs.reload.round)
@@ -1348,34 +1791,71 @@ RSpec.describe 'Api::V1::Player::Combat::InteractionsController', type: :request
         expect(ids).to include('demoralized')
       end
 
-      it '⚠️ a FONTE vai em conditionSourceByActor, não dentro da condição' do
+      it '⚠️ agressor como `pc-<combat_combatants.id>` — o caso REAL de produção' do
+        # Foi exatamente este payload que devolveu 422 a cada clique. O `n` depois
+        # de `pc-` é a PK desta tabela (contrato `combatantIdFromApi`), NÃO o
+        # characterId: no combate real, `pc-867` era a linha 867 (Abigail), cujo
+        # personagem é o 89. Resolver por `combatable_id` não achava ninguém.
+        pc_foe_cc = create(:combat_combatant, :pc, combat_state: cs,
+                           combatable: attacker_char, position: 2)
+        expect(pc_foe_cc.id).not_to eq(attacker_char.id) # os dois espaços são distintos
+
+        body = sp_upsert_body
+        body[:interaction][:strong_personality][:aggressor_combatant_id] = "pc-#{pc_foe_cc.id}"
+        put "#{base}/active_interaction", params: body, headers: dm_headers, as: :json
+        expect(response).to have_http_status(:ok), -> { response.body }
+
+        post "#{base}/active_interaction/respond",
+             params: sp_respond_body(accept: true), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok), -> { response.body }
+        expect(Array(pc_foe_cc.reload.conditions).map { |c| c['id'] }).to include('demoralized')
+      end
+
+      it 'o characterId cru continua resolvendo (payloads do pipe de TR)' do
+        body = sp_upsert_body
+        body[:interaction][:strong_personality][:aggressor_combatant_id] = foe_npc_sp.id.to_s
+        put "#{base}/active_interaction", params: body, headers: dm_headers, as: :json
+        post "#{base}/active_interaction/respond",
+             params: sp_respond_body(accept: true), headers: defender_headers, as: :json
+        expect(response).to have_http_status(:ok), -> { response.body }
+        expect(Array(foe_cc_sp.reload.conditions).map { |c| c['id'] }).to include('demoralized')
+      end
+
+      it '⚠️ a FONTE vai em conditionSourceByActor, no espaço de id do FRONT' do
         # O leitor do front só aceita { actorKey: String, round: Number } nessa
-        # chave, e é de lá que sai o par vantagem/desvantagem. Gravar a fonte na
-        # linha da condição faria o badge aparecer e o par nunca disparar.
+        # chave, e é de lá que sai o par vantagem/desvantagem. Duas armadilhas:
+        # gravar a fonte DENTRO da condição faria o badge aparecer e o par nunca
+        # disparar; e gravar `bard_cc.id` (a PK desta tabela, invisível para o
+        # front) dá o mesmo resultado — a marca existe, a reação é gasta e nenhum
+        # ataque muda. O front compara personagem / `pc-…` / token.
         post "#{base}/active_interaction/respond",
              params: sp_respond_body(accept: true), headers: defender_headers, as: :json
 
         src = foe_cc_sp.reload.turn_state['conditionSourceByActor']['demoralized']
-        expect(src['actorKey']).to eq(bard_cc_sp.id.to_s)
+        expect(src['actorKey']).to eq("pc-#{bard_cc_sp.id}")
+        expect(src['actorKey']).not_to eq(bard_cc_sp.id.to_s)
         expect(src['round']).to be_a(Integer)
         expect(src['label']).to eq('Personalidade Forte')
       end
 
-      it '⚠️ carimba a INSTÂNCIA de turno — senão a marca morre no mesmo turno' do
+      it '⚠️ a RODADA é a âncora da expiração — senão a marca morre no mesmo turno' do
         # Como reação, ela nasce dentro do turno do agressor. O sweeper do front
-        # varre quem acabou de agir; sem o carimbo, apagaria antes de ele atacar.
+        # varre quem acabou de agir; sem poder datar a marca, apagaria antes de
+        # ele atacar. A âncora é `round` (inteiro que os dois lados escrevem
+        # igual), não uma chave "rodada:combatente" — essa morria no choque de
+        # espaços de id entre backend e front.
         post "#{base}/active_interaction/respond",
              params: sp_respond_body(accept: true), headers: defender_headers, as: :json
 
         src = foe_cc_sp.reload.turn_state['conditionSourceByActor']['demoralized']
-        expect(src['appliedTurnKey']).to eq("#{cs.reload.round}:#{foe_cc_sp.id}")
+        expect(src['round']).to eq(cs.reload.round)
       end
 
       it 'recusar NÃO consome reação e NÃO desmoraliza' do
         post "#{base}/active_interaction/respond",
              params: sp_respond_body(accept: false), headers: defender_headers, as: :json
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body['active_interaction']['strong_personality']['outcome']).to eq('declined')
+        expect(cs.reload.active_interaction).to be_nil
 
         expect(bard_cc_sp.reload.actions_used['reaction']).to be_falsey
         expect(Array(foe_cc_sp.reload.conditions).map { |c| c['id'] }).not_to include('demoralized')

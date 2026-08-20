@@ -1,3 +1,5 @@
+require 'digest'
+
 class ClassRules
   INSTRUMENTS = [
     'Gaita de Foles', 'Tambor', 'Saltério', 'Flauta', 'Alaúde', 
@@ -46,7 +48,8 @@ class ClassRules
   WEAPON_GROUPS = %w[simple martial].freeze
 
   def self.rules
-    raw_rules = Rails.cache.fetch('class_rules_v1', expires_in: 12.hours) { CLASS_RULES }
+    cache_key = "class_rules_v2:#{Digest::SHA256.hexdigest(CLASS_RULES.to_json)}"
+    raw_rules = Rails.cache.fetch(cache_key, expires_in: 12.hours) { CLASS_RULES }
     
     # Traduzir saving_throws de todas as classes
     translated_rules = {}
@@ -1388,7 +1391,7 @@ class ClassRules
           }
         },
         eldritch_invocations: {
-          count_by_level: { 2=>2,3=>2,4=>2,5=>3,6=>3,7=>4,8=>4,9=>5,10=>5,11=>5,12=>6,13=>6,14=>7,15=>7,16=>8,17=>8,18=>8,19=>9,20=>9 }
+          count_by_level: { 2=>2,3=>2,4=>2,5=>3,6=>3,7=>4,8=>4,9=>5,10=>5,11=>5,12=>6,13=>6,14=>6,15=>7,16=>7,17=>7,18=>8,19=>8,20=>8 }
         },
         pact_boon: { choose_at_level: 3, options: ['Pacto da Lâmina','Pacto da Corrente','Pacto do Tomo'] },
         mystic_arcanum: { grants: { 11=>{ level: 6, uses: 1 }, 13=>{ level: 7, uses: 1 }, 15=>{ level: 8, uses: 1 }, 17=>{ level: 9, uses: 1 } } },

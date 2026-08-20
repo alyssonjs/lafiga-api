@@ -805,8 +805,43 @@ module Combat
       out['spell_name']  = presence(h['spell_name']).to_s  if presence(h['spell_name'])
       out['spell_level'] = h['spell_level'].to_i if h['spell_level'].to_s.match?(/\A\d+\z/)
       out['dc']          = h['dc'].to_i          if h['dc'].to_s.match?(/\A\d+\z/)
+      # Modificador de TR de SAB do CONJURADOR — o emissor computa da ficha/perfil
+      # na declaração, porque quem responde (o Bardo) não tem acesso a ela.
+      # Aceita negativo (mod. ruim de SAB é comum).
+      if h['caster_save_bonus'].to_s.match?(/\A-?\d+\z/)
+        out['caster_save_bonus'] = h['caster_save_bonus'].to_i
+      end
+      reactors = normalize_hostile_casting_reactors(h['reactors'])
+      out['reactors'] = reactors if reactors.present?
+      # Conjuração SEGURADA no cliente do conjurador (emissão automática): muda o
+      # FIM da janela — em vez de limpar, resolve com `outcome` para o disparador
+      # retomar ou falhar o cast.
+      out['held_cast'] = true if truthy(h['held_cast'])
+      out['held_by_client_id'] = presence(h['held_by_client_id']).to_s if presence(h['held_by_client_id'])
       out['outcome'] = nil
       out
+    end
+
+    # Metadata por responder. É o que diz à carta, à fila e ao respond QUAL feature
+    # cada reator está usando (Frustrar Conjuração × Acorde Distrativo) sem que o
+    # leitor precise da ficha dele — e sobrevive a reload. Entrada malformada CAI:
+    # um reator sem família viraria uma carta sem identidade.
+    def normalize_hostile_casting_reactors(raw)
+      return nil unless raw.is_a?(Hash) || raw.respond_to?(:to_unsafe_h)
+
+      stringify(raw).each_with_object({}) do |(character_id, meta), acc|
+        m = stringify(meta)
+        family = m['family'].to_s
+        next unless %w[superstitious virtuoso].include?(family)
+
+        entry = { 'family' => family }
+        entry['name'] = presence(m['name']).to_s if presence(m['name'])
+        entry['dc']   = m['dc'].to_i if m['dc'].to_s.match?(/\A\d+\z/)
+        # Só a FACE do dado (d6/d8/d10/d12) — é a base da validação do `die_roll`
+        # no respond. Um dado livre aqui viraria penalidade arbitrária no TR.
+        entry['die']  = m['die'].to_s if m['die'].to_s.match?(/\Ad\d+\z/)
+        acc[character_id.to_s] = entry
+      end
     end
 
     # Normaliza o bloco `target_consent` do upsert. Descritivo (conjurador/magia/

@@ -10,6 +10,22 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
     render json: { item: serialize_item(@item) }, status: :ok
   end
 
+  def create
+    attrs = permitted_weapon
+    idx = EquipmentCatalog.normalize_index(attrs.delete(:api_index).to_s)
+    if idx.blank?
+      render json: { errors: ['API index não pode ficar em branco'] }, status: :unprocessable_entity
+      return
+    end
+
+    item = Item.new(attrs.merge(api_index: idx, kind: 'weapon'))
+    if item.save
+      render json: { item: serialize_item(item) }, status: :created
+    else
+      render json: { errors: item.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def update
     if @item.update(permitted_weapon)
       render json: { item: serialize_item(@item) }, status: :ok
@@ -35,7 +51,7 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
   end
 
   def permitted_weapon
-    p = params.require(:item).permit(:name, :category, :value_gp, :weight_kg, :description)
+    p = params.require(:item).permit(:api_index, :name, :category, :value_gp, :weight_kg, :description)
     if params[:item].key?(:props)
       raw = params[:item][:props]
       p[:props] =

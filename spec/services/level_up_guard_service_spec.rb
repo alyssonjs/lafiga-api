@@ -379,6 +379,33 @@ RSpec.describe LevelUpGuardService do
       expect(result.errors.full_messages.join).to match(/Invoca|m[áa]ximo/i)
     end
 
+    it 'keeps the PHB maximum at eight invocations through level 20' do
+      sheet = make_sheet(metadata: {
+        'class_choices' => {
+          'per_level' => {
+            '2' => { 'invocations' => %w[ei-armor-of-shadows ei-fiendish-vigor] },
+            '5' => { 'invocations' => %w[ei-devils-sight] },
+            '7' => { 'invocations' => %w[ei-mask-of-many-faces] },
+            '9' => { 'invocations' => %w[ei-eldritch-sight] },
+            '12' => { 'invocations' => %w[ei-beast-speech] },
+            '15' => { 'invocations' => %w[ei-eyes-of-the-rune-keeper] },
+            '18' => { 'invocations' => %w[ei-misty-visions] },
+            '19' => { 'invocations' => %w[ei-one-with-shadows] }
+          }
+        }
+      })
+      SheetKlass.create!(sheet: sheet, klass: klass, level: 20)
+
+      persisted_per_level = sheet.reload.metadata.dig('class_choices', 'per_level')
+      selected_count = persisted_per_level.values.sum { |row| Array(row['invocations']).size }
+      expect(selected_count).to eq(9)
+      expect(ClassRules.find('warlock').dig(:feature_rules, :eldritch_invocations, :count_by_level, 20)).to eq(8)
+
+      result = LevelUpGuardService.call(sheet: sheet, klass: klass)
+
+      expect(result.errors.full_messages.join).to match(/selecionadas 9, máximo 8/i)
+    end
+
     it 'fails when Agonizing Blast (EN) escolhida sem Eldritch Blast cantrip' do
       sheet = make_sheet(metadata: {
         'class_choices' => {

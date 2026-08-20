@@ -178,6 +178,12 @@ class CharacterProvisioningService
       rescue
         per_level_raw.respond_to?(:dup) ? per_level_raw.dup : {}
       end
+      klass_api_index = Klass.find_by(id: klass_id)&.api_index
+      per_level = LevelChoiceNormalizer.normalize_invocation_schedule(
+        per_level,
+        klass_api_index: klass_api_index,
+        current_level: level
+      )
       # Merge class skill picks into level-1 row (frontend sends classSkillPicks separately)
       class_skills_pick = klass['classSkillPicks'] || klass[:classSkillPicks]
       if class_skills_pick.present?
