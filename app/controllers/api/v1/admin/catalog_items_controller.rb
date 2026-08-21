@@ -1,24 +1,37 @@
 # frozen_string_literal: true
 
 # CRUD de entradas do catálogo mundano (`items`) para o mestre site-wide.
-# Fase 1: apenas armas (`kind: weapon`) — alinhado à aba Armas do compêndio.
+# Cobre as abas Armas e Armaduras do compêndio: `kind` weapon | armor | shield
+# (escudo é `kind` próprio no Item, não uma categoria de armadura).
 class Api::V1::Admin::CatalogItemsController < ApplicationController
+  # Kinds que este CRUD gerencia. Fora desta lista o item não é editável aqui
+  # (itens mágicos têm controller próprio). `gear` cobre tanto o vestuário
+  # mundano (peça em `category`) quanto o equipamento de aventura.
+  CATALOG_KINDS = %w[weapon armor shield gear tool consumable ammunition].freeze
+
   before_action :authorize_site_wide_dm
-  before_action :set_weapon_item, only: %i[show update destroy]
+  before_action :set_catalog_item, only: %i[show update destroy]
 
   def show
     render json: { item: serialize_item(@item) }, status: :ok
   end
 
   def create
-    attrs = permitted_weapon
+    attrs = permitted_item
+    # Compat: cliente antigo (aba Armas) não manda `kind`.
+    kind = attrs.delete(:kind).presence || 'weapon'
+    unless CATALOG_KINDS.include?(kind)
+      render json: { errors: ["kind inválido: #{kind}"] }, status: :unprocessable_entity
+      return
+    end
+
     idx = EquipmentCatalog.normalize_index(attrs.delete(:api_index).to_s)
     if idx.blank?
       render json: { errors: ['API index não pode ficar em branco'] }, status: :unprocessable_entity
       return
     end
 
-    item = Item.new(attrs.merge(api_index: idx, kind: 'weapon'))
+    item = Item.new(attrs.merge(api_index: idx, kind: kind))
     if item.save
       render json: { item: serialize_item(item) }, status: :created
     else
@@ -27,7 +40,8 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
   end
 
   def update
-    if @item.update(permitted_weapon)
+    # `kind` é imutável: armadura não vira arma numa edição.
+    if @item.update(permitted_item.except(:kind))
       render json: { item: serialize_item(@item) }, status: :ok
     else
       render json: { errors: @item.errors.full_messages }, status: :unprocessable_entity
@@ -41,17 +55,17 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
 
   private
 
-  def set_weapon_item
+  def set_catalog_item
     idx = EquipmentCatalog.normalize_index(params[:api_index].to_s)
-    @item = Item.weapon.find_by(api_index: idx)
+    @item = Item.where(kind: CATALOG_KINDS).find_by(api_index: idx)
     unless @item
       render json: { error: 'Not found' }, status: :not_found
       return
     end
   end
 
-  def permitted_weapon
-    p = params.require(:item).permit(:api_index, :name, :category, :value_gp, :weight_kg, :description)
+  def permitted_item
+    p = params.require(:item).permit(:api_index, :kind, :name, :category, :value_gp, :weight_kg, :description)
     if params[:item].key?(:props)
       raw = params[:item][:props]
       p[:props] =

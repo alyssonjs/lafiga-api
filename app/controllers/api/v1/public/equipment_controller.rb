@@ -253,6 +253,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
         url: "/api/v1/public/equipment/#{it.api_index}"
       }.compact
     when 'shield'
+      sp = it.props || {}
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
       weight_kg = (defined?(EquipmentRules) ? EquipmentRules.item_weight_kg(it) : nil) rescue nil
       return {
@@ -260,7 +261,8 @@ class Api::V1::Public::EquipmentController < ApplicationController
         name: it.name,
         equipment_category: { index: 'armor', name: 'Armor' },
         armor_category: 'Shield',
-        armor_class: { base: 2, dex_bonus: false },
+        # Escudo do PHB é +2, mas o mestre pode criar um com bônus próprio.
+        armor_class: { base: sp['ac_base'].presence || 2, dex_bonus: false },
         stealth_disadvantage: false,
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
         weight: weight_kg,
@@ -294,6 +296,11 @@ class Api::V1::Public::EquipmentController < ApplicationController
         name: it.name,
         equipment_category: { index: category_index, name: category_name },
         gear_category: it.category,
+        # Vestuário mundano: a peça vive em `category` (gear_category) e o slot
+        # de equipar é escolhido pelo mestre — peças sem slot dedicado na ficha
+        # (máscara, tomo, …) ficam sem `equip_slot`.
+        equip_slot: props['equip_slot'].presence,
+        stackable: props.key?('stackable') ? !!props['stackable'] : nil,
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
         weight: weight_kg,
         description: it.description,
