@@ -17,14 +17,38 @@ module Combat
       @caster = caster
     end
 
-    def call
-      return [] unless @schedule && @combat_state && @caster
+    def self.evaluate(schedule:, combat_state:, caster:)
+      new(schedule: schedule, combat_state: combat_state, caster: caster).evaluate
+    end
 
-      @combat_state.combat_combatants.filter_map do |combatant|
+    # Contrato antigo (só os elegíveis) — o controller de upsert usa este.
+    def call
+      evaluate[:eligible]
+    end
+
+    # Elegíveis + os BLOQUEADOS POR ECONOMIA.
+    #
+    # A separação existe para que a mesa saiba POR QUE a janela não abriu. Um
+    # Bardo do Virtuosismo ao alcance, que vê e é ouvido, mas sem reação ou sem
+    # dado de Inspiração, é uma quase-oferta: sem log, a conjuração simplesmente
+    # segue e ninguém entende que a feature foi checada (19/08 — o Bardo estava
+    # com 5/5 dados gastos e o silêncio pareceu bug).
+    #
+    # Só a ECONOMIA vira aviso. Identidade, alcance e sentidos ficam calados de
+    # propósito: todo mundo que não é Bardo do Virtuosismo cairia no log a cada
+    # conjuração. Mesma disciplina do emissor das Palavras de Interrupção.
+    def evaluate
+      return { eligible: [], blocked: [] } unless @schedule && @combat_state && @caster
+
+      eligible = []
+      blocked = []
+
+      @combat_state.combat_combatants.each do |combatant|
         next if combatant.id == @caster.id
         next unless combatant.combatable_type == Character.name
         next unless enemies?(@caster, combatant)
-        next unless reaction_available?(combatant)
+        # ALVO antes da ECONOMIA (F6.8): quem nem podia ser oferecido não vira
+        # aviso de "sem recurso".
         next unless target_senses_allow?(combatant)
         next unless in_range?(combatant)
 
@@ -32,9 +56,16 @@ module Combat
         next unless profile_command.success?
 
         profile = profile_command.result
-        next unless profile[:used] < profile[:total]
+        unless reaction_available?(combatant)
+          blocked << { name: combatant.name.to_s, reason: :reaction_used }
+          next
+        end
+        unless profile[:used] < profile[:total]
+          blocked << { name: combatant.name.to_s, reason: :no_inspiration }
+          next
+        end
 
-        {
+        eligible << {
           character_id: combatant.combatable_id.to_s,
           name: combatant.name.to_s,
           dc: profile[:dc],
@@ -42,13 +73,23 @@ module Combat
           owned_by_dm: owned_by_dm?(combatant.combatable),
         }
       end
+
+      { eligible: eligible, blocked: blocked }
     end
 
     private
 
+    # Espelha `reactionAvailableForRound` do front — regra da mesa: a reação
+    # recarrega na VIRADA DA RODADA.
+    #
+    # ⚠️ Exigir a flag crua `actions_used.reaction` falsa E o carimbo diferente
+    # (a versão anterior) reintroduziu no servidor o bug do Ainor (18/08): a flag
+    # só é limpa no turno DO REATOR, então, entre a virada da rodada e a vez dele,
+    # ela fica presa em `true`. Quem age ANTES dele na iniciativa — justamente o
+    # caso do conjurador — via o Bardo como "já reagiu" a rodada inteira.
+    # Carimbo de rodada PASSADA = reação recarregada, flag crua ou não.
     def reaction_available?(combatant)
-      !truthy?(Hash(combatant.actions_used)['reaction']) &&
-        Hash(combatant.turn_state)['reactionUsedRound'].to_i != @combat_state.round.to_i
+      Combat::ReactionEconomy.available?(combatant, @combat_state.round)
     end
 
     def target_senses_allow?(bard)

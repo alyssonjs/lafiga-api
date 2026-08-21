@@ -28,6 +28,10 @@ module Api::V1::Player::Combat
 
         ip = enrich_hostile_casting_reactors(ip)
         if Array(ip['target_ids']).empty?
+          # Ninguém pode interromper: a conjuração segue. Mas se alguém FOI
+          # checado e caiu só por economia, a mesa precisa saber — senão o cast
+          # passa direto e a feature parece quebrada (19/08).
+          log_distracting_chord_unavailable(@hostile_casting_blocked, ip)
           return render json: { active_interaction: nil }, status: :ok
         end
       end
@@ -254,11 +258,14 @@ module Api::V1::Player::Combat
     def enrich_hostile_casting_reactors(input)
       payload = input.deep_stringify_keys
       caster = resolve_combatant_by_identity(payload['source_id'])
-      candidates = ::Combat::DistractingChordCandidates.call(
+      evaluation = ::Combat::DistractingChordCandidates.evaluate(
         schedule: @schedule,
         combat_state: @combat_state,
         caster: caster,
       )
+      candidates = evaluation[:eligible]
+      # Guardado para o log de "por que não abriu" quando ninguém sobra.
+      @hostile_casting_blocked = evaluation[:blocked]
 
       hostile = Hash(payload['hostile_casting']).deep_stringify_keys
       existing_reactors = Hash(hostile['reactors']).deep_stringify_keys
@@ -1358,8 +1365,11 @@ module Api::V1::Player::Combat
               return render(json: { error: 'conjurador não está mais no combate' }, status: :unprocessable_entity)
             end
 
-            if truthy(Hash(reactor_cc.actions_used)['reaction']) ||
-               Hash(reactor_cc.turn_state)['reactionUsedRound'].to_i == @combat_state.round.to_i
+            # Mesma regra da descoberta (`Combat::ReactionEconomy`): carimbo de
+            # rodada PASSADA = reação recarregada, mesmo com a flag crua ainda
+            # `true`. A versão anterior exigia as duas condições e devolvia 409 a
+            # cada clique — a carta aparecia e o botão não fazia nada (21/08).
+            unless Combat::ReactionEconomy.available?(reactor_cc, @combat_state.round)
               return render(json: { error: 'reação já utilizada nesta rodada' }, status: :conflict)
             end
 
@@ -1557,6 +1567,24 @@ module Api::V1::Player::Combat
     end
 
     # Feed server-side do Frustrar Conjuração (SessionLog kind combat).
+    # Aviso de QUASE-oferta do Acorde Distrativo: o Bardo estava ao alcance e
+    # apto, e só a economia o barrou. Sem isto o cast segue em silêncio e a mesa
+    # não distingue "não tinha ninguém" de "o Bardo não tinha mais dado".
+    def log_distracting_chord_unavailable(blocked, ip)
+      return if @schedule.blank? || Array(blocked).empty?
+
+      caster = Hash(ip['hostile_casting'])['caster_name'].to_s.presence || 'O conjurador'
+      Array(blocked).each do |row|
+        motivo = row[:reason] == :reaction_used ? 'já usou a reação nesta rodada' : 'está sem dado de Inspiração'
+        log = @schedule.session_logs.new(
+          kind: :combat,
+          actor: row[:name].to_s,
+          message: "🎸 #{row[:name]} poderia tocar o Acorde Distrativo contra #{caster}, mas #{motivo}.",
+        )
+        ::Combat::Broadcaster.log_appended(log, **realtime_broadcast_context) if log.save
+      end
+    end
+
     def log_hostile_casting(schedule, data)
       return if schedule.blank? || data.blank?
 
