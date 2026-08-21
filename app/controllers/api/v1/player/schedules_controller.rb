@@ -3,6 +3,8 @@ class Api::V1::Player::SchedulesController < ApplicationController
   before_action :set_schedule_readable, only: [:show]
   before_action :set_schedule_mutatable, only: [:update, :destroy, :start, :complete]
   before_action :set_schedule_cancelable, only: [:cancel]
+  before_action :set_schedule_map_manageable,
+                only: %i[attach_battle_map detach_battle_map activate_battle_map]
 
   # Lista sessões (calendário hub). `dm_notes` só para DM site-wide ou dono da
   # campanha (`group.dm_user_id`). Aceita filtros:
@@ -250,7 +252,93 @@ class Api::V1::Player::SchedulesController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
+  # ===== Mapas da sessão =====
+  # `battle_map_id` = mapa ATIVO (o que os jogadores veem). A junção guarda os
+  # mapas VINCULADOS, que o mestre alterna durante a sessão.
+
+  # POST /player/schedules/:id/battle_maps  { battle_map_id }
+  def attach_battle_map
+    map = readable_battle_map_param
+    return if performed?
+
+    link = ScheduleBattleMap.find_or_initialize_by(schedule_id: @schedule.id, battle_map_id: map.id)
+    if link.new_record?
+      link.position = (@schedule.schedule_battle_maps.maximum(:position) || -1) + 1
+      link.save!
+    end
+
+    # Primeiro mapa vinculado vira o ativo — senão a sessão ficaria com mapas
+    # vinculados e nenhum aberto para a mesa.
+    activate_map!(map) if @schedule.battle_map_id.blank?
+
+    render json: { schedule: serialize_schedule_for_current_user(@schedule.reload) }, status: :ok
+  end
+
+  # DELETE /player/schedules/:id/battle_maps/:battle_map_id
+  def detach_battle_map
+    map_id = params[:battle_map_id].to_i
+    @schedule.schedule_battle_maps.where(battle_map_id: map_id).destroy_all
+
+    # Desvincular o mapa ATIVO deixaria a mesa olhando um mapa fora da sessão:
+    # promovemos o próximo vinculado (ou nenhum) e avisamos os clientes.
+    if @schedule.battle_map_id == map_id
+      activate_map!(@schedule.schedule_battle_maps.ordered.first&.battle_map)
+    end
+
+    render json: { schedule: serialize_schedule_for_current_user(@schedule.reload) }, status: :ok
+  end
+
+  # POST /player/schedules/:id/activate_battle_map  { battle_map_id }
+  # Troca o mapa que a mesa está vendo, em tempo real. Vincula na hora se ainda
+  # não estava — o mestre escolhe da biblioteca sem precisar de dois passos.
+  def activate_battle_map
+    map = readable_battle_map_param
+    return if performed?
+
+    unless @schedule.schedule_battle_maps.exists?(battle_map_id: map.id)
+      ScheduleBattleMap.create!(
+        schedule_id: @schedule.id,
+        battle_map_id: map.id,
+        position: (@schedule.schedule_battle_maps.maximum(:position) || -1) + 1,
+      )
+    end
+    activate_map!(map)
+
+    render json: { schedule: serialize_schedule_for_current_user(@schedule.reload) }, status: :ok
+  end
+
   private
+
+  # Gerenciar mapas é do mestre da mesa (ou DM site-wide) — jogador com
+  # personagem na sessão NÃO troca o mapa da mesa.
+  def set_schedule_map_manageable
+    @schedule = Schedule.find_by(id: params[:id])
+    return render(json: { error: 'Sessão não encontrada' }, status: :not_found) unless @schedule
+
+    return if Group.user_is_dm?(@current_user) || @schedule.group&.owned_by?(@current_user)
+
+    render json: { error: 'Apenas o mestre gerencia os mapas da sessão' }, status: :forbidden
+  end
+
+  def readable_battle_map_param
+    map = BattleMap.find_by(id: params[:battle_map_id])
+    unless map
+      render json: { error: 'Mapa não encontrado' }, status: :not_found
+      return nil
+    end
+    unless map.readable_by?(@current_user)
+      render json: { error: 'Sem permissão para usar este mapa' }, status: :forbidden
+      return nil
+    end
+    map
+  end
+
+  # Troca o mapa ativo e avisa a mesa em tempo real. `update_column` evita
+  # disparar as validações de slot único da Schedule numa troca de mapa.
+  def activate_map!(map)
+    @schedule.update_column(:battle_map_id, map&.id)
+    Combat::Broadcaster.session_meta_changed(@schedule.reload)
+  end
 
   def set_schedule_readable
     @schedule = Schedule.find_by(id: params[:id])

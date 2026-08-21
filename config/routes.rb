@@ -158,6 +158,10 @@ Rails.application.routes.draw do
             post :start
             post :complete
             post :cancel
+            # Mapas da sessão: vincular / desvincular / trocar o ativo (DM).
+            post   'battle_maps',                to: 'schedules#attach_battle_map'
+            delete 'battle_maps/:battle_map_id', to: 'schedules#detach_battle_map'
+            post   'activate_battle_map',        to: 'schedules#activate_battle_map'
           end
 
           # Endpoints de combate em tempo real (Fase 1B). Aninhados sob

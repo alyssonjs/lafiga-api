@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_15_200000) do
+ActiveRecord::Schema.define(version: 2026_08_21_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -549,6 +549,17 @@ ActiveRecord::Schema.define(version: 2026_08_15_200000) do
     t.string "permissions", default: [], array: true
   end
 
+  create_table "schedule_battle_maps", force: :cascade do |t|
+    t.bigint "schedule_id", null: false
+    t.bigint "battle_map_id", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["battle_map_id"], name: "index_schedule_battle_maps_on_battle_map_id"
+    t.index ["schedule_id", "battle_map_id"], name: "index_schedule_battle_maps_unique", unique: true
+    t.index ["schedule_id"], name: "index_schedule_battle_maps_on_schedule_id"
+  end
+
   create_table "schedule_characters", force: :cascade do |t|
     t.bigint "character_id", null: false
     t.bigint "schedule_id", null: false
@@ -930,6 +941,8 @@ ActiveRecord::Schema.define(version: 2026_08_15_200000) do
   add_foreign_key "race_traits", "races"
   add_foreign_key "race_traits", "sub_races"
   add_foreign_key "race_traits", "traits"
+  add_foreign_key "schedule_battle_maps", "battle_maps"
+  add_foreign_key "schedule_battle_maps", "schedules"
   add_foreign_key "schedule_characters", "characters"
   add_foreign_key "schedule_characters", "schedules"
   add_foreign_key "schedules", "battle_maps"

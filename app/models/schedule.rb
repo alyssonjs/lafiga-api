@@ -17,6 +17,11 @@ class Schedule < ApplicationRecord
   belongs_to :battle_map, optional: true
   belongs_to :created_by_user, class_name: 'User', optional: true
 
+  # Mapas VINCULADOS à sessão. O mapa ATIVO (o que os jogadores veem agora)
+  # continua sendo `battle_map_id` — ver CreateScheduleBattleMaps.
+  has_many :schedule_battle_maps, -> { ordered }, dependent: :destroy
+  has_many :linked_battle_maps, through: :schedule_battle_maps, source: :battle_map
+
   has_many :schedule_characters, dependent: :destroy
   has_many :characters, through: :schedule_characters
   has_many :campaign_notes, dependent: :nullify

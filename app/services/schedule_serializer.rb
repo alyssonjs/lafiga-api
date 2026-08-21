@@ -35,7 +35,10 @@ class ScheduleSerializer
       sandbox: (Schedule.supports_sandbox? ? schedule.sandbox : false),
       group_id: schedule.group_id,
       group: schedule.group&.as_json(only: [:id, :name]),
+      # `battle_map_id` = mapa ATIVO (o que a mesa vê agora).
       battle_map_id: schedule.battle_map_id,
+      # `battle_maps` = mapas VINCULADOS, para o seletor rápido do mestre.
+      battle_maps: serialize_linked_battle_maps(schedule),
       date_dimension_id: schedule.date_dimension_id,
       date_dimension: schedule.date_dimension&.as_json,
       character_ids: schedule.schedule_characters.loaded? ?
@@ -54,4 +57,26 @@ class ScheduleSerializer
       serialize(s, include_dm_notes: dm_notes_visible_to_user?(viewer, s))
     end
   end
+  # Resumo leve dos mapas vinculados — só o necessário para listar e trocar.
+  # Sem `cells`/`tokens`: a sessao ja carrega o mapa ATIVO por inteiro, e mandar
+  # o jsonb de todos os vinculados aqui inflaria a resposta da listagem.
+  def self.serialize_linked_battle_maps(schedule)
+    return [] unless schedule.respond_to?(:schedule_battle_maps)
+
+    schedule.schedule_battle_maps.ordered.map do |link|
+      map = link.battle_map
+      next nil unless map
+
+      {
+        id: map.id,
+        name: map.name,
+        map_kind: map.map_kind,
+        width: map.width,
+        height: map.height,
+        position: link.position,
+        active: map.id == schedule.battle_map_id,
+      }
+    end.compact
+  end
+
 end

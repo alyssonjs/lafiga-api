@@ -22,7 +22,10 @@ class BattleMap < ApplicationRecord
   FOG_MODES = %w[hidden_cells hidden_tokens].freeze
   # Fase 2.0 — builder unificado: 'battle' mostra grid por padrão; 'world'
   # esconde (grid vira camada opcional). Default 'battle' = back-compat.
-  MAP_KINDS = %w[battle world].freeze
+  # Tipo do mapa: organiza a biblioteca e define o padrão do grid no front
+  # (área ampla nasce sem grid — ver `isWideAreaMapKind`). Lista aditiva:
+  # `battle`/`world` são os originais e continuam válidos.
+  MAP_KINDS = %w[battle dungeon interior city region world].freeze
   # Caps defensivos (front é a fonte da verdade do shape, mas limitamos
   # tamanho p/ proteger o JSONB e o broadcast). Generosos, raramente batidos.
   MAX_LAYERS = 64
@@ -42,6 +45,7 @@ class BattleMap < ApplicationRecord
   belongs_to :user
   belongs_to :group, optional: true
   has_many :schedules, dependent: :nullify
+  has_many :schedule_battle_maps, dependent: :destroy
 
   # Fase perf — o fundo FULL do mapa passou a viver no Active Storage (antes era
   # base64 inline na coluna text `background_image_url`, que estourava o payload

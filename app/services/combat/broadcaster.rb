@@ -100,6 +100,8 @@ module Combat
         combat_groups: schedule.combat_groups_normalized,
         linked_npc_character_ids: schedule.linked_npc_sheet_ids_normalized,
         dm_temp_npc_character_ids: schedule.dm_temp_npc_character_ids_normalized,
+        # Mapa ATIVO: o cliente troca de mapa (e reassina o MapChannel) por aqui.
+        battle_map_id: schedule.battle_map_id,
       })
     end
 
