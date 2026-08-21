@@ -128,6 +128,13 @@ class SheetItem < ApplicationRecord
     rescue NameError
       nil
     end
+    # Slot declarado no catálogo (vestuário criado pelo mestre). Quando presente,
+    # o front usa ELE em vez de inferir o slot pelo nome do item.
+    catalog_equip_slot = begin
+      EquipmentRules.equip_slot(self)
+    rescue NameError
+      nil
+    end
 
     {
       id: id,
@@ -140,6 +147,7 @@ class SheetItem < ApplicationRecord
       source: source,
       props: props_json,
       weapon_props: weapon_props,
+      equip_slot: catalog_equip_slot,
       notes: notes,
       position: position,
     }

@@ -352,6 +352,25 @@ class EquipmentRules
          .gsub(/ç/,'c').gsub(/á|à|ã|â/,'a').gsub(/é|ê/,'e').gsub(/í/,'i').gsub(/ó|ô|õ/,'o').gsub(/ú/,'u')
     end
 
+    # Slot EXPLÍCITO escolhido pelo mestre no catálogo (vestuário mundano).
+    # Existe para o front não precisar adivinhar o slot pelo NOME do item — a
+    # heurística só continua valendo para itens sem esse vínculo (PHB/legado).
+    # @return [String, nil] ex.: 'cloak'
+    def equip_slot(item)
+      return nil unless item
+
+      db_item = item.respond_to?(:item) ? item.item : nil
+      # Mesmo guard de N+1 de `weapon_props`: sem FK resolvida não vale um
+      # find_by por linha do inventário.
+      already_resolved = item.respond_to?(:item_id) && item.item_id.present?
+      if !db_item && !already_resolved && defined?(Item)
+        db_item = Item.find_by(api_index: normalize_index(item))
+      end
+      return nil unless db_item
+
+      (db_item.props || {})['equip_slot'].presence
+    end
+
     def weapon_props(item)
       return nil unless item
       key = normalize_index(item)
