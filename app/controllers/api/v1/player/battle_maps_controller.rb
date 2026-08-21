@@ -37,9 +37,24 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     blob = map.background_image.blob
     return head(:forbidden) unless valid_background_sig?(blob, params[:sig])
 
+    # Registro do anexo existe, mas o arquivo pode não estar no storage (banco
+    # restaurado sem o `storage/`, volume perdido). Isso é "não encontrado", não
+    # erro de servidor: um 500 aqui polui o log e o front trata 404 degradando
+    # para o mapa sem fundo.
+    data = begin
+      blob.download
+    rescue ActiveStorage::FileNotFoundError
+      Rails.logger.warn(
+        "[battle_maps#background] blob sem arquivo no storage " \
+        "map=#{map.id} blob=#{blob.id} key=#{blob.key}",
+      )
+      nil
+    end
+    return head(:not_found) if data.nil?
+
     expires_in 1.year, public: false
     response.cache_control[:extras] = ['immutable']
-    send_data blob.download,
+    send_data data,
               type: blob.content_type || 'application/octet-stream',
               disposition: 'inline'
   end
