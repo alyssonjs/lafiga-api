@@ -19,9 +19,16 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     render json: { battle_maps: BattleMapSerializer.serialize_collection(maps, mode: :slim) }, status: 200
   end
 
+  # GET /api/v1/player/battle_maps/:id[?schedule_id=]
+  # Com `schedule_id`, devolve o mapa com a CAMADA DA MESA daquela sessão
+  # (tokens de criatura, névoa, medidas, desenhos, AoE, projéteis). Sem ele —
+  # Map Builder — devolve o mapa cru, que é o tabuleiro para editar.
   def show
     return forbidden unless @map.readable_by?(@current_user)
-    render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :full) }, status: 200
+
+    render json: {
+      battle_map: BattleMapSerializer.serialize(@map, mode: :full, session_layer: session_layer_param),
+    }, status: 200
   end
 
   # GET /api/v1/player/battle_maps/:id/background?sig=<blob signed_id>
@@ -83,6 +90,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     result = BattleMapTokenMutations.call(
       map: @map,
       mutation: params[:token_mutation] || {},
+      session_layer: map_session_layer,
     )
     unless result.mutation.values.all?(&:empty?)
       MapRealtime::Broadcaster.tokens_patched(
@@ -162,7 +170,22 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       )
     end
 
-    if @map.update(attrs)
+    # Campos de MESA (nevoa, medidas, desenhos, AoE) vao para a camada da sessao
+    # quando ha `schedule_id`; o resto (tabuleiro) continua no mapa. Sem sessao,
+    # tudo cai no mapa como antes.
+    layer = map_session_layer
+    if layer.session_scoped?
+      mesa = attrs.symbolize_keys.slice(*MapSessionLayer::SESSION_FIELDS)
+      tabuleiro = attrs.symbolize_keys.except(*MapSessionLayer::SESSION_FIELDS)
+      ok = ActiveRecord::Base.transaction do
+        layer.update!(mesa) if mesa.any?
+        tabuleiro.any? ? @map.update(tabuleiro) : true
+      end
+    else
+      ok = @map.update(attrs)
+    end
+
+    if ok
       apply_background!(@map)
       broadcast_update_diffs
       # Resposta SLIM: o front (flushPatch) DESCARTA o corpo — a verdade chega via
@@ -290,7 +313,9 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     # antigos do outro. O lock serializa a escrita e a operacao altera apenas x/y.
     @map.with_lock do
       @map.reload
-      tokens = Array(@map.tokens).map(&:deep_dup)
+      # LE do mesmo lugar em que ESCREVE (tabuleiro + mesa) — ler do mapa e
+      # gravar na camada faria o token "sumir" e devolver 404.
+      tokens = Array(map_session_layer.tokens).map(&:deep_dup)
       idx = tokens.index { |t| (t['id'] || t[:id]).to_s == token_id }
       return render(json: { error: 'Token nao encontrado' }, status: :not_found) unless idx
 
@@ -308,7 +333,9 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       end
 
       tokens[idx] = token.merge('x' => new_x, 'y' => new_y)
-      @map.update!(tokens: tokens)
+      # Camada de MESA: com `schedule_id`, a criatura movida fica na sessao —
+      # sem ele, grava no mapa como antes (Map Builder / cliente legado).
+      map_session_layer.update!(tokens: tokens)
     end
 
     Realtime::Telemetry.emit(
@@ -403,7 +430,27 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
   def set_map
     @map = BattleMap.find_by(id: params[:id])
-    render(json: { error: 'Mapa nao encontrado' }, status: :not_found) unless @map
+    return render(json: { error: 'Mapa nao encontrado' }, status: :not_found) unless @map
+
+    # Marca a sessão na INSTÂNCIA: o broadcast lê daqui para publicar no canal
+    # da mesa certa, sem que cada evento precise carregar o `schedule_id`.
+    @map.session_scope_schedule_id = authorized_schedule_id
+  end
+
+  # `schedule_id` do request, só se o utilizador puder VER a sessão E ela usar
+  # este mapa. Caso contrário, nil = comportamento sem sessão.
+  def authorized_schedule_id
+    return @authorized_schedule_id if defined?(@authorized_schedule_id)
+
+    @authorized_schedule_id = begin
+      sid = params[:schedule_id].presence
+      schedule = sid && Schedule.find_by(id: sid)
+      if schedule&.viewable_by?(@current_user) &&
+         (schedule.battle_map_id == @map.id ||
+          ScheduleBattleMap.exists?(schedule_id: schedule.id, battle_map_id: @map.id))
+        schedule.id
+      end
+    end
   end
 
   def forbidden
@@ -588,6 +635,17 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
   # Valida a assinatura do fundo contra o blob deste mapa (autz do #background).
   # Purpose DEVE bater com BattleMapSerializer::BACKGROUND_SIG_PURPOSE.
+  # Destino de leitura/escrita do estado de MESA nesta requisicao. Sem
+  # `schedule_id`, aponta para o proprio mapa — comportamento de antes.
+  def map_session_layer
+    @map_session_layer ||= MapSessionLayer.for(map: @map, schedule_id: authorized_schedule_id)
+  end
+
+  # Camada da mesa para o payload do GET (nil = mapa cru, Map Builder).
+  def session_layer_param
+    map_session_layer.link
+  end
+
   def valid_background_sig?(blob, sig)
     return false if sig.blank?
 

@@ -10,6 +10,13 @@ module BattleMapProjectiles
 
   module_function
 
+  # Projeteis e tokens sao estado de MESA. Com a sessao marcada na INSTANCIA do
+  # mapa (ver BattleMap#session_scope_schedule_id), a escrita vai para a camada
+  # daquela sessao; sem ela, para o proprio mapa — comportamento de antes.
+  def layer(map)
+    MapSessionLayer.for(map: map, schedule_id: map.session_scope_schedule_id)
+  end
+
   def launch!(map:, user:, params:)
     raise Forbidden, 'Sem permissao' unless map.readable_by?(user)
 
@@ -34,7 +41,7 @@ module BattleMapProjectiles
     tokens_changed = false
     BattleMap.transaction do
       map.with_lock do
-        raise Invalid, 'Projetil ja registrado' if Array(map.dropped_projectiles).any? { |p| p['id'].to_s == projectile_id }
+        raise Invalid, 'Projetil ja registrado' if Array(layer(map).dropped_projectiles).any? { |p| p['id'].to_s == projectile_id }
         begin
           source.lock!
         rescue ActiveRecord::RecordNotFound
@@ -48,19 +55,19 @@ module BattleMapProjectiles
         else
           source.update!(quantity: source.quantity.to_i - 1, equipped: false, slot: nil)
         end
-        next_tokens = Array(map.tokens)
+        next_tokens = Array(layer(map).tokens)
         if kind == 'thrown_weapon'
           next_tokens, tokens_changed = remove_equipped_snapshot(next_tokens, attacker['id'], source)
         end
-        map.update!(
-          dropped_projectiles: Array(map.dropped_projectiles) + [projectile],
+        layer(map).update!(
+          dropped_projectiles: Array(layer(map).dropped_projectiles) + [projectile],
           tokens: next_tokens
         )
       end
     end
 
     if tokens_changed
-      attacker_token = Array(map.tokens).find { |token| token['id'].to_s == attacker['id'].to_s }
+      attacker_token = Array(layer(map).tokens).find { |token| token['id'].to_s == attacker['id'].to_s }
       MapRealtime::Broadcaster.token_equipment_changed(
         map,
         attacker['id'],
@@ -68,7 +75,7 @@ module BattleMapProjectiles
         actor: user,
       )
     end
-    MapRealtime::Broadcaster.dropped_projectiles_changed(map, map.dropped_projectiles, actor: user)
+    MapRealtime::Broadcaster.dropped_projectiles_changed(map, layer(map).dropped_projectiles, actor: user)
     MapRealtime::Broadcaster.character_inventory_changed(map, character.id, character.sheet.id, actor: user)
     projectile
   end
@@ -85,7 +92,7 @@ module BattleMapProjectiles
     changed = false
     map.with_lock do
       map.reload
-      list = Array(map.dropped_projectiles).map(&:deep_dup)
+      list = Array(layer(map).dropped_projectiles).map(&:deep_dup)
       idx = list.index { |p| projectile_id && p['id'].to_s == projectile_id }
       idx ||= list.index { |p| roll_group_id && p['rollGroupId'].to_s == roll_group_id }
       raise NotFound, 'Projetil nao encontrado' unless idx
@@ -111,19 +118,19 @@ module BattleMapProjectiles
         'resolvedAt' => Time.current.iso8601
       )
       list[idx] = resolved
-      map.update!(dropped_projectiles: list)
+      layer(map).update!(dropped_projectiles: list)
       changed = true
     end
 
     if changed
-      MapRealtime::Broadcaster.dropped_projectiles_changed(map, map.dropped_projectiles, actor: user)
+      MapRealtime::Broadcaster.dropped_projectiles_changed(map, layer(map).dropped_projectiles, actor: user)
       MapRealtime::Broadcaster.projectile_resolved(map, resolved, actor: user)
     end
     resolved
   end
 
   def projectile_attacker_owned_by?(map, projectile, user)
-    attacker = Array(map.tokens).find do |token|
+    attacker = Array(layer(map).tokens).find do |token|
       token['id'].to_s == projectile['attackerTokenId'].to_s
     end
     return false unless attacker
@@ -139,12 +146,12 @@ module BattleMapProjectiles
 
     created = nil
     map.with_lock do
-      list = Array(map.dropped_projectiles).map(&:deep_dup)
+      list = Array(layer(map).dropped_projectiles).map(&:deep_dup)
       idx = list.index { |p| p['id'].to_s == projectile_id.to_s }
       raise NotFound, 'Projetil nao encontrado' unless idx
       projectile = list[idx]
       raise Invalid, 'O projetil ainda nao caiu' unless projectile['state'].to_s == 'landed'
-      token = Array(map.tokens).find { |t| t['id'].to_s == token_id.to_s }
+      token = Array(layer(map).tokens).find { |t| t['id'].to_s == token_id.to_s }
       raise Invalid, 'Token coletor nao encontrado' unless token
       unless token['characterId'].to_s == character.id.to_s
         raise Invalid, 'Token coletor nao pertence ao personagem'
@@ -170,12 +177,12 @@ module BattleMapProjectiles
       candidate = SheetItem.new(attrs)
       created = should_equip ? candidate.tap(&:save!) : SheetItem.stack_or_create!(candidate).first
       list.delete_at(idx)
-      next_tokens = should_equip ? add_equipped_snapshot(map.tokens, token['id'], created) : map.tokens
-      map.update!(dropped_projectiles: list, tokens: next_tokens)
+      next_tokens = should_equip ? add_equipped_snapshot(layer(map).tokens, token['id'], created) : layer(map).tokens
+      layer(map).update!(dropped_projectiles: list, tokens: next_tokens)
     end
 
     if created.equipped?
-      collector = Array(map.tokens).find { |token| token['id'].to_s == token_id.to_s }
+      collector = Array(layer(map).tokens).find { |token| token['id'].to_s == token_id.to_s }
       MapRealtime::Broadcaster.token_equipment_changed(
         map,
         token_id,
@@ -183,13 +190,13 @@ module BattleMapProjectiles
         actor: user,
       )
     end
-    MapRealtime::Broadcaster.dropped_projectiles_changed(map, map.dropped_projectiles, actor: user)
+    MapRealtime::Broadcaster.dropped_projectiles_changed(map, layer(map).dropped_projectiles, actor: user)
     MapRealtime::Broadcaster.character_inventory_changed(map, character.id, character.sheet.id, actor: user)
     created
   end
 
   def find_token!(map, id)
-    token = Array(map.tokens).find { |t| t['id'].to_s == id.to_s }
+    token = Array(layer(map).tokens).find { |t| t['id'].to_s == id.to_s }
     raise NotFound, 'Token nao encontrado' unless token
     token.stringify_keys
   end
@@ -234,7 +241,7 @@ module BattleMapProjectiles
         candidates << { 'col' => col, 'row' => row }
       end
     end
-    free = candidates.reject { |cell| occupied_cell?(map.tokens, cell) }
+    free = candidates.reject { |cell| occupied_cell?(layer(map).tokens, cell) }
     (free.presence || candidates).sample || { 'col' => x.clamp(0, map.width - 1), 'row' => y.clamp(0, map.height - 1) }
   end
 

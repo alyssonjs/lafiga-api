@@ -643,6 +643,10 @@ class SessionFeedChannel < ApplicationCable::Channel
     map = schedule&.battle_map
     return true unless map
 
+    # Marca a mesa na instancia: o projetil resolve na camada desta sessao e o
+    # evento sai no canal dela. Sem isto, uma mesa resolveria o projetil da outra.
+    map.session_scope_schedule_id = schedule.id
+
     has_projectile = resolution['projectileId'].present? || Array(map.dropped_projectiles).any? do |projectile|
       projectile['rollGroupId'].to_s == resolution['rollGroupId'].to_s
     end

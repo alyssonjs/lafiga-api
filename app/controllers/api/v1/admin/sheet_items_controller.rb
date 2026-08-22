@@ -183,6 +183,15 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
     map = BattleMap.find_by(id: map_id)
     return unless map
 
+    # Marca a mesa na instância (ver BattleMap#session_scope_schedule_id): a
+    # sincronia do equipamento e o broadcast ficam na sessão certa.
+    sid = params[:schedule_id].presence || params.dig(:grant, :schedule_id).presence
+    schedule = sid && Schedule.find_by(id: sid)
+    if schedule && (schedule.battle_map_id == map.id ||
+                    ScheduleBattleMap.exists?(schedule_id: schedule.id, battle_map_id: map.id))
+      map.session_scope_schedule_id = schedule.id
+    end
+
     sheet = item_or_sheet.is_a?(Sheet) ? item_or_sheet : item_or_sheet.sheet
     character = sheet&.character
     return unless character

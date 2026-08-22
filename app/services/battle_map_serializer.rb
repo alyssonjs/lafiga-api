@@ -15,7 +15,11 @@
 # camelCase aqui (cellSizePx, gridOpacity, backgroundImage, schemaVersion,
 # createdAt, updatedAt) e proposital: o front nao precisa de mapper extra.
 class BattleMapSerializer
-  def self.serialize(map, mode: :full)
+  # `session_layer` (um ScheduleBattleMap) = estado de MESA daquela sessão.
+  # Quando presente, o payload mistura o TABULEIRO (do mapa) com a camada da
+  # sessão: tokens de criatura, névoa, medidas, desenhos, AoE e projéteis vêm
+  # dela. Sem ele (Map Builder, listagem) o mapa responde sozinho, como antes.
+  def self.serialize(map, mode: :full, session_layer: nil)
     return nil unless map
 
     base = {
@@ -45,19 +49,19 @@ class BattleMapSerializer
 
     # :tokens — base + só o array de tokens. Mantém o único campo que o
     # #move_token do front consome, sem o peso de cells/fog/background/layers.
-    return base.merge(tokens: map.tokens || []) if mode == :tokens
+    return base.merge(tokens: tokens_for(map, session_layer)) if mode == :tokens
 
     base.merge(
       cells: map.cells || [],
       # O snapshot visual gravado no token pode ter sido criado antes da ultima
       # edicao do personagem. No carregamento FULL, a ficha e a fonte canonica:
       # isso corrige mapas legados sem transformar um GET em escrita no JSONB.
-      tokens: tokens_with_current_customizations(map),
+      tokens: tokens_with_current_customizations(map, session_layer),
       walls: map.walls || [],
-      measurements: map.measurements || [],
-      aoePlacements: map.aoe_placements || [],
-      drawings: map.drawings || [],
-      fog: map.fog,
+      measurements: layer_value(session_layer, :measurements, map.measurements) || [],
+      aoePlacements: layer_value(session_layer, :aoe_placements, map.aoe_placements) || [],
+      drawings: layer_value(session_layer, :drawings, map.drawings) || [],
+      fog: session_layer ? session_layer.fog : map.fog,
       backgroundImage: background_image_src(map),
       backgroundImageOffsetX: map.background_image_offset_x,
       backgroundImageOffsetY: map.background_image_offset_y,
@@ -70,7 +74,7 @@ class BattleMapSerializer
       stamps: map.stamps || [],
       paths: map.paths || [],
       mapEffects: map.map_effects || {},
-      droppedProjectiles: map.dropped_projectiles || [],
+      droppedProjectiles: layer_value(session_layer, :dropped_projectiles, map.dropped_projectiles) || [],
     )
   end
 
@@ -78,8 +82,22 @@ class BattleMapSerializer
     maps.map { |m| serialize(m, mode: mode) }
   end
 
-  def self.tokens_with_current_customizations(map)
-    tokens = Array(map.tokens).map(&:deep_dup)
+  # Tabuleiro (cenário do mapa) + criaturas da mesa. Sem camada, o mapa
+  # responde sozinho — é o caminho do Map Builder e da listagem.
+  def self.tokens_for(map, session_layer)
+    return map.tokens || [] unless session_layer
+
+    map.scenery_tokens + Array(session_layer.tokens)
+  end
+
+  def self.layer_value(session_layer, field, fallback)
+    session_layer ? session_layer.public_send(field) : fallback
+  end
+
+  def self.tokens_with_current_customizations(map, session_layer = nil)
+    # Parte do conjunto JÁ mesclado (tabuleiro + mesa) — a customização vale
+    # tanto para o cenário quanto para as criaturas da sessão.
+    tokens = Array(tokens_for(map, session_layer)).map(&:deep_dup)
     character_ids = tokens.filter_map do |token|
       raw = token['characterId'] || token[:characterId]
       raw.to_s if raw.present?

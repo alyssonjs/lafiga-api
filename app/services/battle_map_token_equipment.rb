@@ -13,7 +13,10 @@ module BattleMapTokenEquipment
 
     map.with_lock do
       map.reload
-      tokens = Array(map.tokens).map(&:deep_dup)
+      # Estado de MESA: com sessao marcada na instancia do mapa, a sincronia do
+      # equipamento altera o token daquela sessao, nao o de todas as mesas.
+      layer = MapSessionLayer.for(map: map, schedule_id: map.session_scope_schedule_id)
+      tokens = Array(layer.tokens).map(&:deep_dup)
       tokens.each do |token|
         next unless token['characterId'].to_s == character.id.to_s
         next if Array(token['chibiEquipment']) == snapshot && token.key?('chibiEquipment')
@@ -21,7 +24,7 @@ module BattleMapTokenEquipment
         token['chibiEquipment'] = snapshot
         changes << { token_id: token['id'].to_s, chibi_equipment: snapshot }
       end
-      map.update!(tokens: tokens) if changes.any?
+      layer.update!(tokens: tokens) if changes.any?
     end
 
     changes

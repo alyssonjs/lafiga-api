@@ -13,18 +13,30 @@ class BattleMapTokenMutations
 
   Result = Struct.new(:mutation, :version, keyword_init: true)
 
-  def self.call(map:, mutation:, allow_character_visuals: false)
+  def self.call(map:, mutation:, allow_character_visuals: false, session_layer: nil)
     new(
       map: map,
       mutation: mutation,
       allow_character_visuals: allow_character_visuals,
+      session_layer: session_layer,
     ).call
   end
 
-  def initialize(map:, mutation:, allow_character_visuals: false)
+  def initialize(map:, mutation:, allow_character_visuals: false, session_layer: nil)
     @map = map
     @raw = normalize_hash(mutation)
     @allow_character_visuals = allow_character_visuals
+    @session_layer = session_layer
+  end
+
+  # Sem camada explicita, o mapa e o alvo — preserva os chamadores antigos.
+  def write_target
+    @session_layer || @map
+  end
+
+  # A camada ja devolve tabuleiro + mesa mesclados; o mapa responde inteiro.
+  def read_source
+    @session_layer ? @session_layer.tokens : @map.tokens
   end
 
   def call
@@ -37,7 +49,9 @@ class BattleMapTokenMutations
 
     @map.with_lock do
       @map.reload
-      tokens = Array(@map.tokens).map(&:deep_dup)
+      # Le do MESMO alvo em que grava (camada da mesa ou mapa) — ler do mapa e
+      # gravar na camada perderia o token de vista.
+      tokens = Array(read_source).map(&:deep_dup)
       index_by_id = token_index(tokens)
 
       delete_ids.each do |token_id|
@@ -94,7 +108,8 @@ class BattleMapTokenMutations
         }
       end
 
-      @map.update!(tokens: tokens) unless mutation_empty?(applied)
+      # Alvo pode ser a camada da MESA (sessao) ou o proprio mapa.
+      write_target.update!(tokens: tokens) unless mutation_empty?(applied)
     end
 
     Result.new(

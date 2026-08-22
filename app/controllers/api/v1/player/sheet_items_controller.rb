@@ -166,6 +166,10 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     map = BattleMap.find_by(id: params[:battle_map_id])
     return unless map&.readable_by?(@current_user)
 
+    # Marca a mesa na instância: a sincronia do equipamento e o broadcast ficam
+    # na sessão certa. Sem `schedule_id`, cai no comportamento antigo (mapa).
+    map.session_scope_schedule_id = session_scope_for(map)
+
     sheet = item_or_sheet.is_a?(Sheet) ? item_or_sheet : item_or_sheet.sheet
     character = sheet&.character
     return unless character
@@ -189,4 +193,19 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   rescue StandardError => e
     Rails.logger.warn({ event: 'sheet_items.broadcast_inventory_failed', error: e.class.name, message: e.message }.to_json)
   end
+
+  # `schedule_id` do request, só se o utilizador puder ver a sessão E ela usar
+  # este mapa — o mesmo critério do BattleMapsController.
+  def session_scope_for(map)
+    sid = params[:schedule_id].presence
+    return nil unless sid
+
+    schedule = Schedule.find_by(id: sid)
+    return nil unless schedule&.viewable_by?(@current_user)
+    return nil unless schedule.battle_map_id == map.id ||
+                      ScheduleBattleMap.exists?(schedule_id: schedule.id, battle_map_id: map.id)
+
+    schedule.id
+  end
+
 end

@@ -244,6 +244,19 @@ class Schedule < ApplicationRecord
 
   class StateError < StandardError; end
 
+  # Pode VER esta sessão? Usado pelo canal do mapa e pelo `schedule_id` do
+  # GET do mapa — sem isto, o parâmetro viraria um jeito de espiar a névoa e as
+  # posições de outra mesa que usa o mesmo mapa.
+  def viewable_by?(user)
+    return false if user.nil?
+    return true if Group.user_is_dm?(user)
+    return true if group&.owned_by?(user)
+    return true if created_by_user_id == user.id
+
+    gids = user.characters.where.not(group_id: nil).distinct.pluck(:group_id)
+    group_id.present? && gids.include?(group_id)
+  end
+
   # Cancelamento: mestre (papel site-wide DM/Admin) ou jogador com personagem
   # em `schedule_characters` para esta sessão.
   def cancellable_by?(user)

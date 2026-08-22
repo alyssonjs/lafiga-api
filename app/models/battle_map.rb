@@ -42,6 +42,12 @@ class BattleMap < ApplicationRecord
   # celulas em DOM — viewport-based culling agora evita o gargalo.
   MAX_DIM = 200
 
+  # Sessão desta instância, quando o mapa foi carregado dentro de uma mesa.
+  # NÃO é coluna: serve para o broadcast saber em qual canal publicar sem
+  # precisar mudar as ~15 assinaturas de evento e os ~23 chamadores. Quem
+  # carrega o mapa num contexto de sessão marca aqui.
+  attr_accessor :session_scope_schedule_id
+
   belongs_to :user
   belongs_to :group, optional: true
   has_many :schedules, dependent: :nullify
@@ -57,6 +63,32 @@ class BattleMap < ApplicationRecord
   BACKGROUND_MAX_BYTES = 25.megabytes
 
   scope :with_attached_background_image, -> { includes(background_image_attachment: :blob) }
+
+  # === Tabuleiro x mesa ===
+  # `tokens` mistura CENÁRIO (objetos da biblioteca, `assetId`) com CRIATURAS
+  # (PC/NPC). O cenário é do tabuleiro e viaja com o mapa entre sessões; a
+  # criatura é estado de mesa e vive na camada da sessão
+  # (`schedule_battle_maps`) — senão duas mesas no mesmo mapa veem os
+  # personagens uma da outra.
+  def self.creature_token?(token)
+    return false unless token.is_a?(Hash)
+
+    %w[characterId character_id npcId npc_id].any? { |k| token[k].to_s.strip.present? }
+  end
+
+  def self.scenery_token?(token)
+    token.is_a?(Hash) && !creature_token?(token)
+  end
+
+  # Tokens que pertencem ao TABULEIRO (ficam no mapa).
+  def scenery_tokens
+    Array(tokens).select { |t| self.class.scenery_token?(t) }
+  end
+
+  # Tokens que pertencem à MESA (vão para a camada da sessão).
+  def creature_tokens
+    Array(tokens).select { |t| self.class.creature_token?(t) }
+  end
 
   validates :name, presence: true, length: { maximum: 80 }
   validates :width,  numericality: { only_integer: true, greater_than_or_equal_to: MIN_DIM, less_than_or_equal_to: MAX_DIM }

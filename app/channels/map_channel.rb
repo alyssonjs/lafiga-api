@@ -40,11 +40,28 @@ class MapChannel < ApplicationCable::Channel
       reject and return
     end
 
-    stream_from stream_name_for(@battle_map)
+    # `schedule_id` isola a mesa. Só é aceito se o utilizador puder VER a sessão
+    # — senão bastaria adivinhar um id para escutar os eventos de outra mesa.
+    @schedule_id = resolve_schedule_id(params[:schedule_id])
+
+    stream_from stream_name_for(@battle_map, @schedule_id)
     trace_realtime(
       stage: 'subscription_confirmed', domain: 'map', outcome: 'succeeded',
       aggregate_type: 'battle_map', aggregate_id: @battle_map.id
     )
+  end
+
+  # @return [Integer, nil] nil = canal base (Map Builder / cliente antigo)
+  def resolve_schedule_id(raw)
+    return nil if raw.blank?
+
+    schedule = Schedule.find_by(id: raw)
+    return nil unless schedule&.viewable_by?(@current_user)
+    # Assinar a sessão de um mapa que não é o dela também não faz sentido.
+    return nil unless schedule.battle_map_id == @battle_map.id ||
+                      ScheduleBattleMap.exists?(schedule_id: schedule.id, battle_map_id: @battle_map.id)
+
+    schedule.id
   end
 
   def unsubscribed
@@ -54,15 +71,25 @@ class MapChannel < ApplicationCable::Channel
     )
   end
 
-  def self.stream_name(map_or_id)
+  # Um canal por (mapa, sessão). Sem sessão (Map Builder) fica o canal base.
+  # Sem isto, duas mesas no mesmo mapa recebem os eventos uma da outra — o
+  # token movido numa aparece na outra, ao vivo.
+  def self.stream_name(map_or_id, schedule_id = nil)
     id = map_or_id.respond_to?(:id) ? map_or_id.id : map_or_id
-    "map_#{id}"
+    sid =
+      if schedule_id.present?
+        schedule_id
+      elsif map_or_id.respond_to?(:session_scope_schedule_id)
+        map_or_id.session_scope_schedule_id
+      end
+
+    sid.present? ? "map_#{id}_s#{sid}" : "map_#{id}"
   end
 
   private
 
-  def stream_name_for(map)
-    self.class.stream_name(map)
+  def stream_name_for(map, schedule_id = nil)
+    self.class.stream_name(map, schedule_id)
   end
 
   def authenticate_token(token)
