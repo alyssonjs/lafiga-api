@@ -106,4 +106,33 @@ RSpec.describe 'Api::V1::Admin::MapAssets', type: :request do
     expect(response).to have_http_status(:ok)
     expect(MapAsset.find_by(id: a.id)).to be_nil
   end
+
+  # O objeto de cenario do mapa carrega esta URL no token. Se o arquivo sumir do
+  # storage, um 500 aqui vira objeto INVISIVEL no mapa do jogador, sem pista
+  # nenhuma para quem esta jogando.
+  describe 'GET /image quando o arquivo sumiu do storage' do
+    # A imagem e obrigatoria no model: anexa ANTES de salvar.
+    let!(:asset) do
+      a = MapAsset.new(name: 'Pedra', kind: 'object')
+      a.image.attach(io: StringIO.new('conteudo-fake'), filename: 'p.png', content_type: 'image/png')
+      a.save!
+      a
+    end
+
+    it 'serve normalmente quando o arquivo existe (sem exigir auth de DM)' do
+      get "/api/v1/admin/map_assets/#{asset.id}/image"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to eq('conteudo-fake')
+    end
+
+    it 'REGRESSAO: arquivo ausente responde 404, nao 500' do
+      blob = asset.image.blob
+      blob.service.delete(blob.key)
+
+      get "/api/v1/admin/map_assets/#{asset.id}/image"
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end

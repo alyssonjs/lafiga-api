@@ -27,11 +27,26 @@ class Api::V1::Admin::MapAssetsController < ApplicationController
     asset = MapAsset.with_attached_image.find_by(id: params[:id])
     return head(:not_found) unless asset&.image&.attached?
 
+    # Registro do anexo existe, mas o arquivo pode não estar no storage (banco
+    # restaurado sem `storage/`, volume perdido). Isso é "não encontrado", não
+    # erro de servidor: um 500 aqui vira objeto de cenário invisível no mapa,
+    # sem pista nenhuma para quem está jogando.
+    data = begin
+      asset.image.download
+    rescue ActiveStorage::FileNotFoundError
+      Rails.logger.warn(
+        "[map_assets#image] blob sem arquivo no storage " \
+        "asset=#{asset.id} blob=#{asset.image.blob.id} key=#{asset.image.blob.key}",
+      )
+      nil
+    end
+    return head(:not_found) if data.nil?
+
     # public → o Caddy também cacheia (menos hits no Rails). immutable → o browser
     # nem revalida (o `?v=` já invalida quando a imagem muda).
     expires_in 1.year, public: true
     response.cache_control[:extras] = ['immutable']
-    send_data asset.image.download,
+    send_data data,
               type: asset.image.blob.content_type || 'application/octet-stream',
               disposition: 'inline'
   end
