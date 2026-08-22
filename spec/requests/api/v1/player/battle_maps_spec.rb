@@ -453,4 +453,44 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
       expect(response.parsed_body.dig('battle_map', 'tokens', 0, 'blocksMovement')).to be(true)
     end
   end
+
+  # A miniatura do card e gerada no CLIENTE a partir do fundo. Se o fundo troca e
+  # ela nao e invalidada, a lista mostra a arte do mapa ANTERIOR — foi o que
+  # aconteceu com um mapa duplicado que trocou de fundo.
+  describe 'miniatura x troca de fundo' do
+    let(:dm) { create(:user, role: Role.find_by(name: 'DM') || create(:role, name: 'DM')) }
+    let(:map) { create(:battle_map, user: dm, background_thumbnail: 'data:image/webp;base64,VELHA') }
+
+    # 1x1 PNG valido em data URI.
+    let(:novo_fundo) do
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+    end
+
+    def patch_map(attrs)
+      patch "/api/v1/player/battle_maps/#{map.id}",
+            params: { battle_map: attrs }, headers: bearer_headers_for(dm), as: :json
+    end
+
+    it 'REGRESSAO: trocar o fundo zera a miniatura (a lista regenera)' do
+      patch_map(background_image_url: novo_fundo)
+
+      expect(response).to have_http_status(:ok)
+      expect(map.reload.background_thumbnail).to be_nil
+      expect(map.background_image).to be_attached
+    end
+
+    it 'remover o fundo tambem zera a miniatura' do
+      map.background_image.attach(io: StringIO.new('x'), filename: 'bg.png', content_type: 'image/png')
+
+      patch_map(background_image_url: '')
+
+      expect(map.reload.background_thumbnail).to be_nil
+    end
+
+    it 'editar outra coisa NAO mexe na miniatura' do
+      patch_map(name: 'Outro nome')
+
+      expect(map.reload.background_thumbnail).to eq('data:image/webp;base64,VELHA')
+    end
+  end
 end

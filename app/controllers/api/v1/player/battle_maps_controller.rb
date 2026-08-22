@@ -592,6 +592,14 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # legada; se vier VAZIO/nil, remove o fundo; se vier uma URL (eco do próprio
   # endpoint), ignora (mantém o blob atual). Marca @background_changed p/ o broadcast
   # (attach não mexe em previous_changes da coluna).
+  # Trocar/remover o fundo invalida a MINIATURA: ela é gerada no cliente a
+  # partir da imagem, então a antiga passaria a mostrar um mapa que não existe
+  # mais (o card da lista ficava com a arte anterior). Zerando aqui, o backfill
+  # lazy da lista (`setBattleMapThumbnail`) gera a nova no próximo carregamento.
+  def invalidate_background_thumbnail!(map)
+    map.update_column(:background_thumbnail, nil) if map.background_thumbnail.present?
+  end
+
   def apply_background!(map)
     bm = params[:battle_map]
     return unless bm.respond_to?(:key?) && bm.key?(:background_image_url)
@@ -604,10 +612,12 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       bytes, content_type, ext = decoded
       map.background_image.attach(io: StringIO.new(bytes), filename: "bg-#{map.id}.#{ext}", content_type: content_type)
       map.update_column(:background_image_url, nil) if map.background_image_url.present?
+      invalidate_background_thumbnail!(map)
       @background_changed = true
     elsif raw.blank?
       map.background_image.purge if map.background_image.attached?
       map.update_column(:background_image_url, nil) if map.background_image_url.present?
+      invalidate_background_thumbnail!(map)
       @background_changed = true
     end
     # else: URL (não-data) → não faz nada (o fundo já está no blob).
