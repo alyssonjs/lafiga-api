@@ -71,7 +71,10 @@ Rails.application.routes.draw do
           member do
             post :equip
             post :unequip
+            post :attune
+            post :unattune
             post :allocate_ammunition
+            post :stow_on_mount
             post :merge
             post :split
           end
@@ -225,8 +228,22 @@ Rails.application.routes.draw do
           resources :campaign_notes, only: [:index, :create]
         end
         resources :campaign_notes, only: [:show, :update, :destroy]
+        # Depósitos móveis do grupo (carroça, carruagem…). Autorização por
+        # PERTENCER AO GRUPO — a carroça é compartilhada, então não é posse de
+        # item que manda aqui.
+        resources :groups, only: [] do
+          resources :carts, only: [:index, :create, :update, :destroy],
+                    controller: 'group_carts' do
+            member do
+              get :items
+              post :stow
+            end
+          end
+        end
         resources :bug_reports, only: [:index, :create]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
+          resources :companions, only: [:index, :create, :update, :destroy],
+                    controller: 'sheet_companions'
           member do
             get :summary
             post :assign_background
@@ -247,7 +264,12 @@ Rails.application.routes.draw do
           end
         end
         resources :sheet_klasses, only: [:index, :show, :create, :update, :destroy]
-        resources :sheet_known_spells, only: [:index, :create, :destroy]
+        resources :sheet_known_spells, only: [:index, :create, :destroy] do
+          member do
+            post :use
+            post :restore
+          end
+        end
         resources :sheet_prepared_spells, only: [:index, :create, :destroy]
         resources :characters_features, only: [:index, :update]
 
@@ -258,7 +280,10 @@ Rails.application.routes.draw do
           member do
             post :equip
             post :unequip
+            post :attune
+            post :unattune
             post :allocate_ammunition
+            post :stow_on_mount
             post :merge
             post :split
           end

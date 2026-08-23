@@ -7,6 +7,46 @@ class Api::V1::Player::SheetKnownSpellsController < ApplicationController
     render json: { sheet_known_spells: known }, status: :ok
   end
 
+  # POST /api/v1/player/sheet_known_spells/:id/use
+  #
+  # Gasta UM uso de magia inata (racial/talento: `uses_per_rest` = LR ou SR).
+  #
+  # Existe porque a sessao debitava um ESPACO DE MAGIA real para conjurar a
+  # magia racial do Tiefling — e o Tiefling nao-conjurador (Guerreiro, Barbaro)
+  # nem conseguia conjurar, porque o card bloqueia quando nao ha espacos. Estas
+  # magias tem orcamento proprio; espaco nao entra na conta.
+  def use
+    ks = owned_known_spell!(params[:id])
+
+    unless ks.has_uses?
+      return render json: { error: 'Esta magia não tem usos próprios (gasta espaço de magia).' },
+                    status: :unprocessable_entity
+    end
+
+    unless ks.use_once!
+      return render json: { error: 'Sem usos restantes até o próximo descanso.' },
+                    status: :unprocessable_entity
+    end
+
+    render json: { sheet_known_spell: ks.reload }, status: :ok
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Not found' }, status: :not_found
+  end
+
+  # POST /api/v1/player/sheet_known_spells/:id/restore
+  #
+  # Devolve o uso (desfazer / correcao do mestre). O descanso restaura em lote
+  # pelos services de descanso — este e para o caso pontual.
+  def restore
+    ks = owned_known_spell!(params[:id])
+    return render json: { error: 'Esta magia não tem usos próprios.' }, status: :unprocessable_entity unless ks.has_uses?
+
+    ks.restore_uses!
+    render json: { sheet_known_spell: ks.reload }, status: :ok
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Not found' }, status: :not_found
+  end
+
   def create
     sk = current_user_sheet_klass
     spell_id = params[:spell_id] || params.dig(:sheet_known_spell, :spell_id)
@@ -59,6 +99,15 @@ class Api::V1::Player::SheetKnownSpellsController < ApplicationController
   end
 
   private
+
+  # A magia tem que pertencer a uma ficha DESTE usuario — sem isto qualquer id
+  # gastaria o uso inato de outro jogador.
+  def owned_known_spell!(id)
+    SheetKnownSpell
+      .joins(sheet_klass: { sheet: :character })
+      .where(characters: { user_id: @current_user.id })
+      .find(id)
+  end
 
   def current_user_sheet_klass
     sheet_klass_id = params[:sheet_klass_id] || params.dig(:sheet_known_spell, :sheet_klass_id)

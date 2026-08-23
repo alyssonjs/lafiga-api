@@ -427,6 +427,10 @@ class CharacterSheetSummaryService
           }
         },
         runtime_state: runtime_payload,
+        # Companions (familiar, montaria, companheiro animal). Sem isto o front
+        # grava e nunca mais ve: a ficha e hidratada por este summary, nao pelo
+        # `sheets#show`.
+        companions: Array(@sheet.companions),
         avatar_customization: @sheet.avatar_customization || {},
         abilities: abilities,
         movement: movement,

@@ -11,6 +11,36 @@ module MagicItemCatalog
     'vehicle', 'mount', 'kit',
   ].freeze
 
+  # === Recarga de cargas ===
+  # `recharge` é uma coluna de texto que sempre aceitou flavor livre
+  # ("1d4 ao amanhecer"). Estes são os tokens CANÔNICOS, os únicos que disparam
+  # recuperação automática no descanso — o resto continua valendo como texto,
+  # sem recarga, para não invalidar itens já criados.
+  #
+  # `short` recupera em curto E em longo (regra D&D: tudo que volta no curto
+  # volta no longo — mesma premissa do `ResourceCatalog` de recursos de classe).
+  RECHARGE_LONG  = 'long'
+  RECHARGE_SHORT = 'short'
+  RECHARGES = [RECHARGE_LONG, RECHARGE_SHORT].freeze
+
+  # @return [String, nil] token canônico, ou nil se for flavor livre/vazio.
+  def self.normalize_recharge(raw)
+    s = raw.to_s.strip.downcase
+    return nil if s.empty?
+
+    RECHARGES.include?(s) ? s : nil
+  end
+
+  # Recupera neste tipo de descanso?
+  # @param kind [Symbol] :short ou :long
+  def self.recharges_on?(raw, kind)
+    token = normalize_recharge(raw)
+    return false if token.nil?
+    return true if kind.to_sym == :long # longo recupera tudo que tem token
+
+    token == RECHARGE_SHORT
+  end
+
   # Rótulos PT (minúsculo) => valor persistido
   LABEL_TO_CATEGORY = {
     'arma' => 'weapon',

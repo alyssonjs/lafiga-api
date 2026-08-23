@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :allocate_ammunition, :merge, :split]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -70,6 +70,65 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/attune
+  #
+  # Grava `props_json['attuned']`. O teto de 3 e verificado AQUI, com a ficha
+  # travada — o cliente ja tinha a regra, mas o `persistItems` do CharacterBag
+  # faz early-return no modo controlado e a sintonia nunca chegava ao banco.
+  def attune
+    SheetItem.transaction do
+      sheet = Sheet.lock.find(@item.sheet_id)
+      ok, reason = Sheets::Attunement.can_attune?(@item, sheet: sheet)
+      raise ActiveRecord::Rollback, reason unless ok
+
+      merged = (@item.props_json || {}).merge(Sheets::Attunement::PROP_KEY => true)
+      @item.update!(props_json: merged)
+      @attuned_ok = true
+    end
+
+    unless @attuned_ok
+      _, reason = Sheets::Attunement.can_attune?(@item)
+      return render json: { error: reason || 'Não foi possível sintonizar.' }, status: :unprocessable_entity
+    end
+
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/unattune
+  #
+  # Sempre permitido: quebrar a sintonia e uma acao livre no PHB, e prender o
+  # jogador num item cheio abriria um beco sem saida quando o teto encher.
+  def unattune
+    merged = (@item.props_json || {}).merge(Sheets::Attunement::PROP_KEY => false)
+    @item.update!(props_json: merged)
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/stow_on_mount
+  # body: { companion_id: <id do companion> | null, quantity: integer }
+  #
+  # `companion_id` nulo TIRA da montaria (volta para a bolsa) — mesma convenção
+  # do `quiver_id` nulo na alocação de munição.
+  def stow_on_mount
+    items = SheetItems::StowOnMountService.new(
+      item: @item,
+      companion_id: params[:companion_id],
+      quantity: params[:quantity]
+    ).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::StowOnMountService::InvalidStow => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   # POST /api/v1/player/sheet_items/:id/allocate_ammunition

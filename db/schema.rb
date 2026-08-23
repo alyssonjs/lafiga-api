@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_21_140000) do
+ActiveRecord::Schema.define(version: 2026_08_23_140000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -371,6 +371,7 @@ ActiveRecord::Schema.define(version: 2026_08_21_140000) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "cover_image_url"
     t.bigint "dm_user_id"
+    t.jsonb "carts", default: [], null: false
     t.index ["dm_user_id"], name: "index_groups_on_dm_user_id"
   end
 
@@ -752,6 +753,7 @@ ActiveRecord::Schema.define(version: 2026_08_21_140000) do
     t.integer "experience_points", default: 0, null: false
     t.jsonb "coins", default: {"cp"=>0, "ep"=>0, "gp"=>0, "pp"=>0, "sp"=>0}, null: false
     t.jsonb "coin_pouches", default: [], null: false
+    t.jsonb "companions", default: [], null: false
     t.index ["alignment_id"], name: "index_sheets_on_alignment_id"
     t.index ["background_id"], name: "index_sheets_on_background_id"
     t.index ["background_key"], name: "index_sheets_on_background_key"

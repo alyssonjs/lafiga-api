@@ -34,6 +34,9 @@ class SheetItem < ApplicationRecord
   # instâncias com contadores independentes, não uma pilha de 2 com 1 contador.
   PER_INSTANCE_PROP_KEYS = %w[charges attuned uses uses_remaining uses_left].freeze
   AMMUNITION_CONTAINER_PROP = 'quiver_sheet_item_id'.freeze
+  # Item guardado NA MONTARIA. Aponta o `id` do companion (jsonb
+  # `sheets.companions`), nao um sheet_item — a montaria nao e um item.
+  MOUNT_CONTAINER_PROP = 'mount_companion_id'.freeze
 
   # Ponto único de criação com empilhamento, ATÔMICO e serializado por ficha.
   # Trava a `sheet` (FOR UPDATE) para evitar corrida read-then-write em
@@ -135,6 +138,13 @@ class SheetItem < ApplicationRecord
     rescue NameError
       nil
     end
+    # Sela/barda/alforje/freio: o slot da MONTARIA é do catálogo, não da
+    # instância. Sem isto o item na mochila não aparece no seletor da montaria.
+    catalog_mount_props = begin
+      EquipmentRules.mount_props(self)
+    rescue NameError
+      nil
+    end
 
     {
       id: id,
@@ -148,6 +158,7 @@ class SheetItem < ApplicationRecord
       props: props_json,
       weapon_props: weapon_props,
       equip_slot: catalog_equip_slot,
+      mount_props: catalog_mount_props,
       notes: notes,
       position: position,
     }

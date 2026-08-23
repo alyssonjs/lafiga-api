@@ -44,7 +44,20 @@ module Sheets
           last_long_rest_at: @now
         )
         runtime.save!
+        restore_innate_spell_uses!
         runtime
+      end
+
+      # Magias INATAS (racial/talento) tem orcamento proprio em
+      # `sheet_known_spells.uses_remaining` — nao gastam espaco de magia, entao
+      # zerar `spell_slots_used` nao as devolvia. Descanso longo restaura tudo
+      # (regra D&D: o que volta no curto tambem volta no longo).
+      def restore_innate_spell_uses!
+        SheetKnownSpell
+          .joins(:sheet_klass)
+          .where(sheet_klasses: { sheet_id: @sheet.id })
+          .with_limited_uses
+          .find_each(&:restore_uses!)
       end
 
       private

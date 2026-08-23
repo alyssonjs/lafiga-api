@@ -3,7 +3,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
   # literal e dava 401 em prod para contas "Mestre" da plataforma.
   before_action :authorize_site_wide_dm
-  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :allocate_ammunition, :merge, :split]
+  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID
   def index
@@ -66,6 +66,40 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
+  # POST /api/v1/admin/sheet_items/:id/attune
+  #
+  # Mesma regra do jogador (teto de 3, ficha travada). O mestre atua sobre a
+  # ficha do jogador pelo escopo de DM — corrigir sintonia na mesa e caso real.
+  def attune
+    SheetItem.transaction do
+      sheet = Sheet.lock.find(@item.sheet_id)
+      ok, reason = Sheets::Attunement.can_attune?(@item, sheet: sheet)
+      raise ActiveRecord::Rollback, reason unless ok
+
+      @item.update!(props_json: (@item.props_json || {}).merge(Sheets::Attunement::PROP_KEY => true))
+      @attuned_ok = true
+    end
+
+    unless @attuned_ok
+      _, reason = Sheets::Attunement.can_attune?(@item)
+      return render json: { error: reason || 'Não foi possível sintonizar.' }, status: :unprocessable_entity
+    end
+
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/:id/unattune
+  def unattune
+    @item.update!(props_json: (@item.props_json || {}).merge(Sheets::Attunement::PROP_KEY => false))
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
   # POST /api/v1/admin/sheet_items/:id/allocate_ammunition
   def allocate_ammunition
     items = SheetItems::AllocateAmmunitionService.new(
@@ -76,6 +110,22 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
     broadcast_inventory_changed(@item)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::AllocateAmmunitionService::InvalidAllocation => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/:id/stow_on_mount
+  # O mestre tambem guarda/tira carga da montaria do jogador.
+  def stow_on_mount
+    items = SheetItems::StowOnMountService.new(
+      item: @item,
+      companion_id: params[:companion_id],
+      quantity: params[:quantity]
+    ).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::StowOnMountService::InvalidStow => e
     render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity

@@ -1,4 +1,12 @@
 class Api::V1::Public::EquipmentController < ApplicationController
+  # `Item.category` que marca instrumento musical, em qualquer `kind`.
+  INSTRUMENT_CATEGORY = 'instrument'
+
+  # Transporte: veiculo terrestre, aquatico e arreios/selas. Mesmo carve-out do
+  # `pack` e do `instrument` — vivem como `kind: gear` com categoria propria, o
+  # que reusa o serializador de gear sem tocar no enum de `kind`.
+  VEHICLE_CATEGORIES = %w[vehicle_land vehicle_water tack].freeze
+
   # GET /api/v1/public/starting_equipment
   # Params: class_id (required), background_id (optional)
   def starting_equipment
@@ -129,9 +137,11 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # Uma ida ao servidor com todo o equipamento mundano (por categoria), para
   # evitar dezenas de round-trips no modal "Adicionar item" / buscas na bolsa.
   def equipment_catalog_snapshot
+    # `instruments` precisa estar aqui: os baldes :gear/:tools EXCLUEM a
+    # categoria, entao sem esta linha o instrumento sumiria do modal da bolsa.
     categories = %w[
       simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
-      gear packs tools consumables ammunition
+      gear packs tools instruments vehicles consumables ammunition
     ]
     by_category = {}
     categories.each do |cat|
@@ -167,11 +177,34 @@ class Api::V1::Public::EquipmentController < ApplicationController
       Item.where(kind: 'ammunition').order(:api_index).to_a
     # Pacotes vivem como `kind: :gear` + `category: pack` (enum Item nao tem `pack`).
     when :gear
-      Item.where(kind: 'gear').where.not(category: 'pack').order(:api_index).to_a
+      # ATENCAO: `where.not` gera `NOT IN`, que e NULL-unsafe — os 205 `gear` com
+      # `category: nil` ja NAO apareciam aqui antes desta linha existir (bug
+      # PRE-EXISTENTE do `pack`, mantido de proposito para nao mudar o que a aba
+      # "Itens Gerais" mostra hoje). O instrumento tem categoria preenchida,
+      # entao entra na exclusao sem depender disso.
+      Item.where(kind: 'gear')
+          .where.not(category: ['pack', INSTRUMENT_CATEGORY, *VEHICLE_CATEGORIES])
+          .order(:api_index).to_a
     when :packs
       Item.where(kind: 'gear', category: 'pack').order(:api_index).to_a
     when :tools
-      Item.where(kind: 'tool').order(:api_index).to_a
+      # `IS DISTINCT FROM` e obrigatorio aqui: `where.not` derrubaria os 18 de 20
+      # `tool` com `category: nil` junto com o instrumento.
+      Item.where(kind: 'tool')
+          .where('items.category IS DISTINCT FROM ?', INSTRUMENT_CATEGORY)
+          .order(:api_index).to_a
+    # Instrumento musical eh FERRAMENTA no PHB (tabela FERRAMENTAS), entao a base
+    # nova nasce `kind: tool` + `category: instrument`. O filtro aqui eh SO por
+    # categoria, de proposito: instrumento ja catalogado como `gear` (ex.:
+    # "Instrumento Musical") aparece na aba sem precisar de migration. Os baldes
+    # :gear e :tools excluem a categoria para o item nao viver em duas abas —
+    # mesma mecanica que :gear ja usa para `pack`.
+    when :instruments
+      Item.where(category: INSTRUMENT_CATEGORY).order(:api_index).to_a
+    # Aba "Equipamentos" do compendio: os tres grupos numa lista so, agrupados
+    # no front pela `gear_category`.
+    when :vehicles
+      Item.where(category: VEHICLE_CATEGORIES).order(:category, :api_index).to_a
     when :consumables
       Item.where(kind: 'consumable').order(:api_index).to_a
     else
@@ -192,6 +225,8 @@ class Api::V1::Public::EquipmentController < ApplicationController
     return :ammunition      if %w[ammunition municoes].include?(s)
     return :gear            if %w[adventuring-gear gear equipamentos utilidades equipment-gear].include?(s)
     return :packs           if %w[equipment-packs packs mochilas].include?(s)
+    return :instruments     if %w[instruments instrumentos musical-instruments].include?(s)
+    return :vehicles        if %w[vehicles veiculos transportes mounts-and-vehicles].include?(s)
     return :tools           if %w[tools ferramentas instruments-misc].include?(s)
     return :consumables     if %w[consumables consumivel consumiveis].include?(s)
     return :none            if s == 'none'
@@ -272,7 +307,15 @@ class Api::V1::Public::EquipmentController < ApplicationController
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
       weight_kg = (defined?(EquipmentRules) ? EquipmentRules.item_weight_kg(it) : nil) rescue nil
       props = it.props || {}
-      category_index, category_name = case it.kind
+      # A categoria vence o kind aqui: instrumento existe como `tool` (novo) e
+      # como `gear` (legado), e nos dois casos o rotulo tem que dizer o mesmo —
+      # senao o modal da bolsa mostra "Adventuring Gear" para um alaude.
+      category_index, category_name = if it.category.to_s == INSTRUMENT_CATEGORY
+        ['instruments', 'Musical Instruments']
+      elsif VEHICLE_CATEGORIES.include?(it.category.to_s)
+        ['vehicles', 'Mounts and Vehicles']
+      else
+        case it.kind
       when 'pack'
         ['equipment-packs', 'Equipment Pack']
       when 'tool'
@@ -290,6 +333,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
         else
           ['adventuring-gear', 'Adventuring Gear']
         end
+        end
       end
       {
         index: it.api_index,
@@ -300,7 +344,23 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # de equipar é escolhido pelo mestre — peças sem slot dedicado na ficha
         # (máscara, tomo, …) ficam sem `equip_slot`.
         equip_slot: props['equip_slot'].presence,
+        # Visual escolhido pelo mestre no editor (mesmas chaves que a arma usa).
+        # Sem isto o DM escolhe modelo/icone, eles gravam em props e a listagem
+        # nunca os ve — o card cai no generico.
+        card_icon_id: props['card_icon_id'].presence,
+        chibi_weapon_svg_id: props['chibi_weapon_svg_id'].presence,
         stackable: props.key?('stackable') ? !!props['stackable'] : nil,
+        # Transporte: o PHB dá velocidade em km/h no veiculo aquatico, e o custo
+        # da armadura de montaria e um MULTIPLICADOR (x4), nao valor fixo —
+        # serializar como custo normal mostraria "0 po", que e mentira.
+        speed_kmh: props['speed_kmh'].presence,
+        # Onde o item entra na montaria (sela/barda/alforje/freio) e quanto o
+        # alforje carrega. Sem isto o front nao sabe montar os slots.
+        mount_slot: props['mount_slot'].presence,
+        capacity_lb: props['capacity_lb'].presence,
+        barding_of: props['barding_of'].presence,
+        cost_multiplier: props['cost_multiplier'].presence,
+        service: props['service'] == true ? true : nil,
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
         weight: weight_kg,
         description: it.description,

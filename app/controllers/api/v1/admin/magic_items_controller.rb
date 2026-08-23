@@ -14,10 +14,15 @@ class Api::V1::Admin::MagicItemsController < ApplicationController
     :name,
     :desc,
     :source,
-    # scroll_spell (pergaminho): magia real do catálogo + nível p/ CD/ataque (D3-A)
+    # scroll_spell (pergaminho) / item_spell (varinha, cajado): magia real do
+    # catálogo + nível p/ CD/ataque (D3-A). `save_dc` só no item_spell —
+    # ausente = usa a CD do próprio conjurador.
     :spell_name,
     :spell_api_index,
     :spell_level,
+    :save_dc,
+    # custo em cargas — comum a QUALQUER kind; ausente/0 = efeito passivo.
+    :charge_cost,
     { damage_types: [] },
     { conditions: [] },
     { abilities: [] },

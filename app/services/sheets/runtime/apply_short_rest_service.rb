@@ -45,10 +45,20 @@ module Sheets
           last_short_rest_at: @now
         )
         runtime.save!
+        restore_short_rest_innate_spells!
         runtime
       end
 
       private
+
+      # Magia inata com `uses_per_rest: 'SR'`. A do Tiefling e LR, entao nao
+      # volta aqui — descanso curto so devolve o que e de curto, e nada mais.
+      def restore_short_rest_innate_spells!
+        SheetKnownSpell
+          .joins(:sheet_klass)
+          .where(sheet_klasses: { sheet_id: @sheet.id }, uses_per_rest: 'SR')
+          .find_each(&:restore_uses!)
+      end
 
       def character_level
         # Usa total_level do CharacterRules quando disponivel; fallback no

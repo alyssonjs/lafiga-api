@@ -371,6 +371,35 @@ class EquipmentRules
       (db_item.props || {})['equip_slot'].presence
     end
 
+    # Props de EQUIPAMENTO DE MONTARIA vindas do catálogo (sela, barda, alforje,
+    # freio). Mesmo caminho e mesmo guard de N+1 do `equip_slot`.
+    #
+    # Existe porque `sheet_items.props_json` é estado da INSTÂNCIA — não carrega
+    # o `mount_slot` que o catálogo carimba. Sem isto, uma sela na mochila não
+    # aparece no seletor da montaria.
+    #
+    # @return [Hash, nil] ex.: { 'mount_slot' => 'saddle' }
+    def mount_props(item)
+      return nil unless item
+
+      db_item = item.respond_to?(:item) ? item.item : nil
+      already_resolved = item.respond_to?(:item_id) && item.item_id.present?
+      if !db_item && !already_resolved && defined?(Item)
+        db_item = Item.find_by(api_index: normalize_index(item))
+      end
+      return nil unless db_item
+
+      props = db_item.props || {}
+      slot = props['mount_slot'].presence
+      return nil unless slot
+
+      {
+        'mount_slot' => slot,
+        'capacity_lb' => props['capacity_lb'].presence,
+        'barding_of' => props['barding_of'].presence,
+      }.compact
+    end
+
     def weapon_props(item)
       return nil unless item
       key = normalize_index(item)

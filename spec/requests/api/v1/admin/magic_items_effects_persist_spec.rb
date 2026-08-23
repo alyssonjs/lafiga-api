@@ -95,4 +95,69 @@ RSpec.describe 'Api::V1::Admin::MagicItemsController effects JSON persistence', 
       ],
     )
   end
+
+  # O proprio controller avisa: chave fora do MAGIC_ITEM_EFFECTS_PERMIT some em
+  # SILENCIO (strong params descarta, nao levanta). Sem estes exemplos, o DM
+  # preencheria custo em cargas / magia do item e o jsonb chegaria vazio.
+  it 'persiste `charge_cost` (custo em cargas do efeito)' do
+    slug = "spec-mi-charge-#{SecureRandom.hex(4)}"
+    payload = {
+      magic_item: {
+        name: 'Spec Varinha', slug: slug, rarity: 'rare', category: 'wand',
+        charges: 7, recharge: 'long',
+        effects: [{ kind: 'damage_bonus_dice', dice: '3d6', damage_type: 'fogo', charge_cost: 2 }],
+      },
+    }
+    post '/api/v1/admin/magic_items', params: payload.to_json, headers: headers
+
+    expect(response).to have_http_status(:created)
+    mi = MagicItem.find_by(slug: slug)
+    expect(mi.effects.first['charge_cost']).to eq(2)
+    expect(mi.recharge).to eq('long')
+  end
+
+  it 'persiste `item_spell` completo (magia + nivel + CD + custo)' do
+    slug = "spec-mi-itemspell-#{SecureRandom.hex(4)}"
+    payload = {
+      magic_item: {
+        name: 'Spec Varinha de Misseis', slug: slug, rarity: 'uncommon', category: 'wand',
+        charges: 7, recharge: 'long',
+        effects: [{
+          kind: 'item_spell',
+          spell_name: 'Mísseis Mágicos',
+          spell_api_index: 'magic-missile',
+          spell_level: 1,
+          save_dc: 15,
+          charge_cost: 1,
+        }],
+      },
+    }
+    post '/api/v1/admin/magic_items', params: payload.to_json, headers: headers
+
+    expect(response).to have_http_status(:created)
+    eff = MagicItem.find_by(slug: slug).effects.first
+    expect(eff).to eq(
+      'kind' => 'item_spell',
+      'spell_name' => 'Mísseis Mágicos',
+      'spell_api_index' => 'magic-missile',
+      'spell_level' => 1,
+      'save_dc' => 15,
+      'charge_cost' => 1,
+    )
+  end
+
+  it 'efeito passivo nao ganha charge_cost fantasma' do
+    slug = "spec-mi-passive-#{SecureRandom.hex(4)}"
+    payload = {
+      magic_item: {
+        name: 'Spec Manto', slug: slug, rarity: 'rare', category: 'wondrous item',
+        effects: [{ kind: 'ac_bonus', value: 1, type: 'magico' }],
+      },
+    }
+    post '/api/v1/admin/magic_items', params: payload.to_json, headers: headers
+
+    expect(response).to have_http_status(:created)
+    expect(MagicItem.find_by(slug: slug).effects.first).not_to have_key('charge_cost')
+  end
+
 end
