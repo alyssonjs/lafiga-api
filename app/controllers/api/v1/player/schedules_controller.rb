@@ -261,11 +261,7 @@ class Api::V1::Player::SchedulesController < ApplicationController
     map = readable_battle_map_param
     return if performed?
 
-    link = ScheduleBattleMap.find_or_initialize_by(schedule_id: @schedule.id, battle_map_id: map.id)
-    if link.new_record?
-      link.position = (@schedule.schedule_battle_maps.maximum(:position) || -1) + 1
-      link.save!
-    end
+    MapBranch.ensure!(schedule: @schedule, map: map)
 
     # Primeiro mapa vinculado vira o ativo — senão a sessão ficaria com mapas
     # vinculados e nenhum aberto para a mesa.
@@ -295,13 +291,6 @@ class Api::V1::Player::SchedulesController < ApplicationController
     map = readable_battle_map_param
     return if performed?
 
-    unless @schedule.schedule_battle_maps.exists?(battle_map_id: map.id)
-      ScheduleBattleMap.create!(
-        schedule_id: @schedule.id,
-        battle_map_id: map.id,
-        position: (@schedule.schedule_battle_maps.maximum(:position) || -1) + 1,
-      )
-    end
     activate_map!(map)
 
     render json: { schedule: serialize_schedule_for_current_user(@schedule.reload) }, status: :ok
@@ -336,6 +325,9 @@ class Api::V1::Player::SchedulesController < ApplicationController
   # Troca o mapa ativo e avisa a mesa em tempo real. `update_column` evita
   # disparar as validações de slot único da Schedule numa troca de mapa.
   def activate_map!(map)
+    # A camada nasce AQUI, no ponto único: sem ela a leitura cairia no mapa
+    # original e a mesa veria o estado de fábrica (ou o lixo de outra mesa).
+    MapBranch.ensure!(schedule: @schedule, map: map)
     @schedule.update_column(:battle_map_id, map&.id)
     Combat::Broadcaster.session_meta_changed(@schedule.reload)
   end
