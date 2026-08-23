@@ -78,6 +78,8 @@ module SessionFeed
           client_id:      normalized['id'],
           roll_group_id:  normalized['rollGroupId'].presence,
           payload:        normalized,
+          audience:       normalized['audience'].presence_in(SessionFeedItem::AUDIENCES) ||
+                          SessionFeedItem::AUDIENCE_ALL,
           posted_at:      timestamp_to_time(normalized['timestamp']),
         }
       end

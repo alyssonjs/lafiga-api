@@ -58,6 +58,14 @@ class SessionFeedChannel < ApplicationCable::Channel
     "session_feed_#{schedule_id}"
   end
 
+  # Um stream POR CANAL restrito. Quem não é do canal nunca o assina — é isso, e
+  # não um filtro no cliente, que mantém a conversa fora do navegador alheio.
+  def self.audience_stream_name_for(schedule_id, audience)
+    return stream_name_for(schedule_id) if audience.to_s == SessionFeedItem::AUDIENCE_ALL
+
+    "session_feed_#{audience}_#{schedule_id}"
+  end
+
   def subscribed
     token = params[:token].to_s
     @current_user = authenticate_token(token)
@@ -86,7 +94,8 @@ class SessionFeedChannel < ApplicationCable::Channel
     end
 
     @schedule_id = schedule.id
-    stream_from self.class.stream_name_for(@schedule_id)
+    @audiences = SessionFeed::Audience.readable(schedule, @current_user)
+    @audiences.each { |a| stream_from self.class.audience_stream_name_for(@schedule_id, a) }
     trace_realtime(
       stage: 'subscription_confirmed', domain: 'feed', outcome: 'succeeded',
       aggregate_type: 'schedule', aggregate_id: @schedule_id
@@ -151,6 +160,13 @@ class SessionFeedChannel < ApplicationCable::Channel
       return
     end
 
+    # Canal do item, resolvido UMA vez para todos os kinds: o caderno do Mestre
+    # guarda ROLAGENS, não só texto. Valor desconhecido cai em `all` — o padrão
+    # seguro é o visível; nunca inventar privacidade a partir de lixo do cliente.
+    normalized['audience'] =
+      item_hash['audience'].to_s.presence_in(SessionFeedItem::AUDIENCES) ||
+      SessionFeedItem::AUDIENCE_ALL
+
     event_id = SecureRandom.uuid
     normalized['clientId'] = trace[:client_id] if trace[:client_id]
     normalized['commandId'] = trace[:command_id] if trace[:command_id]
@@ -161,6 +177,14 @@ class SessionFeedChannel < ApplicationCable::Channel
     # voo e a queda mesmo se a aba que exibe o card perder o callback REST. Isso
     # vale para acerto e erro e independe do estado local do atacante. O serviço
     # é idempotente, portanto o REST do cliente pode repetir.
+    # Escrever num canal restrito exige poder lê-lo. Sem esta guarda, uma aba do
+    # Mestre postaria no combinado da equipe — e um jogador, no caderno secreto.
+    item_audience = normalized['audience'].presence || SessionFeedItem::AUDIENCE_ALL
+    unless Array(@audiences).include?(item_audience)
+      trace_feed_rejection(kind, trace, 'authorization_failed', started_at)
+      return
+    end
+
     if normalized['kind'] == 'attack_hit_resolution'
       unless Group.user_is_dm?(@current_user)
         trace_feed_rejection(kind, trace, 'authorization_failed', started_at)
@@ -218,7 +242,10 @@ class SessionFeedChannel < ApplicationCable::Channel
       normalized = persisted_item.payload unless normalized['kind'] == 'attack_hit_resolution'
     end
 
-    ActionCable.server.broadcast(self.class.stream_name_for(@schedule_id), normalized)
+    ActionCable.server.broadcast(
+      self.class.audience_stream_name_for(@schedule_id, item_audience),
+      normalized,
+    )
     Realtime::Telemetry.emit(
       stage: 'event_broadcast',
       domain: 'feed',

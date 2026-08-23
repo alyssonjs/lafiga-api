@@ -25,7 +25,12 @@ module Api::V1::Player
     def index
       limit = sanitize_limit(params[:limit])
 
-      scope = @schedule.session_feed_items.recent_first
+      audiencias = SessionFeed::Audience.readable(@schedule, @current_user)
+
+      scope = SessionFeedItem
+        .where(schedule_id: history_schedule_ids)
+        .for_audiences(audiencias)
+        .recent_first
 
       if params[:before].present?
         begin
@@ -52,6 +57,9 @@ module Api::V1::Player
           count: page.size,
           has_more: has_more,
           next_cursor: next_cursor,
+          # Quais canais este usuário tem. É o SERVIDOR que decide — se o
+          # cliente adivinhasse, mostraria uma aba cujo envio seria recusado.
+          audiences: audiencias,
         },
       }, status: :ok
     end
@@ -130,6 +138,19 @@ module Api::V1::Player
     end
 
     private
+
+    # O chat NÃO recomeça do zero a cada sessão.
+    #
+    # O feed é gravado por `schedule`, mas a conversa é da MESA: ao abrir a
+    # sessão seguinte o grupo perdia tudo o que tinha combinado, e o caderno do
+    # Mestre ia junto. A leitura passa a varrer as sessões do mesmo grupo; a
+    # escrita continua a cair na sessão atual, então nada muda de dono.
+    def history_schedule_ids
+      group_id = @schedule.group_id
+      return [@schedule.id] if group_id.blank?
+
+      Schedule.where(group_id: group_id).pluck(:id)
+    end
 
     def set_schedule
       @schedule = Schedule.find_by(id: schedule_id_param)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_23_140000) do
+ActiveRecord::Schema.define(version: 2026_08_23_170000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -619,6 +619,8 @@ ActiveRecord::Schema.define(version: 2026_08_23_140000) do
     t.datetime "posted_at", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "audience", default: "all", null: false
+    t.index ["schedule_id", "audience", "posted_at"], name: "index_session_feed_items_on_schedule_audience_posted_at", order: { posted_at: :desc }
     t.index ["schedule_id", "client_id"], name: "index_session_feed_items_on_schedule_and_client_id_uniq", unique: true
     t.index ["schedule_id", "posted_at"], name: "index_session_feed_items_on_schedule_and_posted_at_desc", order: { posted_at: :desc }
     t.index ["schedule_id", "roll_group_id"], name: "index_session_feed_items_on_schedule_and_roll_group_id", where: "(roll_group_id IS NOT NULL)"
