@@ -18,6 +18,8 @@ module SheetItems
         validate_ammunition!
         validate_quantity!
         quiver = find_quiver!(sheet)
+        validate_accepts_type!(quiver)
+        validate_capacity!(quiver)
         destination_props = props_for(quiver)
 
         return inventory_for(sheet) if same_container?(destination_props)
@@ -33,7 +35,9 @@ module SheetItems
     attr_reader :ammunition, :quiver_id, :quantity
 
     def validate_ammunition!
-      raise InvalidAllocation, 'O item selecionado não é uma pilha de flechas ou virotes' unless ammunition.ammunition?
+      # A mensagem dizia "flechas ou virotes" — deixou de ser verdade quando
+      # pedra de funda e agulha de zarabatana passaram a contar como munição.
+      raise InvalidAllocation, 'O item selecionado não é uma pilha de munição' unless ammunition.ammunition?
     end
 
     def validate_quantity!
@@ -50,6 +54,42 @@ module SheetItems
       raise InvalidAllocation, 'O recipiente selecionado não é uma aljava' unless quiver.quiver?
 
       quiver
+    end
+
+    # O recipiente aceita ESTA munição?
+    #
+    # Lista vazia = aceita qualquer uma. É o caso da aljava legada, que existe
+    # em fichas desde antes de recipiente ter tipo declarado — recusar tudo ali
+    # tiraria a munição do lugar em toda ficha antiga.
+    def validate_accepts_type!(quiver)
+      return if quiver.nil?
+
+      aceitos = quiver.accepted_ammunition_indexes
+      return if aceitos.empty?
+      return if aceitos.include?(ammunition.item_index.to_s)
+
+      raise InvalidAllocation,
+            "#{quiver.item_name} não guarda #{ammunition.item_name}."
+    end
+
+    # PHB: a aljava guarda ATÉ 20 flechas; o porta-virotes, até 20 virotes.
+    # O limite é do recipiente — passar dele o esvaziaria de sentido.
+    def validate_capacity!(quiver)
+      return if quiver.nil?
+
+      capacidade = quiver.ammunition_capacity
+      return if capacidade.nil? || capacidade <= 0
+
+      # O que já está lá MENOS o que sai desta mesma pilha (mover dentro do
+      # mesmo recipiente não pode contar duas vezes).
+      guardado = quiver.ammunition_stored_count
+      guardado -= quantity if ammunition.ammunition_container_id == quiver.id.to_s
+      livre = capacidade - guardado
+
+      return if quantity <= livre
+
+      raise InvalidAllocation,
+            "#{quiver.item_name} guarda até #{capacidade}. Cabem mais #{[livre, 0].max}."
     end
 
     def props_for(quiver)

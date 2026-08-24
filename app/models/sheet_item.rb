@@ -163,17 +163,62 @@ class SheetItem < ApplicationRecord
       weapon_props: weapon_props,
       equip_slot: catalog_equip_slot,
       mount_props: catalog_mount_props,
+      # Recipiente de munição: o que aceita e quanto cabe. Do CATÁLOGO — sem
+      # isto o front não sabe desenhar "12 / 20" nem qual munição oferecer.
+      ammunition_container_props: ammunition_container_props,
       notes: notes,
       position: position,
     }
   end
 
+  # Props do recipiente, vindas do CATÁLOGO (a instância não as tem).
+  def ammunition_container_props
+    @ammunition_container_props ||= begin
+      EquipmentRules.ammunition_container_props(self)
+    rescue NameError
+      nil
+    end
+  end
+
+  # `true` para recipiente de munição.
+  #
+  # Leitor TOLERANTE: aceita o recipiente DECLARADO no catálogo e também o
+  # nome. A "Aljava" existe em fichas desde antes de recipiente ser um conceito;
+  # exigir a declaração faria a munição de todas elas sair do lugar.
   def quiver?
+    return true if ammunition_container_props.present?
+
     identity = normalized_inventory_identity
     identity.include?('aljava') || identity.include?('quiver')
   end
 
+  # O que este recipiente aceita. Vazio = aceita qualquer munição (é o caso da
+  # aljava legada, que não declara nada).
+  def accepted_ammunition_indexes
+    Array(ammunition_container_props&.dig('ammunition_types'))
+  end
+
+  # Quantas peças cabem. `nil` = sem limite declarado.
+  def ammunition_capacity
+    ammunition_container_props&.dig('ammunition_capacity')
+  end
+
+  # Quanto já está guardado aqui — soma das pilhas que apontam para este id.
+  def ammunition_stored_count
+    sheet.sheet_items
+      .where("props_json ->> '#{AMMUNITION_CONTAINER_PROP}' = ?", id.to_s)
+      .sum(:quantity)
+  end
+
+  # `true` para uma pilha de munição.
+  #
+  # O CATÁLOGO manda: `kind: ammunition` cobre pedra de funda e agulha de
+  # zarabatana, que a regex por nome não conhecia — elas existiam no catálogo
+  # como munição e mesmo assim não podiam entrar num recipiente. O nome
+  # continua valendo para item solto, sem catálogo por trás.
   def ammunition?
+    return true if item&.kind.to_s == 'ammunition'
+
     identity = normalized_inventory_identity
     identity.match?(/(?:^|[- ])(flecha|flechas|arrow|arrows|virote|virotes|bolt|bolts)(?:$|[- ])/)
   end

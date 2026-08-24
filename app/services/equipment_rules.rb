@@ -400,6 +400,39 @@ class EquipmentRules
       }.compact
     end
 
+    # Props de RECIPIENTE de munição, do catálogo.
+    #
+    # PHB cap. 5: "sacar a munição de uma aljava, BOLSA, OU OUTRO RECIPIENTE faz
+    # parte do ataque". A aljava guarda até 20 flechas; o porta-virotes, até 20
+    # virotes.
+    #
+    # O vocabulário já EXISTIA e ninguém lia: a aljava do catálogo declara
+    # `equipment_slot: quiver` e `ammunition_types: [flecha, virote]` desde
+    # sempre. Inventar chaves novas aqui criaria uma segunda grafia para a mesma
+    # coisa — o defeito que já custou caro neste projeto. `ammunition_capacity`
+    # é a única chave nova, porque capacidade não era declarada em lado nenhum.
+    #
+    # `ammunition_types` é LISTA porque uma bolsa guarda pedra de funda E agulha
+    # de zarabatana — no PHB elas dividem o mesmo recipiente.
+    def ammunition_container_props(item)
+      return nil unless item
+
+      db_item = item.respond_to?(:item) ? item.item : nil
+      already_resolved = item.respond_to?(:item_id) && item.item_id.present?
+      if !db_item && !already_resolved && defined?(Item)
+        db_item = Item.find_by(api_index: normalize_index(item))
+      end
+      return nil unless db_item
+
+      props = db_item.props || {}
+      return nil unless props['equipment_slot'].to_s == 'quiver'
+
+      {
+        'ammunition_types' => Array(props['ammunition_types']).map(&:to_s).reject(&:blank?),
+        'ammunition_capacity' => props['ammunition_capacity'].presence&.to_i,
+      }.compact
+    end
+
     def weapon_props(item)
       return nil unless item
       key = normalize_index(item)
