@@ -65,8 +65,10 @@ namespace :dnd do
     # --- Outras ---
     ['Ferramentas de ladrão',         'ferramentas-de-ladrao',         'other',      25,  0.5],
     ['Ferramentas de navegação',      'ferramentas-de-navegacao',      'other',      25,  1.0],
-    ['Veículos (terrestres)',         'veiculos-terrestres',           'other',       0,  0.0],
-    ['Veículos (aquáticos)',          'veiculos-aquaticos',            'other',       0,  0.0],
+    # NAO semear "Veiculos (terrestres/aquaticos)": sao MARCADORES DE
+    # PROFICIENCIA, nao itens que se compra ou carrega. O vocabulario deles vive
+    # em `config/backgrounds_phb.yml` e em `toolsCatalog.ts`; no catalogo de
+    # itens so poluiam a aba de ferramentas. Ver `dnd:remove_proficiency_markers`.
   ].freeze
 
   desc 'Semeia as ferramentas/instrumentos/kits do PHB que faltam no catalogo (DRY_RUN=1 so relata)'
