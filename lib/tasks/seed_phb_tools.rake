@@ -28,6 +28,12 @@ namespace :dnd do
     ['Lira',                          'lira',                          'instrument', 30,  1.0],
     ['Tambor',                        'tambor',                        'instrument',  6,  1.5],
     ['Viola',                         'viola',                         'instrument', 30,  0.5],
+    # Fora do PHB, mas EM USO nas fichas (Violino 9x, Trompa 4x). Precisam estar
+    # aqui para o reparo de `kind`/`category` alcanca-los: o violino ficou como
+    # `kind: armor` e o instrumento aparecia equipavel como armadura na bolsa.
+    ['Saltério',                      'salterio',                      'instrument', 30,  1.5],
+    ['Trompa',                        'trompa',                        'instrument',  3,  1.0],
+    ['Violino',                       'violino',                       'instrument', 30,  0.5],
     # --- Ferramentas de artesao ---
     ['Ferramentas de ferreiro',       'ferramentas-de-ferreiro',       'artisan',    20,  4.0],
     ['Suprimentos de cervejeiro',     'suprimentos-de-cervejeiro',     'artisan',    20,  4.5],
