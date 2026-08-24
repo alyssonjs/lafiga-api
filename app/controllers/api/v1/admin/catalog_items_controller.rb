@@ -7,7 +7,9 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
   # Kinds que este CRUD gerencia. Fora desta lista o item não é editável aqui
   # (itens mágicos têm controller próprio). `gear` cobre tanto o vestuário
   # mundano (peça em `category`) quanto o equipamento de aventura.
-  CATALOG_KINDS = %w[weapon armor shield gear tool consumable ammunition].freeze
+  # `book` entrou com a aba Livros e Tomos: os 11 livros do catalogo existiam e
+  # NENHUM balde os servia, entao tambem nao dava para editar nem apagar.
+  CATALOG_KINDS = %w[weapon armor shield gear tool consumable ammunition book].freeze
 
   before_action :authorize_site_wide_dm
   before_action :set_catalog_item, only: %i[show update destroy]

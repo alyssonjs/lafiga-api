@@ -9,6 +9,9 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # Pocao mundana: `kind: consumable` + esta categoria. Sem ela, pocao, cantil e
   # tocha ficavam no mesmo balde e a aba Pocoes so via item magico.
   POTION_CATEGORY = 'potion'
+  # Livro/tomo mundano. `kind: book` (a maioria) ou `gear` + esta categoria (o
+  # Grimorio, que veio do seed do PHB).
+  BOOK_CATEGORY = 'book'
 
   # GET /api/v1/public/starting_equipment
   # Params: class_id (required), background_id (optional)
@@ -144,7 +147,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
     # categoria, entao sem esta linha o instrumento sumiria do modal da bolsa.
     categories = %w[
       simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
-      gear packs tools instruments vehicles consumables potions ammunition
+      gear packs tools instruments vehicles consumables potions books ammunition
     ]
     by_category = {}
     categories.each do |cat|
@@ -186,7 +189,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
       # "Itens Gerais" mostra hoje). O instrumento tem categoria preenchida,
       # entao entra na exclusao sem depender disso.
       Item.where(kind: 'gear')
-          .where.not(category: ['pack', INSTRUMENT_CATEGORY, *VEHICLE_CATEGORIES])
+          .where.not(category: ['pack', INSTRUMENT_CATEGORY, BOOK_CATEGORY, *VEHICLE_CATEGORIES])
           .order(:api_index).to_a
     when :packs
       Item.where(kind: 'gear', category: 'pack').order(:api_index).to_a
@@ -218,6 +221,13 @@ class Api::V1::Public::EquipmentController < ApplicationController
       # Pocao MUNDANA. A magica vive em `MagicItem` com `category: potion` e a
       # aba mostra as duas juntas.
       Item.where(kind: 'consumable', category: POTION_CATEGORY).order(:api_index).to_a
+    when :books
+      # Livro e tomo MUNDANOS. O `kind: book` existia no catalogo e NENHUM balde
+      # o servia — 11 livros nao apareciam em aba nenhuma. O Grimorio e
+      # `kind: gear` + `category: book`, entao entra pelos dois caminhos.
+      Item.where(kind: 'book')
+          .or(Item.where(kind: 'gear', category: BOOK_CATEGORY))
+          .order(:api_index).to_a
     else
       []
     end
@@ -235,6 +245,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
     return :shields         if %w[shields escudos shield].include?(s)
     return :ammunition      if %w[ammunition municoes].include?(s)
     return :potions         if %w[potions pocoes].include?(s)
+    return :books           if %w[books livros tomos].include?(s)
     return :gear            if %w[adventuring-gear gear equipamentos utilidades equipment-gear].include?(s)
     return :packs           if %w[equipment-packs packs mochilas].include?(s)
     return :instruments     if %w[instruments instrumentos musical-instruments].include?(s)
