@@ -45,6 +45,7 @@ module Sheets
           last_short_rest_at: @now
         )
         runtime.save!
+        Sheets::Runtime::ItemUses.restore_all!(@sheet, kind: :short)
         restore_short_rest_innate_spells!
         runtime
       end

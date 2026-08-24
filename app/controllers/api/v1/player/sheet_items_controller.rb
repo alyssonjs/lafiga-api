@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split, :spend_use]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -95,6 +95,20 @@ class Api::V1::Player::SheetItemsController < ApplicationController
 
     broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/spend_use  { amount? }
+  #
+  # Gasta um uso do kit (ou uma carga do item magico). O limite e do SERVIDOR:
+  # duas abas abertas gastariam o mesmo ultimo uso se so o cliente contasse.
+  def spend_use
+    SheetItems::SpendUseService.new(item: @item, amount: params[:amount] || 1).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
+  rescue SheetItems::SpendUseService::InvalidUse => e
+    render json: { error: e.message }, status: :unprocessable_entity
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end

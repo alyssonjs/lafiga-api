@@ -3,7 +3,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
   # literal e dava 401 em prod para contas "Mestre" da plataforma.
   before_action :authorize_site_wide_dm
-  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split]
+  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split, :spend_use]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID
   def index
@@ -117,6 +117,15 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
 
   # POST /api/v1/admin/sheet_items/:id/stow_on_mount
   # O mestre tambem guarda/tira carga da montaria do jogador.
+  # POST /api/v1/admin/sheet_items/:id/spend_use — mestre gasta pelo jogador.
+  def spend_use
+    SheetItems::SpendUseService.new(item: @item, amount: params[:amount] || 1).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
+  rescue SheetItems::SpendUseService::InvalidUse => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
   def stow_on_mount
     items = SheetItems::StowOnMountService.new(
       item: @item,

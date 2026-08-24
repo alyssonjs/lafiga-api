@@ -166,9 +166,47 @@ class SheetItem < ApplicationRecord
       # Recipiente de munição: o que aceita e quanto cabe. Do CATÁLOGO — sem
       # isto o front não sabe desenhar "12 / 20" nem qual munição oferecer.
       ammunition_container_props: ammunition_container_props,
+      # Usos: quanto cabe (catálogo) e quanto resta (instância).
+      uses_props: uses_props,
+      uses_remaining: uses_remaining,
       notes: notes,
       position: position,
     }
+  end
+
+  # Usos declarados no CATÁLOGO (quantos cabem, e quando voltam).
+  # Memoiza com `defined?`, não com `||=`: a resposta normal é NIL (a esmagadora
+  # maioria dos itens não tem usos) e `||=` nunca guarda nil — cada chamada
+  # refazia o `Item.find_by` do EquipmentRules. `as_inventory_json` chama três
+  # vezes por linha, então na bolsa isso era N+1 puro.
+  def uses_props
+    return @uses_props if defined?(@uses_props)
+
+    @uses_props = begin
+      EquipmentRules.uses_props(self)
+    rescue NameError
+      nil
+    end
+  end
+
+  def uses_max
+    uses_props&.dig('uses_max')
+  end
+
+  def uses_recharge
+    uses_props&.dig('uses_recharge')
+  end
+
+  # Quantos usos restam NESTA instância.
+  #
+  # Ausente = cheio. Um kit recém-comprado não precisa de gravação nenhuma para
+  # estar cheio — só o gasto escreve.
+  def uses_remaining
+    max = uses_max
+    return nil unless max
+
+    bruto = (props_json || {})['uses_remaining']
+    bruto.nil? ? max : bruto.to_i.clamp(0, max)
   end
 
   # Props do recipiente, vindas do CATÁLOGO (a instância não as tem).

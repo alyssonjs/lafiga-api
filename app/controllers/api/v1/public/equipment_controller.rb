@@ -9,6 +9,18 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # Pocao mundana: `kind: consumable` + esta categoria. Sem ela, pocao, cantil e
   # tocha ficavam no mesmo balde e a aba Pocoes so via item magico.
   POTION_CATEGORY = 'potion'
+  # Vocabulario de sub-tipo de consumivel. A aba Consumiveis serve TODOS os
+  # `kind: consumable` e sub-categoriza por estes valores no front; `nil` cai em
+  # "Outros". Poção continua com balde proprio (`:potions`) porque o "+ Novo
+  # Item" da bolsa o consome separadamente.
+  POISON_CATEGORY = 'poison'
+  SUPPLY_CATEGORY = 'supply'
+  ALCHEMICAL_CATEGORY = 'alchemical'
+  # Pergaminho de magia: `kind: consumable` + esta categoria. Tinha aba propria
+  # que vivia VAZIA (zero MagicItem `category: scroll`, zero `Item kind: scroll`)
+  # enquanto os pergaminhos do mestre estavam como `gear` sem categoria. Gasta-se
+  # ao conjurar, entao e consumivel — a magia vinculada vive em `props.spell_name`.
+  SCROLL_CATEGORY = 'scroll'
   # Livro/tomo mundano. `kind: book` (a maioria) ou `gear` + esta categoria (o
   # Grimorio, que veio do seed do PHB).
   BOOK_CATEGORY = 'book'
@@ -212,11 +224,10 @@ class Api::V1::Public::EquipmentController < ApplicationController
     when :vehicles
       Item.where(category: VEHICLE_CATEGORIES).order(:category, :api_index).to_a
     when :consumables
-      # `IS DISTINCT FROM` e obrigatorio: `where.not` derrubaria os 12 consumiveis
-      # com `category: nil` — cantil, tocha, racao, velas — e a aba ficaria vazia.
-      Item.where(kind: 'consumable')
-          .where("category IS DISTINCT FROM ?", POTION_CATEGORY)
-          .order(:api_index).to_a
+      # Serve TODOS os consumiveis, poção INCLUSIVE: a aba deixou de ser
+      # "Poções" e passou a ser "Consumiveis", com a poção como sub-tipo. Antes
+      # daqui a poção estava numa aba e cantil/tocha noutra.
+      Item.where(kind: 'consumable').order(:api_index).to_a
     when :potions
       # Pocao MUNDANA. A magica vive em `MagicItem` com `category: potion` e a
       # aba mostra as duas juntas.
@@ -276,7 +287,10 @@ class Api::V1::Public::EquipmentController < ApplicationController
       props << 'two-handed' if wp['hands'].to_i == 2 && !props.include?('versatile')
       props.uniq!
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
-      weight_kg = (defined?(EquipmentRules) ? EquipmentRules.item_weight_kg(it) : nil) rescue nil
+      # `weight` do payload e em LB (convencao do livro, kg x 2): o compendio
+      # rotula "lb" e a bolsa grava `weight_lb` — mandar kg cru sub-contava a
+      # carga em ~2x. O banco continua canonico em kg.
+      weight_lb = (defined?(EquipmentRules) ? EquipmentRules.item_weight_lb(it) : nil) rescue nil
       return {
         index: it.api_index,
         name: it.name,
@@ -288,7 +302,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
         range: wp['range'] ? { normal: wp['range'].to_s.split('/').first.to_i, long: wp['range'].to_s.split('/').last.to_i } : nil,
         properties: props.map { |p| { index: p, name: weapon_property_name(p), url: "/api/v1/public/weapon_properties/#{p}" } },
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
-        weight: weight_kg,
+        weight: weight_lb,
         chibi_weapon_svg_id: wp['chibi_weapon_svg_id'],
         card_icon_id: wp['card_icon_id'],
         url: "/api/v1/public/equipment/#{it.api_index}"
@@ -297,7 +311,10 @@ class Api::V1::Public::EquipmentController < ApplicationController
       ap = it.props || {}
       ac = { base: ap['ac_base'], dex_bonus: !ap['dex_cap'].to_i.zero?, max_bonus: ap['dex_cap'] }
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
-      weight_kg = (defined?(EquipmentRules) ? EquipmentRules.item_weight_kg(it) : nil) rescue nil
+      # `weight` do payload e em LB (convencao do livro, kg x 2): o compendio
+      # rotula "lb" e a bolsa grava `weight_lb` — mandar kg cru sub-contava a
+      # carga em ~2x. O banco continua canonico em kg.
+      weight_lb = (defined?(EquipmentRules) ? EquipmentRules.item_weight_lb(it) : nil) rescue nil
       return {
         index: it.api_index,
         name: it.name,
@@ -307,13 +324,19 @@ class Api::V1::Public::EquipmentController < ApplicationController
         str_minimum: ap['str_req'],
         stealth_disadvantage: !!ap['stealth_dis'],
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
-        weight: weight_kg,
+        weight: weight_lb,
+        # Icone escolhido no editor. Sem serializar, o mestre escolhe e a
+        # listagem nunca ve — mesma lacuna ja consertada em gear/tool.
+        card_icon_id: ap['card_icon_id'].presence,
         url: "/api/v1/public/equipment/#{it.api_index}"
       }.compact
     when 'shield'
       sp = it.props || {}
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
-      weight_kg = (defined?(EquipmentRules) ? EquipmentRules.item_weight_kg(it) : nil) rescue nil
+      # `weight` do payload e em LB (convencao do livro, kg x 2): o compendio
+      # rotula "lb" e a bolsa grava `weight_lb` — mandar kg cru sub-contava a
+      # carga em ~2x. O banco continua canonico em kg.
+      weight_lb = (defined?(EquipmentRules) ? EquipmentRules.item_weight_lb(it) : nil) rescue nil
       return {
         index: it.api_index,
         name: it.name,
@@ -323,12 +346,16 @@ class Api::V1::Public::EquipmentController < ApplicationController
         armor_class: { base: sp['ac_base'].presence || 2, dex_bonus: false },
         stealth_disadvantage: false,
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
-        weight: weight_kg,
+        weight: weight_lb,
+        card_icon_id: sp['card_icon_id'].presence,
         url: "/api/v1/public/equipment/#{it.api_index}"
       }
     when 'gear', 'pack', 'tool', 'consumable', 'book', 'magic_item', 'ammunition'
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
-      weight_kg = (defined?(EquipmentRules) ? EquipmentRules.item_weight_kg(it) : nil) rescue nil
+      # `weight` do payload e em LB (convencao do livro, kg x 2): o compendio
+      # rotula "lb" e a bolsa grava `weight_lb` — mandar kg cru sub-contava a
+      # carga em ~2x. O banco continua canonico em kg.
+      weight_lb = (defined?(EquipmentRules) ? EquipmentRules.item_weight_lb(it) : nil) rescue nil
       props = it.props || {}
       # A categoria vence o kind aqui: instrumento existe como `tool` (novo) e
       # como `gear` (legado), e nos dois casos o rotulo tem que dizer o mesmo —
@@ -372,6 +399,10 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # nunca os ve — o card cai no generico.
         card_icon_id: props['card_icon_id'].presence,
         chibi_weapon_svg_id: props['chibi_weapon_svg_id'].presence,
+        # Magia do pergaminho. Guardada por NOME (nao por id): id da API e
+        # numerico e nao sobrevive a um re-seed do catalogo de magias; o nome e
+        # o que o resto da base ja usa (ex.: `sub_klasses.terrain_spells`).
+        spell_name: props['spell_name'].presence,
         stackable: props.key?('stackable') ? !!props['stackable'] : nil,
         # Transporte: o PHB dá velocidade em km/h no veiculo aquatico, e o custo
         # da armadura de montaria e um MULTIPLICADOR (x4), nao valor fixo —
@@ -385,7 +416,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
         cost_multiplier: props['cost_multiplier'].presence,
         service: props['service'] == true ? true : nil,
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
-        weight: weight_kg,
+        weight: weight_lb,
         description: it.description,
         contents: props['contents'] || props[:contents],
         url: "/api/v1/public/equipment/#{it.api_index}"

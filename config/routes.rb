@@ -75,6 +75,7 @@ Rails.application.routes.draw do
             post :unattune
             post :allocate_ammunition
             post :stow_on_mount
+            post :spend_use
             post :merge
             post :split
           end
@@ -284,6 +285,7 @@ Rails.application.routes.draw do
             post :unattune
             post :allocate_ammunition
             post :stow_on_mount
+            post :spend_use
             post :merge
             post :split
           end

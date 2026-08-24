@@ -134,6 +134,18 @@ class EquipmentRules
       parts.join(' ')
     end
 
+    # Convencao do PHB pt-BR: a traducao converteu 1 lb = 0,5 kg (espada longa
+    # 3 lb = 1,5 kg; acido 1 lb = 0,5 kg; mochila 5 lb = 2,5 kg). O fator NAO e
+    # o fisico 2.20462: com ele os numeros do livro nunca batem (1,5 kg viraria
+    # 3,31 lb). A economia de regras do jogo (capacidade de carga, carroca) e em
+    # lb — esta e a UNICA fronteira onde kg vira lb.
+    LB_PER_KG = 2.0
+
+    def item_weight_lb(item)
+      kg = item_weight_kg(item)
+      kg.nil? ? nil : (kg.to_f * LB_PER_KG).round(2)
+    end
+
     def item_weight_kg(item)
       # Preferir coluna do banco quando existir
       if item.respond_to?(:weight_kg) && !item.weight_kg.nil?
@@ -430,6 +442,36 @@ class EquipmentRules
       {
         'ammunition_types' => Array(props['ammunition_types']).map(&:to_s).reject(&:blank?),
         'ammunition_capacity' => props['ammunition_capacity'].presence&.to_i,
+      }.compact
+    end
+
+    # Usos de um item consumivel-por-uso, do catalogo.
+    #
+    # PHB cap. 5, Kit de Primeiros Socorros: "material suficiente para DEZ USOS.
+    # Usando uma acao, voce pode gastar um uso do kit para estabilizar uma
+    # criatura que tenha 0 pontos de vida". Kit de herbalismo, de envenenador e
+    # afins seguem a mesma forma quando a mesa quiser limitar.
+    #
+    # `uses_recharge` usa os MESMOS tokens do item magico (`long`/`short`), que
+    # sao os do ResourceCatalog — um uso de kit e uma carga de varinha sao a
+    # mesma mecanica: um contador que gasta e volta no descanso.
+    def uses_props(item)
+      return nil unless item
+
+      db_item = item.respond_to?(:item) ? item.item : nil
+      already_resolved = item.respond_to?(:item_id) && item.item_id.present?
+      if !db_item && !already_resolved && defined?(Item)
+        db_item = Item.find_by(api_index: normalize_index(item))
+      end
+      return nil unless db_item
+
+      props = db_item.props || {}
+      max = props['uses_max'].presence&.to_i
+      return nil unless max&.positive?
+
+      {
+        'uses_max' => max,
+        'uses_recharge' => MagicItemCatalog.normalize_recharge(props['uses_recharge']),
       }.compact
     end
 

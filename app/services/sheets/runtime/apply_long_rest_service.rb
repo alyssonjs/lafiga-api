@@ -45,7 +45,14 @@ module Sheets
         )
         runtime.save!
         restore_innate_spell_uses!
+        restore_item_uses!
         runtime
+      end
+
+      # Usos de KIT e cargas de item magico. Descanso longo devolve tudo que tem
+      # token de recarga — regra D&D: o que volta no curto tambem volta no longo.
+      def restore_item_uses!
+        Sheets::Runtime::ItemUses.restore_all!(@sheet, kind: :long)
       end
 
       # Magias INATAS (racial/talento) tem orcamento proprio em

@@ -58,10 +58,18 @@ module GroupCarts
     Array(sheet.companions).find { |c| c.is_a?(Hash) && c['id'].to_s == ref['companion_id'].to_s }
   end
 
-  # Peso unitário, em libras. Vive em `props_json['weight_lb']` — apesar do
-  # nome, o catálogo guarda libras (ver `equipmentMappers.ts`).
+  # Peso unitário, em libras. Preferência: `props_json['weight_lb']` gravado na
+  # instância; sem ele, cai no peso do CATÁLOGO (kg x 2, convenção do livro).
+  # Antes o fallback não existia e item guardado sem prop pesava 0 na carroça —
+  # carga de graça. (O comentário antigo dizia que o catálogo guardava libras;
+  # era falso: `items.weight_kg` guarda kg do PHB pt-BR.)
   def item_weight_lb(sheet_item)
-    (sheet_item.props_json || {})['weight_lb'].to_f
+    bruto = (sheet_item.props_json || {})['weight_lb']
+    return bruto.to_f unless bruto.nil?
+
+    EquipmentRules.item_weight_lb(sheet_item).to_f
+  rescue NameError
+    0.0
   end
 
   # Todos os `sheet_items` desta carroça, de TODAS as fichas do grupo.
