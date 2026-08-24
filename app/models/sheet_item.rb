@@ -12,7 +12,11 @@ class SheetItem < ApplicationRecord
     ring_left ring_right amulet cloak boots helmet gloves belt
     circlet earrings bracelet_left bracelet_right
   ].freeze
-  UTILITY_SLOTS   = %w[quiver].freeze
+  # Slots de utilidade — nao existem no PHB, sao HOUSERULE desta mesa.
+  # `quiver` guarda municao; `instrument` da lugar ao instrumento musical, que
+  # nas regras e FERRAMENTA (PHB cap. 5) e nao tem casa nenhuma. A mesa quis um
+  # lugar para ele; para o bardo, e o instrumento que serve de foco de conjuracao.
+  UTILITY_SLOTS   = %w[quiver instrument].freeze
   ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS + UTILITY_SLOTS).freeze
 
   validates :sheet_id, presence: true
