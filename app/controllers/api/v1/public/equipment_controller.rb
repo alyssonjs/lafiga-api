@@ -6,6 +6,9 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # `pack` e do `instrument` — vivem como `kind: gear` com categoria propria, o
   # que reusa o serializador de gear sem tocar no enum de `kind`.
   VEHICLE_CATEGORIES = %w[vehicle_land vehicle_water tack].freeze
+  # Pocao mundana: `kind: consumable` + esta categoria. Sem ela, pocao, cantil e
+  # tocha ficavam no mesmo balde e a aba Pocoes so via item magico.
+  POTION_CATEGORY = 'potion'
 
   # GET /api/v1/public/starting_equipment
   # Params: class_id (required), background_id (optional)
@@ -141,7 +144,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
     # categoria, entao sem esta linha o instrumento sumiria do modal da bolsa.
     categories = %w[
       simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
-      gear packs tools instruments vehicles consumables ammunition
+      gear packs tools instruments vehicles consumables potions ammunition
     ]
     by_category = {}
     categories.each do |cat|
@@ -206,7 +209,15 @@ class Api::V1::Public::EquipmentController < ApplicationController
     when :vehicles
       Item.where(category: VEHICLE_CATEGORIES).order(:category, :api_index).to_a
     when :consumables
-      Item.where(kind: 'consumable').order(:api_index).to_a
+      # `IS DISTINCT FROM` e obrigatorio: `where.not` derrubaria os 12 consumiveis
+      # com `category: nil` — cantil, tocha, racao, velas — e a aba ficaria vazia.
+      Item.where(kind: 'consumable')
+          .where("category IS DISTINCT FROM ?", POTION_CATEGORY)
+          .order(:api_index).to_a
+    when :potions
+      # Pocao MUNDANA. A magica vive em `MagicItem` com `category: potion` e a
+      # aba mostra as duas juntas.
+      Item.where(kind: 'consumable', category: POTION_CATEGORY).order(:api_index).to_a
     else
       []
     end
@@ -223,6 +234,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
     return :armor_all       if %w[armor armaduras].include?(s)
     return :shields         if %w[shields escudos shield].include?(s)
     return :ammunition      if %w[ammunition municoes].include?(s)
+    return :potions         if %w[potions pocoes].include?(s)
     return :gear            if %w[adventuring-gear gear equipamentos utilidades equipment-gear].include?(s)
     return :packs           if %w[equipment-packs packs mochilas].include?(s)
     return :instruments     if %w[instruments instrumentos musical-instruments].include?(s)
