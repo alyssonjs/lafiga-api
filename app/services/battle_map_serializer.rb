@@ -40,6 +40,8 @@ class BattleMapSerializer
       cellWorldFt: map.cell_world_ft.to_f,
       fogMode: map.fog_mode.presence || 'hidden_cells',
       mapKind: map.map_kind.presence || 'battle',
+      publicListed: map.try(:public_listed) || false,
+      publicMain: map.try(:public_main) || false,
       createdAt: map.created_at&.iso8601,
       updatedAt: map.updated_at&.iso8601,
       # Miniatura LEVE do fundo (data URI webp ~400px, gerada client-side no upload).
@@ -72,6 +74,8 @@ class BattleMapSerializer
       backgroundImagePixelHeight: map.background_image_pixel_height,
       # Fase 2.0 — camadas do Map Builder (só no :full; listagem :slim não
       # carrega para não inflar o GET de listas).
+      # Regiões do tabuleiro (Fase 1) — SEM as notas do mestre. Ver `regions_public`.
+      regions: regions_public(map),
       layers: map.layers || [],
       terrainLayers: map.terrain_layers || [],
       stamps: map.stamps || [],
@@ -83,6 +87,31 @@ class BattleMapSerializer
 
   def self.serialize_collection(maps, mode: :slim)
     maps.map { |m| serialize(m, mode: mode) }
+  end
+
+  # Chaves de nota SECRETA do mestre. Aceita as duas grafias porque o front
+  # escreve camelCase dentro do jsonb (como faz nos tokens) e um import legado
+  # pode ter gravado snake_case.
+  REGION_DM_KEYS = %w[dmNotes dm_notes].freeze
+
+  # Regiões prontas para QUALQUER audiência.
+  #
+  # O corte de `dmNotes` é INCONDICIONAL — não existe parâmetro para incluir, de
+  # propósito. Este serializer é o funil único do payload do mapa, e o payload
+  # alimenta o broadcast estrutural, que hoje manda o MESMO conteúdo para a mesa
+  # inteira. Um sinalizador `for_dm:` daria a alguém a chance de o passar errado
+  # uma vez; sem sinalizador, o vazamento é impossível.
+  #
+  # O mestre lê as próprias notas em GET /battle_maps/:id/regions, que é
+  # autorizado por `writable_by?` e nunca é transmitido.
+  def self.regions_public(map)
+    list = map.regions
+    return [] unless list.is_a?(Array)
+
+    list.filter_map do |region|
+      next unless region.is_a?(Hash)
+      region.reject { |k, _| REGION_DM_KEYS.include?(k.to_s) }
+    end
   end
 
   # Tabuleiro (cenário do mapa) + criaturas da mesa. Sem camada, o mapa

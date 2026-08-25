@@ -178,6 +178,10 @@ class BattleMap < ApplicationRecord
 
   def readable_by?(user)
     return false if user.nil?
+    # Mapa na página PÚBLICA: qualquer jogador autenticado lê. É o que faz o
+    # mapa-múndi funcionar sem vínculo de grupo/sessão — e o payload já sai sem
+    # as notas do mestre (o serializer corta sempre).
+    return true if public_listed? || public_main?
     return true if Group.user_is_dm?(user)
     return true if user_id == user.id
     return true if group_id.present? && group&.member?(user)
@@ -206,6 +210,10 @@ class BattleMap < ApplicationRecord
     copy.terrain_layers = deep_dup_nested_arrays(source.terrain_layers)
     copy.stamps = deep_dup_nested_arrays(source.stamps)
     copy.paths = deep_dup_nested_arrays(source.paths)
+    # Regiões acompanham o TABULEIRO — vila e masmorra são cenário, não encontro.
+    # Vêm mesmo com `include_tokens: false` (importar mapa numa sessão), e vão
+    # deep-dupadas pela mesma razão de cells/layers: `dup` partilharia o array.
+    copy.regions = deep_dup_nested_arrays(source.regions)
     copy.map_effects = source.map_effects.respond_to?(:deep_dup) ? source.map_effects.deep_dup : source.map_effects
     copy.dropped_projectiles = include_tokens ? deep_dup_nested_arrays(source.dropped_projectiles) : []
     copy.save!
@@ -214,6 +222,37 @@ class BattleMap < ApplicationRecord
     # blob → N attachments → sem duplicar bytes no storage).
     copy.background_image.attach(source.background_image.blob) if source.background_image.attached?
     copy
+  end
+
+  # Funde as regiões que chegam do cliente com as que já estão gravadas,
+  # PRESERVANDO a nota do mestre.
+  #
+  # Existe porque o payload do mapa sai daqui sem `dmNotes` (o serializer corta
+  # sempre). O cliente, então, nunca tem a nota em mãos — e reenviar as regiões a
+  # partir da sua cópia apagaria o que o mestre escreveu. Sem esta fusão, editar
+  # o NOME de uma região destruiria a nota secreta dela.
+  #
+  # Contrato: chave `dmNotes` AUSENTE = mantém a que está gravada; chave presente
+  # (mesmo com `null`) = o cliente está a escrever, e vale o que ele mandou.
+  def self.merge_incoming_regions(incoming, existing)
+    return [] unless incoming.is_a?(Array)
+
+    notas = {}
+    Array(existing).each do |r|
+      next unless r.is_a?(Hash)
+      id = r['id'] || r[:id]
+      nota = r['dmNotes'] || r[:dmNotes] || r['dm_notes']
+      notas[id.to_s] = nota if id.present? && !nota.nil?
+    end
+
+    incoming.filter_map do |raw|
+      next unless raw.is_a?(Hash)
+      r = raw.transform_keys(&:to_s)
+      escreveu_nota = r.key?('dmNotes') || r.key?('dm_notes')
+      nota = escreveu_nota ? (r['dmNotes'] || r['dm_notes']) : notas[r['id'].to_s]
+      r = r.except('dm_notes')
+      nota.nil? ? r.except('dmNotes') : r.merge('dmNotes' => nota)
+    end
   end
 
   def self.deep_dup_nested_arrays(arr)

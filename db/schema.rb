@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_25_002241) do
+ActiveRecord::Schema.define(version: 2026_08_25_200000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -98,8 +98,12 @@ ActiveRecord::Schema.define(version: 2026_08_25_002241) do
     t.jsonb "dropped_projectiles", default: [], null: false
     t.text "background_thumbnail"
     t.float "grid_lines_opacity", default: 1.0
+    t.jsonb "regions", default: [], null: false
+    t.boolean "public_listed", default: false, null: false
+    t.boolean "public_main", default: false, null: false
     t.index ["group_id", "updated_at"], name: "index_battle_maps_on_group_id_and_updated_at"
     t.index ["group_id"], name: "index_battle_maps_on_group_id"
+    t.index ["public_listed"], name: "index_battle_maps_on_public_listed", where: "public_listed"
     t.index ["user_id", "updated_at"], name: "index_battle_maps_on_user_id_and_updated_at"
     t.index ["user_id"], name: "index_battle_maps_on_user_id"
   end

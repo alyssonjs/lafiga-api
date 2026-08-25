@@ -4,7 +4,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # possível. A autorização é pelo `sig` (signed_id do blob) presente na URL que só
   # o viewer autorizado recebeu no payload :full. Ver #background / #valid_background_sig?.
   skip_before_action :authorize_request, only: :background, raise: false
-  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile]
+  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions]
 
   # Teto p/ a miniatura inline (webp ~400px). Protege o payload :slim da lista de
   # inflar caso alguém mande algo grande demais como "thumbnail".
@@ -29,6 +29,35 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     render json: {
       battle_map: BattleMapSerializer.serialize(@map, mode: :full, session_layer: session_layer_param),
     }, status: 200
+  end
+
+  # GET /api/v1/player/battle_maps/public
+  #
+  # A vitrine da página pública: os mapas que o mestre marcou como visíveis,
+  # com o principal identificado. Slim de propósito — abrir um mapa busca o
+  # payload cheio pelo GET /:id, que agora aceita qualquer jogador para mapas
+  # listados (ver `readable_by?`).
+  def public_index
+    maps = BattleMap.where(public_listed: true).or(BattleMap.where(public_main: true))
+                    .order(Arel.sql('public_main DESC, name ASC'))
+    render json: {
+      battle_maps: BattleMapSerializer.serialize_collection(maps, mode: :slim),
+      main_id: maps.find(&:public_main?)&.id,
+    }, status: 200
+  end
+
+  # GET /api/v1/player/battle_maps/:id/regions
+  #
+  # As regiões COM `dmNotes` — o único lugar onde a nota secreta sai do servidor.
+  # Só para quem pode escrever no mapa (`writable_by?`: dono ou mestre), e nunca
+  # transmitido: o broadcast usa o `BattleMapSerializer`, que corta o campo.
+  #
+  # Existe porque o payload normal do mapa não traz a nota; sem esta leitura o
+  # mestre não teria como ver nem reescrever o que ele próprio guardou.
+  def regions
+    return forbidden unless @map.writable_by?(@current_user)
+
+    render json: { regions: (@map.regions.is_a?(Array) ? @map.regions : []) }, status: 200
   end
 
   # GET /api/v1/player/battle_maps/:id/background?sig=<blob signed_id>
@@ -189,6 +218,13 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     end
 
     if ok
+      # UM único mapa principal: definir este desliga os outros. A invariante
+      # vive aqui (e não num unique index) para a troca ser um gesto só — o
+      # index recusaria o segundo `true` em vez de resolver a transição.
+      if @map.saved_change_to_public_main? && @map.public_main?
+        BattleMap.where.not(id: @map.id).where(public_main: true)
+                 .update_all(public_main: false)
+      end
       apply_background!(@map)
       broadcast_update_diffs
       # Resposta SLIM: o front (flushPatch) DESCARTA o corpo — a verdade chega via
@@ -473,7 +509,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       :background_image_offset_x, :background_image_offset_y,
       :background_image_pixel_width, :background_image_pixel_height,
       :grid_opacity, :grid_lines_opacity, :schema_version, :distance_display_unit, :cell_world_ft,
-      :fog_mode, :map_kind,
+      :fog_mode, :map_kind, :public_listed, :public_main,
     ).to_h
 
     # O fundo FULL NÃO é mais gravado na coluna text: quando vem um data URI, ele
@@ -498,6 +534,13 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     permitted[:stamps]         = unsafe[:stamps]         if unsafe.key?(:stamps)
     permitted[:paths]          = unsafe[:paths]          if unsafe.key?(:paths)
     permitted[:map_effects]    = unsafe[:map_effects]    if unsafe.key?(:map_effects)
+    # Regiões (Fase 1). Passa pela fusão porque o cliente NUNCA tem `dmNotes` em
+    # mãos (o serializer corta) — reenviar a sua cópia apagaria a nota do mestre.
+    if unsafe.key?(:regions)
+      permitted[:regions] = BattleMap.merge_incoming_regions(
+        unsafe[:regions], (@map&.regions || []),
+      )
+    end
     permitted
   end
 
@@ -575,7 +618,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     # Troca de fundo via Active Storage (attach) NÃO aparece em previous_changes da
     # coluna → @background_changed (setado em apply_background!) força o broadcast full.
     structural = @background_changed ||
-      (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity grid_lines_opacity group_id walls distance_display_unit cell_world_ft fog_mode layers terrain_layers stamps paths map_effects map_kind]).any?
+      (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity grid_lines_opacity group_id walls distance_display_unit cell_world_ft fog_mode layers terrain_layers stamps paths map_effects map_kind regions]).any?
 
     if structural
       payload = BattleMapSerializer.serialize(@map, mode: :full)
