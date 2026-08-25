@@ -118,6 +118,35 @@ RSpec.describe 'Api::V1::Player::BattleMaps camada de sessao', type: :request do
       expect(map.reload.tokens.map { |t| t['id'] }).to contain_exactly('obj-1')
     end
 
+    it 'REGRESSAO: a RESPOSTA do move sai da CAMADA, nao do original' do
+      # O bug real de 25/08: a escrita ia para a camada e a resposta era
+      # serializada do MAPA — o front reconciliava com os tokens do original e
+      # o token "voltava sozinho" para quem o moveu (reload mostrava o certo).
+      post "/api/v1/player/battle_maps/#{map.id}/move_token",
+           params: { schedule_id: sessao_a.id, token_id: 'tk-a', x: 4, y: 4 },
+           headers: bearer_headers_for(dm), as: :json
+
+      corpo = response.parsed_body['battle_map']['tokens']
+      movido = corpo.find { |t| t['id'] == 'tk-a' }
+      expect(movido).not_to be_nil, 'o heroi da camada tem de estar na resposta'
+      expect(movido.values_at('x', 'y')).to eq([4, 4])
+      # O cenario do mapa continua vindo junto (merge, nao substituicao).
+      expect(corpo.map { |t| t['id'] }).to include('obj-1')
+    end
+
+    it 'REGRESSAO: mesmo id nos DOIS lugares — a posicao da CAMADA vence' do
+      # Cenario exato da sessao 71: camada semeada do original, entao o mesmo
+      # token existe nos dois com posicoes divergentes apos o move.
+      map.update!(tokens: [cenario, heroi_a.merge('x' => 9, 'y' => 9)])
+
+      post "/api/v1/player/battle_maps/#{map.id}/move_token",
+           params: { schedule_id: sessao_a.id, token_id: 'tk-a', x: 4, y: 4 },
+           headers: bearer_headers_for(dm), as: :json
+
+      movido = response.parsed_body['battle_map']['tokens'].find { |t| t['id'] == 'tk-a' }
+      expect(movido.values_at('x', 'y')).to eq([4, 4])
+    end
+
     it 'sem schedule_id continua gravando no mapa (Map Builder)' do
       patch "/api/v1/player/battle_maps/#{map.id}",
             params: { battle_map: { fog: fog_grid(2) } },

@@ -65,6 +65,37 @@ RSpec.describe MapBranch do
     end
   end
 
+  describe 'instrumentação — o post-mortem de 24/08 foi impossível sem isto' do
+    it 'loga a criação da camada com a ORIGEM da semente' do
+      logs = []
+      allow(Rails.logger).to receive(:info) { |m| logs << m }
+
+      described_class.ensure!(schedule: sessao('2026-08-01'), map: mapa)
+
+      linha = logs.grep(/"kind":"map_branch"/).last
+      expect(linha).to include('"event":"layer_created"')
+      expect(linha).to include('"seed_source":"original"')
+      expect(linha).to include('"seed_tokens":1')
+    end
+
+    it 'AVISA quando a camada nasce vazia num mapa que TEM criaturas' do
+      # É legal pelo design — a sessão anterior pode ter limpado o tabuleiro —
+      # mas é exatamente a anomalia da sessão 71, e merece saltar num grep.
+      s1 = sessao('2026-08-01')
+      primeira = described_class.ensure!(schedule: s1, map: mapa)
+      primeira.update!(tokens: [])
+
+      avisos = []
+      allow(Rails.logger).to receive(:warn) { |m| avisos << m }
+
+      described_class.ensure!(schedule: sessao('2026-08-08'), map: mapa)
+
+      linha = avisos.grep(/"kind":"map_branch"/).last
+      expect(linha).to include('"event":"layer_created_empty_while_map_has_creatures"')
+      expect(linha).to include(%("seed_source":"schedule_#{s1.id}"))
+    end
+  end
+
   describe 'sessão seguinte da mesma mesa' do
     it 'REGRESSAO: herda a ANTERIOR, não o original' do
       s1 = sessao('2026-08-01')

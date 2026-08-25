@@ -102,7 +102,10 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     end
 
     render json: {
-      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens),
+      # COM a camada da sessão: a escrita foi para ela, e responder os tokens do
+      # ORIGINAL fazia o front reconciliar para a posição velha — o token
+      # "voltava sozinho" para quem mexeu, e o reload mostrava o lugar certo.
+      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens, session_layer: session_layer_param),
       token_mutation: {
         additions: result.mutation[:additions],
         patches: result.mutation[:patches].map do |patch|
@@ -363,7 +366,9 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     # só `battle_map.tokens`. Antes serializava o mapa FULL (base64 + 40k cells) a
     # CADA arrasto — o 'View ~1268ms' e a transferência de MBs no caminho mais quente.
     render json: {
-      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens),
+      # Mesmo conserto do mutate: a resposta tem de sair do MESMO lugar em que
+      # se escreveu (camada quando há sessão, mapa quando não há).
+      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens, session_layer: session_layer_param),
       realtime: {
         commandId: trace[:command_id],
         clientId: trace[:client_id],

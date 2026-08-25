@@ -28,12 +28,45 @@ class MapBranch
       link = ScheduleBattleMap.find_by(schedule_id: schedule.id, battle_map_id: map.id)
       return link if link
 
-      ScheduleBattleMap.create!(
+      anterior = previous_layer(schedule: schedule, map: map)
+      seed = anterior ? FIELDS.index_with { |f| anterior.public_send(f) } : from_original(map)
+
+      criado = ScheduleBattleMap.create!(
         schedule_id: schedule.id,
         battle_map_id: map.id,
         position: (schedule.schedule_battle_maps.maximum(:position) || -1) + 1,
-        **seed_for(schedule: schedule, map: map),
+        **seed,
       )
+
+      # Instrumentar > deduzir: em 24/08 uma camada nasceu VAZIA em prod
+      # (sched 71 / mapa 51) num mapa com 5 criaturas, e o post-mortem foi
+      # impossivel — o deploy recriou o contentor e levou os logs do pedido
+      # que a criou. Esta linha é o que teria respondido em um grep.
+      Rails.logger.info({
+        kind: 'map_branch',
+        event: 'layer_created',
+        schedule_id: schedule.id,
+        battle_map_id: map.id,
+        group_id: schedule.group_id,
+        seed_source: anterior ? "schedule_#{anterior.schedule_id}" : 'original',
+        seed_tokens: Array(seed[:tokens]).size,
+        map_creature_tokens: Array(map.creature_tokens).size,
+      }.to_json)
+
+      # A anomalia exata daquela noite, nomeada: herdar/nascer vazio de um mapa
+      # que TEM criaturas é legal pelo design (a mesa pode ter limpado o
+      # tabuleiro), mas merece um aviso proprio para saltar num grep de log.
+      if Array(seed[:tokens]).empty? && Array(map.creature_tokens).any?
+        Rails.logger.warn({
+          kind: 'map_branch',
+          event: 'layer_created_empty_while_map_has_creatures',
+          schedule_id: schedule.id,
+          battle_map_id: map.id,
+          seed_source: anterior ? "schedule_#{anterior.schedule_id}" : 'original',
+        }.to_json)
+      end
+
+      criado
     rescue ActiveRecord::RecordNotUnique
       # Corrida entre dois pedidos do mestre — a primeira gravação vale.
       ScheduleBattleMap.find_by(schedule_id: schedule.id, battle_map_id: map.id)
