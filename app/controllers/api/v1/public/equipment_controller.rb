@@ -403,6 +403,15 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # numerico e nao sobrevive a um re-seed do catalogo de magias; o nome e
         # o que o resto da base ja usa (ex.: `sub_klasses.terrain_spells`).
         spell_name: props['spell_name'].presence,
+        # Usos limitados (Kit de Primeiros Socorros: 10) e o token de recarga.
+        # Sem serializar, o jogador so descobre que o kit tem dez usos DEPOIS de
+        # comprar — o dado existe no catalogo e nao chegava a lugar nenhum.
+        uses_max: props['uses_max'].presence&.to_i,
+        uses_recharge: MagicItemCatalog.normalize_recharge(props['uses_recharge']),
+        # Recipiente de municao: o que cabe e quanto. O servidor BLOQUEIA por
+        # capacidade, entao esconder isto faz o aviso chegar so depois do erro.
+        ammunition_types: props['ammunition_types'].presence,
+        ammunition_capacity: props['ammunition_capacity'].presence&.to_i,
         stackable: props.key?('stackable') ? !!props['stackable'] : nil,
         # Transporte: o PHB dá velocidade em km/h no veiculo aquatico, e o custo
         # da armadura de montaria e um MULTIPLICADOR (x4), nao valor fixo —

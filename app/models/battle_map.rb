@@ -35,12 +35,17 @@ class BattleMap < ApplicationRecord
   MAX_DROPPED_PROJECTILES = 200
   MAX_STROKES_PER_LAYER = 2000
   MIN_DIM = 5
-  # MAX_DIM = 200: limite generoso para mapas grandes (overworld, dungeons multi-andar
-  # carregadas como uma malha unica). Acima disso o backend ainda aceita mas a UI
-  # comeca a degradar (40k celulas em 200x200; rendering canvas + json paint exige
-  # virtualizacao). 50 era o limite legacy quando o canvas SVG renderizava todas as
-  # celulas em DOM — viewport-based culling agora evita o gargalo.
-  MAX_DIM = 200
+  # MAX_DIM = 1000: overworld/regiao inteira como malha unica.
+  #
+  # A escada do limite conta a historia: 50 era o teto quando o canvas SVG
+  # desenhava TODA celula em DOM; virou 200 com o viewport culling; e vai a 1000
+  # agora que as respostas de mutacao usam os shapes SLIM (sem `cells`) — sem
+  # isso, 1M de celulas na resposta de cada movimento de token derrubaria a mesa.
+  #
+  # ⚠️ O gargalo restante e a MATRIZ densa `cells` (uma string por celula):
+  # 1000x1000 = ~1M entradas, ~9 MB de JSON no load/save COMPLETO do mapa. Mapas
+  # desse tamanho so fazem sentido com fundo de imagem + poucas celulas pintadas.
+  MAX_DIM = 1000
 
   # Sessão desta instância, quando o mapa foi carregado dentro de uma mesa.
   # NÃO é coluna: serve para o broadcast saber em qual canal publicar sem

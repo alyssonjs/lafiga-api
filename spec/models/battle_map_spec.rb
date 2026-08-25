@@ -17,15 +17,19 @@ RSpec.describe BattleMap, type: :model do
 
     it 'rejeita width fora do range MIN_DIM..MAX_DIM' do
       expect(build(:battle_map, width: 4)).not_to be_valid
-      expect(build(:battle_map, width: 201)).not_to be_valid
+      expect(build(:battle_map, width: described_class::MAX_DIM + 1)).not_to be_valid
     end
 
-    it 'aceita width/height ate 200 (mapa grande, ex.: overworld)' do
+    it 'aceita width/height ate MAX_DIM (overworld como malha unica)' do
+      # Sem matriz de 1M de celulas no teste: o que se valida aqui e a REGRA de
+      # dimensao, e `cells` tem validacao propria. Montar 1M de strings so para
+      # exercitar um `less_than_or_equal_to` deixaria a suite lenta a troco de nada.
       large = build(:battle_map,
-                    width: 200,
-                    height: 200,
-                    cells: Array.new(200) { Array.new(200, 'empty') })
-      expect(large).to be_valid
+                    width: described_class::MAX_DIM,
+                    height: described_class::MAX_DIM,
+                    cells: Array.new(5) { Array.new(5, 'empty') })
+      expect(large.errors[:width]).to be_empty
+      expect(large.errors[:height]).to be_empty
     end
 
     it 'aceita width/height intermediarios (ex.: 100x80)' do

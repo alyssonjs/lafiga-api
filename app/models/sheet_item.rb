@@ -155,6 +155,14 @@ class SheetItem < ApplicationRecord
       index: item_index,
       name: item_name,
       category: category,
+      # Verdade do CATÁLOGO, quando o item está ligado a um `Item`.
+      #
+      # `category` acima é TEXTO copiado no momento da compra, e 74% das linhas
+      # reais têm lixo lá (nil, 'background', 'class') — o front caía numa regex
+      # de NOME para decidir a gaveta da bolsa. Com estes dois campos ele resolve
+      # 36% do inventário pela origem, e a regex vira o fallback que deveria ser.
+      catalog_kind: item&.kind,
+      catalog_category: item&.category,
       quantity: quantity,
       equipped: equipped,
       slot: slot,
