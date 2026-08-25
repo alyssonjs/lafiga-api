@@ -29,6 +29,9 @@ class BattleMapSerializer
       height: map.height,
       cellSizePx: map.cell_size_px,
       gridOpacity: map.grid_opacity,
+      # Opacidade das LINHAS da grade (0 = invisivel). Distinto do gridOpacity,
+      # que — apesar do nome — e o veu de TERRENO sobre a arte.
+      gridLinesOpacity: map.grid_lines_opacity,
       schemaVersion: map.schema_version,
       userId: map.user_id,
       groupId: map.group_id,

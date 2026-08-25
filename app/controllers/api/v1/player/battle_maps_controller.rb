@@ -472,7 +472,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       :background_image_url, :background_thumbnail,
       :background_image_offset_x, :background_image_offset_y,
       :background_image_pixel_width, :background_image_pixel_height,
-      :grid_opacity, :schema_version, :distance_display_unit, :cell_world_ft,
+      :grid_opacity, :grid_lines_opacity, :schema_version, :distance_display_unit, :cell_world_ft,
       :fog_mode, :map_kind,
     ).to_h
 
@@ -527,6 +527,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
         background_image_pixel_width: legacy_positive_int(h['backgroundImagePixelWidth']),
         background_image_pixel_height: legacy_positive_int(h['backgroundImagePixelHeight']),
         grid_opacity: h['gridOpacity'],
+        grid_lines_opacity: h['gridLinesOpacity'],
         schema_version: (h['schemaVersion'] || 1).to_i,
         distance_display_unit: %w[ft m].include?(h['distanceDisplayUnit'].to_s) ? h['distanceDisplayUnit'].to_s : 'm',
         cell_world_ft: normalize_legacy_cell_world_ft(h['cellWorldFt']),
@@ -574,7 +575,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     # Troca de fundo via Active Storage (attach) NÃO aparece em previous_changes da
     # coluna → @background_changed (setado em apply_background!) força o broadcast full.
     structural = @background_changed ||
-      (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity group_id walls distance_display_unit cell_world_ft fog_mode layers terrain_layers stamps paths map_effects map_kind]).any?
+      (changes.keys & %w[name width height cell_size_px background_image_url grid_opacity grid_lines_opacity group_id walls distance_display_unit cell_world_ft fog_mode layers terrain_layers stamps paths map_effects map_kind]).any?
 
     if structural
       payload = BattleMapSerializer.serialize(@map, mode: :full)
