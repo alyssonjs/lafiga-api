@@ -4,21 +4,9 @@
 #
 # `value_gp` é por UNIDADE de `unit`. Gema é peça; metal é kg (o PHB precifica
 # bens de comércio por kg/libra, não por barra).
-gem:
-  # Faixas do DMG (10/50/100/500/1000/5000 po). Uma amostra por faixa, com o
-  # valor da FAIXA — é assim que o DMG as trata: intercambiáveis dentro dela.
-  - { name: "Quartzo",        value_gp: 10,   unit: un }
-  - { name: "Obsidiana",      value_gp: 10,   unit: un }
-  - { name: "Olho de Tigre",  value_gp: 10,   unit: un }
-  - { name: "Ametista",       value_gp: 100,  unit: un }
-  - { name: "Jade",           value_gp: 100,  unit: un }
-  - { name: "Pérola",         value_gp: 100,  unit: un }
-  - { name: "Topázio",        value_gp: 500,  unit: un }
-  - { name: "Opala Negra",    value_gp: 1000, unit: un }
-  - { name: "Safira",         value_gp: 1000, unit: un }
-  - { name: "Diamante",       value_gp: 5000, unit: un }
-  - { name: "Rubi",           value_gp: 1000, unit: un }
-  - { name: "Esmeralda",      value_gp: 1000, unit: un }
+# gem: as gemas REAIS vêm de `gems_seed.json` (52, com poder e efeitos). A
+# lista genérica do DMG que vivia aqui era placeholder e foi removida pelo
+# `dnd:import_gems` — recriá-la aqui faria as duas conviverem.
 ore:
   # Bens de comércio do PHB. Cobre a 0,5 po/kg, prata a 5, ouro a 50 — a razão
   # 1:10:100 que sustenta o câmbio pc/pp/po.

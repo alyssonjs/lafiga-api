@@ -503,6 +503,13 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # Faixa do DMG (25/250/750/2500/7500 po): é por ela que o mestre sorteia
         # o saque, então precisa chegar ao filtro da aba.
         art_tier: props['art_tier'].presence,
+        # Gema: tier e os três textos (poder místico, efeito em arma, efeito em
+        # vestuário). Sem serializar, o dado existe no catálogo e não chega à
+        # ficha — a mesma classe de gap dos usos de kit.
+        gem_tier: props['gem_tier'].presence,
+        gem_power: props['gem_power'].presence,
+        gem_weapon_effect: props['gem_weapon_effect'].presence,
+        gem_apparel_effect: props['gem_apparel_effect'].presence,
         # Erva/venenosa: onde-quando-como COLHER e o que ela vira depois de
         # preparada. Sem serializar, o dado existe no catálogo e não chega à
         # ficha — a mesma classe de gap dos usos de kit.

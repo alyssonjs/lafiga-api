@@ -1,0 +1,834 @@
+[
+ {
+  "api_index": "gem-azurita",
+  "name": "Azurita",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul escuro mosqueado opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Aguça a intuição e a percepção espiritual.",
+   "gem_weapon_effect": null,
+   "gem_apparel_effect": "Você recebe +1 em testes de Inteligência (Investigação) e pode fazer um teste com vantagem uma vez."
+  }
+ },
+ {
+  "api_index": "gem-agata-malhada",
+  "name": "Ágata Malhada",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Marrom, azul, branca ou vermelho translúcido e listrado",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Traz equilíbrio entre corpo, mente e espírito.",
+   "gem_weapon_effect": "Vantagem em teste feitos contra desarmamento",
+   "gem_apparel_effect": "Você pode rolar novamente um teste de resistência contra medo ou encantamento."
+  }
+ },
+ {
+  "api_index": "gem-quartzo-azul",
+  "name": "Quartzo Azul",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul claro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Promove a comunicação clara e a expressão pacífica.",
+   "gem_weapon_effect": null,
+   "gem_apparel_effect": "Você pode se comunicar com criaturas que não compartilham seu idioma através de gestos, recebendo +1 em testes de Carisma (Atuação)."
+  }
+ },
+ {
+  "api_index": "gem-agata-ocular",
+  "name": "Ágata Ocular",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Círculos translúcidos de cinza, branco, marrom, azul ou verde",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Protege e aguça a visão, afastando o mau-olhado.",
+   "gem_weapon_effect": "O ataque causa +1d4 de dano Psíquico e o alvo tem Desvantagem em testes de Percepção até o próximo turno.",
+   "gem_apparel_effect": "Você tem Vantagem em testes de Sabedoria (Percepção) para enxergar detalhes em objetos parados."
+  }
+ },
+ {
+  "api_index": "gem-hematita",
+  "name": "Hematita",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Cinza escuro opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Enraíza e fortalece a vontade, trazendo estabilidade.",
+   "gem_weapon_effect": "O ataque força o alvo a fazer um teste de Força ou cair no chão (derrubado).",
+   "gem_apparel_effect": "Você não pode ser derrubado(a) por efeitos mágicos enquanto estiver em contato com o chão."
+  }
+ },
+ {
+  "api_index": "gem-lapis-lazuli",
+  "name": "Lápis-Lazúli",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul claro e escuro opaco com manchas amarelas",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Expande a consciência e revela verdades ocultas.",
+   "gem_weapon_effect": "Você descobre uma Resistência, Vulnerabilidade ou Imunidade do alvo.",
+   "gem_apparel_effect": "Você se lembra perfeitamente de tudo que viu ou ouviu nas últimas 24 horas."
+  }
+ },
+ {
+  "api_index": "gem-malaquita",
+  "name": "Malaquita",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Opaco estriado com verde claro e escuro",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Absorve energias tóxicas e protege o coração.",
+   "gem_weapon_effect": null,
+   "gem_apparel_effect": "Você pode remover o odor de veneno ou substâncias tóxicas de um objeto ou criatura."
+  }
+ },
+ {
+  "api_index": "gem-agata-musgo",
+  "name": "Ágata Musgo",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Rosa translúcido ou amarelo claro com cinza musgo ou marcas verdes",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Conecta à natureza, trazendo crescimento e renovação.",
+   "gem_weapon_effect": "O ataque causa +1d4 de dano Elemental (escolhe na construção) e a velocidade do alvo é reduzida em 1,5 metro até o próximo turno.",
+   "gem_apparel_effect": "Você pode fazer uma planta crescer instantaneamente em tamanho médio (não agressiva)."
+  }
+ },
+ {
+  "api_index": "gem-obsidiana",
+  "name": "Obsidiana",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Preto opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Revela verdades profundas e corta ilusões.",
+   "gem_weapon_effect": "O ataque causa +1d4 de dano Psiquico e o alvo sofre pode sofrer medo.",
+   "gem_apparel_effect": "Você tem Vantagem em testes de resistência contra efeitos de confusão ou alucinação."
+  }
+ },
+ {
+  "api_index": "gem-rodocrosita",
+  "name": "Rodocrosita",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul claro opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Cura feridas emocionais e atrai amor-próprio.",
+   "gem_weapon_effect": "O alvo tem Desvantagem em seu próximo teste de ataque contra o usuario.",
+   "gem_apparel_effect": "Você pode sentir as emoções superficiais de uma criatura a até 3 metros (CD 13 Sabedoria)."
+  }
+ },
+ {
+  "api_index": "gem-olho-de-tigre",
+  "name": "Olho de Tigre",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Marrom translúcido com centro dourado",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Concede coragem, integridade e visão clara da realidade.",
+   "gem_weapon_effect": "Você pode fazer um ataque adicional com a mesma arma (sem bônus de dano) como parte da mesma ação.",
+   "gem_apparel_effect": "Você não pode ser surpreendido enquanto estiver consciente."
+  }
+ },
+ {
+  "api_index": "gem-turquesa",
+  "name": "Turquesa",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 10.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul esverdeado claro opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 1,
+   "gem_power": "Pedra de proteção dos guerreiros, atrai sorte e purifica.",
+   "gem_weapon_effect": "Você pode rolar 1d4 e adicionar ao resultado de um ataque (antes de saber se acertou).",
+   "gem_apparel_effect": "Você pode rolar 1d4 e adicionar o resultado a um teste de habilidade que acabou de fazer."
+  }
+ },
+ {
+  "api_index": "gem-pedra-de-sangue",
+  "name": "Pedra de Sangue",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Cinza escuro opaco com manchas vermelhas",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Fortalece a vitalidade e purifica o sangue.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Cortante e o alvo sofre 1d4 de dano (Cortante) no início de cada um de seus turnos por 3 rodadas (ou até ser curado).",
+   "gem_apparel_effect": "Quando você usa um Dado de Vida (Hit Dice) para se curar, recupere +2 PV adicionais por dado gasto."
+  }
+ },
+ {
+  "api_index": "gem-cornalina",
+  "name": "Cornalina",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "De laranja a vermelho amarronzado opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Estimula a criatividade, a coragem e a paixão.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano de Fogo ou o alvo deve fazer um teste de Força ou cair no chão (derrubado).",
+   "gem_apparel_effect": "Você pode rolar um teste de Destreza com Vantagem (para artesanato ou performance)."
+  }
+ },
+ {
+  "api_index": "gem-calcedonia",
+  "name": "Calcedônia",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Branco opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Acalma a mente e promove a fraternidade.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano de Trovão, não faz barulho e o alvo fica Surdo até o início do seu próximo turno.",
+   "gem_apparel_effect": "Você tem Vantagem em testes de Carisma (Persuasão) para acalmar criaturas hostis."
+  }
+ },
+ {
+  "api_index": "gem-crisoprasio",
+  "name": "Crisoprásio",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Verde translúcido",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Traz esperança, cura emocional e novos começos.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Radiante e você ou um aliado a até 9 metros recupera 1d6 PV.",
+   "gem_apparel_effect": "Quando você falha em um teste de resistência contra medo, pode repeti-lo."
+  }
+ },
+ {
+  "api_index": "gem-citrina",
+  "name": "Citrina",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Amarelo claro amarronzado transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Atrai prosperidade, abundância e sucesso material.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano de Fogo. Se o alvo tiver tesouro, 1d6 de moedas de ouro (ou equivalente) caem dele.",
+   "gem_apparel_effect": "Você pode rolar um teste de Carisma (Persuasão) com Vantagem para barganhar ou vender itens."
+  }
+ },
+ {
+  "api_index": "gem-jaspe",
+  "name": "Jaspe",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul, preto ou marrom opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Concede persistência, força e coragem para superar desafios.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Gelo e a velocidade do alvo é reduzida em 3 metros até o próximo turno.",
+   "gem_apparel_effect": "Ao falhar em um teste de Força ou Constituição, você pode rolar novamente."
+  }
+ },
+ {
+  "api_index": "gem-pedra-lunar",
+  "name": "Pedra Lunar",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Branco translúcido com azul claro brilhante",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Conecta ao divino feminino, à intuição e aos ciclos da natureza.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Radiante e o alvo brilha (como Luz) por 1 minuto, não podendo se beneficiar de invisibilidade.",
+   "gem_apparel_effect": "Você se beneficia de um descanso longo em 6 horas e tem sonhos proféticos (dica do Mestre)."
+  }
+ },
+ {
+  "api_index": "gem-onix",
+  "name": "Ônix",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Faixas opacas de preto e branco, ou preto ou branco puro",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Protege contra energias negativas e fortalece o autocontrole.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Necrótico e o alvo não pode se curar até o início do seu próximo turno.",
+   "gem_apparel_effect": "Você tem Vantagem em testes de Destreza (Furtividade) em áreas de sombra ou escuridão."
+  }
+ },
+ {
+  "api_index": "gem-quartzo",
+  "name": "Quartzo",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Branco transparente, cinza ou amarelo esfumaçado",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Amplifica energias e traz clareza mental.",
+   "gem_weapon_effect": "O ataque ignora a Resistência do alvo e causa +1d6 de dano (do mesmo tipo da arma).",
+   "gem_apparel_effect": "Você pode ignorar uma fonte de Desvantagem em um teste de habilidade."
+  }
+ },
+ {
+  "api_index": "gem-sardonica",
+  "name": "Sardônica",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Faixas opacas de vermelho e branco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Concede lealdade, proteção e fortalece a estrutura física.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Radiante. Se o alvo for um celeste, demônio ou diabo, causa +2d6 em vez disso.",
+   "gem_apparel_effect": "Você tem Vantagem em testes de resistência contra ser enganado ou manipulado por magia de encantamento."
+  }
+ },
+ {
+  "api_index": "gem-quartzo-rosa-estrela",
+  "name": "Quartzo Rosa Estrela",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Pedra rosa translúcida com centro branco em forma de estrela",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "O cristal do amor incondicional, da autoestima e do perdão.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Psíquico e o alvo fica Enfeitiçado por você até o início do seu próximo turno (não pode atacar você).",
+   "gem_apparel_effect": "Você tem Vantagem em testes de Carisma (Persuasão) com criaturas Indiferentes ou Amigáveis."
+  }
+ },
+ {
+  "api_index": "gem-zirconio",
+  "name": "Zircônio",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 50.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul esverdeado claro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 2,
+   "gem_power": "Traz clareza espiritual e proteção em viagens.",
+   "gem_weapon_effect": "O ataque causa +1d6 de dano Elétrico e faíscas saltam para uma criatura adjacente ao alvo (até 3 metros), causando 1d4 de dano Elétrico.",
+   "gem_apparel_effect": "Você pode lançar Luz (como a magia) sem gastar espaço de magia. Seu grupo não se perde em viagens"
+  }
+ },
+ {
+  "api_index": "gem-ambar",
+  "name": "Âmbar",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Transparente entre ouro aquoso e ouro vívido",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Absorve energias negativas e as transforma em luz solar.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano Radiante e o alvo deve fazer um teste de Constituição ou ficar Cego até o próximo turno.",
+   "gem_apparel_effect": "Você pode lançar Luz Solar (como a magia de 3º nível) sem gastar espaço de magia."
+  }
+ },
+ {
+  "api_index": "gem-ametista",
+  "name": "Ametista",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Púrpura profundo transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Calma a mente, promove sonhos lúcidos e intuição profunda.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano Psíquico e o alvo fica Atordoado até o início do seu próximo turno (não pode tomar ações ou reações).",
+   "gem_apparel_effect": "Você recebe +1 em testes de Inteligência (Arcanismo) e Sabedoria (Percepção). Você pode rolar um teste de resistência contra medo com Vantagem."
+  }
+ },
+ {
+  "api_index": "gem-crisoberilo",
+  "name": "Crisoberilo",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Transparente entre amarelo esverdeado e verde claro",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Traz boa sorte, clareza e proteção contra o mau-olhado.",
+   "gem_weapon_effect": "Você pode rolar 1d8 e adicionar ao dano. Se tirar 8, o dano é em dobro.",
+   "gem_apparel_effect": "Quando você falha em um teste de ataque, habilidade ou resistência, pode rolar novamente."
+  }
+ },
+ {
+  "api_index": "gem-coral",
+  "name": "Coral",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Carmesim opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Protege viajantes, acalma emoções e conecta ao mar.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano de Frio e a velocidade do alvo é reduzida em 3 metros até o próximo turno.",
+   "gem_apparel_effect": "Grante que seu dado de Encontros Aleatórios nunca sejam menor que 15"
+  }
+ },
+ {
+  "api_index": "gem-granada",
+  "name": "Granada",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Vermelho, marrom esverdeado ou branco transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Acende a paixão, a vitalidade e a coragem para lutar.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano de Fogo e você pode fazer um ataque de oportunidade contra o alvo se ele se mover no próximo turno.",
+   "gem_apparel_effect": "Você causa +1 de dano em ataques corpo a corpo. Você pode usar sua Reação para fazer um ataque de oportunidade com Vantagem."
+  }
+ },
+ {
+  "api_index": "gem-jade",
+  "name": "Jade",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Verde claro, verde escuro ou branco translúcido",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Traz tranquilidade, sorte e harmonia familiar.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano Veneno e raízes crescem ao redor do alvo, reduzindo sua velocidade a 0 até o início do seu próximo turno.",
+   "gem_apparel_effect": "Você recebe +1 em testes de Sabedoria (Medicina e Sobrevivência). Você pode estabilizar um aliado moribundo com uma ação bônus."
+  }
+ },
+ {
+  "api_index": "gem-jato",
+  "name": "Jato",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Preto profundo opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Protege contra ataques psíquicos e absorve energias densas.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano Necrótico e o alvo não pode se curar até o próximo turno. Se o alvo for morto por este ataque, sua alma é aprisionada por 1 minuto (impedindo ressurreição).",
+   "gem_apparel_effect": "Você tem Resistência a dano Psiquico. Você pode usar sua Reação para ganhar Resistência a Necrotico contra um ataque."
+  }
+ },
+ {
+  "api_index": "gem-perola",
+  "name": "Pérola",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Branco, amarelo ou rosa opaco e lustroso",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Conecta à sabedoria emocional e à pureza.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano de Frio e uma névoa envolve o alvo, dando Desvantagem em seus ataques até o próximo turno.",
+   "gem_apparel_effect": "Você recebe +2 de HP máximo por nível de personagem (efetivo). Se removida, o HP extra é perdido."
+  }
+ },
+ {
+  "api_index": "gem-espinela",
+  "name": "Espinela",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Vermelho, vermelho amarronzado ou verde escuro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Renova as energias e revitaliza o corpo.",
+   "gem_weapon_effect": "O ataque causa +2d6 de dano de Trovão e você recupera 1d6 PV (mínimo 1).",
+   "gem_apparel_effect": "Você recebe +1 em testes de Constituição. Você pode ignorar um nível de exaustão por 1 hora."
+  }
+ },
+ {
+  "api_index": "gem-turmalina",
+  "name": "Turmalina",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 100.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Verde, azul, marrom ou vermelho claro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 3,
+   "gem_power": "Protege contra radiações e energias negativas.",
+   "gem_weapon_effect": "(Escolha: Fogo, Frio, Elétrico, Ácido ou Veneno.) O ataque causa +2d6 do tipo escolhido.",
+   "gem_apparel_effect": "Você tem Resistência a um tipo de dano à sua escolha (Fogo, Frio, Elétrico, Ácido ou Veneno). A escolha é permanente."
+  }
+ },
+ {
+  "api_index": "gem-alexandrita",
+  "name": "Alexandrita",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 500.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Verde escuro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 4,
+   "gem_power": "Equilibra o material e o espiritual, trazendo sorte em momentos de crise.",
+   "gem_weapon_effect": "Você pode escolher o tipo de dano do ataque (entre Fogo, Frio, Elétrico, Ácido, Veneno, Radiante ou Necrótico) e causa +2d8 desse dano.",
+   "gem_apparel_effect": "Você recebe +1 em testes de resistência. Quando você falha em um teste de resistência, pode rolar novamente."
+  }
+ },
+ {
+  "api_index": "gem-agua-marinha",
+  "name": "Água-Marinha",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 500.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul esverdeado claro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 4,
+   "gem_power": "Acalma a mente, purifica as emoções e protege em viagens aquáticas.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano de Frio e o alvo deve fazer um teste de Constituição ou ficar Paralisado até o início do seu próximo turno.",
+   "gem_apparel_effect": "Você pode acabar com uma condição de origem de Enfeitiçamento."
+  }
+ },
+ {
+  "api_index": "gem-perola-negra",
+  "name": "Pérola Negra",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 500.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Preto puro opaco",
+  "props": {
+   "unit": "un",
+   "gem_tier": 4,
+   "gem_power": "Conecta aos mistérios profundos do oceano e ao autoconhecimento.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano Frio e/ou o alvo deve fazer um teste de Sabedoria ou ficar Enfeitiçado (com medo de você) até o próximo turno.",
+   "gem_apparel_effect": "Você recebe +2 de HP máximo por nível e tem Vantagem em testes de resistência contra magias de Encantamento."
+  }
+ },
+ {
+  "api_index": "gem-espinela-azul",
+  "name": "Espinela Azul",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 500.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul escuro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 4,
+   "gem_power": "Estimula a comunicação artística e a expressão criativa.",
+   "gem_weapon_effect": "O alvo deve fazer um teste de Sabedoria ou ficar Encantado (não pode atacar você) por 1 minuto.",
+   "gem_apparel_effect": "Você recebe +1 em testes de Carisma (Atuação e Persuasão). Você pode lançar Sugestão (CD 14)."
+  }
+ },
+ {
+  "api_index": "gem-peridoto",
+  "name": "Peridoto",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 500.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Verde oliva vívido transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 4,
+   "gem_power": "Afasta a inveja, atrai prosperidade e renova a energia.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano Radiante e o alvo deve fazer um teste de Constituição ou ficar Cego por 1 minuto.",
+   "gem_apparel_effect": "Você causa +1 de dano Radiante em ataques. Emite luz plena num raio de 3 metros. Você pode lançar Destruição de Mortos-Vivos (CD 15)."
+  }
+ },
+ {
+  "api_index": "gem-topazio",
+  "name": "Topázio",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 500.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Amarelo-ouro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 4,
+   "gem_power": "Atrai riqueza, poder de persuasão e otimismo.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano Radiante e o alvo deve fazer um teste de Constituição. Se falhar, não pode se curar até o próximo turno.",
+   "gem_apparel_effect": "Você recebe +1 em testes de Percepção. Você pode lançar Luz do Dia (como a magia de 3º nível)."
+  }
+ },
+ {
+  "api_index": "gem-opala-negra",
+  "name": "Opala Negra",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Verde escuro translúcido com preto mosqueado e manchas douradas",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Aprofunda a conexão com o subconsciente e revela mistérios ocultos.",
+   "gem_weapon_effect": "O ataque revela fraquezas do alvo. Fazendo com que seus ataque gerem +d6 de dano de energia",
+   "gem_apparel_effect": "Você recebe +1 em testes de Sabedoria (Percepção). Você pode ativar Visão Verdadeira por 1 minuto."
+  }
+ },
+ {
+  "api_index": "gem-safira-azul",
+  "name": "Safira Azul",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "De azul claro a azul médio transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Disciplina a mente, atrai boas oportunidades e clareza.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano de Força (mágico) e o alvo deve fazer um teste de Inteligência ou perder sua Reação (não pode usar Reações até o próximo turno).",
+   "gem_apparel_effect": "Você recebe +1 na CD de resistência das suas magias e +1 em testes de Inteligência (Arcanismo). Você pode rolar um teste de resistência de Inteligência com Vantagem."
+  }
+ },
+ {
+  "api_index": "gem-esmeralda",
+  "name": "Esmeralda",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Verde escuro brilhante transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Atrai amor leal, paciência e prosperidade para o lar.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano Perfurante e o alvo deve fazer um teste de Força ou ficar Imobilizado por 1 minuto (raízes o prendem).",
+   "gem_apparel_effect": "Você recebe +1 na CA. Você pode lançar Passos Sem Deixar Rastros (como a magia de 2º nível)."
+  }
+ },
+ {
+  "api_index": "gem-opala-de-fogo",
+  "name": "Opala de Fogo",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Vermelho fogo translúcido",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Acende a paixão, a criatividade explosiva e a transformação.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano de Fogo e o alvo pega fogo: sofre 1d6 de dano de Fogo no início de cada um de seus turnos (até apagar com uma ação).",
+   "gem_apparel_effect": "Você tem Resistência a Fogo. Você pode usar sua Reação para causar dano de Fogo a quem te atacou corpo a corpo (+2d6)."
+  }
+ },
+ {
+  "api_index": "gem-opala",
+  "name": "Opala",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul claro translúcido mosqueado de verde e dourado",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Amplifica a criatividade, a inspiração e a expressão artística.",
+   "gem_weapon_effect": "Você rola 1d8 para determinar o dano elemental: 1-Fogo, 2-Frio, 3-Elétrico, 4-Ácido, 5-Veneno, 6-Radiante, 7-Necrótico, 8-Força. Causa +2d8 do tipo rolado.",
+   "gem_apparel_effect": "Você recebe +1 em testes de Carisma (Atuação). Você pode lançar Imagem Espelhada (como a magia de 2º nível)."
+  }
+ },
+ {
+  "api_index": "gem-rubi-estrela",
+  "name": "Rubi Estrela",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Rubi translúcido com centro branco em forma de estrela",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Traz poder, liderança e proteção extrema.",
+   "gem_weapon_effect": "Em um acerto crítico, causa +4d8 de dano de Energia extra.",
+   "gem_apparel_effect": "Você recebe +1 em testes de Força. Você pode adicionar +1d6 de dano de Energia a um ataque (após saber o resultado)."
+  }
+ },
+ {
+  "api_index": "gem-safira-estrela",
+  "name": "Safira Estrela",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Safira azul translúcida com centro branco em forma de estrela",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Atrai bênçãos divinas e sorte extrema.",
+   "gem_weapon_effect": "Você declara este golpe antes de rolar o ataque e rola com Vantagem. Se acertar, causa +2d8 de dano Elétrico e o alvo deve fazer um teste de Sabedoria ou ficar Atordoado 1 rodada.",
+   "gem_apparel_effect": "Você recebe +1 em testes de Sabedoria. Você pode rolar 1d20 e adicionar o resultado a um teste de habilidade que acabou de fazer."
+  }
+ },
+ {
+  "api_index": "gem-safira-amarela",
+  "name": "Safira Amarela",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 1000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Amarelo fogo ou amarelo esverdeado transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 5,
+   "gem_power": "Atrai sucesso nos negócios e clareza financeira.",
+   "gem_weapon_effect": "O ataque causa +2d8 de dano de Fogo e, se o alvo for morto, ele se transforma em uma estátua de ouro (valor igual a 1d6 × 100 PO).",
+   "gem_apparel_effect": "Você recebe +1 em testes de Carisma (Persuasão) e Inteligência (Investigação). Você pode rolar com Vantagem em um teste para negociar ou encontrar pistas."
+  }
+ },
+ {
+  "api_index": "gem-safira-negra",
+  "name": "Safira Negra",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 5000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Preto lustroso transparente com destaques brilhantes",
+  "props": {
+   "unit": "un",
+   "gem_tier": 6,
+   "gem_power": "Absorve maldições e ataques mágicos, protegendo o portador.",
+   "gem_weapon_effect": "O ataque causa +3d8 de dano Necrótico. O alvo deve fazer um teste de Constituição. Se falhar, sua alma é marcada: ataques contra ele têm Vantagem por 1 minuto.",
+   "gem_apparel_effect": "Você recebe +1 na CA. Você tem Vantagem em testes de Furtividade. Você pode se tornar Invisível por 1 minuto (sem concentração)."
+  }
+ },
+ {
+  "api_index": "gem-diamante",
+  "name": "Diamante",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 5000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Azul claro, canário, rosa, marrom ou azul transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 6,
+   "gem_power": "O cristal mais puro, amplifica todas as energias e purifica o ambiente.",
+   "gem_weapon_effect": "Você pode transformar este ataque em um sucesso automático (não precisa rolar). Causa dano normal +2d8 de dano Energia.",
+   "gem_apparel_effect": "O item se torna +2 Mágico. Você pode usar uma ação para cancelar uma magia que afete você (como Dissipar Magia de 5º nível)."
+  }
+ },
+ {
+  "api_index": "gem-jacinto",
+  "name": "Jacinto",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 5000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "Laranja fogo transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 6,
+   "gem_power": "Desperta a energia primordial, protegendo contra tempestades e crises.",
+   "gem_weapon_effect": "O ataque causa +3d8 de dano de Fogo e uma explosão emana da arma: todas as criaturas a 3 metros sofrem 2d6 de dano de Fogo (teste de Destreza para metade).",
+   "gem_apparel_effect": "Você tem Resistência a Fogo e ignora Resistência a Fogo de criaturas. Você pode lançar Bola de Fogo (CD 17)."
+  }
+ },
+ {
+  "api_index": "gem-rubi",
+  "name": "Rubi",
+  "kind": "material",
+  "category": "gem",
+  "value_gp": 5000.0,
+  "source": "Gemas de Lafiga (homebrew)",
+  "description": "De vermelho claro a carmesim escuro transparente",
+  "props": {
+   "unit": "un",
+   "gem_tier": 6,
+   "gem_power": "A pedra do poder real, da paixão e da vitalidade absoluta.",
+   "gem_weapon_effect": "O ataque causa +3d8 de dano de Fogo e o alvo deve fazer um teste de Força ou ser empurrado 6 metros e cair no chão.",
+   "gem_apparel_effect": "Você tem Resistência a Fogo e +1 na CA. Você recebe +2 em testes de Força e Constituição."
+  }
+ }
+]

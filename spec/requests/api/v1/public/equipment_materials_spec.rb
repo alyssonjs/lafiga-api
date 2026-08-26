@@ -126,6 +126,48 @@ RSpec.describe 'Api::V1::Public::Equipment matérias-primas', type: :request do
     end
   end
 
+  describe 'gemas — matéria-prima COM efeito de encaixe' do
+    let!(:rubi) do
+      Item.create!(api_index: 'gem-rubi', name: 'Rubi', kind: 'material', category: 'gem',
+                   value_gp: 1000, weight_kg: 0.0,
+                   props: { 'unit' => 'un', 'gem_tier' => 5,
+                            'gem_power' => 'Fogo interior',
+                            'gem_weapon_effect' => '+1d6 de dano de fogo.',
+                            'gem_apparel_effect' => 'Resistência a fogo.' })
+    end
+    # Gema que só serve em vestuário: 3 das 52 da tabela são assim.
+    let!(:so_vestuario) do
+      Item.create!(api_index: 'gem-perola-negra', name: 'Pérola Negra', kind: 'material',
+                   category: 'gem', value_gp: 500,
+                   props: { 'gem_tier' => 4, 'gem_apparel_effect' => 'Visão no escuro 9 m.' })
+    end
+
+    it '⚠️ tier e os DOIS efeitos viajam — sem eles a gema é só um preço' do
+      # O encaixe é a mecânica inteira da gema: se o efeito não chega à ficha,
+      # o jogador não tem como saber o que ganhou ao engastá-la.
+      get '/api/v1/public/equipment_categories/materials-gem'
+      eq = response.parsed_body['equipment'].find { |e| e['index'] == 'gem-rubi' }
+      expect(eq['gem_tier']).to eq(5)
+      expect(eq['gem_power']).to eq('Fogo interior')
+      expect(eq['gem_weapon_effect']).to match(/dano de fogo/)
+      expect(eq['gem_apparel_effect']).to match(/Resistência/)
+    end
+
+    it 'gema sem efeito de arma vem com a chave nula, não com string vazia' do
+      get '/api/v1/public/equipment_categories/materials-gem'
+      eq = response.parsed_body['equipment'].find { |e| e['index'] == 'gem-perola-negra' }
+      expect(eq['gem_weapon_effect']).to be_nil
+      expect(eq['gem_apparel_effect']).to eq('Visão no escuro 9 m.')
+    end
+
+    it 'continua sendo INSUMO: aparece na aba de matérias-primas' do
+      # Ao contrário da obra de arte, a gema entra em receita — por isso ficou
+      # em `material/gem` e não virou tesouro.
+      get '/api/v1/public/equipment_categories/materials'
+      expect(indices(response.parsed_body)).to include('gem-rubi')
+    end
+  end
+
   describe 'sub-abas por família' do
     it 'materials-essence traz só as essências' do
       get '/api/v1/public/equipment_categories/materials-essence'
