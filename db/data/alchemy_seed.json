@@ -1,0 +1,5514 @@
+{
+ "materiais": [
+  {
+   "api_index": "mat-extrato-vegetal",
+   "name": "Extrato Vegetal",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 0.5,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-fonte-mineral",
+   "name": "Fonte Mineral",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 1.0,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-componente-de-morto",
+   "name": "Componente de Morto",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 0.5,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-ectoessencia",
+   "name": "Ectoessência",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 5.0,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sebo-de-monstro",
+   "name": "Sebo de Monstro",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 0.2,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-soro-fungico",
+   "name": "Soro Fúngico",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 2.5,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sais-de-fogo",
+   "name": "Sais de Fogo",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 10.0,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sais-de-gelo",
+   "name": "Sais de Gelo",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 10.0,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-essencia-eletrica",
+   "name": "Essência Elétrica",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 10.0,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-componente-acido",
+   "name": "Componente Ácido",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 5.0,
+   "unit": "ml",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-ativador",
+   "name": "Ativador",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 20.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-solvente",
+   "name": "Solvente",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 45.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-neutralizante",
+   "name": "Neutralizante",
+   "kind": "material",
+   "category": "essence",
+   "value_gp": 60.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-peconha",
+   "name": "Peçonha",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 5.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-chifre-de-sucubo",
+   "name": "Chifre de Súcubo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 15.5,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sais-radiantes",
+   "name": "Sais Radiantes",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 35.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escamas-de-dragao-fada",
+   "name": "Escamas de Dragão Fada",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 1920.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-lagrima-de-fenix",
+   "name": "Lágrima de Fênix",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 2000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-pena-de-fenix",
+   "name": "Pena de Fênix",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 1187.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sangue-de-empirico",
+   "name": "Sangue de Empírico",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 10000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-glandula-de-aranha-interplanar",
+   "name": "Glândula de Aranha Interplanar",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 40.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-lingua-de-colibri",
+   "name": "Língua de Colibri",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 15.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-pelo-de-esquilo",
+   "name": "Pelo de Esquilo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 3.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escama-de-peixe",
+   "name": "Escama de Peixe",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 1.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-unha-de-gato",
+   "name": "Unha de Gato",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 6.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-unha-de-gigante",
+   "name": "Unha de Gigante",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 50.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sebo-de-gigante",
+   "name": "Sebo de Gigante",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 3.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sangue-de-lich",
+   "name": "Sangue de Lich",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 1000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-olho-de-harpia",
+   "name": "Olho de Harpia",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 700.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-po-de-fada",
+   "name": "Pó de Fada",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 100.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-dedo-de-duplo",
+   "name": "Dedo de Duplo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 150.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-patas-de-aranha",
+   "name": "Patas de Aranha",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 20.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-rabo-de-lagartixa",
+   "name": "Rabo de Lagartixa",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 5.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-unha-de-gigante-da-colina",
+   "name": "Unha de Gigante da Colina",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 135.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-coro-de-troll",
+   "name": "Coro de Troll",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 140.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-rabo-de-escorpiao",
+   "name": "Rabo de Escorpião",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 2.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-presa-de-vibora",
+   "name": "Presa de Víbora",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 5.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-aranha",
+   "name": "Aranha",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 1.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-po-de-chifre-de-unicornio",
+   "name": "Pó de Chifre de Unicórnio",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 3130.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-pena-de-grifo",
+   "name": "Pena de Grifo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 7000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-presas-de-behir",
+   "name": "Presas de Behir",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 5350.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-pena-de-celestial",
+   "name": "Pena de Celestial",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 19500.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sebo-de-grifo",
+   "name": "Sebo de Grifo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 515.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-oleo-de-lamia",
+   "name": "Óleo de Lâmia",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 500.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-dedo-de-gigante-de-gelo",
+   "name": "Dedo de Gigante de Gelo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 140.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sebo-de-gigante-do-gelo",
+   "name": "Sebo de Gigante do Gelo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 30.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-dedo-de-gigante-de-fogo",
+   "name": "Dedo de Gigante de Fogo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 150.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sebo-de-gigante-de-fogo",
+   "name": "Sebo de Gigante de Fogo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 40.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-dedo-de-gigante-da-nuvem",
+   "name": "Dedo de Gigante da Nuvem",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 5000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sebo-de-gigante-da-nuvem",
+   "name": "Sebo de Gigante da Nuvem",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 230.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-dedo-de-gigante-da-tempestade",
+   "name": "Dedo de Gigante da Tempestade",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 7000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sebo-de-gigante-da-tempestade",
+   "name": "Sebo de Gigante da Tempestade",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 430.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escamas-de-dragao-verde-filhote",
+   "name": "Escamas de Dragão Verde Filhote",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 1450.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-ectoplasma-de-banshee",
+   "name": "Ectoplasma de Banshee",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 50.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-pena-de-cocatriz",
+   "name": "Pena de Cocatriz",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 10.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sangue-de-cocatriz",
+   "name": "Sangue de Cocatriz",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 20.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escamas-de-cocatriz",
+   "name": "Escamas de Cocatriz",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 125.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escama-de-dragao-vermelho-kg",
+   "name": "Escama de Dragão Vermelho (kg)",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 60000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escama-de-dragao-azul-kg",
+   "name": "Escama de Dragão Azul (kg)",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 55000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escama-de-dragao-negro-kg",
+   "name": "Escama de Dragão Negro (kg)",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 40000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escama-de-dragao-verde-kg",
+   "name": "Escama de Dragão Verde (kg)",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 50000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escama-de-dragao-branco-kg",
+   "name": "Escama de Dragão Branco (kg)",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 30000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-tentaculo-de-polvo",
+   "name": "Tentáculo de Polvo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 0.01,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-tentaculo-de-kraken",
+   "name": "Tentáculo de Kraken",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 100000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "note": "Rende 20 porções."
+  },
+  {
+   "api_index": "mat-haste-de-cobre-encantada",
+   "name": "Haste de Cobre Encantada",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 650.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-glandula-de-cao-do-inferno",
+   "name": "Glândula de Cão do Inferno",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 700.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-glandula-de-lobo-invernal",
+   "name": "Glândula de Lobo Invernal",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 700.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-escamas-de-naga",
+   "name": "Escamas de Naga",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 50.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-essencia-de-fogo-fatuo",
+   "name": "Essencia de Fogo-Fátuo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 65.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-ectoessencia-de-espectro",
+   "name": "Ectoessencia de Espectro",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 50.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-gordura-de-duplo",
+   "name": "Gordura de Duplo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 50.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-cinzas-de-oni",
+   "name": "Cinzas de Oni",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 600.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-po-de-golem-de-barro",
+   "name": "Pó de Golem de Barro",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 2.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-minerio-estelar",
+   "name": "Minério Estelar",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 5.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-ovos-de-aranha-selvagem",
+   "name": "Ovos de Aranha Selvagem",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 0.1,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-penas-de-couatl",
+   "name": "Penas de Couatl",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 15000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-presa-de-naga",
+   "name": "Presa de Naga",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 130.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sangue-de-celestial",
+   "name": "Sangue de Celestial",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 10000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-barbatana-de-kuo-toa",
+   "name": "Barbatana de Kuo-Toa",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 500.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-sangue-de-troll",
+   "name": "Sangue de Troll",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 46.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-extrato-de-cerebro-de-inumano",
+   "name": "Extrato de Cérebro de Inumano",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 265.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-po-de-osso-do-cavaleiro-da-morte",
+   "name": "Pó de Osso do Cavaleiro da Morte",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": 4000.0,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)"
+  },
+  {
+   "api_index": "mat-barba-de-anao",
+   "name": "Barba de Anão",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-sangue-elfico",
+   "name": "Sangue Élfico",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-sais-de-elemental-da-terra",
+   "name": "Sais de Elemental da Terra",
+   "kind": "material",
+   "category": "arcane",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-coracao-de-galinha",
+   "name": "Coração de Galinha",
+   "kind": "material",
+   "category": "culinary",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-girinos-de-sapo",
+   "name": "Girinos de Sapo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-patas-de-grilo",
+   "name": "Patas de Grilo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-pelo-de-guepardo",
+   "name": "Pelo de Guepardo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-asas-de-morcego",
+   "name": "Asas de Morcego",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-olho-de-gato",
+   "name": "Olho de Gato",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-pernas-de-sapo",
+   "name": "Pernas de Sapo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-po-de-prata",
+   "name": "Pó de Prata",
+   "kind": "material",
+   "category": "ore",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-olho-de-aguia",
+   "name": "Olho de Águia",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-mecha-de-cabelo-elfico",
+   "name": "Mecha de Cabelo Élfico",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-sangue-de-anao",
+   "name": "Sangue de Anão",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-sangue-de-orc",
+   "name": "Sangue de Orc",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-essencia-da-lotus-negra",
+   "name": "Essência da Lótus Negra",
+   "kind": "material",
+   "category": "arcane",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-polpa-do-kiuvi",
+   "name": "Polpa do Kiuvi",
+   "kind": "material",
+   "category": "herb",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-gema-olho-de-tigre",
+   "name": "Gema Olho de Tigre",
+   "kind": "material",
+   "category": "gem",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-olho-de-solar",
+   "name": "Olho de Solar",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-lingua-de-bruxo",
+   "name": "Língua de Bruxo",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  },
+  {
+   "api_index": "mat-sangue-de-tarrasque",
+   "name": "Sangue de Tarrasque",
+   "kind": "material",
+   "category": "monster-part",
+   "value_gp": null,
+   "unit": "un",
+   "source": "Manual do Alquimista (Duoin)",
+   "needs_review": "sem preço na planilha"
+  }
+ ],
+ "produtos": [
+  {
+   "api_index": "alq-pocao-de-cura",
+   "name": "Poção De Cura",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "common",
+   "value_gp": 50.0,
+   "description": "Você recupera 2d4 + 2 pontos de vida quando bebe esta poção.",
+   "appearance": "líquido vermelho da poção cintila quando agitado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 8.0,
+    "days": 2.0,
+    "days_sheet": 1.0,
+    "craft_cost_gp": 25.0,
+    "processes": [
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-envenenamento",
+   "name": "Poção De Envenenamento",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 250.0,
+   "description": "Esta mistura parece, cheira e tem o gosto de uma poção de cura ou outra poção benéfica. Porém, na verdade é veneno mascarado por mágica de ilusão. Uma magia identificação revela sua natureza verdadeira. Se bebe-la, você sofrerá 3d6 de dano de veneno e deve ser bem sucedido num teste de resistência de Constituição CD 13 ou ficará envenenado. No começo de cada um dos seus turnos enquanto estiver envenenado dessa forma, você sofre 3d6 de dano de veneno. No final de cada um dos seus turnos, você pode repetir o teste de resistência. Com um sucesso, o dano de veneno que você sofre no seu turno subsequente é reduzido em 1d6. O veneno acaba quando o dano for reduzido a 0.",
+   "appearance": "líquido vermelho da poção cintila quando agitado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 10.0,
+    "days_sheet": 10.0,
+    "craft_cost_gp": 125,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 35.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Peçonha",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-filtro-do-amor",
+   "name": "Filtro Do Amor",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 175.0,
+   "description": "Da próxima vez que você vir uma criatura dentro de 10 minutos após beber esse filtro, você fica enfeitiçado por essa criatura por 1 hora. Se a criatura for da espécie ou gênero que você normalmente é atraído, você a reconhece como seu amor verdadeiro enquanto estiver enfeitiçado.",
+   "appearance": "O líquido efervescente de coloração rosa desta poção contém uma bolha em formato de coração difícil de perceber.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 7.0,
+    "days_sheet": 7.0,
+    "craft_cost_gp": 87.5,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 35.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Chifre de Súcubo",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-elixir-de-saude",
+   "name": "Elixir De Saúde",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1500.0,
+   "description": "Quando você bebe esta poção, ela cura qualquer doença que esteja afligindo você e remove as condições cego, surdo, paralisado e envenenado.",
+   "appearance": "O líquido vermelho claro tem pequenas bolhas de luz nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 60.0,
+    "days_sheet": 60.0,
+    "craft_cost_gp": 750,
+    "processes": [
+     "Solvente",
+     "Calor",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais Radiantes",
+      "quantidade": 40.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "item",
+      "nome": "Poção de Cura Maior",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-invisibilidade",
+   "name": "Poção De Invisibilidade",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 20000.0,
+   "description": "Quando o bebe, você fica invisível por 1 hora. Tudo que você estiver vestindo ou carregando fica invisível com você. O efeito termina prematuramente se você atacar ou conjurar uma magia.",
+   "appearance": "O recipiente desta poção aparenta estar vazio, mas parece conter um líquido.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 26.0,
+    "days": 800.0,
+    "days_sheet": 800.0,
+    "craft_cost_gp": 10000,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escamas de Dragão Fada",
+      "quantidade": 5.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Invisibilidade",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-da-ressucitacao",
+   "name": "Poção Da Ressucitação",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "legendary",
+   "value_gp": 35000.0,
+   "description": "Quando esta poção é dada a uma criatura que morreu a menos da metade de seu nivel, ela volta a vida com todos os seus slots de magias completas, vida completa e sem nenhum maleficio que trazia consigo antes de sua morte.",
+   "appearance": "O líquido é vermelho fogo e contem em seu fundo uma especie de Pó",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 30.0,
+    "days": 1400.0,
+    "days_sheet": 1400.0,
+    "craft_cost_gp": 17500,
+    "processes": [
+     "Solvente",
+     "Luz",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Lágrima de Fênix",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pena de Fênix",
+      "quantidade": 4.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Empírico",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-oleo-de-forma-eterea",
+   "name": "Óleo De Forma Etérea",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1500.0,
+   "description": "Gotas deste óleo cinzento nebuloso se formam no exterior do seu frasco e rapidamente evaporam. O óleo pode cobrir uma criatura Média ou menor, junto com o equipamento que ela esteja vestindo e carregando (um frasco adicional é necessário para cada categoria de tamanho acima de Médio). Aplicar o óleo leva 10 minutos. A criatura afetada então, recebe o efeito da magia forma etérea por 1 hora.",
+   "appearance": "Líquito totalmente transparente, viscoso e com inspirais espectrais azuis",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 60.0,
+    "days_sheet": 60.0,
+    "craft_cost_gp": 750,
+    "processes": [
+     "Luz",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Minério Estelar",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 200.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Glândula de Aranha Interplanar",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-oleo-escorregadio",
+   "name": "Óleo Escorregadio",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 300.0,
+   "description": "O óleo pode cobrir uma criatura Média ou menor, junto com o equipamento que ela esteja vestindo e carregando (um frasco adicional é necessário para cada categoria de tamanho acima de Médio). Aplicar o óleo leva 10 minutos. A criatura afetada ganha os efeitos da magia movimentação livre por 8 horas. Alternativamente, o óleo pode ser derramado no chão com uma ação, cobrindo 3 metros quadrados, duplicando o efeito da magia área escorregadia na área por 8 horas.",
+   "appearance": "Este unguento negro pegajoso é grosso e pesado em seu recipiente, mas ele flui rapidamente quando derramado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 12.0,
+    "days_sheet": 12.0,
+    "craft_cost_gp": 150,
+    "processes": [
+     "Escuro",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 25.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Movimentação Livre",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-amizade-animal",
+   "name": "Poção De Amizade Animal",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 150.0,
+   "description": "Quando bebe esta poção, você pode conjurar a magia amizade animal (CD de resistência 13) por 1 hora, à vontade.",
+   "appearance": "Liquido transparente que aparente ter pequenos pedaços de animais",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 6.0,
+    "days_sheet": 6.0,
+    "craft_cost_gp": 75,
+    "processes": [
+     "Ativador",
+     "Solvente"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Peixe",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Língua de Colibri",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Unha de Gato",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pelo de Esquilo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Amizade Animal",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-aumentar",
+   "name": "Poção De Aumentar",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 250.0,
+   "description": "Quando bebe esta poção, você ganha o efeito de “aumentar” da magia aumentar/reduzir por 1d4 horas (não requer concentração).",
+   "appearance": "O vermelho no líquido da poção se expande constantemente em uma gota minúscula e então se contrai para colorir o líquido transparente em volta dele. Sacudir a garrafa não interrompe este processo.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 17.0,
+    "days": 10.0,
+    "days_sheet": 10.0,
+    "craft_cost_gp": 125,
+    "processes": [
+     "Solvente",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Unha de Gigante",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Gigante",
+      "quantidade": 35.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Aumentar/Reduzir",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-clarividencia",
+   "name": "Poção De Clarividência",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2000.0,
+   "description": "Quando bebe esta poção, você ganha os benefícios da magia clarividência",
+   "appearance": "Um globo ocular sacoleja dentro desse líquido amarelado, mas desaparece quando a poção é aberta.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 80.0,
+    "days_sheet": 80.0,
+    "craft_cost_gp": 1000,
+    "processes": [
+     "Ativador",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Olho de Harpia",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Lich",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 55.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Clarividência",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-encolher",
+   "name": "Poção De Encolher",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1700.0,
+   "description": "Quando bebe esta poção, você ganha o efeito de “reduzir” da magia aumentar/reduzir por 1d4 horas (não requer concentração).",
+   "appearance": "O vermelho no líquido da poção se contrai constantemente em uma gota minúscula e então se expande para colorir o líquido transparente em volta dele. Sacudir a garrafa não interrompe este processo.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 22.0,
+    "days": 68.0,
+    "days_sheet": 68.0,
+    "craft_cost_gp": 850,
+    "processes": [
+     "Solvente",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Barba de Anão",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pó de Fada",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Dedo de Duplo",
+      "quantidade": 2.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Aumentar/Reduzir",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-escalar",
+   "name": "Poção De Escalar",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "common",
+   "value_gp": 125.0,
+   "description": "Quando bebe esta poção, você ganha deslocamento de escalada igual ao seu deslocamento de caminhada por 1 hora. Durante esse tempo, você tem vantagem em testes de Força (Atletismo) feitos para escalar.",
+   "appearance": "A poção é dividida em uma camada marrom, uma prata e uma cinza lembrando camadas de rocha. Sacudir a garrafa não mistura as cores.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 5.0,
+    "days_sheet": 5.0,
+    "craft_cost_gp": 62.5,
+    "processes": [
+     "Escuro",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Patas de Aranha",
+      "quantidade": 8.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Rabo de Lagartixa",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-forma-gasosa",
+   "name": "Poção De Forma Gasosa",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1100.0,
+   "description": "Quando bebe esta poção, você ganha os efeitos da magia forma gasosa por 1 hora (não requer concentração) ou até você terminar o efeito com uma ação bônus.",
+   "appearance": "O recipiente dessa poção parece conter uma névoa que se move e flui como água.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 44.0,
+    "days_sheet": 44.0,
+    "craft_cost_gp": 550,
+    "processes": [
+     "Escuro",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 80.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 60.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Forma Gasosa",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-forca-do-gigante-da-colina",
+   "name": "Poção De Força Do Gigante Da Colina",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 250.0,
+   "description": "Quando bebe esta poção, seu valor de Força muda para 21 por 1 hora.  A poção não produz efeito em você caso sua Força seja igual ou maior que o valor dela.",
+   "appearance": "O líquido transparente dessa poção tem um pedaço de unha de um gigante do tipo apropriado flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 10.0,
+    "days_sheet": 10.0,
+    "craft_cost_gp": 125,
+    "processes": [
+     "Luz",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Unha de Gigante da Colina",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-heroismo",
+   "name": "Poção De Heroísmo",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2500.0,
+   "description": "Por 1 hora, após bebe-la, você ganha 10 pontos de vida temporários por 1 hora. Pela mesma duração, você está sob efeito da magia benção (não requer concentração).",
+   "appearance": "Esta poção azul borbulha e fumega como se estivesse fervendo.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 22.0,
+    "days": 100.0,
+    "days_sheet": 100.0,
+    "craft_cost_gp": 1250,
+    "processes": [
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais Radiantes",
+      "quantidade": 35.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "item",
+      "nome": "Água Benta",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Heroísmo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Bênção",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-invulnerabilidade",
+   "name": "Poção De Invulnerabilidade",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1200.0,
+   "description": "Por 1 minuto após beber esta poção, você adquire resistência a todos os danos.",
+   "appearance": "O líquido xaroposo dessa poção parece ferro derretido.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 48.0,
+    "days_sheet": 48.0,
+    "craft_cost_gp": 600,
+    "processes": [
+     "Luz",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 40.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Coro de Troll",
+      "quantidade": 2.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Elemental da Terra",
+      "quantidade": 35.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-ler-mentes",
+   "name": "Poção De Ler Mentes",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2000.0,
+   "description": "Quando bebe esta poção, você ganha os efeitos da magia detectar pensamentos (CD de resistência 13).",
+   "appearance": "O líquido roxo denso dessa poção tem uma nuvem ovoide rosa flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 80.0,
+    "days_sheet": 80.0,
+    "craft_cost_gp": 1000,
+    "processes": [
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 75.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Detectar Pensamentos",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-longevidade",
+   "name": "Poção De Longevidade",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 16000.0,
+   "description": "Quando bebe esta poção, sua idade física é reduzida em 1d6 + 6 anos, até o mínimo de 13 anos. Cada vez subsequente que você beber uma poção de longevidade, existe 10 por cento de chance, cumulativo, de você envelhecer 1d6 + 6 anos, invés",
+   "appearance": "Suspenso no líquido âmbar tem um rabo de escorpião, uma presa de víbora, uma aranha morta e um minúsculo coração que, sem qualquer lógica, ainda bate. Estes ingredientes desaparecem quando a poção é aberta",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 26.0,
+    "days": 640.0,
+    "days_sheet": 640.0,
+    "craft_cost_gp": 8000,
+    "processes": [],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue Élfico",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pó de Chifre de Unicórnio",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Rabo de Escorpião",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Presa de Víbora",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Aranha",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Coração de Galinha",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-resistencia",
+   "name": "Poção De Resistência",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 225.0,
+   "description": "Quando bebe esta poção, você ganha resistência a um tipo de dano por 1 hora. O tipo de Dano depende do Componente extra que for colocado sendo: Sais de fogo para fogo, Sais de gelo para Frio, Essencia Eletrica para Eletricidade, C. Morto para Necrotico, C. Acido para Acido, Extrato Vegetal Venenono para veneno, Sais Radiante para Radiante, Sais Energiticos para energia, Sais elementais de Ar para trovejante, Fungos para Psiquico.",
+   "appearance": "Líquido Rosa Pink efervecente",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 16.0,
+    "days": 9.0,
+    "days_sheet": 9.0,
+    "craft_cost_gp": 112.5,
+    "processes": [
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 25.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Resistência",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "livre",
+      "nome": "Componente Extra (define o tipo de dano)",
+      "quantidade": 0.5,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-respirar-na-agua",
+   "name": "Poção De Respirar Na Água",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 150.0,
+   "description": "Você pode respirar embaixo d’água por 1 hora após beber esta poção.",
+   "appearance": "Seu fluido verde nebuloso cheira a maresia e possui uma bolha similar a uma água-viva flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 6.0,
+    "days_sheet": 6.0,
+    "craft_cost_gp": 75,
+    "processes": [
+     "Água",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 40.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Peixe",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Girinos de Sapo",
+      "quantidade": 3.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-sopro-de-fogo",
+   "name": "Poção De Sopro De Fogo",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 250.0,
+   "description": "Quando bebe esta poção, você pode usar uma ação bônus para exalar fogo em um alvo a até 9 metros de você. O alvo deve realizar um teste de resistência de Destreza CD 13, sofrendo 4d6 de dano de fogo se falhar na resistência, ou metade desse dano caso obtenha sucesso. O efeito termina após você expelir fogo três vezes, ou após 1 hora se passar",
+   "appearance": "O líquido laranja desta poção lampeja e fumaça preenche o topo do recipiente e vaza toda vez que ele é aberto.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 17.0,
+    "days": 10.0,
+    "days_sheet": 10.0,
+    "craft_cost_gp": 125,
+    "processes": [
+     "Ativador",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-velocidade",
+   "name": "Poção De Velocidade",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 18000.0,
+   "description": "Quando bebe esta poção, você ganha os efeitos da magia velocidade por 1 minuto (não requer concentração).",
+   "appearance": "O fluido amarelo da poção é matizado de preto e gira em torno de si.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 720.0,
+    "days_sheet": 720.0,
+    "craft_cost_gp": 9000,
+    "processes": [
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 40.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Patas de Grilo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pelo de Guepardo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pena de Grifo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Presas de Behir",
+      "quantidade": 2.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Velocidade",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-vitalidade",
+   "name": "Poção De Vitalidade",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 20000.0,
+   "description": "Quando bebe esta poção, ela remove qualquer exaustão que você esteja sofrendo e cura qualquer doença ou veneno afetando você. Pelas próximas 24 horas, você recupera o valor máximo de pontos de vida para cada Dado de Vida que você gastar.",
+   "appearance": "O líquido carmesim da poção pulsa regularmente com luz pálida, lembrando as batidas de um coração.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 27.0,
+    "days": 800.0,
+    "days_sheet": 800.0,
+    "craft_cost_gp": 10000,
+    "processes": [
+     "Luz",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "item",
+      "nome": "Poção de Cura Maior",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pena de Celestial",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais Radiantes",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-voo",
+   "name": "Poção De Voo",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 15000.0,
+   "description": "Quando bebe esta poção, você ganha deslocamento de voo igual ao seu deslocamento de caminhada por 1 hora, e pode planar. Se você estiver no ar quando o efeito da poção acabar, você cairá, a não ser que tenha outros meios de permanecer no ar.",
+   "appearance": "O líquido transparente dessa poção flutua no topo do recipiente dela e possui impurezas nebulosas flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 600.0,
+    "days_sheet": 600.0,
+    "craft_cost_gp": 7500,
+    "processes": [
+     "Neutralizante",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Grifo",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Asas de Morcego",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pena de Grifo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Voo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-mira-certeira",
+   "name": "Mira Certeira",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "common",
+   "value_gp": 150.0,
+   "description": "Essa poção garante ao usuário vantagem em rolagens de ataque a distância.",
+   "appearance": "O liquido é azulefervecente e tem um olho no centro da poção",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 6.0,
+    "days_sheet": 3.0,
+    "craft_cost_gp": 75.0,
+    "processes": [
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Olho de Gato",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Ataque Certeiro",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-do-pulo",
+   "name": "Poção Do Pulo",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "common",
+   "value_gp": 100.0,
+   "description": "Essa poção garante ao consumidor um pulo a distância maior que o comum, ele consegue pular o dobro",
+   "appearance": "Liquido é verde escuro, muito proximo do mungo",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 4.0,
+    "days_sheet": 2.0,
+    "craft_cost_gp": 50.0,
+    "processes": [
+     "Solvente",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pernas de Sapo",
+      "quantidade": 2.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-acido",
+   "name": "Acido",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 70.0,
+   "description": "Arma Improvisada de ataque a distância (6m) que causa 1d6 de dano corrosivo e pode ser usado para derreter trancas, fechaduras ou outros utensílios menores.",
+   "appearance": "Líquido verde claro que com pequenas bolhas gasosas.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 2.8,
+    "days_sheet": 1.4,
+    "craft_cost_gp": 35.0,
+    "processes": [
+     "Ativador",
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml",
+      "grupo_alternativa": 1
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente Ácido",
+      "quantidade": 5.0,
+      "unidade": "ml",
+      "grupo_alternativa": 1
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-agua-benta",
+   "name": "Agua Benta",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 50.0,
+   "description": "Arma improvisada a distância (6m) que também pode consagrar itens e utensílios, inflige 1d6 de dano radiante em corruptores.",
+   "appearance": "Líquido transparente com uma concentração de luz dourada, muito fraca, em seu centro.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 2.0,
+    "days_sheet": 1.0,
+    "craft_cost_gp": 25.0,
+    "processes": [
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Pó de Prata",
+      "quantidade": 50.0,
+      "unidade": "g"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-antidoto",
+   "name": "Antidoto",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "common",
+   "value_gp": 50.0,
+   "description": "Fornece vantagem para resistir a doenças e venenos naturais nos próximos 1d6 turno. Permite refazer um teste de resistência contra uma doença ou veneno que já esteja afetando o jogador antes do uso da poção.",
+   "appearance": "Líquido roxo opaco",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 2.0,
+    "days_sheet": 1.0,
+    "craft_cost_gp": 25.0,
+    "processes": [
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-cola",
+   "name": "Bomba Cola",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 50.0,
+   "description": "Uma bomba explode dentro de um espaço de 1,5 metros, o alvo deve resistir a um teste de Destreza CD 10 ou ficara incapacitado por 1d4 turnos, até a cola secar. O alvo pode refazer o teste toda vez que seu turno chegar",
+   "appearance": "Líquido preto, muito grosso e viscoso",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 2.0,
+    "days_sheet": 1.0,
+    "craft_cost_gp": 25.0,
+    "processes": [
+     "Ativador",
+     "Escuro"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-de-fumaca",
+   "name": "Bomba De Fumaça",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 70.0,
+   "description": "Trona o local, em um raio de 6m, da detonação em penumbra e pode fazer alvos dentro da área ficarem atordoados com a fumaça, um teste de resistência de constituição CD 8 anula o efeito atordoante. A fumaça se dispersa em 3 turno e em ventos mais fortes dispersa-a em 1 turno.",
+   "appearance": "Pó azul escuro",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 2.8,
+    "days_sheet": 1.4,
+    "craft_cost_gp": 35.0,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-de-luz",
+   "name": "Bomba De Luz",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 50.0,
+   "description": "Um forte “flahs” de luz branca emana do ponto de detonação e se expande a até 4,5m, todas as criaturas que puderem ver a luz ficarão cegas por 1 turno. Resistir a um teste de Constituição CD 10 anula o efeito.",
+   "appearance": "Líquido esverdado, muito claro e transparente",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 2.0,
+    "days_sheet": 1.0,
+    "craft_cost_gp": 25.0,
+    "processes": [
+     "Escuro",
+     "Eletricidade"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-congelante",
+   "name": "Bomba Congelante",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 240.0,
+   "description": "Causam uma explosão num diâmetro de 9m, a energia congelante, causando 3d6 de dano. Um teste de resistência de destreza CD 10 reduzirá o dano pela metade",
+   "appearance": "Líquido azul claro que liberar um nuvem branca dentro do frasco",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 9.6,
+    "days_sheet": 4.8,
+    "craft_cost_gp": 120.0,
+    "processes": [
+     "Neutralizante",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Gelo",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-eletrica",
+   "name": "Bomba Eletrica",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 240.0,
+   "description": "Causam uma explosão num diâmetro de 9m, a energia elétrica, causando 3d6 de dano. Um teste de resistência de destreza CD 10 reduzirá o dano pela metade",
+   "appearance": "Pequena quantidade de líquido cinza no fundo e uma fumaça densa e cinza na parte de cima",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 9.6,
+    "days_sheet": 4.8,
+    "craft_cost_gp": 120.0,
+    "processes": [
+     "Neutralizante",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Essência Elétrica",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-flamejante",
+   "name": "Bomba Flamejante",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 240.0,
+   "description": "Causam uma explosão num diâmetro de 9m, a energia flamejante, causando 3d6 de dano. Um teste de resistência de destreza CD 10 reduzirá o dano pela metade",
+   "appearance": "Liquido vermelho escuro",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 9.6,
+    "days_sheet": 4.8,
+    "craft_cost_gp": 120.0,
+    "processes": [
+     "Neutralizante",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-explosiva",
+   "name": "Bomba Explosiva",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 160.0,
+   "description": "Causam 3d6 de dano de contusão e 1d6 de dano flamejante num raio de 3m, nos próximos 3m inflige 2d6 de dano contusivo e nos 3m seguintes, causa 1d6 de dano contusivo, encerrando seu impacto após atingir 9m de raio.",
+   "appearance": "Pó cinza escuro",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 6.4,
+    "days_sheet": 3.2,
+    "craft_cost_gp": 80.0,
+    "processes": [
+     "Solvente",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 35.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-reveladora",
+   "name": "Bomba Reveladora",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 120.0,
+   "description": "Numa forte explosão de 24m de diâmetro que mais lembra um fogo de artificio que se perdeu no chão, o impacto contorna paredes e muretas, depositando um sedimento brilhoso sobre formas que se mecham, o simples respirar ou andar revelará a presença da pessoa, que emanará uma luz plena de 1,5m e penumbra de 1,5m. Resistir a um teste de Sabedoria CD 10 anula o efeito",
+   "appearance": "Líquido Dourado",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 4.8,
+    "days_sheet": 2.4,
+    "craft_cost_gp": 60.0,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-fogo-vivo",
+   "name": "Fogo Vivo",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 70.0,
+   "description": "Arma improvisada a distância (6m) que inflige 1d4 de dano flamejante todo turno ao alvo, um sucesso no teste de Destreza CD 10 ou gastar uma ação dedicando-se as chamas apagará o fogo.",
+   "appearance": "Liquido vermelho alaranjado",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 2.8,
+    "days_sheet": 1.4,
+    "craft_cost_gp": 35.0,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 15.0,
+      "unidade": "ml",
+      "grupo_alternativa": 1
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 5.0,
+      "unidade": "ml",
+      "grupo_alternativa": 1
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-incenso-atordoante",
+   "name": "Incenso Atordoante",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 180.0,
+   "description": "Pedras que, ao serem queimadas liberam fumaça e odor, enchendo um espaço de 36m³. Com um cheiro que lembra levemente um animal morto, um lixão ou o cheiro intenso de enxofre. Todos que ficarem no espaço devem resistir a um teste de \nconstituição CD 12 ou ficaram com a condição atordoado. O alvo pode refazer o teste quando seu turno chegar novamente, se resistir, ficara imune ao efeito desse incenso até o fim da sua duração. Sua duração é de 1d4 minutos",
+   "appearance": "Pedra redonda verde escura",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 7.2,
+    "days_sheet": 3.6,
+    "craft_cost_gp": 90.0,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-incenso-dissipador",
+   "name": "Incenso Dissipador",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 430.0,
+   "description": "Pedras que, ao serem queimadas liberam fumaça e odor, enchendo um espaço de 36m³. Ao ser aceso o incenso enche o espaço com uma névoa densa com pequenos cristais aparentes flutuando, qualquer indivíduo que entre nessa névoa fica submetido a condição de “campo de magia morta”. Sua duração é de 1d4 minutos",
+   "appearance": "Pedra redonda azulada",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 17.2,
+    "days_sheet": 8.6,
+    "craft_cost_gp": 215,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-incenso-da-protecao",
+   "name": "Incenso Da Proteção",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 550.0,
+   "description": "Pedras que, ao serem queimadas liberam fumaça e odor, enchendo um espaço de 36m³ .Após acender o incenso ele enchera um ambiente com seu perfume, no qual é imperceptível ao olho nu, a área ficará com o efeito da magia “Proteção contra bem/mal”, contudo, o tipo de inimigo deverá ser selecionado na fabricação do produto e não na hora da queima. Sua duração é de 1d4 minutos.",
+   "appearance": "Pedra redonda Amarela",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 22.0,
+    "days_sheet": 11.0,
+    "craft_cost_gp": 275,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Proteção Contra O Bem E Mal",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-incenso-do-foco",
+   "name": "Incenso Do Foco",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 180.0,
+   "description": "Sobre a necessidade de fazer uma atividade muito complexa, vista que é uma oportunidade boa já que o local não apresenta perigo algum, um jogador pode se submeter a um descanso curto em volta desse tipo de incenso e ganhará 1 ponto de inspiração bônus até as próximas 24h.",
+   "appearance": "Pedra redonda Marrom",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 7.2,
+    "days_sheet": 3.6,
+    "craft_cost_gp": 90.0,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-incenso-do-pressagio",
+   "name": "Incenso Do Pressagio",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 430.0,
+   "description": "Ao queima-lo direto com as chamas vivas de uma fogueira, sons abafados e visões distorcidas emergirão das chamas, contendo nelas uma verdade ou uma charada, sobre o passado, o presente ou o futuro, nunca se sabe, as visões funcionam de forma aleatória, têm grande peso com os sentimentos e traz imagens sobre quem atirou o incenso sobre as chamas. Um teste de história, arcanismo ou religião CD 12, dependendo do contexto, pode revelar algumas informações sobre a já tão destorcida verdade.",
+   "appearance": "Pedra redonda vermalha",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 17.2,
+    "days_sheet": 8.6,
+    "craft_cost_gp": 215.0,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Adivinhação",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-sopro-congelante",
+   "name": "Sopro Congelante",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 520.0,
+   "description": "Garante ao usuário a habilidade de baforar um cone de 9m, de gelo que inflige 2d6 de dano. Um teste de resistência de destreza CD 12 reduzirá o dano pela metade.",
+   "appearance": "Pó transparente branco e brilhante",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 20.8,
+    "days_sheet": 10.4,
+    "craft_cost_gp": 260.0,
+    "processes": [
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Gelo",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-sopro-corrosivo",
+   "name": "Sopro Corrosivo",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 520.0,
+   "description": "Garante ao usuário a habilidade de baforar um cone de 9m, de acido que inflige 2d6 de dano. Um teste de resistência de destreza CD 12 reduzirá o dano pela metade.",
+   "appearance": "Pó esverdeado",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 20.8,
+    "days_sheet": 10.4,
+    "craft_cost_gp": 260.0,
+    "processes": [
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente Ácido",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-sopro-eletrico",
+   "name": "Sopro Elétrico",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 520.0,
+   "description": "Garante ao usuário a habilidade de baforar um cone de 9m, de eletrico que inflige 2d6 de dano. Um teste de resistência de destreza CD 12 reduzirá o dano pela metade.",
+   "appearance": "Pó Azulado",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 20.8,
+    "days_sheet": 10.4,
+    "craft_cost_gp": 260.0,
+    "processes": [
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Essência Elétrica",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-sopro-flamejante",
+   "name": "Sopro Flamejante",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 520.0,
+   "description": "Garante ao usuário a habilidade de baforar um cone de 9m, de fogo que inflige 2d6 de dano. Um teste de resistência de destreza CD 12 reduzirá o dano pela metade.",
+   "appearance": "Pó vermelho alaranjado",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 20.8,
+    "days_sheet": 10.4,
+    "craft_cost_gp": 260.0,
+    "processes": [
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-papel-eletrico",
+   "name": "Papel Elétrico",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 160.0,
+   "description": "Após friccionar o papel sobre uma lamina ou projétil, o mesmo adquire 1d6 de dano elétrico aplicado por 1d6 rodadas. Em níveis superiores o papel durará 1 turno a mais a cada nível acima do primeiro, e no 5º nível ganhará um 1d6 de dano extra.",
+   "appearance": "Papel laminado Azul",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 6.4,
+    "days_sheet": 3.2,
+    "craft_cost_gp": 80.0,
+    "processes": [
+     "Neutralizante",
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Essência Elétrica",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-papel-flamejante",
+   "name": "Papel Flamejante",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "common",
+   "value_gp": 160.0,
+   "description": "Após friccionar o papel sobre uma lamina ou projétil, o mesmo adquire 1d6 de dano flamejante aplicado por 1d6 rodadas. Em níveis superiores o papel durará 1 turno a mais a cada nível acima do primeiro, e no 5º nível ganhará um 1d6 de dano extra.",
+   "appearance": "Papel laminado vermelho",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 6.4,
+    "days_sheet": 3.2,
+    "craft_cost_gp": 80.0,
+    "processes": [
+     "Neutralizante",
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-energetica",
+   "name": "Poção Energética",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "common",
+   "value_gp": 100.0,
+   "description": "Restaura 1 nível de conjuração que já tenha sido gasta anteriormente pelo usuário. Em níveis superiores a poção consegue restaurar +1 nível, no qual pode ser distribuído como o jogador quiser. Ex.: Duain, necessita restaurar suas energias com urgência, então ele bebe um frasco de restauração de nível 3, ele pode optar em: restaurar 1 magia de 3º nível, restaurar uma e 1º e outra de 2º nível ou restaurar 3 cargas de 1º nível.",
+   "appearance": "Poção alaranjada, brilhosa e borbulhante",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 4.0,
+    "days_sheet": 2.0,
+    "craft_cost_gp": 50.0,
+    "processes": [
+     "Água",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-vela-da-verdade",
+   "name": "Vela Da Verdade",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 30.0,
+   "description": "Ao acender essa vela, imediatamente, o ambiente que ela ilumina será tomado pela magia “Zona da Verdade”. A vela dura um total de 5 minutos (50 rodadas) e ela pode ser apagada e acesa, dando o poder de administrar o uso desse item pelo tempo que lhe for conveniente.  Resistir a um teste de sabedoria CD 14 anulará o efeito da magia até as próximas 24h.",
+   "appearance": "Vela dourada",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 1.2,
+    "days_sheet": 0.6,
+    "craft_cost_gp": 15.0,
+    "processes": [
+     "Luz",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Zona da Verdade",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-veneno-basico",
+   "name": "Veneno Básico",
+   "kind": "consumable",
+   "category": "poison",
+   "rarity": "common",
+   "value_gp": 150.0,
+   "description": "O usuário deve aplicar o veneno em uma lamina ou até 4 projeteis e dura 1d6 turnos antes de secar. O alvo deve resistir a um teste de resistência de Constituição CD 12 ou ficará em condição “envenenado”",
+   "appearance": "Poção verde escuro proximo do preto",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 6.0,
+    "days_sheet": 3.0,
+    "craft_cost_gp": 75.0,
+    "processes": [
+     "Solvente"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bastao-de-fumaca",
+   "name": "Bastão De Fumaça",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 50.0,
+   "description": "Usando sua ação, você pode acender esse bastão e arremessa-lo a até 6 metros de distância. Ele emanará escuridão densa numa esfera com 3 metros de raio, no ponto onde cair, por 3 rodadas. Após esse período a fumaça se dispersa naturalmente e o bastão fica inútil.",
+   "appearance": "Um bastão cinza com rigido, que quando agitado entra em efeito",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 2.0,
+    "days_sheet": 1.0,
+    "craft_cost_gp": 25.0,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bastao-solar",
+   "name": "Bastão Solar",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 200.0,
+   "description": "Quando esse bastão é partido, ele emite um clarão luminoso que pode cegar as criaturas na área. Usando sua ação, você pode arremessar o bastão a até 6 metros de você e ele se partir criando uma explosão luminosa numa esfera de 3 metros de raio. As criaturas na área devem ser bem sucedidas num teste de resistência de Constituição CD 12 ou ficarão cegas até o final do seu próximo turno.",
+   "appearance": "Um bastão branco com rigido, que quando agitado entra em efeito",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 8.0,
+    "days_sheet": 4.0,
+    "craft_cost_gp": 100.0,
+    "processes": [
+     "Neutralizante",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bolsa-de-cola",
+   "name": "Bolsa De Cola",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 100.0,
+   "description": "Essa bolsa de couro tem uma substância pegajosa em seu interior que se endurece em contato com o ar. Usando sua ação, você pode realiza uma jogada de ataque a distância com arma contra uma criatura a até 6 metros de você. Se atingir, a criatura ficara impedida até o final do próximo turno dela. Após isso, ela pode realizar um teste de resistência de Força CD 12 para se libertar da cola. A cola seca e se dispersa naturalmente após 1 minuto.",
+   "appearance": "Uma \"bolsa\" preta, amorfa",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 4.0,
+    "days_sheet": 2.0,
+    "craft_cost_gp": 50.0,
+    "processes": [
+     "Ativador",
+     "Escuro"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pedra-trovao",
+   "name": "Pedra Trovão",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "uncommon",
+   "value_gp": 100.0,
+   "description": "Essa pedra sólida é feita de um material que emite uma poderosa onda sonora quando partido. Usando sua ação, você pode realizar um ataque a distância com arma contra uma criatura a até 6 metros de você. Se o ataque atingir, a criatura deve ser bem sucedida num teste de resistência de Constituição CD 12 ou sofrerá 1d4 + seu modificador de Inteligência de dano trovejante e ficará surda até o final do seu próximo turno.",
+   "appearance": "Pedra solida cinza clara",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 12.0,
+    "days": 4.0,
+    "days_sheet": 2.0,
+    "craft_cost_gp": 50.0,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-cura-maior",
+   "name": "Cura Maior",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 250.0,
+   "description": "Você recupera 4d4 + 4 pontos de vida quando bebe esta poção.",
+   "appearance": "líquido vermelho da poção cintila quando agitado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 10.0,
+    "days": 10.0,
+    "days_sheet": 10.0,
+    "craft_cost_gp": 125,
+    "processes": [
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-cura-superior",
+   "name": "Cura Superior",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1000.0,
+   "description": "Você recupera 8d4 + 8 pontos de vida quando bebe esta poção.",
+   "appearance": "líquido vermelho da poção cintila quando agitado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 14.0,
+    "days": 40.0,
+    "days_sheet": 40.0,
+    "craft_cost_gp": 500,
+    "processes": [
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "item",
+      "nome": "Água Benta",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-cura-suprema",
+   "name": "Cura Suprema",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 13000.0,
+   "description": "Você recupera 10d4 + 20 pontos de vida quando bebe esta poção.",
+   "appearance": "líquido vermelho da poção cintila quando agitado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 520.0,
+    "days_sheet": 520.0,
+    "craft_cost_gp": 6500,
+    "processes": [
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "item",
+      "nome": "Água Benta",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Empírico",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-oleo-de-precisao",
+   "name": "Óleo De Precisão",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 15000.0,
+   "description": "O óleo pode cobrir uma arma cortante ou perfurante ou até 5 munições cortantes ou perfurantes. Aplicar o óleo leva 1 minuto. Por 1 hora, o item coberto será mágico e terá +3 de bônus nas jogadas de ataque e dano.",
+   "appearance": "Este óleo claro e gelatinoso cintila com minúsculos fragmentos de prata ultrafinos",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 600.0,
+    "days_sheet": 600.0,
+    "craft_cost_gp": 7500,
+    "processes": [
+     "Calor",
+     "Escuro"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Grifo",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Olho de Águia",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 60.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Óleo de Lâmia",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Ataque Certeiro",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-forca-do-gigante-de-pedra-gelo",
+   "name": "Poção Força Do Gigante De Pedra/Gelo",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1500.0,
+   "description": "Quando bebe esta poção, seu valor de Força muda para 23 por 1 hora.  A poção não produz efeito em você caso sua Força seja igual ou maior que o valor dela.",
+   "appearance": "O líquido transparente dessa poção tem um pedaço de unha de um gigante do tipo apropriado flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 60.0,
+    "days_sheet": 60.0,
+    "craft_cost_gp": 750,
+    "processes": [
+     "Luz",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Dedo de Gigante de Gelo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Gigante do Gelo",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Gelo",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-forca-do-gigante-do-fogo",
+   "name": "Poção Força Do Gigante Do Fogo",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2000.0,
+   "description": "Quando bebe esta poção, seu valor de Força muda para 25 por 1 hora.  A poção não produz efeito em você caso sua Força seja igual ou maior que o valor dela.",
+   "appearance": "O líquido transparente dessa poção tem um pedaço de unha de um gigante do tipo apropriado flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 23.0,
+    "days": 80.0,
+    "days_sheet": 80.0,
+    "craft_cost_gp": 1000,
+    "processes": [
+     "Luz",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Dedo de Gigante de Fogo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Gigante de Fogo",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-forca-do-gigante-das-nuvens",
+   "name": "Poção Força Do Gigante Das Nuvens",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 12500.0,
+   "description": "Quando bebe esta poção, seu valor de Força muda para 27 por 1 hora.  A poção não produz efeito em você caso sua Força seja igual ou maior que o valor dela.",
+   "appearance": "O líquido transparente dessa poção tem um pedaço de unha de um gigante do tipo apropriado flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 500.0,
+    "days_sheet": 500.0,
+    "craft_cost_gp": 6250,
+    "processes": [
+     "Luz",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Dedo de Gigante da Nuvem",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Gigante da Nuvem",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 75.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-forca-do-gigante-da-tempestade",
+   "name": "Poção Força Do Gigante Da Tempestade",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "legendary",
+   "value_gp": 30000.0,
+   "description": "Quando bebe esta poção, seu valor de Força muda para 29 por 1 hora.  A poção não produz efeito em você caso sua Força seja igual ou maior que o valor dela.",
+   "appearance": "O líquido transparente dessa poção tem um pedaço de unha de um gigante do tipo apropriado flutuando nele.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 30.0,
+    "days": 1200.0,
+    "days_sheet": 1200.0,
+    "craft_cost_gp": 15000,
+    "processes": [
+     "Luz",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Dedo de Gigante da Tempestade",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Gigante da Tempestade",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Essência Elétrica",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-sangue-acido",
+   "name": "Poção De Sangue Ácido",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 15000.0,
+   "description": "Beber esta poção dá ao seu sangue uma qualidade ácida por 1 hora. Durante esse tempo, sempre que você receber dano cortante ou perfurante de uma criatura a até 1,5m de você, essa criatura leva metade da quantidade de dano sofrido em dano ácido. A criatura pode fazer um teste de resistência de Destreza CD 14 para reduzir este dano à metade novamente. Enquanto o efeito da poção está ativo você também ganha resistência contra ácido.",
+   "appearance": "Liquido verde com pequenas escamas de dragão Verde",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 600.0,
+    "days_sheet": 600.0,
+    "craft_cost_gp": 7500,
+    "processes": [
+     "Escuro",
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente Ácido",
+      "quantidade": 60.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 40.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escamas de Dragão Verde Filhote",
+      "quantidade": 10.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-arco-voltaico",
+   "name": "Poção De Arco Voltaico",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2000.0,
+   "description": "Por um período de 1 hora depois de beber esta poção cada vez que você realiza um ataque corpo-a-corpo bem-sucedido um relâmpago causa 1d4 de dano adicional no seu alvo. Enquanto a magia da poção estiver ativa, conjuradores a até 6 metros de você podem optar por usá-lo como um ponto de origem de feitiço ao conjurar um feitiço que cause danos de relâmpago. O feitiço depende do conjurador do feitiço original para todos os seus atributos que não sejam de alcance.",
+   "appearance": "O líquido cinzento nublado da poção lembra uma nuvem de tempestade soprando. Ocasionalmente flashes de luz ocorrem através dela.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 23.0,
+    "days": 80.0,
+    "days_sheet": 80.0,
+    "craft_cost_gp": 1000,
+    "processes": [
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Essência Elétrica",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Azul (kg)",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-do-sabor-ruim",
+   "name": "Poção Do Sabor Ruim",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1250.0,
+   "description": "Depois de beber esta poção sua pele assume uma propriedade que quando os animais mordem acham o gosto podre. Quando você recebe dano como resultado de um ataque de mordida, o atacante deve ser bem sucedido em um teste de Constituição de CD 15 ou então recebe 1d4 de dano de veneno e fica envenenado até o final do seu próximo turno. O efeito da poção dura 1 hora. Se acontecer de você ser engolido inteiro por uma criatura durante este tempo, a criatura recebe 4d4 de dano de veneno, e fica envenenada até o final de seu próximo turno e imediatamente o regurgita.",
+   "appearance": "O líquido dentro deste frasco é roxo, obscuro e com nuvens pretas redondas. Ele faz você se sentir um pouco nauseado apenas olhando para ele. Apesar de seu nome, seu sabor é agradável quando consumido.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 50.0,
+    "days_sheet": 50.0,
+    "craft_cost_gp": 625,
+    "processes": [
+     "Solvente",
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Óleo de Lâmia",
+      "quantidade": 2.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-fala-caotica",
+   "name": "Poção De Fala Caótica",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 500.0,
+   "description": "Beber esta poção concede-lhe um bônus de +2 para os testes de habilidade baseados em Carisma feitos ao interagir com criaturas de alinhamento caótico. Este bônus dura 24 horas. Durante este tempo você pode usar uma ação bônus para emitir um grito caótico. Este grito causa 1d6 de dano de trovão a todas as criaturas em um cubo de 4,5m originando de você. Este trovão causa 2d6 de dano adicional em criaturas de alinhamento leal e os ensurdece por 1 minuto. Cada criatura na área de efeito pode fazer um teste de resistência de Constituição com CD 13, se for bem-sucedido recebe apenas metade do dano e evita o efeito ensurdecedor. Você só pode usar este grito duas vezes durante a duração da poção.",
+   "appearance": "A garrafa contém um líquido carmesim que lentamente se condensa em uma bola espetada em seu centro deixando para trás um líquido claro. A bola então explode, retornando a poção à sua cor normal.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 17.0,
+    "days": 20.0,
+    "days_sheet": 20.0,
+    "craft_cost_gp": 250,
+    "processes": [
+     "Água",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoplasma de Banshee",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-sangue-de-cocatriz",
+   "name": "Poção De Sangue De Cocatriz",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2700.0,
+   "description": "Beber esta poção concede proteção contra petrificação. A magia da poção permanece adormecida em seu sistema até a próxima vez que um feitiço ou efeito resulte em sua petrificação no momento em que a magia ativa ela reverte instantaneamente de volta ao normal.",
+   "appearance": "fluido vermelho translúcido.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 108.0,
+    "days_sheet": 108.0,
+    "craft_cost_gp": 1350,
+    "processes": [
+     "Solvente"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Cocatriz",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escamas de Cocatriz",
+      "quantidade": 5.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pena de Cocatriz",
+      "quantidade": 2.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-adaptacao-de-dano",
+   "name": "Poção De Adaptação De Dano",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 5000.0,
+   "description": "Depois de beber esta poção sua magia permanece adormecida em seu sistema até a próxima vez que você receber dano de um tipo específico. Você imediatamente ganha resistência a esse tipo de dano por 1 hora.",
+   "appearance": "Flocos de escamas de uma variedade de dragões podem ser vistos flutuando através do líquido translúcido.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 200.0,
+    "days_sheet": 200.0,
+    "craft_cost_gp": 2500,
+    "processes": [
+     "Solvente",
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 100.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Verde (kg)",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Branco (kg)",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Negro (kg)",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Azul (kg)",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Vermelho (kg)",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-gavinhas-negras",
+   "name": "Poção De Gavinhas Negras",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 5575.0,
+   "description": "Beber esta poção concede-lhe resistência a dano radiante durante 1 minuto. Enquanto esta poção estiver ativa brotam em você quatro gavinhas compostas de névoa – do tipo de energia necrótica. Você pode usar uma ação bônus para fazer um ataque de magia corpo-a-corpo contra uma criatura a até 3 metros de você com um bônus de ataque de +6. Em caso de acerto a criatura sofre 1d6+3 de dano necrótico. Este ataque pode ser usado 4 vezes durante a duração da poção. Cada vez que é usado uma das gavinhas desaparecerá.",
+   "appearance": "Uma seção de tentáculo de um polvo flutua no líquido cinza escuro da garrafa.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 24.0,
+    "days": 223.0,
+    "days_sheet": 223.0,
+    "craft_cost_gp": 2787.5,
+    "processes": [
+     "Solvente",
+     "Escuro"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Tentáculo de Polvo",
+      "quantidade": 4.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Tentáculo de Kraken",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-cura-retardada",
+   "name": "Poção De Cura Retardada",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 10250.0,
+   "description": "Beber esta poção não surte efeito imediato. Em vez disso, sua magia permanece adormecida em seu sistema até a primeira vez que seus pontos de vida caem abaixo da metade. Nesse momento role um número de d6 igual ao seu nível e recupere este valor de pontos de vida.",
+   "appearance": "Há um punhado de algo pequeno e vermelho profundamente dentro do líquido tipo melaço contido na garrafa.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 410.0,
+    "days_sheet": 410.0,
+    "craft_cost_gp": 5125,
+    "processes": [
+     "Calor",
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 60.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Empírico",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-sangue-anao",
+   "name": "Poção De Sangue Anão",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1000.0,
+   "description": "Beber esta poção temporariamente lhe concede os seguintes traços de anão por um período de 24 horas: visão no escuro, resiliência anã, treinamento de combate dos anões, e apedrejamento. Você também ganha a habilidade de falar, ler e escrever anão. Enquanto o efeito da poção estiver ativo você ganha um bônus de +1 para os testes de perícia baseadas em Carisma feitas ao interagir com anões.",
+   "appearance": "A poção é translúcida de cor bronzeada e parece ter pedaços de sujeira e pedra flutuando por ela.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 40.0,
+    "days_sheet": 40.0,
+    "craft_cost_gp": 500,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 60.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Mecha de Cabelo Élfico",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue Élfico",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-sangue-elfico",
+   "name": "Poção De Sangue Élfico",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 1000.0,
+   "description": "Beber esta poção concede-lhe temporariamente as seguintes características élficas por um período de 24 horas: visão no escuro, sentidos aguçados, ancestral feérico e transe. Você também ganha a capacidade de falar, ler e escrever em élfico. Enquanto oefeito da poção estiver ativo, você ganha um bônus de +1 para os testes de habilidade baseados em Carisma feitos ao interagir com elfos.",
+   "appearance": "A poção é translúcida de cor verde e parece ter pedaços de folhas e casca flutuando através dela.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 40.0,
+    "days_sheet": 40.0,
+    "craft_cost_gp": 500,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 60.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Barba de Anão",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 70.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Anão",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-aura-ardente",
+   "name": "Poção De Aura Ardente",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2000.0,
+   "description": "Beber esta poção concede-lhe resistência a dano de gelo por 1 hora. Durante este tempo, sempre que você causar danos corpo a corpo todas as criaturas a até 1,5m de você tomam 1 ponto de dano de fogo.",
+   "appearance": "O líquido da poção é dividido entre uma porção clara que fica perto do topo e uma poção laranja e vermelha como uma nuvem que está constantemente turva no fundo da garrafa. A garrafa em si é quente apenas ao toque.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 80.0,
+    "days_sheet": 80.0,
+    "craft_cost_gp": 1000,
+    "processes": [
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Gelo",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Glândula de Cão do Inferno",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Vermelho (kg)",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-aterramento",
+   "name": "Poção De Aterramento",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2000.0,
+   "description": "Beber esta poção concede-lhe uma resistência a danos do tipo relâmpago durante 1 hora. As criaturas próximas também ganham resistência aos danos causados pelo raio, desde que estejam a até 3 metros de você quando tomarem o dano.",
+   "appearance": "Uma haste de cobre flutua no centro do líquido de céu azulado contido nesta garrafa.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 19.0,
+    "days": 80.0,
+    "days_sheet": 80.0,
+    "craft_cost_gp": 1000,
+    "processes": [
+     "Neutralizante",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Essência Elétrica",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Haste de Cobre Encantada",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-aura-glacial",
+   "name": "Poção De Aura Glacial",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 2000.0,
+   "description": "Beber esta poção concede-lhe resistência a danos do tipo fogo durante 1 hora. Durante este tempo, sempre que você causar dano do tipo corpo a corpo todas as criaturas a até 1,5m de você recebem 1 ponto de dano de gelo.",
+   "appearance": "O líquido da poção é dividido entre uma parcela turva que flutua perto do topo e uma parte clara que repousa sobre o fundo. Parece que está nevando dentro da garrafa e sua superfície é fria ao toque.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 80.0,
+    "days_sheet": 80.0,
+    "craft_cost_gp": 1000,
+    "processes": [
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Fogo",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Gelo",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Glândula de Lobo Invernal",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escama de Dragão Branco (kg)",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-luta-melhorada",
+   "name": "Poção De Luta Melhorada",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 150.0,
+   "description": "Beber esta poção concede-lhe uma visão útil no calor da batalha. Você ganha um bônus de +1 em seus testes de ataque corpo a corpo e um bônus de +2 em seus testes de ataque ao fazer um ataque de oportunidade. Este efeito dura 1 hora.",
+   "appearance": "O flash ocasional causado por um choque pode ser discernido olhando profundamente dentro deste líquido obscuro.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 16.0,
+    "days": 6.0,
+    "days_sheet": 6.0,
+    "craft_cost_gp": 75,
+    "processes": [
+     "Solvente",
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Orc",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-discurso-do-leal",
+   "name": "Poção Discurso do Leal",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 500.0,
+   "description": "Beber esta poção concede-lhe um bônus de +2 para os testes de habilidade baseados em Carisma feitos ao interagir com criaturas de alinhamento leal. Este bônus dura 24 horas. Durante este tempo você pode usar uma ação bônus para emitir um grito do leal. Este grito causa 1d6 de dano do tipo relâmpago a todas as criaturas em um cubo de 4,5m originado de você. Ele causa 2d6 de dano de relâmpago adicional em criaturas de alinhamento caótico e os ensurdece por 1 minuto. Cada criatura na área do efeito pode fazer um teste de resistência de Constituição (CD 13), se for bem sucedido recebe metade do dano e evita o efeito ensurdecedor. Você só pode usar este grito duas vezes durante a duração da poção.",
+   "appearance": "A garrafa contém um líquido de prata que lentamente se condensa em uma esfera perfeita em seu centro deixando para trás um líquido claro. A esfera então explode, retornando a poção à sua cor normal.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 18.0,
+    "days": 20.0,
+    "days_sheet": 20.0,
+    "craft_cost_gp": 250,
+    "processes": [
+     "Água",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Escamas de Naga",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-confusao-magica",
+   "name": "Poção De Confusão Mágica",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 4000.0,
+   "description": "Por um período de 1 hora após beber esta poção conjuradores que tentem atingir você, vão sentir dificuldade de  se concentrar para lhe acertar. As magias que se destinam a você e que necessitam de um teste de ataque bem sucedido sofrem uma penalidade de 1d4+1 para a rolagem. Você também ganha um bônus de +3 para todos os testes de resistência feitos contra magias que tenham você como alvo durante este tempo.",
+   "appearance": "Esta garrafa eseu interior parecem desfocados. É difícil olhar para ele por qualquer período de tempo sem ganhar uma dor de cabeça.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 22.0,
+    "days": 160.0,
+    "days_sheet": 160.0,
+    "craft_cost_gp": 2000,
+    "processes": [
+     "Ativador",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Essência de Fogo-Fátuo",
+      "quantidade": 60.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-do-discurso-malevolente",
+   "name": "Poção Do Discurso Malevolente",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 500.0,
+   "description": "Beber esta poção concede-lhe um bônus de +2 para os testes de habilidade baseados em Carisma feitos ao interagir com criaturas de alinhamento mal. Este bônus dura 24 horas. Durante este tempo você pode usar uma ação bônus para emitir um grito malévolo. Este grito causa 1d6 de dano do tipo relâmpago a todas as criaturas em um cubo de 4,5m originado de você. Ele causa 2d6 de dano de relâmpago adicional em criaturas de alinhamento leal e os ensurdece por 1 minuto. Cada criatura na área do efeito pode fazer um teste de resistência de Constituição (CD 13), se for bem sucedido recebe metade do dano e evita o efeito ensurdecedor.  Você só pode usar este grito duas vezes durante a duração da poção.",
+   "appearance": "A garrafa contém um líquido de cor de ébano que lentamente se condensa em uma pirâmide sólida em seu centro deixando para trás um líquido claro. A pirâmide então explode, retornando a poção à sua cor normal.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 19.0,
+    "days": 20.0,
+    "days_sheet": 20.0,
+    "craft_cost_gp": 250,
+    "processes": [
+     "Água",
+     "Calor",
+     "Escuro"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-duplicacao",
+   "name": "Poção De Duplicação",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 15000.0,
+   "description": "Quando encontrada a magia desta poção será inerte. Se for colocada junto a outra garrafa contendo uma poção mágica e deixada em repouso durante 24 horas, a poção nesta garrafa assumirá as propriedades da poção ao lado, criando uma poção duplicada.",
+   "appearance": "conter água, no entanto o líquido brilha brilhantemente e desloca-se através de um espectro de cores quando agitado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 25.0,
+    "days": 600.0,
+    "days_sheet": 600.0,
+    "craft_cost_gp": 7500,
+    "processes": [
+     "Solvente",
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 100.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 80.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 40.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Dedo de Duplo",
+      "quantidade": 2.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Gordura de Duplo",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Cinzas de Oni",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-aceleracao",
+   "name": "Poção De Aceleração",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 225.0,
+   "description": "Beber esta poção sob o efeito de um feitiço lento terminará automaticamente o efeito da mágica em você. Se você beber esta poção enquanto não efetuado por um feitiço lento a poção vai fazer você ligeiramente mais rápido por 1 minuto. Durante este tempo, sua velocidade aumenta em ½, você ganha um bônus de +1 para o seu AC, e você ganha uma ação adicional em todos os outros turnos. A ação adicional só pode ser usada para executar a ação Ataque (um ataque de arma apenas), Dash, Desengatar, Ocultar ou Usar e Objeto.",
+   "appearance": "A poção tem um matiz prateado com pequenos flocos de ouro flutuando por ela. O líquido que circula constantemente forma um minúsculo hidromassagem às vezes.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 17.0,
+    "days": 9.0,
+    "days_sheet": 9.0,
+    "craft_cost_gp": 112.5,
+    "processes": [
+     "Solvente",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Reflexos",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pó de Golem de Barro",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-repulsao",
+   "name": "Poção De Repulsão",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 350.0,
+   "description": "Depois de beber esta poção, quando uma criatura fizer um ataque corpo a corpo bem sucedido contra você, todas as criaturas a até 1,5m de você devem ter sucesso em um teste de resistência de Constituição CD 13 ou então recebem 1d4 de dano de força e são empurradas a 3 metros de distância. Este efeito dura 1 minuto.",
+   "appearance": "A poção é composta de uma violenta mistura violácea que pulsa constantemente apesar de esticar contra os confins de seu recipiente. As garrafas que contêm esta poção desenvolvem frequentemente uma teia de aranha de rachaduras minúsculas em cima de sua superfície.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 14.0,
+    "days_sheet": 14.0,
+    "craft_cost_gp": 175,
+    "processes": [
+     "Solvente",
+     "Neutralizante"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Minério Estelar",
+      "quantidade": 55.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ovos de Aranha Selvagem",
+      "quantidade": 2.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-do-discurso-justo",
+   "name": "Poção Do Discurso Justo",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 500.0,
+   "description": "Beber esta poção concede-lhe um bônus de +2 para os testes de habilidade baseados em Carisma feitos ao interagir com criaturas de alinhamento bom. Este bônus dura 24 horas. Durante este tempo você pode usar uma ação bônus para emitir um grito do bem. Este grito causa 1d6 de dano do tipo relâmpago a todas as criaturas em um cubo de 4,5m originado de você. Ele causa 2d6 de dano de relâmpago adicional em criaturas de alinhamento mal e os ensurdece por 1 minuto. Cada criatura na área do efeito pode fazer um teste de resistência de Constituição (CD 13), se for bem sucedido recebe metade do dano e evita o efeito ensurdecedor. Você só pode usar este grito duas vezes durante a duração da poção.",
+   "appearance": "A garrafa contém um fluido dourado que lentamente se condensa em uma forma de diamante em seu centro deixando para trás um líquido claro. O diamante então explode, retornando a poção à sua cor normal.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 18.0,
+    "days": 20.0,
+    "days_sheet": 20.0,
+    "craft_cost_gp": 250,
+    "processes": [
+     "Água",
+     "Calor",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais Radiantes",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "item",
+      "nome": "Água Benta",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-escudos",
+   "name": "Poção De Escudos",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 625.0,
+   "description": "Beber esta poção faz com que três pequenos escudos, compostos de energia translúcida, se manifestem e orbite lentamente. Durante ominuto seguinte cada vez que um ataque é feito contra você, antes que seu dano tenha sido recebido, você pode optar por ter resistência a ele. Você pode usar essa habilidade contra três ataques enquanto a magia da poção estiver ativa. Cada vez que é usado, um dos escudos flutuantes desaparecerá. O efeito da poção dura 1 hora ou até que todos os escudos tenham sido usados.",
+   "appearance": "A garrafa contém uma luz azul líquida. Imagens de escudos flutuantes aparecem esporadicamente dentro (e às vezes apenas fora) da garrafa.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 25.0,
+    "days_sheet": 25.0,
+    "craft_cost_gp": 312.5,
+    "processes": [
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sais Radiantes",
+      "quantidade": 2.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Proteção contra Energia",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-armazenamento-de-magias",
+   "name": "Poção De Armazenamento De Magias",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 37500.0,
+   "description": "O líquido contido dentro desta garrafa é inerte até que um feitiço de 5° nível ou menor seja lançado sobre ele. Em vez de criar o efeito, a magia da mágica fica armazenada na poção. Quando você bebe a poção você ganha a habilidade de lançar o feitiço armazenado, desde que você esteja no mesmo nível do conjurador original ou mais alto, caso contrário não terá efeito. O conjurador usa o espaço do nível original da magia, a CD de resistência, o bônus de ataque e a habilidade de conjuração da magia, funciona como se você jogasse a magia. A habilidade de lançar a magia desaparece após ela ter sido lançada ou 1 hora após a poção ter sido consumida.",
+   "appearance": "Se você olhar para o conteúdo desta garrafa tempo suficiente, você começará a discernir pequenas runas mágicas flutuando através de seu líquido âmbar.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 26.0,
+    "days": 1500.0,
+    "days_sheet": 1500.0,
+    "craft_cost_gp": 18750,
+    "processes": [
+     "Neutralizante",
+     "Luz"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 200.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Penas de Couatl",
+      "quantidade": 2.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "livre",
+      "nome": "Pedaços de pergaminho com os símbolos das escolas mágicas (um em cada papel)",
+      "quantidade": 8.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-estilhacos",
+   "name": "Poção De Estilhaços",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 300.0,
+   "description": "Beber esta poção faz com que um dardo cristalino se forme no céu da sua boca. Como uma ação bônus você pode fazer um ataque à distância em um alvo a até 9 metros de você. Se acertar o alvo deve ser bem sucedido em um testo de resistência de Constituição ou então recebe 1d4 de dano de veneno e fica envenenado por 1 minuto. Em um teste bem sucedido, o alvo recebe 1 ponto de dano perfurante. Uma vez que o dardo foi usado outro se formará. Esta poção permanece ativa por 1 minuto ou depois de usar esse ataque três vezes. Um dardo não utilizado irá se dissolver depois que a magia acabar.",
+   "appearance": "Minúsculas manchas de cristal cintilante flutuam em todo o líquido verde translúcido contido nessa garrafa",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 17.0,
+    "days": 12.0,
+    "days_sheet": 12.0,
+    "craft_cost_gp": 150,
+    "processes": [
+     "Neutralizante",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais de Gelo",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Presa de Naga",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-de-sustentacao",
+   "name": "Poção De Sustentação",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 200.0,
+   "description": "Depois de beber esta poção você pode ficar por 3 dias sem comida ou água, sem sofrer os efeitos nocivos. A magia da poção supre o equivalente a 450g de comida e um galão de água, que são os requisitos para cada um desses dias.",
+   "appearance": "O conteúdo desta garrafa assemelha-se a um guisado aquoso que está sendo constantemente agitado.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 15.0,
+    "days": 8.0,
+    "days_sheet": 8.0,
+    "craft_cost_gp": 100,
+    "processes": [
+     "Ativador",
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 40.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "item",
+      "nome": "Ração de Viagem",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-elixir-do-vigor-temporario",
+   "name": "Elixir Do Vigor Temporário",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "uncommon",
+   "value_gp": 375.0,
+   "description": "Este elixir já é mais comum que a maioria das outras poções deste tipo. A que ingerir este líquido, será concedido um bônus temporário de 3 de vida por nível. O efeito do elixir dura por 1d20 minutos. Se ao término do efeito, o personagem ficar com uma quantidade de HP igual ou inferior a 0, ele morrerá.",
+   "appearance": "Verde limão",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 16.0,
+    "days": 15.0,
+    "days_sheet": 15.0,
+    "craft_cost_gp": 187.5,
+    "processes": [
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Gordura de Duplo",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-bomba-teleportadora",
+   "name": "Bomba Teleportadora",
+   "kind": "consumable",
+   "category": "alchemical",
+   "rarity": "rare",
+   "value_gp": 1175.0,
+   "description": "Ao lançar esta bomba, os usuário e mais até 8 companhias são teleportados para uma cidade que o usuário já tenha visitado antes.",
+   "appearance": "Um nevoeiro azul claro",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 47.0,
+    "days_sheet": 47.0,
+    "craft_cost_gp": 587.5,
+    "processes": [
+     "Ativador",
+     "Neutralizante",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Teletransporte",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-nectar-dos-deuses",
+   "name": "Néctar Dos Deuses",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "legendary",
+   "value_gp": 80000.0,
+   "description": "Seu efeito é digno de uma dádiva, concedendo um bônus permanente de 1d20+5 a um atributo básico da escolha do herói ou 1d12 de todos os atributos",
+   "appearance": "Azul Claro, proximo ao Azul Bebê",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 35.0,
+    "days": 3200.0,
+    "days_sheet": 3200.0,
+    "craft_cost_gp": 40000,
+    "processes": [
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sais Radiantes",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Celestial",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Essência da Lótus Negra",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-da-anti-morte",
+   "name": "Poção Da Anti-Morte",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 27000.0,
+   "description": "Ao ser ingerida, esta poção confere ao personagem uma imunidade contra a morte. Após consumida, a poção garante um proteção ao usuário de 24 horas. Se o personagem morrer neste período, será automaticamente revivido com 1 HP e não perderá atributos. Esta poção também pode ser despejada sobre uma criatura morta, para que com sua ressurreição ela não perca atributos.",
+   "appearance": "Verde Claro com pintas pretas. Na parte de cima a uma pequena espuma branca",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 27.0,
+    "days": 1080.0,
+    "days_sheet": 1080.0,
+    "craft_cost_gp": 13500,
+    "processes": [
+     "Solvente",
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Polpa do Kiuvi",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 5.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-do-aprimoramento",
+   "name": "Poção Do Aprimoramento",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "rare",
+   "value_gp": 10225.0,
+   "description": "Ao ingerir a poção, o personagem amplia em 1d12+1 o atributo básico mais fraco que possuir.",
+   "appearance": "Rosa Pastel efervecente",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 20.0,
+    "days": 409.0,
+    "days_sheet": 409.0,
+    "craft_cost_gp": 5112.5,
+    "processes": [
+     "Escuro",
+     "Frio"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 30.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Empírico",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-do-acerto-critico",
+   "name": "Poção Do Acerto Critico",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "legendary",
+   "value_gp": 40000.0,
+   "description": "Os efeitos da poção duram 2d6 min. Durante este período, o usuário recebe +1 em todos os Ataque realizados e todos os seus ataques bem sucedidos se tornam ataques críticos.",
+   "appearance": "Vermelho muito escuro, proximo ao Marro com a gema olho de Tigre no centro",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 30.0,
+    "days": 1600.0,
+    "days_sheet": 1600.0,
+    "craft_cost_gp": 20000,
+    "processes": [
+     "Luz",
+     "Calor"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Gema Olho de Tigre",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Barbatana de Kuo-Toa",
+      "quantidade": 2.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Olho de Solar",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-da-mudanca-amaldicoada",
+   "name": "Poção Da Mudança Amaldiçoada",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "legendary",
+   "value_gp": 50000.0,
+   "description": "Ao ser ingerida, a poção transforma o usuário em um animal comum aleatório permanentemente. Este ficará nesta nova forma, sem poder falar.",
+   "appearance": "Azul Esverdeado",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 32.0,
+    "days": 2000.0,
+    "days_sheet": 2000.0,
+    "craft_cost_gp": 25000,
+    "processes": [
+     "Ativador"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 50.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 10.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Soro Fúngico",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Língua de Bruxo",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Rogar Maldição",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Lich",
+      "quantidade": 2.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "livre",
+      "nome": "Reverberar divino",
+      "quantidade": 1.0,
+      "unidade": "un"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-da-aprimoracao-perfeita",
+   "name": "Poção Da Aprimoração Perfeita",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "legendary",
+   "value_gp": 100000.0,
+   "description": "O indivíduo que consumir esta poção passará automaticamente para o próximo nível. Os pontos de EXP ficarão equalizados no valor mínimo para que o personagem atinja o próximo nível.",
+   "appearance": "O líquido é transparente em seu centro, mas a medida que vai se aproximando das bordas do frasco ele ganha uma tonalidade vermelha",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 35.0,
+    "days": 4000.0,
+    "days_sheet": 4000.0,
+    "craft_cost_gp": 50000,
+    "processes": [
+     "Água"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Fonte Mineral",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Tarrasque",
+      "quantidade": 500.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-pocao-da-regeneracao",
+   "name": "Poção Da Regeneração",
+   "kind": "consumable",
+   "category": "potion",
+   "rarity": "very_rare",
+   "value_gp": 12000.0,
+   "description": "Está Poção é capaz de regenerar quaisquer parte do corpo que o consumidor tenha perdido.",
+   "appearance": "O líquido é extremamente semelhante a sangue",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 26.0,
+    "days": 480.0,
+    "days_sheet": 480.0,
+    "craft_cost_gp": 6000,
+    "processes": [
+     "Ativador",
+     "Solvente"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Ectoessência",
+      "quantidade": 100.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato Vegetal",
+      "quantidade": 80.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Celestial",
+      "quantidade": 1.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sangue de Troll",
+      "quantidade": 20.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  },
+  {
+   "api_index": "alq-veneno-das-mil-mortes",
+   "name": "Veneno Das Mil Mortes",
+   "kind": "consumable",
+   "category": "poison",
+   "rarity": "very_rare",
+   "value_gp": 21125.0,
+   "description": "Este Veneno é capaz de matar instantaneamente qualquer criatura que venha a ter contato sanguineo ou o ingerir. A criatura deve ser bem sucedida no teste de constitução CD25, ou entrara em obito imediatamente independete de seu estado atual. Criaturas imunes a condição envenendo passam automaticamente. Caso a alvo tenha sucesso fica com a condição envenenado por tempo indeterminado até que passe no teste de Constituição descrito antes.",
+   "appearance": "Líquido totalmente Negro e fumegante.",
+   "recipe": {
+    "craft": "alchemy",
+    "dc": 28.0,
+    "days": 845.0,
+    "days_sheet": 845.0,
+    "craft_cost_gp": 10562.5,
+    "processes": [
+     "Escuro"
+    ],
+    "ingredients": [
+     {
+      "tipo": "material",
+      "nome": "Componente de Morto",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Sebo de Monstro",
+      "quantidade": 25.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "magia",
+      "nome": "Palavra De Poder Matar",
+      "quantidade": 1.0,
+      "unidade": "un"
+     },
+     {
+      "tipo": "material",
+      "nome": "Extrato de Cérebro de Inumano",
+      "quantidade": 15.0,
+      "unidade": "ml"
+     },
+     {
+      "tipo": "material",
+      "nome": "Pó de Osso do Cavaleiro da Morte",
+      "quantidade": 3.0,
+      "unidade": "ml"
+     }
+    ]
+   }
+  }
+ ]
+}

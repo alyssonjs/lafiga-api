@@ -1,0 +1,71 @@
+---
+# Matérias-primas fora da alquimia. Listas curtas e canônicas para as sub-abas
+# não nascerem vazias — o mestre estende conforme o mundo pede.
+#
+# `value_gp` é por UNIDADE de `unit`. Gema é peça; metal é kg (o PHB precifica
+# bens de comércio por kg/libra, não por barra).
+gem:
+  # Faixas do DMG (10/50/100/500/1000/5000 po). Uma amostra por faixa, com o
+  # valor da FAIXA — é assim que o DMG as trata: intercambiáveis dentro dela.
+  - { name: "Quartzo",        value_gp: 10,   unit: un }
+  - { name: "Obsidiana",      value_gp: 10,   unit: un }
+  - { name: "Olho de Tigre",  value_gp: 10,   unit: un }
+  - { name: "Ametista",       value_gp: 100,  unit: un }
+  - { name: "Jade",           value_gp: 100,  unit: un }
+  - { name: "Pérola",         value_gp: 100,  unit: un }
+  - { name: "Topázio",        value_gp: 500,  unit: un }
+  - { name: "Opala Negra",    value_gp: 1000, unit: un }
+  - { name: "Safira",         value_gp: 1000, unit: un }
+  - { name: "Diamante",       value_gp: 5000, unit: un }
+  - { name: "Rubi",           value_gp: 1000, unit: un }
+  - { name: "Esmeralda",      value_gp: 1000, unit: un }
+ore:
+  # Bens de comércio do PHB. Cobre a 0,5 po/kg, prata a 5, ouro a 50 — a razão
+  # 1:10:100 que sustenta o câmbio pc/pp/po.
+  - { name: "Cobre Bruto",     value_gp: 0.5,  unit: kg }
+  - { name: "Ferro Bruto",     value_gp: 0.1,  unit: kg }
+  - { name: "Prata Bruta",     value_gp: 5,    unit: kg }
+  - { name: "Ouro Bruto",      value_gp: 50,   unit: kg }
+  - { name: "Platina Bruta",   value_gp: 500,  unit: kg }
+  - { name: "Estanho Bruto",   value_gp: 0.4,  unit: kg }
+  - { name: "Chumbo Bruto",    value_gp: 0.2,  unit: kg }
+  - { name: "Carvão Mineral",  value_gp: 0.05, unit: kg }
+  - { name: "Mithral Bruto",   value_gp: 700,  unit: kg }
+  - { name: "Adamante Bruto",  value_gp: 1000, unit: kg }
+alloy:
+  # Ligas: produtos INTERMEDIÁRIOS. Nascem sem receita; quando a forja entrar,
+  # ganham a delas e a estrutura já é recursiva.
+  - { name: "Bronze",          value_gp: 1,   unit: kg }
+  - { name: "Aço",             value_gp: 2,   unit: kg }
+  - { name: "Aço Galvanizado", value_gp: 6,   unit: kg }
+  - { name: "Liga de Mithral", value_gp: 900, unit: kg }
+# herb: as ervas REAIS vêm de `herbs_seed.json` (Tabela de Ervas, 189 itens).
+# A lista genérica que vivia aqui era placeholder e foi removida pelo
+# `dnd:import_herbs` — recriá-la aqui faria as duas listas conviverem.
+culinary:
+  # Culinária (classe Cozinheiro, houserule cl-13).
+  - { name: "Farinha",          value_gp: 0.02, unit: kg }
+  - { name: "Sal",              value_gp: 0.05, unit: kg }
+  - { name: "Açúcar",           value_gp: 0.5,  unit: kg }
+  - { name: "Manteiga",         value_gp: 0.2,  unit: kg }
+  - { name: "Ovos",             value_gp: 0.01, unit: un }
+  - { name: "Leite",            value_gp: 0.05, unit: un }
+  - { name: "Carne Fresca",     value_gp: 0.3,  unit: kg }
+  - { name: "Peixe Fresco",     value_gp: 0.2,  unit: kg }
+  - { name: "Trigo",            value_gp: 0.01, unit: kg }
+  - { name: "Mel",              value_gp: 1,    unit: kg }
+  - { name: "Especiarias",      value_gp: 2,    unit: kg }
+  - { name: "Pimenta",          value_gp: 2,    unit: kg }
+  - { name: "Azeite",           value_gp: 0.6,  unit: un }
+  - { name: "Vinho de Cozinha", value_gp: 0.2,  unit: un }
+  - { name: "Legumes",          value_gp: 0.05, unit: kg }
+arcane:
+  # Componentes de encantamento e foco arcano.
+  - { name: "Pó de Diamante",       value_gp: 50,  unit: g }
+  - { name: "Tinta Arcana",         value_gp: 10,  unit: un }
+  - { name: "Cristal Ressonante",   value_gp: 120, unit: un }
+  - { name: "Fio de Prata Encantado", value_gp: 25, unit: un }
+  - { name: "Incenso Ritual",       value_gp: 5,   unit: un }
+  - { name: "Sal Rúnico",           value_gp: 15,  unit: un }
+  - { name: "Vidro de Alma",        value_gp: 200, unit: un }
+  - { name: "Pergaminho em Branco", value_gp: 10,  unit: un }

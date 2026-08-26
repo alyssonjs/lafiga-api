@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_25_200000) do
+ActiveRecord::Schema.define(version: 2026_08_25_210100) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -298,6 +298,39 @@ ActiveRecord::Schema.define(version: 2026_08_25_200000) do
     t.jsonb "movement_ledger", default: [], null: false
     t.jsonb "active_interaction"
     t.index ["schedule_id"], name: "index_combat_states_on_schedule_id", unique: true
+  end
+
+  create_table "crafting_recipe_ingredients", force: :cascade do |t|
+    t.bigint "crafting_recipe_id", null: false
+    t.bigint "ingredient_item_id"
+    t.bigint "spell_id"
+    t.string "raw_text"
+    t.decimal "quantity", precision: 10, scale: 2, default: "1.0", null: false
+    t.string "unit", default: "un", null: false
+    t.integer "alternative_group"
+    t.boolean "is_choice", default: false, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["crafting_recipe_id"], name: "index_crafting_recipe_ingredients_on_crafting_recipe_id"
+    t.index ["ingredient_item_id"], name: "index_crafting_recipe_ingredients_on_ingredient_item_id"
+    t.index ["spell_id"], name: "index_crafting_recipe_ingredients_on_spell_id"
+  end
+
+  create_table "crafting_recipes", force: :cascade do |t|
+    t.bigint "result_item_id", null: false
+    t.string "craft", default: "alchemy", null: false
+    t.integer "dc"
+    t.decimal "days", precision: 8, scale: 2
+    t.decimal "craft_cost_gp", precision: 12, scale: 2
+    t.string "processes", default: [], array: true
+    t.jsonb "scaling", default: {}
+    t.string "source"
+    t.text "notes"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["craft"], name: "index_crafting_recipes_on_craft"
+    t.index ["result_item_id"], name: "index_crafting_recipes_on_result_item_id", unique: true
   end
 
   create_table "date_dimensions", force: :cascade do |t|
@@ -946,6 +979,10 @@ ActiveRecord::Schema.define(version: 2026_08_25_200000) do
   add_foreign_key "combat_combatants", "combat_states"
   add_foreign_key "combat_npcs", "schedules"
   add_foreign_key "combat_states", "schedules"
+  add_foreign_key "crafting_recipe_ingredients", "crafting_recipes"
+  add_foreign_key "crafting_recipe_ingredients", "items", column: "ingredient_item_id"
+  add_foreign_key "crafting_recipe_ingredients", "spells"
+  add_foreign_key "crafting_recipes", "items", column: "result_item_id"
   add_foreign_key "diary_entries", "characters"
   add_foreign_key "diary_entries", "schedules"
   add_foreign_key "groups", "users", column: "dm_user_id"

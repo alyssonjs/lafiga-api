@@ -25,6 +25,17 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # Grimorio, que veio do seed do PHB).
   BOOK_CATEGORY = 'book'
 
+  # Matéria-prima. `kind: material` com a família na `category` — um kind só
+  # porque a família de um material é do MUNDO, não da natureza dele: o mesmo
+  # minério vira liga na forja e reagente no encantamento. Trocar de category é
+  # um UPDATE; trocar de kind seria migration.
+  MATERIAL_KIND = 'material'
+  # `poison-herb` é família própria DE PROPÓSITO: colhe-se com Kit de VENENO e
+  # produz veneno, não remédio — distinção do mundo, não cosmética.
+  MATERIAL_CATEGORIES = %w[
+    essence monster-part herb poison-herb culinary ore alloy gem arcane
+  ].freeze
+
   # GET /api/v1/public/starting_equipment
   # Params: class_id (required), background_id (optional)
   def starting_equipment
@@ -232,6 +243,11 @@ class Api::V1::Public::EquipmentController < ApplicationController
       # Pocao MUNDANA. A magica vive em `MagicItem` com `category: potion` e a
       # aba mostra as duas juntas.
       Item.where(kind: 'consumable', category: POTION_CATEGORY).order(:api_index).to_a
+    when :materials
+      Item.where(kind: MATERIAL_KIND).order(:category, :api_index).to_a
+    when *MATERIAL_CATEGORIES.map { |c| :"material_#{c.tr('-', '_')}" }
+      Item.where(kind: MATERIAL_KIND, category: key.to_s.sub('material_', '').tr('_', '-'))
+          .order(:api_index).to_a
     when :books
       # Livro e tomo MUNDANOS. O `kind: book` existia no catalogo e NENHUM balde
       # o servia — 11 livros nao apareciam em aba nenhuma. O Grimorio e
@@ -263,8 +279,45 @@ class Api::V1::Public::EquipmentController < ApplicationController
     return :vehicles        if %w[vehicles veiculos transportes mounts-and-vehicles].include?(s)
     return :tools           if %w[tools ferramentas instruments-misc].include?(s)
     return :consumables     if %w[consumables consumivel consumiveis].include?(s)
+    return :materials       if %w[materials materias-primas materia-prima raw-materials].include?(s)
+    # Sub-abas por família: `materials-essence`, `materials-gem`, ...
+    if s.start_with?('materials-')
+      fam = s.sub('materials-', '')
+      return :"material_#{fam.tr('-', '_')}" if MATERIAL_CATEGORIES.include?(fam)
+    end
     return :none            if s == 'none'
     nil
+  end
+
+  def build_crafting_json(it)
+    return nil unless defined?(CraftingRecipe)
+
+    recipe = it.try(:crafting_recipe)
+    return nil unless recipe
+
+    {
+      craft: recipe.craft,
+      dc: recipe.dc,
+      days: recipe.days&.to_f,
+      cost: recipe.craft_cost_gp&.to_f,
+      processes: Array(recipe.processes),
+      scaling: recipe.scaling.presence,
+      ingredients: recipe.ingredients.map do |ing|
+        {
+          # `item_index` é o LINK: nulo aqui significa magia ou texto livre,
+          # e o front tem de mostrar assim mesmo — a Poção de Resistência
+          # depende de um "Componente Extra" que não é item nenhum.
+          item_index: ing.ingredient_item&.api_index,
+          spell_name: ing.spell&.name,
+          raw_text: ing.raw_text.presence,
+          name: ing.display_name,
+          quantity: ing.quantity&.to_f,
+          unit: ing.unit,
+          alternative_group: ing.alternative_group,
+          is_choice: ing.is_choice,
+        }.compact
+      end,
+    }.compact
   end
 
   def cp_to_cost_hash(cp)
@@ -350,7 +403,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
         card_icon_id: sp['card_icon_id'].presence,
         url: "/api/v1/public/equipment/#{it.api_index}"
       }
-    when 'gear', 'pack', 'tool', 'consumable', 'book', 'magic_item', 'ammunition'
+    when 'gear', 'pack', 'tool', 'consumable', 'book', 'magic_item', 'ammunition', 'material'
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
       # `weight` do payload e em LB (convencao do livro, kg x 2): o compendio
       # rotula "lb" e a bolsa grava `weight_lb` — mandar kg cru sub-contava a
@@ -376,6 +429,8 @@ class Api::V1::Public::EquipmentController < ApplicationController
         ['magic-items', 'Magic Items']
       when 'ammunition'
         ['ammunition', 'Ammunition']
+      when 'material'
+        ['materials', 'Matérias-Primas']
       else
         # Pacotes importados como `kind: :gear` + `category: pack` (ver equipment:import_items).
         if it.kind == 'gear' && it.category.to_s == 'pack'
@@ -413,6 +468,22 @@ class Api::V1::Public::EquipmentController < ApplicationController
         ammunition_types: props['ammunition_types'].presence,
         ammunition_capacity: props['ammunition_capacity'].presence&.to_i,
         stackable: props.key?('stackable') ? !!props['stackable'] : nil,
+        # Matéria-prima se compra por MEDIDA, não por peça: o preço da essência é
+        # por ml. Sem a unidade no payload, "0,5 po" de Extrato Vegetal parece o
+        # preço do frasco inteiro em vez do mililitro.
+        material_unit: props['unit'].presence,
+        material_note: props['note'].presence,
+        # Erva/venenosa: onde-quando-como COLHER e o que ela vira depois de
+        # preparada. Sem serializar, o dado existe no catálogo e não chega à
+        # ficha — a mesma classe de gap dos usos de kit.
+        plant_type: props['plant_type'].presence,
+        foraging: props['foraging'].presence,
+        preparation: props['preparation'].presence,
+        # Receita de fabricação. Vai no payload do PRODUTO (não do material):
+        # é a ficha de "como fazer isto". Os ingredientes carregam o `index` do
+        # item para o front poder navegar até ele — e para o NPC ferreiro exigir
+        # o material da bolsa em vez de conferir por nome.
+        crafting: build_crafting_json(it),
         # Transporte: o PHB dá velocidade em km/h no veiculo aquatico, e o custo
         # da armadura de montaria e um MULTIPLICADOR (x4), nao valor fixo —
         # serializar como custo normal mostraria "0 po", que e mentira.
