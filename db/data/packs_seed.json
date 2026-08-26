@@ -1,0 +1,403 @@
+{
+ "pacotes": [
+  {
+   "api_index": "pacote-artista",
+   "name": "Pacote de Artista",
+   "value_gp": 40,
+   "contents": [
+    {
+     "item_index": "mochila",
+     "quantity": 1,
+     "raw": "uma mochila"
+    },
+    {
+     "item_index": "saco-de-dormir",
+     "quantity": 1,
+     "raw": "um saco de dormir"
+    },
+    {
+     "item_index": "roupas-de-entretenimento",
+     "quantity": 2,
+     "raw": "duas fantasias"
+    },
+    {
+     "item_index": "vela",
+     "quantity": 5,
+     "raw": "5 velas"
+    },
+    {
+     "item_index": "racoes-de-viagem-1-dia",
+     "quantity": 5,
+     "raw": "5 dias de rações",
+     "fallback_index": "racoes"
+    },
+    {
+     "item_index": "cantil",
+     "quantity": 1,
+     "raw": "um cantil"
+    },
+    {
+     "item_index": "kit-de-disfarce",
+     "quantity": 1,
+     "raw": "um kit de disfarce"
+    }
+   ]
+  },
+  {
+   "api_index": "pacote-assaltante",
+   "name": "Pacote de Assaltante",
+   "value_gp": 16,
+   "contents": [
+    {
+     "item_index": "mochila",
+     "quantity": 1,
+     "raw": "uma mochila"
+    },
+    {
+     "item_index": "esferas-sacola-com-1-000",
+     "quantity": 1,
+     "raw": "um saco com 1.000 esferas de metal",
+     "fallback_index": "saco-com-esferas"
+    },
+    {
+     "item_index": "linha-3-metros",
+     "quantity": 1,
+     "raw": "3 metros de linha"
+    },
+    {
+     "item_index": "sino",
+     "quantity": 1,
+     "raw": "um sino"
+    },
+    {
+     "item_index": "vela",
+     "quantity": 5,
+     "raw": "5 velas"
+    },
+    {
+     "item_index": "pe-de-cabra",
+     "quantity": 1,
+     "raw": "um pé de cabra"
+    },
+    {
+     "item_index": "martelo",
+     "quantity": 1,
+     "raw": "um martelo"
+    },
+    {
+     "item_index": "piton",
+     "quantity": 10,
+     "raw": "10 pítons",
+     "fallback_index": "pitons"
+    },
+    {
+     "item_index": "lanterna-coberta",
+     "quantity": 1,
+     "raw": "uma lanterna coberta"
+    },
+    {
+     "item_index": "oleo-frasco",
+     "quantity": 2,
+     "raw": "2 frascos de óleo"
+    },
+    {
+     "item_index": "racoes-de-viagem-1-dia",
+     "quantity": 5,
+     "raw": "5 dias de rações",
+     "fallback_index": "racoes"
+    },
+    {
+     "item_index": "caixa-de-fogo",
+     "quantity": 1,
+     "raw": "uma caixa de fogo"
+    },
+    {
+     "item_index": "cantil",
+     "quantity": 1,
+     "raw": "um cantil."
+    },
+    {
+     "item_index": "corda-de-canhamo-15-metros",
+     "quantity": 1,
+     "raw": "15 metros de corda de cânhamo amarrada ao lado dele",
+     "fallback_index": "corda-15m"
+    }
+   ]
+  },
+  {
+   "api_index": "pacote-aventureiro",
+   "name": "Pacote de Aventureiro",
+   "value_gp": 12,
+   "contents": [
+    {
+     "item_index": "mochila",
+     "quantity": 1,
+     "raw": "uma mochila"
+    },
+    {
+     "item_index": "pe-de-cabra",
+     "quantity": 1,
+     "raw": "um pé de cabra"
+    },
+    {
+     "item_index": "martelo",
+     "quantity": 1,
+     "raw": "um martelo"
+    },
+    {
+     "item_index": "piton",
+     "quantity": 10,
+     "raw": "10 pítons",
+     "fallback_index": "pitons"
+    },
+    {
+     "item_index": "tocha",
+     "quantity": 10,
+     "raw": "10 tochas"
+    },
+    {
+     "item_index": "caixa-de-fogo",
+     "quantity": 1,
+     "raw": "uma caixa de fogo"
+    },
+    {
+     "item_index": "racoes-de-viagem-1-dia",
+     "quantity": 10,
+     "raw": "10 dias de rações",
+     "fallback_index": "racoes"
+    },
+    {
+     "item_index": "cantil",
+     "quantity": 1,
+     "raw": "um cantil."
+    },
+    {
+     "item_index": "corda-de-canhamo-15-metros",
+     "quantity": 1,
+     "raw": "15 metros de corda de cânhamo amarrada ao lado dele",
+     "fallback_index": "corda-15m"
+    }
+   ]
+  },
+  {
+   "api_index": "pacote-diplomata",
+   "name": "Pacote de Diplomata",
+   "value_gp": 39,
+   "contents": [
+    {
+     "item_index": "bau",
+     "quantity": 1,
+     "raw": "um baú"
+    },
+    {
+     "item_index": "porta-mapas-ou-pergaminhos",
+     "quantity": 2,
+     "raw": "2 caixas para mapas ou pergaminhos"
+    },
+    {
+     "item_index": "roupas-finas",
+     "quantity": 1,
+     "raw": "um conjunto de roupas finas"
+    },
+    {
+     "item_index": "tinta-frasco-de-30ml",
+     "quantity": 1,
+     "raw": "um vidro de tinta"
+    },
+    {
+     "item_index": "caneta-tinteiro",
+     "quantity": 1,
+     "raw": "uma caneta tinteiro"
+    },
+    {
+     "item_index": "lampada",
+     "quantity": 1,
+     "raw": "uma lâmpada"
+    },
+    {
+     "item_index": "oleo-frasco",
+     "quantity": 2,
+     "raw": "2 frascos de óleo"
+    },
+    {
+     "item_index": "papel-uma-folha",
+     "quantity": 5,
+     "raw": "5 folhas de papel"
+    },
+    {
+     "item_index": "perfume-frasco",
+     "quantity": 1,
+     "raw": "um vidro de perfume"
+    },
+    {
+     "item_index": "parafina",
+     "quantity": 1,
+     "raw": "parafina"
+    },
+    {
+     "item_index": "sabao",
+     "quantity": 1,
+     "raw": "sabão"
+    }
+   ]
+  },
+  {
+   "api_index": "pacote-estudioso",
+   "name": "Pacote de Estudioso",
+   "value_gp": 40,
+   "contents": [
+    {
+     "item_index": "mochila",
+     "quantity": 1,
+     "raw": "uma mochila"
+    },
+    {
+     "item_index": "livro",
+     "quantity": 1,
+     "raw": "um livro de estudo"
+    },
+    {
+     "item_index": "tinta-frasco-de-30ml",
+     "quantity": 1,
+     "raw": "um vidro de tinta"
+    },
+    {
+     "item_index": "caneta-tinteiro",
+     "quantity": 1,
+     "raw": "uma caneta tinteiro"
+    },
+    {
+     "item_index": "pergaminho-uma-folha",
+     "quantity": 10,
+     "raw": "10 folhas de pergaminho"
+    },
+    {
+     "item_index": "saquinho-de-areia",
+     "quantity": 1,
+     "raw": "um saquinho de areia"
+    },
+    {
+     "item_index": "faca-pequena",
+     "quantity": 1,
+     "raw": "uma pequena faca"
+    }
+   ]
+  },
+  {
+   "api_index": "pacote-explorador",
+   "name": "Pacote de Explorador",
+   "value_gp": 10,
+   "contents": [
+    {
+     "item_index": "mochila",
+     "quantity": 1,
+     "raw": "uma mochila"
+    },
+    {
+     "item_index": "saco-de-dormir",
+     "quantity": 1,
+     "raw": "um saco de dormir"
+    },
+    {
+     "item_index": "kit-de-refeicao",
+     "quantity": 1,
+     "raw": "um kit de refeição"
+    },
+    {
+     "item_index": "caixa-de-fogo",
+     "quantity": 1,
+     "raw": "uma caixa de fogo"
+    },
+    {
+     "item_index": "tocha",
+     "quantity": 10,
+     "raw": "10 tochas"
+    },
+    {
+     "item_index": "racoes-de-viagem-1-dia",
+     "quantity": 10,
+     "raw": "10 dias de rações",
+     "fallback_index": "racoes"
+    },
+    {
+     "item_index": "cantil",
+     "quantity": 1,
+     "raw": "um cantil."
+    },
+    {
+     "item_index": "corda-de-canhamo-15-metros",
+     "quantity": 1,
+     "raw": "15 metros de corda de cânhamo amarrada ao lado dele",
+     "fallback_index": "corda-15m"
+    }
+   ]
+  },
+  {
+   "api_index": "pacote-sacerdote",
+   "name": "Pacote de Sacerdote",
+   "value_gp": 19,
+   "contents": [
+    {
+     "item_index": "mochila",
+     "quantity": 1,
+     "raw": "uma mochila"
+    },
+    {
+     "item_index": "cobertor-de-inverno",
+     "quantity": 1,
+     "raw": "um cobertor"
+    },
+    {
+     "item_index": "vela",
+     "quantity": 10,
+     "raw": "10 velas"
+    },
+    {
+     "item_index": "caixa-de-fogo",
+     "quantity": 1,
+     "raw": "uma caixa de fogo"
+    },
+    {
+     "item_index": "caixa-de-esmolas",
+     "quantity": 1,
+     "raw": "uma caixa de esmolas"
+    },
+    {
+     "item_index": "bloco-de-incenso",
+     "quantity": 2,
+     "raw": "2 blocos de incenso"
+    },
+    {
+     "item_index": "incensario",
+     "quantity": 1,
+     "raw": "um incensário"
+    },
+    {
+     "item_index": "vestes",
+     "quantity": 1,
+     "raw": "vestes"
+    },
+    {
+     "item_index": "racoes-de-viagem-1-dia",
+     "quantity": 2,
+     "raw": "2 dias de rações",
+     "fallback_index": "racoes"
+    },
+    {
+     "item_index": "cantil",
+     "quantity": 1,
+     "raw": "um cantil."
+    }
+   ]
+  }
+ ],
+ "itens_so_no_pacote": {
+  "linha-3-metros": "Linha (3 metros)",
+  "saquinho-de-areia": "Saquinho de areia",
+  "faca-pequena": "Faca pequena",
+  "caixa-de-esmolas": "Caixa de esmolas",
+  "bloco-de-incenso": "Bloco de incenso",
+  "incensario": "Incensário",
+  "vestes": "Vestes"
+ }
+}

@@ -297,6 +297,23 @@ class Api::V1::Public::EquipmentController < ApplicationController
     nil
   end
 
+  def contents_with_kind(raw)
+    return raw unless raw.is_a?(Array)
+
+    indices = raw.filter_map { |c| c.is_a?(Hash) ? (c['item_index'] || c[:item_index]) : nil }
+    return raw if indices.empty?
+
+    por_indice = Item.where(api_index: indices).index_by(&:api_index)
+    raw.map do |c|
+      next c unless c.is_a?(Hash)
+
+      alvo = por_indice[c['item_index'] || c[:item_index]]
+      next c unless alvo
+
+      c.merge('kind' => alvo.kind, 'category' => alvo.category)
+    end
+  end
+
   def build_crafting_json(it)
     return nil unless defined?(CraftingRecipe)
 
@@ -511,7 +528,10 @@ class Api::V1::Public::EquipmentController < ApplicationController
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
         weight: weight_lb,
         description: it.description,
-        contents: props['contents'] || props[:contents],
+        # Conteúdo do pacote com `kind`/`category` de cada peça: sem isso o
+        # front não sabe para QUAL aba mandar o clique (tocha é Consumíveis,
+        # mochila é Equipamentos, flecha é Munições).
+        contents: contents_with_kind(props['contents'] || props[:contents]),
         url: "/api/v1/public/equipment/#{it.api_index}"
       }.compact
     else

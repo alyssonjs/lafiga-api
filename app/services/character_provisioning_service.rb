@@ -829,22 +829,25 @@ class CharacterProvisioningService
         now = Time.current
 
         reprovision_items!(sheet: sheet, source: 'class') do
-          Array(picks).map do |it|
+          Array(picks).flat_map do |it|
             attrs = it.is_a?(Hash) ? it : {}
-            {
+            nome = (attrs['item_name'] || attrs[:item_name] || attrs['name'] || attrs[:name]).to_s
+            idx  = attrs['item_index'] || attrs[:item_index] || attrs['index'] || attrs[:index]
+            qtd  = (attrs['quantity'] || attrs[:quantity] || 1).to_i
+            base = {
               sheet_id: sheet.id,
-              item_index: attrs['item_index'] || attrs[:item_index] || attrs['index'] || attrs[:index],
-              item_name: (attrs['item_name'] || attrs[:item_name] || attrs['name'] || attrs[:name]).to_s,
               category: attrs['category'] || attrs[:category],
-              quantity: (attrs['quantity'] || attrs[:quantity] || 1).to_i,
               equipped: !!(attrs['equipped'] || attrs[:equipped]),
               slot: attrs['slot'] || attrs[:slot],
               source: attrs['source'] || attrs[:source] || 'class',
-              props_json: attrs['props'] || attrs[:props] || attrs['props_json'] || attrs[:props_json] || {},
               notes: nil,
               created_at: now,
               updated_at: now
             }
+
+            expand_equipment_pick(base: base, item_index: idx, item_name: nome, quantity: qtd,
+                                  props: attrs['props'] || attrs[:props] ||
+                                         attrs['props_json'] || attrs[:props_json] || {})
           end
         end
       rescue => e
@@ -956,6 +959,62 @@ class CharacterProvisioningService
   #   source:  'class' ou 'background'
   #   build_rows: Proc que retorna Array<Hash> com as colunas do SheetItem (sem
   #               provisioning_run_id; este helper injeta).
+  # Um pick do wizard → as LINHAS que entram na bolsa.
+  #
+  # Pacote de equipamento EXPANDE: o "Pacote do Aventureiro" some e entram os 9
+  # itens reais, com `item_id` do catálogo. É isso que faz o peso da carga e a
+  # venda funcionarem — um pacote fechado pesa 0 para o motor porque o peso
+  # está nas peças.
+  #
+  # Cada peça carrega `props_json['from_pack']`: o jogador vê de onde veio, e o
+  # re-provisionamento sabe o que substituir.
+  #
+  # O pick que NÃO é pacote passa direto — mas ganha `item_id` resolvido, que
+  # antes ficava nulo e deixava o item sem peso nem regra.
+  def expand_equipment_pick(base:, item_index:, item_name:, quantity:, props:)
+    registro = resolve_catalog_item(item_index: item_index, item_name: item_name)
+    conteudo = Array(registro&.props&.dig('contents'))
+
+    if registro.nil? || conteudo.empty?
+      return [base.merge(
+        item_id: registro&.id,
+        item_index: registro&.api_index || item_index,
+        item_name: registro&.name.presence || item_name,
+        quantity: quantity,
+        props_json: props
+      )]
+    end
+
+    conteudo.filter_map do |linha|
+      linha = linha.is_a?(Hash) ? linha : { 'raw' => linha.to_s }
+      peca = linha['item_index'].present? ? Item.find_by(api_index: linha['item_index']) : nil
+      rotulo = peca&.name.presence || linha['name'].presence || linha['raw'].to_s
+      next if rotulo.blank?
+
+      base.merge(
+        item_id: peca&.id,
+        item_index: peca&.api_index,
+        item_name: rotulo,
+        # A quantidade do pacote multiplica pela do pick: dois pacotes iguais
+        # dobram cada peça.
+        quantity: (linha['quantity'] || 1).to_i * [quantity, 1].max,
+        props_json: props.to_h.merge('from_pack' => registro.name)
+      )
+    end
+  end
+
+  # Item do catálogo por índice, e só então por nome — índice é estável, nome
+  # é a parte que diverge.
+  def resolve_catalog_item(item_index:, item_name:)
+    return Item.find_by(api_index: item_index) if item_index.present? && Item.exists?(api_index: item_index)
+    return nil if item_name.blank?
+
+    sem_acento = ->(t) { t.to_s.unicode_normalize(:nfd).gsub(/\p{Mn}/, '').downcase.strip }
+    alvo = sem_acento.call(item_name)
+    Item.where('lower(name) = ?', item_name.downcase.strip).first ||
+      Item.all.find { |i| sem_acento.call(i.name) == alvo }
+  end
+
   def reprovision_items!(sheet:, source:, &build_rows)
     run_id = SecureRandom.uuid
 
