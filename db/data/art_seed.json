@@ -1,0 +1,626 @@
+[
+ {
+  "api_index": "art-jarro-de-prata",
+  "name": "Jarro de prata",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-estatueta-esculpida-em-osso",
+  "name": "Estatueta esculpida em osso",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-bracelete-de-ouro-pequeno",
+  "name": "Bracelete de ouro pequeno",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-vestimenta-de-tecido-dourado",
+  "name": "Vestimenta de tecido dourado",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 1.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-mascara-de-veludo-negra-costurada-com-fios-de-prata",
+  "name": "Máscara de veludo negra costurada com fios de prata",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-calice-de-cobre-com-filigrana-prateada",
+  "name": "Cálice de cobre com filigrana prateada",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-par-de-dados-de-osso-com-gravuras",
+  "name": "Par de dados de osso com gravuras",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-pequeno-espelho-numa-moldura-de-madeira-pintada",
+  "name": "Pequeno espelho numa moldura de madeira pintada",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-lenco-de-seda-bordado",
+  "name": "Lenço de seda bordado",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-broche-de-ouro-com-um-retrato-pintado-dentro",
+  "name": "Broche de ouro com um retrato pintado dentro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 25.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 25
+  }
+ },
+ {
+  "api_index": "art-anel-de-ouro-cravejado-com-pedras-de-sangue",
+  "name": "Anel de ouro cravejado com pedras de sangue",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-estatueta-esculpida-em-marfim",
+  "name": "Estatueta esculpida em marfim",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-bracelete-de-ouro-largo",
+  "name": "Bracelete de ouro largo",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-gargantilha-de-prata-com-um-pingente-de-pedra-preciosa",
+  "name": "Gargantilha de prata com um pingente de pedra preciosa",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-coroa-de-bronze",
+  "name": "Coroa de bronze",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-robe-de-seda-com-adornos-de-ouro",
+  "name": "Robe de seda com adornos de ouro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 2.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-grande-tapecaria-elegante",
+  "name": "Grande tapeçaria elegante",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 5.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-caneca-de-bronze-com-jades-incrustadas",
+  "name": "Caneca de bronze com jades incrustadas",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-caixa-de-miniaturas-de-animais-em-turquesa",
+  "name": "Caixa de miniaturas de animais em turquesa",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 1.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-gaiola-de-passaro-de-ouro-com-filigrana-de-electro",
+  "name": "Gaiola de pássaro de ouro com filigrana de electro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 250.0,
+  "weight_kg": 2.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 250
+  }
+ },
+ {
+  "api_index": "art-calice-de-prata-cravejado-com-pedras-da-lua",
+  "name": "Cálice de prata cravejado com pedras da lua",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-espada-longa-de-lamina-prateada-com-conjunto-de-jatos-no-cabo",
+  "name": "Espada longa de lâmina prateada com conjunto de jatos no cabo",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 1.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-harpa-de-madeira-exotica-com-marfim-incrustado-e-gemas-de-zirconio",
+  "name": "Harpa de madeira exótica com marfim incrustado e gemas de zircônio",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 2.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-pequeno-idolo-de-ouro",
+  "name": "Pequeno ídolo de ouro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-pente-de-ouro-em-formato-de-dragao-cravejado-com-granadas-nos-olhos",
+  "name": "Pente de ouro em formato de dragão cravejado com granadas nos olhos",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-rolha-de-garrafa-gravada-com-folhas-de-ouro-e-ametistas",
+  "name": "Rolha de garrafa gravada com folhas de ouro e ametistas",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-adaga-de-electro-cerimonial-com-perola-negra-no-pomo",
+  "name": "Adaga de electro cerimonial com pérola negra no pomo",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-broche-de-prata-e-ouro",
+  "name": "Broche de prata e ouro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-estatueta-de-obsidiana-com-detalhes-e-incrustacoes-de-ouro",
+  "name": "Estatueta de obsidiana com detalhes e incrustações de ouro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-mascara-de-guerra-de-ouro-pintada",
+  "name": "Máscara de guerra de ouro pintada",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 750.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 750
+  }
+ },
+ {
+  "api_index": "art-corrente-de-ouro-elegante-cravejada-com-opala-de-fogo",
+  "name": "Corrente de ouro elegante cravejada com opala de fogo",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-antiga-pintura-obra-prima",
+  "name": "Antiga pintura obra-prima",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 2.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-manto-de-seda-e-veludo-bordado-com-pedras-da-lua-cravejadas",
+  "name": "Manto de seda e veludo bordado com pedras da lua cravejadas",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 2.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-bracelete-de-platina-cravejado-com-safira",
+  "name": "Bracelete de platina cravejado com safira",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-luvas-bordadas-com-lascas-de-joias",
+  "name": "Luvas bordadas com lascas de joias",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-peuga-cheia-de-joias",
+  "name": "Peúga cheia de joias",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-caixa-de-musica-de-ouro",
+  "name": "Caixa de música de ouro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 1.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-argola-de-ouro-cravejada-com-quatro-aguas-marinhas",
+  "name": "Argola de ouro cravejada com quatro águas-marinhas",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 0.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-tapa-olho-com-olho-falso-cravejado-em-safira-azul-e-pedra-da-lua",
+  "name": "Tapa-olho com olho falso cravejado em safira azul e pedra da lua",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-um-colar-de-pequenas-perolas-rosas",
+  "name": "Um colar de pequenas pérolas rosas",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 2500.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 2500
+  }
+ },
+ {
+  "api_index": "art-coroa-de-ouro-cheia-de-joias",
+  "name": "Coroa de ouro cheia de joias",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 1.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ },
+ {
+  "api_index": "art-anel-de-platina-cheio-de-joias",
+  "name": "Anel de platina cheio de joias",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 0.25,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ },
+ {
+  "api_index": "art-pequena-estatueta-de-ouro-cravejada-com-rubis",
+  "name": "Pequena estatueta de ouro cravejada com rubis",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ },
+ {
+  "api_index": "art-taca-de-ouro-cravejada-com-esmeraldas",
+  "name": "Taça de ouro cravejada com esmeraldas",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ },
+ {
+  "api_index": "art-caixa-de-joias-de-ouro-com-filigrana-de-platina",
+  "name": "Caixa de joias de ouro com filigrana de platina",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 1.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ },
+ {
+  "api_index": "art-sarcofago-infantil-de-ouro-pintado",
+  "name": "Sarcófago infantil de ouro pintado",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 7.5,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ },
+ {
+  "api_index": "art-jogo-de-tabuleiro-de-jade-com-pecas-de-ouro-macico",
+  "name": "Jogo de tabuleiro de jade com peças de ouro maciço",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 4.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ },
+ {
+  "api_index": "art-chifre-de-marfim-adornado-com-filigrana-de-ouro",
+  "name": "Chifre de marfim adornado com filigrana de ouro",
+  "kind": "treasure",
+  "category": "art",
+  "value_gp": 7500.0,
+  "weight_kg": 1.0,
+  "source": "DMG — Objetos de Arte",
+  "props": {
+   "unit": "un",
+   "art_tier": 7500
+  }
+ }
+]

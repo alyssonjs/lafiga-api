@@ -9,7 +9,7 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
   # mundano (peça em `category`) quanto o equipamento de aventura.
   # `book` entrou com a aba Livros e Tomos: os 11 livros do catalogo existiam e
   # NENHUM balde os servia, entao tambem nao dava para editar nem apagar.
-  CATALOG_KINDS = %w[weapon armor shield gear tool consumable ammunition book material].freeze
+  CATALOG_KINDS = %w[weapon armor shield gear tool consumable ammunition book material treasure].freeze
 
   before_action :authorize_site_wide_dm
   before_action :set_catalog_item, only: %i[show update destroy]

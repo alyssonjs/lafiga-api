@@ -91,6 +91,41 @@ RSpec.describe 'Api::V1::Public::Equipment matérias-primas', type: :request do
     end
   end
 
+  describe 'obras de arte — TESOURO, kind próprio' do
+    let!(:jarro) do
+      Item.create!(api_index: 'art-jarro-de-prata', name: 'Jarro de prata', kind: 'treasure',
+                   category: 'art', value_gp: 25, weight_kg: 1.0,
+                   props: { 'unit' => 'un', 'art_tier' => 25 })
+    end
+
+    it 'tem balde próprio e a FAIXA viaja — é por ela que o mestre sorteia o saque' do
+      get '/api/v1/public/equipment_categories/treasure'
+      expect(indices(response.parsed_body)).to contain_exactly('art-jarro-de-prata')
+      expect(response.parsed_body['equipment'].first['art_tier']).to eq(25)
+    end
+
+    it '⚠️ NÃO é matéria-prima: não vaza para a aba de insumos' do
+      # Obra de arte não se consome para fabricar nada. A gema fica em
+      # material/gem de propósito — essa SIM entra em receita.
+      get '/api/v1/public/equipment_categories/materials'
+      expect(indices(response.parsed_body)).not_to include('art-jarro-de-prata')
+    end
+
+    it '⚠️ o item SERIALIZA — o ramo genérico lista os kinds e devolve nil fora dele' do
+      get '/api/v1/public/equipment_categories/treasure'
+      eq = response.parsed_body['equipment'].first
+      expect(eq).to be_present
+      expect(eq['equipment_category']).to eq('index' => 'treasure', 'name' => 'Obras de Arte')
+    end
+
+    it '⚠️ o peso sai em LB pelo fator do LIVRO — 1 kg guardado vira 2 lb servido' do
+      # A planilha da fonte dá lb; o banco é canônico em kg. Gravar o número da
+      # planilha faria a obra pesar o dobro.
+      get '/api/v1/public/equipment_categories/treasure'
+      expect(response.parsed_body['equipment'].first['weight']).to eq(2.0)
+    end
+  end
+
   describe 'sub-abas por família' do
     it 'materials-essence traz só as essências' do
       get '/api/v1/public/equipment_categories/materials-essence'

@@ -36,6 +36,11 @@ class Api::V1::Public::EquipmentController < ApplicationController
     essence monster-part herb poison-herb culinary ore alloy gem arcane
   ].freeze
 
+  # Tesouro tem kind PRÓPRIO: obra de arte não é insumo de nada. A gema fica em
+  # `material/gem` de propósito — essa SIM entra em receita (Gema Olho de Tigre
+  # é ingrediente da Poção do Acerto Crítico).
+  TREASURE_KIND = 'treasure'
+
   # GET /api/v1/public/starting_equipment
   # Params: class_id (required), background_id (optional)
   def starting_equipment
@@ -243,6 +248,8 @@ class Api::V1::Public::EquipmentController < ApplicationController
       # Pocao MUNDANA. A magica vive em `MagicItem` com `category: potion` e a
       # aba mostra as duas juntas.
       Item.where(kind: 'consumable', category: POTION_CATEGORY).order(:api_index).to_a
+    when :treasure
+      Item.where(kind: TREASURE_KIND).order(:value_gp, :api_index).to_a
     when :materials
       Item.where(kind: MATERIAL_KIND).order(:category, :api_index).to_a
     when *MATERIAL_CATEGORIES.map { |c| :"material_#{c.tr('-', '_')}" }
@@ -279,6 +286,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
     return :vehicles        if %w[vehicles veiculos transportes mounts-and-vehicles].include?(s)
     return :tools           if %w[tools ferramentas instruments-misc].include?(s)
     return :consumables     if %w[consumables consumivel consumiveis].include?(s)
+    return :treasure        if %w[treasure tesouros obras-de-arte art-objects].include?(s)
     return :materials       if %w[materials materias-primas materia-prima raw-materials].include?(s)
     # Sub-abas por família: `materials-essence`, `materials-gem`, ...
     if s.start_with?('materials-')
@@ -403,7 +411,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
         card_icon_id: sp['card_icon_id'].presence,
         url: "/api/v1/public/equipment/#{it.api_index}"
       }
-    when 'gear', 'pack', 'tool', 'consumable', 'book', 'magic_item', 'ammunition', 'material'
+    when 'gear', 'pack', 'tool', 'consumable', 'book', 'magic_item', 'ammunition', 'material', 'treasure'
       cost_cp = (defined?(EquipmentRules) ? EquipmentRules.item_cost_cp(it) : nil) rescue nil
       # `weight` do payload e em LB (convencao do livro, kg x 2): o compendio
       # rotula "lb" e a bolsa grava `weight_lb` — mandar kg cru sub-contava a
@@ -431,6 +439,8 @@ class Api::V1::Public::EquipmentController < ApplicationController
         ['ammunition', 'Ammunition']
       when 'material'
         ['materials', 'Matérias-Primas']
+      when 'treasure'
+        ['treasure', 'Obras de Arte']
       else
         # Pacotes importados como `kind: :gear` + `category: pack` (ver equipment:import_items).
         if it.kind == 'gear' && it.category.to_s == 'pack'
@@ -473,6 +483,9 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # preço do frasco inteiro em vez do mililitro.
         material_unit: props['unit'].presence,
         material_note: props['note'].presence,
+        # Faixa do DMG (25/250/750/2500/7500 po): é por ela que o mestre sorteia
+        # o saque, então precisa chegar ao filtro da aba.
+        art_tier: props['art_tier'].presence,
         # Erva/venenosa: onde-quando-como COLHER e o que ela vira depois de
         # preparada. Sem serializar, o dado existe no catálogo e não chega à
         # ficha — a mesma classe de gap dos usos de kit.
