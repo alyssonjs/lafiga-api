@@ -1003,10 +1003,27 @@ class CharacterProvisioningService
     end
   end
 
+  # Token do wizard → `api_index` do catálogo, quando os dois divergem.
+  #
+  # A maioria dos tokens JÁ é o api_index (`studded-leather`, `scale-mail`).
+  # Estes não são, e sem o mapa o pacote nunca expandia: o backend procurava um
+  # item chamado "scholar-pack" e não achava nada.
+  TOKEN_PARA_INDICE = {
+    'explorer-pack' => 'pacote-explorador',
+    'dungeoneer-pack' => 'pacote-aventureiro',
+    'priest-pack' => 'pacote-sacerdote',
+    'scholar-pack' => 'pacote-estudioso',
+    'entertainer-pack' => 'pacote-artista',
+    'diplomat-pack' => 'pacote-diplomata',
+    'burglar-pack' => 'pacote-assaltante',
+    'plate-armor' => 'plate',
+  }.freeze
+
   # Item do catálogo por índice, e só então por nome — índice é estável, nome
   # é a parte que diverge.
   def resolve_catalog_item(item_index:, item_name:)
-    return Item.find_by(api_index: item_index) if item_index.present? && Item.exists?(api_index: item_index)
+    idx = TOKEN_PARA_INDICE[item_index.to_s] || item_index
+    return Item.find_by(api_index: idx) if idx.present? && Item.exists?(api_index: idx)
     return nil if item_name.blank?
 
     sem_acento = ->(t) { t.to_s.unicode_normalize(:nfd).gsub(/\p{Mn}/, '').downcase.strip }

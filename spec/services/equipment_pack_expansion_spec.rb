@@ -73,6 +73,26 @@ RSpec.describe CharacterProvisioningService, '#expand_equipment_pick', type: :se
     expect(linhas.first[:item_id]).to eq(mochila.id)
   end
 
+  it '⚠️ o TOKEN do wizard resolve — não é o api_index do pacote' do
+    # O wizard manda `scholar-pack`, o catálogo guarda `pacote-estudioso`.
+    # Sem o mapa, o backend procurava um item chamado "scholar-pack", não
+    # achava nada, e o pacote NUNCA expandia.
+    pacote.update!(api_index: 'pacote-estudioso')
+    linhas = svc.send(:expand_equipment_pick, base: base, item_index: 'scholar-pack',
+                      item_name: 'scholar-pack', quantity: 1, props: {})
+
+    expect(linhas.size).to eq(2)
+    expect(linhas.map { |l| l[:item_name] }).to contain_exactly('Mochila', 'Tocha')
+  end
+
+  it 'token que JÁ é api_index passa direto pelo mapa' do
+    couro = Item.create!(api_index: 'studded-leather', name: 'Couro Reforçado', kind: 'armor')
+    linhas = svc.send(:expand_equipment_pick, base: base, item_index: 'studded-leather',
+                      item_name: 'studded-leather', quantity: 1, props: {})
+
+    expect(linhas.first[:item_id]).to eq(couro.id)
+  end
+
   it 'pacote SEM conteúdo (legado) entra como item só, em vez de sumir' do
     vazio = Item.create!(api_index: 'pacote-vazio', name: 'Pacote Vazio', kind: 'gear', category: 'pack')
     linhas = expandir('Pacote Vazio')
