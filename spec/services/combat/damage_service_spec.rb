@@ -155,6 +155,24 @@ RSpec.describe Combat::DamageService, type: :service do
       expect(veneno.result[:damage_modifier]).to eq(:immune)
     end
 
+    it '⚠️ FRONTEIRA: a chave que o FRONT escreve casa com o parser daqui' do
+      # O front canoniza o tipo SEM acento (`vulneravel-acido`, `vulneravel-eletrico`)
+      # e é ele quem grava a condição. Se este lado não reconhecesse essa grafia, o
+      # alvo ficaria "vulnerável" e o dano sairia normal — em silêncio.
+      character, = build_pc(hp: 40)
+      combatant = build_combatant(character, hp_max: 40)
+      combatant.update!(conditions: [
+        { 'id' => 'vulneravel-acido', 'turns_left' => 2 },
+        { 'id' => 'vulneravel-eletrico', 'turns_left' => 2 },
+      ])
+
+      acido = described_class.call(combatant: combatant, amount: 5, damage_type: 'acido')
+      expect(acido.result[:damage_modifier]).to eq(:vulnerable)
+
+      eletrico = described_class.call(combatant: combatant.reload, amount: 5, damage_type: 'eletrico')
+      expect(eletrico.result[:damage_modifier]).to eq(:vulnerable)
+    end
+
     it 'condição comum (envenenado, frightened) não vira defesa por engano' do
       # O parser separa por hífen: "vulneravel-" é o prefixo; um id normal de
       # condição não pode cair no balde.
