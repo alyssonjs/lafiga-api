@@ -170,19 +170,35 @@ class ItemResolver
     'net'           => 'rede',
   }.freeze
 
+  # Nome de armadura (PT ou EN, em qualquer grafia) → `api_index` CANÔNICO.
+  #
+  # ⚠️ Este mapa apontava para slugs em PORTUGUÊS (`half-plate` => `meia-armadura`)
+  # que NÃO são a convenção do catálogo — as 12 armaduras vivem com slug em
+  # INGLÊS. Resultado: `create_item!` não achava a armadura de verdade e criava
+  # uma CASCA VAZIA com o slug PT, sem `ac_base`/`dex_cap`. Quem vestisse essa
+  # casca ficava sem CA de armadura (caía no 10+DES). Medido: 2 cascas
+  # (`meia-armadura`, `cota-de-aneis`), 1 ficha cada.
+  #
+  # Agora todas as grafias — EN, PT do PHB e as variantes que a base tinha —
+  # levam ao MESMO slug canônico. Escritor único, leitor tolerante.
   ARMOR_PT_SLUGS = {
-    'padded'           => 'acolchoada',
-    'leather'          => 'couro',
-    'studded-leather'  => 'couro-batido',
-    'hide'             => 'peles',
-    'chain-shirt'      => 'camisao-de-malha',
-    'scale-mail'       => 'brunea',
-    'breastplate'      => 'peitoral',
-    'half-plate'       => 'meia-armadura',
-    'ring-mail'        => 'cota-de-aneis',
-    'chain-mail'       => 'cota-de-malha',
-    'splint'           => 'lamelar',
-    'plate'            => 'placa',
+    # inglês (identidade: já é o canônico)
+    'padded' => 'padded', 'leather' => 'leather', 'studded-leather' => 'studded-leather',
+    'hide' => 'hide', 'chain-shirt' => 'chain-shirt', 'scale-mail' => 'scale-mail',
+    'breastplate' => 'breastplate', 'half-plate' => 'half-plate', 'ring-mail' => 'ring-mail',
+    'chain-mail' => 'chain-mail', 'splint' => 'splint', 'plate' => 'plate',
+    # português do PHB
+    'acolchoada' => 'padded', 'couro' => 'leather', 'couro-batido' => 'studded-leather',
+    'peles' => 'hide', 'camisao-de-malha' => 'chain-shirt', 'brunea' => 'scale-mail',
+    'peitoral' => 'breastplate', 'meia-armadura' => 'half-plate',
+    'cota-de-aneis' => 'ring-mail', 'cota-de-malha' => 'chain-mail',
+    'cota-de-talas' => 'splint', 'armadura-de-placas' => 'plate',
+    # variantes que a base já tinha gravadas (não podem virar item novo)
+    'couro-reforcado' => 'studded-leather', 'armadura-couro-reforcado' => 'studded-leather',
+    'gibao-de-peles' => 'hide', 'camisa-de-malha' => 'chain-shirt',
+    'cota-de-escamas' => 'scale-mail', 'meia-armadura-de-placas' => 'half-plate',
+    'malha-anelar' => 'ring-mail', 'lamelar' => 'splint',
+    'placas-segmentadas' => 'splint', 'placa' => 'plate', 'placas' => 'plate',
   }.freeze
 
   def canonical_from_rules(name, _category)
@@ -196,9 +212,13 @@ class ItemResolver
       return [canonical, 'weapon']
     end
 
-    if EquipmentRules::ARMOR_TABLE.key?(en_slug) || EquipmentRules::ARMOR_TABLE.key?(slug)
-      canonical = ARMOR_PT_SLUGS[en_slug] || ARMOR_PT_SLUGS[slug] || slug
-      return [canonical, 'armor']
+    # ⚠️ A condição olha o MAPA primeiro, não só a `ARMOR_TABLE`: aquela tabela
+    # só tem chaves em INGLÊS, então um nome em português ("Meia-Armadura")
+    # nunca entrava aqui e caía no `create_item!` com o slug PT — era assim que
+    # nasciam as cascas sem `ac_base`. O mapa conhece as duas línguas.
+    armadura = ARMOR_PT_SLUGS[en_slug] || ARMOR_PT_SLUGS[slug]
+    if armadura || EquipmentRules::ARMOR_TABLE.key?(en_slug) || EquipmentRules::ARMOR_TABLE.key?(slug)
+      return [armadura || slug, 'armor']
     end
 
     # Escudo: nome em PT-BR padrao
