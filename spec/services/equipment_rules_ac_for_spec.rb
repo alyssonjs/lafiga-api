@@ -43,6 +43,50 @@ RSpec.describe 'EquipmentRules.ac_for (Item armor / shield)', :aggregate_failure
     end
   end
 
+  describe 'B1b — armadura MÁGICA homebrew: a base vem do MagicItem.sub_category' do
+    # O caso real: "Armadura de coura de marmota +2" (base studded-leather).
+    # O nome não está na ARMOR_TABLE nem existe Item de armadura — o espelho
+    # criado pelo ItemResolver nem props de CA tem. A verdade está no registro
+    # do item mágico, no vocabulário do editor (chaves da própria tabela).
+    let!(:magic_armor) do
+      MagicItem.create!(
+        name: 'Armadura de coura de marmota +2',
+        slug: 'armadura-de-coura-de-marmota-2',
+        category: 'armor',
+        sub_category: 'studded-leather',
+        rarity: 'rare'
+      )
+    end
+
+    let(:armor_si) do
+      SheetItem.create!(
+        sheet: sheet,
+        item_name: 'Armadura de coura de marmota +2',
+        item_index: 'armadura-de-coura-de-marmota-2',
+        category: 'Armaduras',
+        quantity: 1,
+        equipped: true,
+        slot: 'armor'
+      )
+    end
+
+    it '⚠️ resolve a base pela sub_category: 12 + DEX, não 10 + DEX' do
+      # Sem o fallback, a ficha dava corpo nu (10+DES) e o +2 do efeito somava
+      # por cima disso — 16 em vez de 18 no total final.
+      out = EquipmentRules.ac_for(sheet: sheet, armor_item: armor_si, shield_item: nil)
+      expect(out[:ac]).to eq(14) # 12 (studded leather) + 2 DEX
+      expect(out[:armor_category]).to eq('light')
+      expect(out[:armor_equipped]).to be(true)
+    end
+
+    it 'sub_category que não é armadura (band, cloak) não inventa base' do
+      magic_armor.update!(sub_category: 'band')
+      out = EquipmentRules.ac_for(sheet: sheet, armor_item: armor_si, shield_item: nil)
+      expect(out[:ac]).to eq(12) # 10 + 2 DEX — fallback de sempre
+      expect(out[:armor_category]).to eq('none')
+    end
+  end
+
   describe 'B2 — paridade com ARMOR_TABLE (leather / couro via Item)' do
     let!(:leather) do
       Item.find_or_initialize_by(api_index: 'leather').tap do |i|

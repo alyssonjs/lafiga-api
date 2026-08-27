@@ -287,6 +287,15 @@ class EquipmentRules
           end
           armor_data = ItemArmorPropsMapper.from_item(db_armor) if db_armor
         end
+        # Armadura MÁGICA homebrew: o nome não está na ARMOR_TABLE ("Armadura
+        # de coura de marmota +2"), mas o MagicItem declara a BASE em
+        # `sub_category` (studded-leather) — vocabulário do editor, 1:1 com as
+        # chaves da tabela. Sem isto a ficha caía em 10+DES e o +2 do efeito
+        # somava por cima do corpo nu em vez do Couro Batido.
+        if armor_data.nil? && defined?(MagicItem)
+          mi_sub = MagicItem.find_by(slug: key)&.sub_category.to_s.strip.downcase.tr('_', '-')
+          armor_data = ARMOR_TABLE[mi_sub] if mi_sub.present?
+        end
         if armor_data
           base = armor_data[:base]
           cap = armor_data[:dex_cap]
