@@ -124,6 +124,71 @@ RSpec.describe Combat::DamageService, type: :service do
   end
 
   # =====================================================================
+  #  Defesas TEMPORÁRIAS por condição (vulneravel-/resistente-/imune-<tipo>)
+  # =====================================================================
+  describe 'defesa temporária gravada como condição no combatente' do
+    it '⚠️ `vulneravel-fogo` no combatente dobra o dano de fogo' do
+      # É assim que "Causa Vulnerabilidade" de um item chega ao alvo: condição
+      # com turns_left, que o tick de fim de rodada expira sozinho.
+      character, = build_pc(hp: 30)
+      combatant = build_combatant(character, hp_max: 30)
+      combatant.update!(conditions: [{ 'id' => 'vulneravel-fogo', 'turns_left' => 2 }])
+
+      result = described_class.call(combatant: combatant, amount: 6, damage_type: 'fogo')
+      expect(result.result[:damage_applied]).to eq(12)
+      expect(result.result[:damage_modifier]).to eq(:vulnerable)
+    end
+
+    it '`resistente-frio` corta pela metade e `imune-veneno` zera' do
+      character, = build_pc(hp: 30)
+      combatant = build_combatant(character, hp_max: 30)
+      combatant.update!(conditions: [
+        { 'id' => 'resistente-frio', 'turns_left' => 1 },
+        { 'id' => 'imune-veneno', 'turns_left' => 1 },
+      ])
+
+      frio = described_class.call(combatant: combatant, amount: 11, damage_type: 'frio')
+      expect(frio.result[:damage_applied]).to eq(5)
+
+      veneno = described_class.call(combatant: combatant.reload, amount: 9, damage_type: 'veneno')
+      expect(veneno.result[:damage_applied]).to eq(0)
+      expect(veneno.result[:damage_modifier]).to eq(:immune)
+    end
+
+    it 'condição comum (envenenado, frightened) não vira defesa por engano' do
+      # O parser separa por hífen: "vulneravel-" é o prefixo; um id normal de
+      # condição não pode cair no balde.
+      character, = build_pc(hp: 30)
+      combatant = build_combatant(character, hp_max: 30)
+      # Formato canônico do banco: SÓ hashes com id (o model valida; a
+      # tolerância a string solta é do front).
+      combatant.update!(conditions: [
+        { 'id' => 'envenenado', 'turns_left' => 2 },
+        { 'id' => 'frightened', 'turns_left' => 0 },
+      ])
+
+      result = described_class.call(combatant: combatant, amount: 10, damage_type: 'fogo')
+      expect(result.result[:damage_applied]).to eq(10)
+      expect(result.result[:damage_modifier]).to eq(:normal)
+    end
+
+    it 'vale também para NPC (a condição é do COMBATENTE, não da ficha)' do
+      schedule = create(:schedule)
+      npc = create(:combat_npc, schedule: schedule, hp_max: 20, hp_current: 20, ac: 12)
+      cs = CombatState.create!(schedule: schedule, active: true, round: 1, current_turn_index: 0)
+      combatant = CombatCombatant.create!(
+        combat_state: cs, combatable: npc, position: 1, name: npc.name,
+        initiative: 10, initiative_bonus: 0, tie_break_dex: 10,
+        hp_current: 20, hp_max: 20, ac: 12,
+        conditions: [{ 'id' => 'vulneravel-cortante', 'turns_left' => 1 }]
+      )
+
+      result = described_class.call(combatant: combatant, amount: 4, damage_type: 'cortante')
+      expect(result.result[:damage_applied]).to eq(8)
+    end
+  end
+
+  # =====================================================================
   #  Heavy Armor Master — redução fixa de 3 em B/P/S não-mágico
   # =====================================================================
   describe 'Heavy Armor Master (redução -3 BPS não-mágico em armadura pesada)' do

@@ -23,6 +23,8 @@ class MagicItemRules
   # }
   EFFECT_DEFAULTS = {
     ac_bonus: 0,
+    on_hit_effects: [],
+    ignores_difficult_terrain: nil,
     notes: [],
     resistances: [],
     damage_immunities: [],
@@ -236,6 +238,18 @@ class MagicItemRules
           name: (eff['name'] || eff[:name]).to_s,
           desc: (eff['desc'] || eff[:desc]).to_s,
         }
+      when 'ignore_difficult_terrain'
+        # Portador ignora terreno difícil. `full` engole `partial` (imunidade
+        # total vence a metade). Consumido pelo mapa (front) via o mesmo modo.
+        modo = (eff['mode'] || eff[:mode]).to_s == 'partial' ? 'partial' : 'full'
+        res[:ignores_difficult_terrain] = 'full' if modo == 'full'
+        res[:ignores_difficult_terrain] ||= 'partial'
+      when 'apply_condition', 'target_vulnerability'
+        # ON-HIT: efeito que a ARMA impõe ao ALVO atingido — não muda a ficha
+        # do portador, então aqui é passthrough consciente. Quem consome são o
+        # sink de ataque (front) e o pipe de TR; agregado para o summary poder
+        # expor no futuro.
+        res[:on_hit_effects] << eff.merge('source' => src)
       end
     end
     res[:resistances].uniq!

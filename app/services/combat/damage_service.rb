@@ -115,16 +115,17 @@ module Combat
     # Para NPC (CombatNpc): colunas dedicadas adicionadas na Fase 6E.
     def collect_target_modifiers
       target = @combatant.combatable
+      temporarias = temporary_defenses_from_conditions
 
       # Caminho NPC — colunas dedicadas (Fase 6E)
       if target.is_a?(CombatNpc)
         return {
-          resistances: Array(target.respond_to?(:resistances) ? target.resistances : [])
-                        .map { |r| normalize_damage_type(r) }.compact,
-          immunities: Array(target.respond_to?(:damage_immunities) ? target.damage_immunities : [])
-                        .map { |r| normalize_damage_type(r) }.compact,
-          vulnerabilities: Array(target.respond_to?(:damage_vulnerabilities) ? target.damage_vulnerabilities : [])
-                        .map { |r| normalize_damage_type(r) }.compact,
+          resistances: (Array(target.respond_to?(:resistances) ? target.resistances : [])
+                        .map { |r| normalize_damage_type(r) }.compact | temporarias[:resistances]),
+          immunities: (Array(target.respond_to?(:damage_immunities) ? target.damage_immunities : [])
+                        .map { |r| normalize_damage_type(r) }.compact | temporarias[:immunities]),
+          vulnerabilities: (Array(target.respond_to?(:damage_vulnerabilities) ? target.damage_vulnerabilities : [])
+                        .map { |r| normalize_damage_type(r) }.compact | temporarias[:vulnerabilities]),
           wearing_heavy_armor: false,  # NPCs não têm a flag específica do feat
           feats: []
         }
@@ -155,6 +156,10 @@ module Combat
       # prod (só `metadata['feats']` é backfilled), então sem este passo o
       # DamageService nunca vê resistência de subclasse nem armadura pesada.
       #
+      mods[:resistances]     |= temporarias[:resistances]
+      mods[:immunities]      |= temporarias[:immunities]
+      mods[:vulnerabilities] |= temporarias[:vulnerabilities]
+
       # Guard: só consultamos o summary quando HÁ `damage_type`. Sem tipo,
       # `decide_damage_modifier` → :normal e `compute_flat_reduction` → 0 (nil
       # não é físico), ou seja nenhuma mitigação se aplica — evitamos o custo do
@@ -194,6 +199,32 @@ module Combat
     rescue StandardError => e
       Rails.logger.warn("DamageService: enriquecimento via summary falhou: #{e.class}: #{e.message}") if defined?(Rails)
       nil
+    end
+
+    # Defesas TEMPORÁRIAS gravadas como CONDIÇÃO no próprio combatente:
+    # `vulneravel-<tipo>` / `resistente-<tipo>` / `imune-<tipo>` (ex.: gema de
+    # gelo que deixa o alvo "vulneravel-fogo" por 2 rodadas). Vivem em
+    # `conditions` com `turns_left`, então EXPIRAM sozinhas pelo tick de fim de
+    # rodada — nenhum estado paralelo para varrer. Condição desconhecida ou tipo
+    # que não normaliza é ignorada em silêncio (id de condição comum não casa).
+    TEMP_DEFENSE_PREFIXES = {
+      'vulneravel' => :vulnerabilities,
+      'resistente' => :resistances,
+      'imune'      => :immunities,
+    }.freeze
+
+    def temporary_defenses_from_conditions
+      out = { resistances: [], immunities: [], vulnerabilities: [] }
+      Array(@combatant.try(:conditions)).each do |c|
+        id = (c.is_a?(Hash) ? (c['id'] || c[:id]) : c).to_s.strip.downcase
+        prefixo, tipo = id.split('-', 2)
+        balde = TEMP_DEFENSE_PREFIXES[prefixo]
+        next if balde.nil? || tipo.to_s.empty?
+
+        tipo_norm = normalize_damage_type(tipo)
+        out[balde] << tipo_norm if tipo_norm.present?
+      end
+      out.transform_values(&:uniq)
     end
 
     def decide_damage_modifier(mods)
