@@ -35,6 +35,14 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # porque a família de um material é do MUNDO, não da natureza dele: o mesmo
   # minério vira liga na forja e reagente no encantamento. Trocar de category é
   # um UPDATE; trocar de kind seria migration.
+  # Baldes que o snapshot do catálogo serve — espelho de `snapshotBucketKeys()`
+  # no front. Constante (e não literal no método) para o spec poder compará-la.
+  CATEGORIES_DO_SNAPSHOT = %w[
+    simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
+    gear packs tools instruments vehicles consumables potions books ammunition
+    materials treasure
+  ].freeze
+
   MATERIAL_KIND = 'material'
   # `poison-herb` é família própria DE PROPÓSITO: colhe-se com Kit de VENENO e
   # produz veneno, não remédio — distinção do mundo, não cosmética.
@@ -177,12 +185,19 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # Uma ida ao servidor com todo o equipamento mundano (por categoria), para
   # evitar dezenas de round-trips no modal "Adicionar item" / buscas na bolsa.
   def equipment_catalog_snapshot
-    # `instruments` precisa estar aqui: os baldes :gear/:tools EXCLUEM a
-    # categoria, entao sem esta linha o instrumento sumiria do modal da bolsa.
-    categories = %w[
-      simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
-      gear packs tools instruments vehicles consumables potions books ammunition
-    ]
+    # ⚠️ Esta lista tem de cobrir TUDO que o front pede em `snapshotBucketKeys()`.
+    # O snapshot é pedido SEM parâmetros — quem decide o que existe é aqui. Um
+    # balde ausente não dá erro: o item simplesmente NÃO APARECE na busca do
+    # "+ Novo Item", em silêncio.
+    #
+    # Foi o que aconteceu com `materials` e `treasure`: 425 matérias-primas e 48
+    # obras de arte estavam invisíveis para o jogador, que não conseguia pôr na
+    # bolsa nem o insumo para fabricar nem o saque. O front já as listava — só
+    # nunca chegavam.
+    #
+    # `instruments` e `vehicles` estão aqui pela mesma razão: os baldes
+    # :gear/:tools os EXCLUEM, então sem a linha o item some do modal.
+    categories = CATEGORIES_DO_SNAPSHOT
     by_category = {}
     categories.each do |cat|
       rows = items_for_category_from_db(cat)
