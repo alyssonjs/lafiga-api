@@ -16,6 +16,12 @@ class Api::V1::Public::EquipmentController < ApplicationController
   POISON_CATEGORY = 'poison'
   SUPPLY_CATEGORY = 'supply'
   ALCHEMICAL_CATEGORY = 'alchemical'
+  # Herbalismo: produto acabado feito com o Kit de Herbalismo (unguento, chá,
+  # cataplasma). Sub-tipo PRÓPRIO e não `alchemical` porque a perícia e o kit
+  # são outros — o mestre precisa distinguir o que um herbalista sabe fazer do
+  # que exige laboratório. A ERVA CRUA continua em `material/herb`: aqui é o
+  # que já foi preparado e se gasta ao usar.
+  HERBALISM_CATEGORY = 'herbalism'
   # Pergaminho de magia: `kind: consumable` + esta categoria. Tinha aba propria
   # que vivia VAZIA (zero MagicItem `category: scroll`, zero `Item kind: scroll`)
   # enquanto os pergaminhos do mestre estavam como `gear` sem categoria. Gasta-se
