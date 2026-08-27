@@ -476,12 +476,58 @@ class EquipmentRules
 
       props = db_item.props || {}
       max = props['uses_max'].presence&.to_i
+      recharge = props['uses_recharge']
+
+      # ⚠️ ITEM MÁGICO: as cargas são declaradas em `magic_items.charges` /
+      # `.recharge`, e NADA as espelha em `items.props`. Sem esta ponte o cano
+      # de usos não via carga nenhuma e todo item mágico com cargas ficava
+      # inerte — medido: dos 2 itens com `charges > 0`, os 2 tinham
+      # `uses_max` nulo no espelho.
+      #
+      # Ler o MagicItem aqui (em vez de migrar o espelho) segue o mesmo desenho
+      # já usado para `requires_attunement`: MagicItem é a AUTORIDADE, `Item` é
+      # espelho que diverge. Assim vale para o que já existe e para o que o
+      # mestre criar depois, sem backfill.
+      if (max.nil? || !max.positive?) && magic_line?(item)
+        mi = magic_item_for_uses(db_item)
+        if mi
+          max = mi.charges.to_i
+          recharge = mi.recharge if recharge.blank?
+        end
+      end
       return nil unless max&.positive?
 
       {
         'uses_max' => max,
-        'uses_recharge' => MagicItemCatalog.normalize_recharge(props['uses_recharge']),
+        'uses_recharge' => MagicItemCatalog.normalize_recharge(recharge),
       }.compact
+    end
+
+    # A LINHA da ficha é de item mágico? O front marca `props_json['magical']`
+    # em tudo que é mágico, e é esse o portão da consulta abaixo.
+    #
+    # ⚠️ Sem este gate a busca correria em TODA linha sem `uses_max` — ~90 por
+    # bolsa numa caixa de 1 CPU. Com ele, corre só nos poucos itens mágicos.
+    def magic_line?(item)
+      props = item.respond_to?(:props_json) ? item.props_json : nil
+      return false unless props.is_a?(Hash)
+
+      ActiveModel::Type::Boolean.new.cast(props['magical']).present? ||
+        props['magic_item_slug'].present?
+    end
+
+    # MagicItem correspondente ao espelho, por slug e depois por nome (a mesma
+    # ordem do serviço de sintonia).
+    #
+    # ⚠️ SEM memoização: `EquipmentRules` é singleton de classe (`class << self`),
+    # então uma ivar aqui sobreviveria entre REQUISIÇÕES no Puma — o mestre
+    # editaria as cargas e o valor velho ficaria preso até reiniciar. Foi o que
+    # o spec "item sem cargas continua sem usos" pegou.
+    def magic_item_for_uses(db_item)
+      return nil unless defined?(MagicItem)
+
+      MagicItem.find_by(slug: db_item.api_index.to_s) ||
+        (db_item.name.present? ? MagicItem.where('lower(name) = ?', db_item.name.downcase).first : nil)
     end
 
     def weapon_props(item)
