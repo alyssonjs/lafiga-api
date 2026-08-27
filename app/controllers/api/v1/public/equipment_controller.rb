@@ -188,6 +188,23 @@ class Api::V1::Public::EquipmentController < ApplicationController
   end
 
   private
+
+  # Quem está pedindo é mestre? O catálogo é público (não tem `before_action` de
+  # autenticação), mas o `apiClient` do front já manda `Authorization` quando há
+  # sessão — dá para IDENTIFICAR sem passar a exigir login.
+  #
+  # Memoizado com `defined?` porque `false` é resposta válida: `||=` refaria a
+  # leitura do token a cada item do catálogo (são centenas por requisição).
+  def mestre_olhando?
+    return @mestre_olhando if defined?(@mestre_olhando)
+
+    usuario = ApiRequestAuth.call(request.headers).result
+    @mestre_olhando = Group.user_is_dm?(usuario)
+  rescue StandardError
+    # Token podre não pode derrubar o catálogo inteiro — no máximo, esconde.
+    @mestre_olhando = false
+  end
+
   # Lista itens (records) para a categoria solicitada, vindos do banco
   def items_for_category_from_db(idx)
     return [] unless defined?(Item)
@@ -503,13 +520,15 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # Faixa do DMG (25/250/750/2500/7500 po): é por ela que o mestre sorteia
         # o saque, então precisa chegar ao filtro da aba.
         art_tier: props['art_tier'].presence,
-        # Gema: tier e os três textos (poder místico, efeito em arma, efeito em
-        # vestuário). Sem serializar, o dado existe no catálogo e não chega à
-        # ficha — a mesma classe de gap dos usos de kit.
+        # Gema: tier e o poder místico são do MUNDO — o joalheiro descreve a
+        # pedra ao vendê-la, então o jogador vê.
         gem_tier: props['gem_tier'].presence,
         gem_power: props['gem_power'].presence,
-        gem_weapon_effect: props['gem_weapon_effect'].presence,
-        gem_apparel_effect: props['gem_apparel_effect'].presence,
+        # ⚠️ Os efeitos de ENCAIXE são do mestre. Esconder só no front deixaria
+        # o texto viajando no payload — quem abrisse o devtools leria a mecânica
+        # inteira. O corte é aqui: a chave nem existe para quem não é mestre.
+        gem_weapon_effect: (props['gem_weapon_effect'].presence if mestre_olhando?),
+        gem_apparel_effect: (props['gem_apparel_effect'].presence if mestre_olhando?),
         # Erva/venenosa: onde-quando-como COLHER e o que ela vira depois de
         # preparada. Sem serializar, o dado existe no catálogo e não chega à
         # ficha — a mesma classe de gap dos usos de kit.

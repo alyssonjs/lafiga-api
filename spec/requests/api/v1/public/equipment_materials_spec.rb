@@ -142,20 +142,49 @@ RSpec.describe 'Api::V1::Public::Equipment matérias-primas', type: :request do
                    props: { 'gem_tier' => 4, 'gem_apparel_effect' => 'Visão no escuro 9 m.' })
     end
 
-    it '⚠️ tier e os DOIS efeitos viajam — sem eles a gema é só um preço' do
-      # O encaixe é a mecânica inteira da gema: se o efeito não chega à ficha,
-      # o jogador não tem como saber o que ganhou ao engastá-la.
-      get '/api/v1/public/equipment_categories/materials-gem'
-      eq = response.parsed_body['equipment'].find { |e| e['index'] == 'gem-rubi' }
+    let(:mestre) { create(:user, role: create(:role, name: 'DM')) }
+    let(:jogador) { create(:user, role: create(:role, name: 'Player')) }
+
+    def gema_servida(index, headers = {})
+      get '/api/v1/public/equipment_categories/materials-gem', headers: headers
+      response.parsed_body['equipment'].find { |e| e['index'] == index }
+    end
+
+    it '⚠️ para o MESTRE, tier e os DOIS efeitos viajam' do
+      # O encaixe é a mecânica inteira da gema: se o efeito não chega ao mestre,
+      # ele não tem o que aplicar quando o jogador engasta a pedra.
+      eq = gema_servida('gem-rubi', bearer_headers_for(mestre))
       expect(eq['gem_tier']).to eq(5)
       expect(eq['gem_power']).to eq('Fogo interior')
       expect(eq['gem_weapon_effect']).to match(/dano de fogo/)
       expect(eq['gem_apparel_effect']).to match(/Resistência/)
     end
 
+    it '⚠️ para o JOGADOR o efeito de encaixe NÃO viaja — nem no payload' do
+      # Esconder só no front deixaria o texto no JSON: bastaria abrir o devtools
+      # para ler a mecânica inteira antes de o mestre revelá-la.
+      eq = gema_servida('gem-rubi', bearer_headers_for(jogador))
+      expect(eq['gem_weapon_effect']).to be_nil
+      expect(eq['gem_apparel_effect']).to be_nil
+      # ...mas o que o joalheiro diria ao vender continua visível.
+      expect(eq['gem_tier']).to eq(5)
+      expect(eq['gem_power']).to eq('Fogo interior')
+    end
+
+    it 'sem token nenhum também não vê o encaixe' do
+      eq = gema_servida('gem-rubi')
+      expect(eq['gem_weapon_effect']).to be_nil
+      expect(eq['gem_power']).to eq('Fogo interior')
+    end
+
+    it 'token podre não derruba o catálogo — no máximo esconde' do
+      eq = gema_servida('gem-rubi', 'Authorization' => 'Bearer nao-e-um-jwt')
+      expect(response).to have_http_status(:ok)
+      expect(eq['gem_weapon_effect']).to be_nil
+    end
+
     it 'gema sem efeito de arma vem com a chave nula, não com string vazia' do
-      get '/api/v1/public/equipment_categories/materials-gem'
-      eq = response.parsed_body['equipment'].find { |e| e['index'] == 'gem-perola-negra' }
+      eq = gema_servida('gem-perola-negra', bearer_headers_for(mestre))
       expect(eq['gem_weapon_effect']).to be_nil
       expect(eq['gem_apparel_effect']).to eq('Visão no escuro 9 m.')
     end
