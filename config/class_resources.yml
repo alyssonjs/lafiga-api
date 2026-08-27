@@ -175,3 +175,41 @@ titanic_incentive:
   recharge: short
 heroic_safeguard:
   recharge: short
+# ── Cozinheiro (cl-13, houserule) — F1.2f: usos das features de classe/
+# subclasse fiadas no hotbar. Antes viviam só em updateCharacter local
+# (não persistiam). Contadores CON-mod (arroto/bolsa/observância) têm o
+# teto derivado no front; aqui só a recarga.
+soul_of_food:
+  recharge: long
+  classes: [cozinheiro]
+aromatic_sweat:
+  recharge: long
+  classes: [cozinheiro]
+noxious_attack:
+  recharge: short
+  classes: [cozinheiro]
+sonorous_burp:
+  recharge: short
+  classes: [cozinheiro]
+autonomous_bag:
+  recharge: short
+  classes: [cozinheiro]
+vital_observance:
+  recharge: short
+  classes: [cozinheiro]
+# Petiscos Lendários (L18, 1/descanso longo, um por subclasse)
+monkey_brain:
+  recharge: long
+  classes: [cozinheiro]
+crystal_heart:
+  recharge: long
+  classes: [cozinheiro]
+gas_pill:
+  recharge: long
+  classes: [cozinheiro]
+masters_creation:
+  recharge: long
+  classes: [cozinheiro]
+vital_meat:
+  recharge: long
+  classes: [cozinheiro]
