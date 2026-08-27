@@ -22,6 +22,34 @@ RSpec.describe MagicItemRules, type: :service do
 
   let(:sheet_stub) { Object.new } # @sheet só é usado para cair no EquipmentProfileService default
 
+  describe 'set_ac_base ("sua CA é N + DES")' do
+    it '⚠️ AGREGA o valor — o `when` era um comentário morto ("Not applied here")' do
+      # E tem de ser agregado no efeito GERAL do portador: escrever a chave em
+      # `ac_bonuses_for` a deixava fora do resultado (o `res` de lá é o hash
+      # tipo→CA), que foi como este efeito ficou inerte por tanto tempo.
+      make_magic_item!(slug: 'braceletes-defesa-spec', name: 'Braceletes de Defesa',
+                       effects: [{ 'kind' => 'set_ac_base', 'value' => 13 }], category: 'gear')
+      equipment = { equipped: { accessories: { gloves: equipped_item_for('braceletes-defesa-spec', 'Braceletes') } } }
+
+      out = described_class.new(sheet_stub, equipment: equipment).call
+      expect(out[:set_ac_base]).to eq(13)
+    end
+
+    it 'fica o MAIOR quando há dois itens, e 0 sem nenhum' do
+      make_magic_item!(slug: 'amuleto-fraco-spec', name: 'Amuleto Fraco',
+                       effects: [{ 'kind' => 'set_ac_base', 'value' => 11 }])
+      make_magic_item!(slug: 'braceletes-defesa-spec2', name: 'Braceletes II',
+                       effects: [{ 'kind' => 'set_ac_base', 'value' => 13 }], category: 'gear')
+      equipment = { equipped: { accessories: {
+        amulet: equipped_item_for('amuleto-fraco-spec', 'Amuleto'),
+        gloves: equipped_item_for('braceletes-defesa-spec2', 'Braceletes'),
+      } } }
+
+      expect(described_class.new(sheet_stub, equipment: equipment).call[:set_ac_base]).to eq(13)
+      expect(described_class.new(sheet_stub, equipment: { equipped: {} }).call[:set_ac_base]).to eq(0)
+    end
+  end
+
   describe 'accessory slots (Fase 2.1)' do
     it 'agrega resistance vinda de um manto equipado em :cloak' do
       make_magic_item!(slug: 'manto-resistencia-fogo', name: 'Manto da Resistência ao Fogo',

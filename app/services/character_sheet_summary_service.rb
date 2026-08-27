@@ -190,6 +190,21 @@ class CharacterSheetSummaryService
           equipment[:ac][:ac] = (equipment[:ac][:ac].to_i + mi[:ac_bonus].to_i)
           equipment[:ac][:source] = [equipment[:ac][:source], 'Itens Mágicos'].compact.join(' + ')
         end
+        # `set_ac_base`: "sua CA é N + DES". Substitui a fórmula BASE e só vale
+        # SEM ARMADURA (com armadura, a base é a dela). Fica o MAIOR entre ele e
+        # a CA já calculada — o 5e deixa escolher entre fórmulas que se
+        # sobrepõem, e escolher a pior nunca é a intenção. O escudo já está
+        # somado em `equipment[:ac][:ac]`, então repomos o bônus dele por cima.
+        if mi[:set_ac_base].to_i.positive? && (equipment.dig(:ac, :armor_category).to_s == 'none')
+          dex_mod = begin (abilities[:mods] || {})[:dex].to_i rescue 0 end
+          escudo = equipment.dig(:equipped, :shield) ? 2 : 0
+          alt = mi[:set_ac_base].to_i + dex_mod + escudo
+          if alt > equipment.dig(:ac, :ac).to_i
+            equipment[:ac] = (equipment[:ac] || {})
+            equipment[:ac][:ac] = alt
+            equipment[:ac][:source] = [equipment[:ac][:source], 'Item Mágico (CA base)'].compact.join(' + ')
+          end
+        end
         if mi[:weapon_mods]
           equipment[:mods] ||= {}
           equipment[:mods][:weapon_mods] ||= { main_hand: { attack: 0, damage: 0, offhand_add_ability: false }, off_hand: { attack: 0, damage: 0, offhand_add_ability: false } }

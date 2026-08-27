@@ -23,6 +23,7 @@ class MagicItemRules
   # }
   EFFECT_DEFAULTS = {
     ac_bonus: 0,
+    set_ac_base: 0,
     on_hit_effects: [],
     ignores_difficult_terrain: nil,
     notes: [],
@@ -134,8 +135,10 @@ class MagicItemRules
         t   = (eff['type']  || eff[:type]).to_s.presence || (EquipmentRules.magic_item_shield_category?(mi.category) ? 'escudo' : 'magico')
         res[t] = [res[t].to_i, val].max
       when 'set_ac_base'
-        # Not applied here; would require overriding base AC formula upstream.
-        # Could add a note for UI or future handling.
+        # Agregado em `apply_generic_effects!`, não aqui: o `res` DESTE método é
+        # o hash tipo→CA (balde de empilhamento), e gravar a chave aqui a
+        # deixaria fora do resultado final.
+        next
       end
     end
 
@@ -228,6 +231,12 @@ class MagicItemRules
           cur = res[:ability_sets][ab].to_i
           res[:ability_sets][ab] = [cur, v].max
         end
+      when 'set_ac_base'
+        # "Sua CA é N + DES" (Braceletes de Defesa, armadura natural). Substitui
+        # o 10 da fórmula base; SÓ vale sem armadura, e quem decide isso é o
+        # summary (que sabe se há armadura vestida). Aqui fica o MAIOR.
+        v = (eff['value'] || eff[:value]).to_i
+        res[:set_ac_base] = [res[:set_ac_base].to_i, v].max if v.positive?
       when 'speed_bonus'
         v = (eff['value'] || eff[:value]).to_i
         # Para speed, somamos untyped (regra simples; refinar para typed em fase futura)
