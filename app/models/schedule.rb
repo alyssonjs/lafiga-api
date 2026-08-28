@@ -125,15 +125,43 @@ class Schedule < ApplicationRecord
     joins(:schedule_characters).where(schedule_characters: { character_id: character_id })
   }
 
-  # Index do hub do jogador (GET /player/schedules sem filtros extras):
-  # retorna apenas sessões cujo group_id pertence a um dos grupos onde o
-  # usuário tem pelo menos um personagem (`character.group_id`).
-  # Aplica-se a qualquer role — inclusive DM/Admin acessando a interface
-  # de jogador: eles vêem só as sessões dos grupos onde têm personagens.
-  # Para visão completa de DM, usar o endpoint admin.
+  # Index do hub (GET /player/schedules): as sessões que dizem respeito a esta
+  # conta —
+  #   * grupos onde tem personagem;
+  #   * grupos que MESTRA (`groups.dm_user_id`), sem exigir personagem;
+  #   * sessões em que um personagem seu está anexado (`schedule_characters`);
+  #   * papel de DM/Admin vê todas (`Group.user_is_dm?`), a mesma autoridade
+  #     global que mapa, fichas, combate e o feed já usam.
+  #
+  # ⚠️ REGRESSÃO CORRIGIDA: a versão anterior olhava SÓ para os grupos onde a
+  # conta tinha personagem. Como Mestre não costuma ter PC na própria mesa, o
+  # index voltava VAZIO para ele — e o bloco "Sessões anteriores — notas do
+  # mestre" da tela da sessão, que se alimenta desta listagem, dizia "nenhuma
+  # sessão concluída anterior" mesmo com sessões concluídas na campanha.
+  #
+  # `dm_notes` continua redigido POR VIEWER no serializer: aparecer na lista
+  # não é ver o segredo.
   def self.for_player_index(user)
-    gids = user.characters.where.not(group_id: nil).distinct.pluck(:group_id)
-    gids.any? ? non_sandbox.where(group_id: gids) : none
+    return none if user.nil?
+    return non_sandbox if Group.user_is_dm?(user)
+
+    gids = (
+      user.characters.where.not(group_id: nil).distinct.pluck(:group_id) +
+      user.owned_groups.pluck(:id)
+    ).uniq
+
+    ids = []
+    ids.concat(where(group_id: gids).pluck(:id)) if gids.any?
+    cids = user.character_ids
+    if cids.any?
+      ids.concat(
+        joins(:schedule_characters)
+          .where(schedule_characters: { character_id: cids })
+          .distinct
+          .pluck(:id),
+      )
+    end
+    ids.any? ? non_sandbox.where(id: ids.uniq) : none
   end
 
   # Hub / GET index (jogador não-DM global, escopo amplo — usado em autorizações

@@ -523,6 +523,57 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
     end
   end
 
+  # Bug de producao (27/08/2026): na tela da sessao, o bloco "Sessoes anteriores
+  # — notas do mestre" dizia "nenhuma sessao concluida anterior" para o Mestre.
+  # Ele se alimenta de GET /player/schedules?group_id&status=completed, e o
+  # index olhava so para os grupos onde a conta tem PERSONAGEM — Mestre nao tem.
+  describe 'GET /api/v1/player/schedules — historico da campanha para o Mestre' do
+    let(:papel_dm) { Role.find_or_create_by!(name: 'DM') }
+    let(:mestre) { create(:user, role: papel_dm) }
+    let(:campanha) { create(:group, dm_user: mestre) }
+    let(:dia_passado) do
+      DateDimension.find_or_create_by!(date: Date.yesterday) do |d|
+        d.assign_attributes(
+          year: Date.yesterday.year, month: Date.yesterday.month, day: Date.yesterday.day,
+          day_of_week: Date.yesterday.wday, day_name: Date.yesterday.strftime('%A'),
+          is_weekend: false, available: true,
+        )
+      end
+    end
+    let!(:sessao_concluida) do
+      create(:schedule, group: campanha, date_dimension: dia_passado,
+                        status: :completed, dm_notes: 'NPC encontrado: Itakeru')
+    end
+
+    it 'lista a sessao concluida da campanha filtrando por group_id e status' do
+      get '/api/v1/player/schedules',
+          params: { group_id: campanha.id, status: 'completed' },
+          headers: bearer_headers_for(mestre)
+
+      expect(response).to have_http_status(:ok)
+      linhas = response.parsed_body['schedules']
+      expect(linhas.map { |x| x['id'] }).to include(sessao_concluida.id)
+    end
+
+    it 'e o Mestre LE as proprias notas nessa listagem' do
+      get '/api/v1/player/schedules',
+          params: { group_id: campanha.id, status: 'completed' },
+          headers: bearer_headers_for(mestre)
+
+      linha = response.parsed_body['schedules'].find { |x| x['id'] == sessao_concluida.id }
+      expect(linha['dm_notes']).to eq('NPC encontrado: Itakeru')
+    end
+
+    it 'jogador de outra mesa nao le essas notas' do
+      get '/api/v1/player/schedules',
+          params: { group_id: campanha.id, status: 'completed' },
+          headers: headers
+
+      linha = Array(response.parsed_body['schedules']).find { |x| x['id'] == sessao_concluida.id }
+      expect(linha['dm_notes']).to eq('') if linha
+    end
+  end
+
   describe 'GET /api/v1/player/schedules — mestre da mesa sem personagem no grupo' do
     let(:date_dim) do
       DateDimension.find_or_create_by!(date: Date.tomorrow) do |d|
