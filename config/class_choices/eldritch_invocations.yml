@@ -13,6 +13,15 @@
 #   pact: chain|blade|tome → exige aquele Pacto escolhido
 #   spell: 'Eldritch Blast' → exige conhecer aquele truque/magia
 #   blast: true         → atalho para spell: 'Eldritch Blast' (legado, ainda aceito)
+#
+# grants_spell (Fase 2 do bruxo-plano): a invocação CONCEDE uma magia real.
+#   spell: <api_index>  → o id CANÔNICO da magia no banco (conferido, não
+#                          adivinhado: "Disfarce" é `disguise-self` (Disfarçar-Se)
+#                          e "Levitar" é `levitate` (Levitação) — escrever o
+#                          slug pelo texto teria criado link morto).
+#   cost: at_will               → conjura sem gastar espaço (caminho de truque)
+#         once_per_lr_with_slot → gasta 1 espaço de PACTO + trava até o
+#                                 descanso longo (gate próprio da invocação)
 
 # === SEM PRÉ-REQUISITO (apenas spell para os Eldritch Blast) ===
 
@@ -78,6 +87,9 @@
   mechanical_summary: Detectar Magia à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: detect-magic
+    cost: at_will
 
 - slug: ei-eyes-of-rune-keeper
   name_pt: Olhos do Guardião das Runas
@@ -96,6 +108,9 @@
   mechanical_summary: Disfarce à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: disguise-self
+    cost: at_will
 
 - slug: ei-beast-speech
   name_pt: Idioma Bestial
@@ -107,6 +122,9 @@
   mechanical_summary: Falar com Animais à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: speak-with-animals
+    cost: at_will
 
 - slug: ei-beguiling-influence
   name_pt: Influência Enganadora
@@ -127,6 +145,9 @@
   mechanical_summary: "Armadura Arcana à vontade (CA 13 + DES)"
   classes:
     - warlock
+  grants_spell:
+    spell: mage-armor
+    cost: at_will
 
 - slug: ei-fiendish-vigor
   name_pt: Vigor Abissal
@@ -138,6 +159,9 @@
   mechanical_summary: "Vida Falsa à vontade (1d4+4 PV temp)"
   classes:
     - warlock
+  grants_spell:
+    spell: pt-vida-falsa
+    cost: at_will
 
 - slug: ei-gaze-of-two-minds
   name_pt: Olhar de Duas Mentes
@@ -158,6 +182,9 @@
   mechanical_summary: Imagem Silenciosa à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: silent-image
+    cost: at_will
 
 - slug: ei-larceny-of-five-fates
   name_pt: Larápio dos Cinco Destinos
@@ -167,6 +194,9 @@
   mechanical_summary: Perdição 1x por descanso longo
   classes:
     - warlock
+  grants_spell:
+    spell: bane
+    cost: once_per_lr_with_slot
 
 # === REQUER PACTO DA CORRENTE ===
 
@@ -204,6 +234,9 @@
   mechanical_summary: "Imobilizar Monstro à vontade (celestial/corruptor/elemental)"
   classes:
     - warlock
+  grants_spell:
+    spell: hold-monster
+    cost: at_will
   prereqs:
     pact: chain
     level: 15
@@ -265,6 +298,9 @@
   mechanical_summary: Rogar Maldição 1x por descanso longo
   classes:
     - warlock
+  grants_spell:
+    spell: bestow-curse
+    cost: once_per_lr_with_slot
   prereqs:
     level: 5
 
@@ -287,6 +323,9 @@
   mechanical_summary: Compulsão 1x por descanso longo
   classes:
     - warlock
+  grants_spell:
+    spell: compulsion
+    cost: once_per_lr_with_slot
   prereqs:
     level: 7
 
@@ -300,6 +339,9 @@
   mechanical_summary: Lentidão 1x por descanso longo
   classes:
     - warlock
+  grants_spell:
+    spell: slow
+    cost: once_per_lr_with_slot
   prereqs:
     level: 5
 
@@ -311,6 +353,9 @@
   mechanical_summary: Confusão 1x por descanso longo
   classes:
     - warlock
+  grants_spell:
+    spell: confusion
+    cost: once_per_lr_with_slot
   prereqs:
     level: 7
 
@@ -322,6 +367,9 @@
   mechanical_summary: Metamorfose 1x por descanso longo
   classes:
     - warlock
+  grants_spell:
+    spell: polymorph
+    cost: once_per_lr_with_slot
   prereqs:
     level: 7
 
@@ -335,6 +383,9 @@
   mechanical_summary: Levitar à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: levitate
+    cost: at_will
   prereqs:
     level: 9
 
@@ -348,6 +399,9 @@
   mechanical_summary: "Salto à vontade (3x distância)"
   classes:
     - warlock
+  grants_spell:
+    spell: jump
+    cost: at_will
   prereqs:
     level: 9
 
@@ -359,6 +413,9 @@
   mechanical_summary: Conjurar Elemental 1x por descanso longo (slot de bruxo)
   classes:
     - warlock
+  grants_spell:
+    spell: conjure-elemental
+    cost: once_per_lr_with_slot
   prereqs:
     level: 9
 
@@ -370,6 +427,9 @@
   mechanical_summary: Falar Com Os Mortos à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: speak-with-dead
+    cost: at_will
   prereqs:
     level: 9
 
@@ -384,6 +444,9 @@
   mechanical_summary: Alterar-Se à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: alter-self
+    cost: at_will
   prereqs:
     level: 15
 
@@ -408,5 +471,8 @@
   mechanical_summary: Olho Arcano à vontade
   classes:
     - warlock
+  grants_spell:
+    spell: arcane-eye
+    cost: at_will
   prereqs:
     level: 15

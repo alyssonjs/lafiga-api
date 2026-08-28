@@ -23,6 +23,11 @@ class ClassChoicesCatalog
   # `subclass` foi adicionado por Kit 1.snacks: gating canônico por subclasse
   # (ex.: petisco do Mestre da Fritura só elegível se a subclasse for essa).
   ALLOWED_PREREQ_KEYS = %w[level pact spell class blast ability_min subclass].freeze
+  # Chaves aceitas em `grants_spell` e as familias de custo (Fase 2 do Bruxo).
+  ALLOWED_GRANTS_SPELL_KEYS = %w[spell cost].freeze
+  # at_will               = conjura sem gastar espaco (caminho de truque)
+  # once_per_lr_with_slot = gasta 1 espaco de PACTO + trava ate o descanso longo
+  GRANTS_SPELL_COSTS = %w[at_will once_per_lr_with_slot].freeze
 
   # Campos top-level opcionais (string livre, apenas tipo é validado).
   # Usados por catálogos com metadata extra de gameplay/UI:
@@ -178,6 +183,20 @@ class ClassChoicesCatalog
           seen_aliases[a] = idx
         end
       end
+      # grants_spell (Fase 2 do bruxo-plano): a invocacao CONCEDE uma magia real.
+      # Validado aqui porque um `spell` errado vira link MORTO — a invocacao
+      # aparece na ficha e nao conjura nada, sem erro em tela nenhuma.
+      grants = entry['grants_spell']
+      if grants
+        raise SchemaError, "[#{catalog_name}##{idx} #{slug}] grants_spell deve ser hash" unless grants.is_a?(Hash)
+        unknown = grants.keys - ALLOWED_GRANTS_SPELL_KEYS
+        raise SchemaError, "[#{catalog_name}##{idx} #{slug}] grants_spell chave(s) invalida(s): #{unknown.inspect}" if unknown.any?
+        raise SchemaError, "[#{catalog_name}##{idx} #{slug}] grants_spell.spell obrigatorio" if grants['spell'].blank?
+        unless GRANTS_SPELL_COSTS.include?(grants['cost'].to_s)
+          raise SchemaError, "[#{catalog_name}##{idx} #{slug}] grants_spell.cost invalido: #{grants['cost'].inspect}. Permitidos: #{GRANTS_SPELL_COSTS.inspect}"
+        end
+      end
+
     end
 
     def normalize_entry(entry)
@@ -190,7 +209,11 @@ class ClassChoicesCatalog
         mechanical_summary: entry['mechanical_summary'].strip,
         cost: entry['cost'],
         classes: Array(entry['classes']),
-        prereqs: entry['prereqs'] || {}
+        prereqs: entry['prereqs'] || {},
+        # Sem esta linha o campo morre na normalizacao: o YAML teria o dado e
+        # NENHUM cliente o veria. E a mesma classe de falha das allowlists de
+        # feed que ja mordeu 3x.
+        grants_spell: entry['grants_spell'] ? entry['grants_spell'].symbolize_keys : nil
       }
       OPTIONAL_STRING_FIELDS.each do |field|
         val = entry[field]
