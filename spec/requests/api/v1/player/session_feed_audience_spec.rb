@@ -100,16 +100,39 @@ RSpec.describe SessionFeed::Audience do
     expect(described_class.table_dm?(schedule, mestre)).to be(true)
   end
 
-  it 'REGRESSAO: papel global de DM nao tira ninguem da equipe de OUTRA mesa' do
-    # O critério é `groups.dm_user_id`, por mesa. Um usuário com papel de DM
-    # joga na mesa dos outros e ali o chat da equipe é dele também.
+  it 'REGRESSAO: papel de DM nao tira ninguem da equipe de OUTRA mesa' do
+    # A EQUIPE continua a ser por mesa (`groups.dm_user_id`): quem tem papel de
+    # DM e joga na mesa dos outros continua no chat da equipe dela.
     papel_dm = create(:role, name: 'DM') rescue Role.find_or_create_by!(name: 'DM')
     convidado = create(:user, role: papel_dm)
     create(:character, user: convidado, group: group, name: 'Convidado')
 
     expect(described_class.team_member?(schedule, convidado)).to be(true)
     expect(described_class.readable(schedule, convidado)).to include('players')
-    expect(described_class.readable(schedule, convidado)).not_to include('dm')
+  end
+
+  it 'quem tem PAPEL de Mestre le o caderno secreto de qualquer mesa' do
+    # Bug de prod (sessao 79): o Mestre conduzia a sessao de uma mesa criada
+    # por outra pessoa — entrava com todas as ferramentas de Mestre (mapa,
+    # fichas e combate autorizam pelo PAPEL) e a aba Mestre do chat sumia,
+    # porque so o feed exigia `groups.dm_user_id`.
+    papel_dm = create(:role, name: 'DM') rescue Role.find_or_create_by!(name: 'DM')
+    outro_mestre = create(:user, role: papel_dm)
+
+    expect(described_class.table_dm?(schedule, outro_mestre)).to be(true)
+    expect(described_class.readable(schedule, outro_mestre)).to include('dm')
+    expect(described_class.may_write?(schedule, outro_mestre, 'dm')).to be(true)
+  end
+
+  it 'o dono da mesa mantem o caderno mesmo sem papel de DM' do
+    # `dm_user_id` segue valendo como segundo caminho.
+    expect(Group.user_is_dm?(mestre)).to be(false)
+    expect(described_class.table_dm?(schedule, mestre)).to be(true)
+  end
+
+  it 'REGRESSAO: jogador sem papel de Mestre continua fora do caderno secreto' do
+    expect(described_class.readable(schedule, jogadora)).not_to include('dm')
+    expect(described_class.may_write?(schedule, jogadora, 'dm')).to be(false)
   end
 
   it 'escrever num canal exige poder le-lo' do
