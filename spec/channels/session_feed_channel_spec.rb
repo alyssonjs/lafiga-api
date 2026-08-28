@@ -42,6 +42,31 @@ RSpec.describe SessionFeedChannel, type: :channel do
     }
   end
 
+  # O chat vai pelo CANAL (não pelo POST), e é ele que pinta o crachá "MESTRE"
+  # no cliente. Se `senderRole` voltar a vir do corpo, um jogador publica uma
+  # mensagem com cara de Mestre.
+  describe 'identidade do autor (senderRole)' do
+    it 'a mesa NAO recebe o cracha de Mestre forjado por um jogador' do
+      subscribe(token: token_for(player), schedule_id: schedule.id)
+
+      expect do
+        perform :feed_item, item: valid_chat.merge('senderRole' => 'dm', 'id' => 'msg-forjada')
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including('id' => 'msg-forjada', 'senderRole' => 'player'),
+      )
+    end
+
+    it 'o Mestre sai como `dm` mesmo declarando outra coisa' do
+      subscribe(token: token_for(dm), schedule_id: schedule.id)
+
+      expect do
+        perform :feed_item, item: valid_chat.merge('senderRole' => 'visitor', 'id' => 'msg-do-mestre')
+      end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+        a_hash_including('id' => 'msg-do-mestre', 'senderRole' => 'dm'),
+      )
+    end
+  end
+
   it 'subscribes a member of the group to the feed stream' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     expect(subscription).to be_confirmed
