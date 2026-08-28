@@ -75,6 +75,14 @@ module Api::V1::Player
       normalized = SessionFeed::RollNormalizer.call(schedule_id: @schedule.id, item: raw_item)
       return render(json: { error: 'rolagem inválida' }, status: :unprocessable_entity) unless normalized
 
+      # O CORPO pede o canal; quem concede é o servidor. Sem esta guarda, o
+      # `audience` que o normalizador agora preserva viraria escalação: bastava
+      # POSTar `audience: 'dm'` para escrever no caderno do Mestre.
+      audiencia = normalized['audience'].presence || SessionFeedItem::AUDIENCE_ALL
+      unless SessionFeed::Audience.may_write?(@schedule, @current_user, audiencia)
+        return render(json: { error: 'sem permissão para este canal' }, status: :forbidden)
+      end
+
       unless SessionFeed::RateLimit.allow?(
         @current_user.id,
         @schedule.id,
@@ -90,6 +98,10 @@ module Api::V1::Player
         Realtime::Telemetry.identifier(raw_item['commandId']) ||
         Realtime::Telemetry.identifier(normalized['rollGroupId']) ||
         Realtime::Telemetry.identifier(normalized['id'])
+      # Identidade do autor: DERIVADA de quem está autenticado. O `senderRole`
+      # do corpo pinta o crachá "MESTRE" no chat — aceitá-lo deixava qualquer
+      # jogador publicar com cara de Mestre.
+      normalized['senderRole'] = SessionFeed::Audience.sender_role(@schedule, @current_user)
       normalized['clientId'] = client_id if client_id
       normalized['commandId'] = command_id if command_id
       normalized['eventId'] = SecureRandom.uuid
@@ -113,7 +125,14 @@ module Api::V1::Player
       end
 
       authoritative = record.payload
-      ActionCable.server.broadcast(SessionFeedChannel.stream_name_for(@schedule.id), authoritative)
+      # Transmite no stream do CANAL GRAVADO (não no geral): quem não pertence
+      # ao canal nunca assina esse stream, então a rolagem secreta do Mestre não
+      # chega ao navegador da mesa. Emitir sempre no geral publicava o segredo
+      # mesmo com o registo gravado como `dm`.
+      ActionCable.server.broadcast(
+        SessionFeedChannel.audience_stream_name_for(@schedule.id, record.audience),
+        authoritative,
+      )
       Realtime::Telemetry.emit(
         stage: 'command_acknowledged', domain: 'feed', event_type: 'roll',
         event_id: authoritative['eventId'], command_id: command_id, client_id: client_id,

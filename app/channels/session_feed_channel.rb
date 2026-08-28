@@ -95,6 +95,9 @@ class SessionFeedChannel < ApplicationCable::Channel
 
     @schedule_id = schedule.id
     @audiences = SessionFeed::Audience.readable(schedule, @current_user)
+    # Papel do autor, resolvido UMA vez: não muda a meio da subscrição e evita
+    # uma consulta por mensagem (a box de produção tem 1 CPU).
+    @sender_role = SessionFeed::Audience.sender_role(schedule, @current_user)
     @audiences.each { |a| stream_from self.class.audience_stream_name_for(@schedule_id, a) }
     trace_realtime(
       stage: 'subscription_confirmed', domain: 'feed', outcome: 'succeeded',
@@ -179,6 +182,11 @@ class SessionFeedChannel < ApplicationCable::Channel
     # é idempotente, portanto o REST do cliente pode repetir.
     # Escrever num canal restrito exige poder lê-lo. Sem esta guarda, uma aba do
     # Mestre postaria no combinado da equipe — e um jogador, no caderno secreto.
+    # Identidade do autor: DERIVADA de quem está autenticado, nunca do corpo.
+    # O front pinta o crachá "MESTRE" com `senderRole`; aceitá-lo do cliente
+    # deixava qualquer jogador publicar com cara de Mestre.
+    normalized['senderRole'] = @sender_role || 'visitor'
+
     item_audience = normalized['audience'].presence || SessionFeedItem::AUDIENCE_ALL
     unless Array(@audiences).include?(item_audience)
       trace_feed_rejection(kind, trace, 'authorization_failed', started_at)
@@ -332,6 +340,11 @@ class SessionFeedChannel < ApplicationCable::Channel
   end
 
   # Same hub rule as SessionRealtimeChannel (any authenticated user).
+  # Leitura do GERAL é aberta a qualquer utilizador autenticado — decisão de
+  # produto do hub (espelha `SessionRealtimeChannel`), coberta por spec própria.
+  # Os canais RESTRITOS não dependem disto: `Audience.readable` decide quais
+  # streams esta subscrição assina, e quem não pertence nunca assina o do
+  # Mestre nem o da equipa.
   def can_read?(_schedule, user)
     user.present?
   end

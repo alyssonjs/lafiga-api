@@ -52,6 +52,15 @@ module SessionFeed
           out['revealAt'] = [reveal_at, timestamp + 5_000].min
         end
 
+        # CANAL da rolagem. O valor vem do cliente (é a aba onde ele rolou) mas
+        # aqui só sobrevive se for um canal conhecido, e a PERMISSÃO é conferida
+        # no controller com `Audience.may_write?`. Sem as duas metades, declarar
+        # `audience: 'dm'` no corpo escreveria no caderno do Mestre. Antes o
+        # campo era descartado em silêncio — o erro oposto e igualmente grave:
+        # a rolagem secreta do Mestre ia parar no feed público.
+        audiencia = h['audience'].to_s.presence_in(SessionFeedItem::AUDIENCES)
+        out['audience'] = audiencia if audiencia
+
         copy_identifier(h, out, 'rollGroupId')
         copy_identifier(h, out, 'interactionId')
         # Identidade de QUEM rolou. Sem ela, ofertas avaliadas em OUTRO cliente

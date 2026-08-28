@@ -58,6 +58,20 @@ module SessionFeed
       canais
     end
 
+    # Papel de quem ESCREVE, derivado do utilizador — nunca aceite do corpo.
+    #
+    # O front pinta o crachá "MESTRE" a partir de `senderRole` (ROLE_LABELS em
+    # DiceRollBubble). O campo chegava do cliente e era validado só contra a
+    # lista de valores, então qualquer jogador publicava uma mensagem com cara
+    # de Mestre. Aqui o papel sai de quem está autenticado.
+    def sender_role(schedule, user)
+      return 'visitor' if user.nil?
+      return 'dm' if table_dm?(schedule, user)
+      return 'player' if team_member?(schedule, user)
+
+      'visitor'
+    end
+
     # Escrever num canal restrito exige poder LÊ-LO. Sem isto, uma aba do Mestre
     # postaria no combinado da equipe — e vice-versa.
     def may_write?(schedule, user, audience)
