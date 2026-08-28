@@ -397,6 +397,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       actor: @current_user,
       command_id: trace[:command_id],
       client_id: trace[:client_id],
+      version: map_session_layer.persistence_version,
     )
     # Resposta :tokens (base + tokens, sem cells/fundo/layers): o front reconcilia
     # só `battle_map.tokens`. Antes serializava o mapa FULL (base64 + 40k cells) a
@@ -626,7 +627,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       return
     end
 
-    MapRealtime::Broadcaster.tokens_changed(@map, @map.tokens, actor: @current_user)             if changes.key?('tokens')
+    MapRealtime::Broadcaster.tokens_changed(@map, @map.tokens, actor: @current_user, version: map_session_layer.persistence_version) if changes.key?('tokens')
     MapRealtime::Broadcaster.cells_changed(@map, @map.cells, actor: @current_user)               if changes.key?('cells')
     MapRealtime::Broadcaster.fog_changed(@map, @map.fog, actor: @current_user)                   if changes.key?('fog')
     MapRealtime::Broadcaster.measurements_changed(@map, @map.measurements, actor: @current_user) if changes.key?('measurements')

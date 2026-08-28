@@ -114,7 +114,11 @@ class BattleMapTokenMutations
 
     Result.new(
       mutation: applied,
-      version: (@map.updated_at.to_f * 1_000_000).round,
+      # Da CAMADA que gravou: numa sessao as criaturas vao para o vinculo e o
+      # `map.updated_at` fica parado — a versao congelada fazia o cliente
+      # descartar as mutacoes seguintes do mesmo token.
+      version: @session_layer&.persistence_version ||
+        (@map.updated_at.to_f * 1_000_000).round,
     )
   end
 

@@ -69,7 +69,7 @@ module MapRealtime
         envelope
       end
 
-      def token_moved(map, token_id, x, y, actor: nil, command_id: nil, client_id: nil)
+      def token_moved(map, token_id, x, y, actor: nil, command_id: nil, client_id: nil, version: nil)
         broadcast(
           map,
           :token_moved,
@@ -80,7 +80,11 @@ module MapRealtime
             # O broadcast acontece depois que o row lock e liberado. Sob carga,
             # um movimento mais novo pode ser transmitido antes de um antigo.
             # A versao persistida permite ao cliente descartar esse evento tardio.
-            version: (map.updated_at.to_f * 1_000_000).round,
+            #
+            # `version:` vem de quem GRAVOU (MapSessionLayer#persistence_version).
+            # O fallback do mapa so serve a chamadas sem sessao — numa sessao ele
+            # fica congelado e o cliente descarta todo movimento apos o primeiro.
+            version: version || persistence_version(map),
           },
           actor: actor,
           command_id: command_id,
@@ -88,11 +92,11 @@ module MapRealtime
         )
       end
 
-      def tokens_changed(map, tokens, actor: nil)
+      def tokens_changed(map, tokens, actor: nil, version: nil)
         broadcast(
           map,
           :tokens_changed,
-          { tokens: tokens, version: persistence_version(map) },
+          { tokens: tokens, version: version || persistence_version(map) },
           actor: actor,
         )
       end

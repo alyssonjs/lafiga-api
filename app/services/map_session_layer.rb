@@ -41,6 +41,27 @@ class MapSessionLayer
     link || map
   end
 
+  # Versao de persistencia para os broadcasts de token.
+  #
+  # ⚠️ NAO usar `map.updated_at` numa sessao: as criaturas sao gravadas no
+  # VINCULO (`ScheduleBattleMap`), e o mapa so e tocado quando muda CENARIO.
+  # A versao ficava congelada no `updated_at` velho do mapa, todo movimento
+  # saia com o MESMO numero e o gate do cliente
+  # (`shouldApplyTokenMoveVersion`, que exige `>` estrito) descartava tudo
+  # depois do primeiro movimento de cada token: o jogador via o companheiro
+  # parado na posicao antiga enquanto o Mestre o via andar.
+  #
+  # MAXIMO das duas linhas, nao a do alvo: cenario grava no mapa e criatura no
+  # vinculo, e a versao precisa avancar em qualquer um dos dois — senao um
+  # movimento de cenario logo apos um de criatura sairia com numero MENOR e
+  # seria descartado.
+  def persistence_version
+    stamps = [map&.updated_at, link&.updated_at].compact
+    return 0 if stamps.empty?
+
+    (stamps.max.to_f * 1_000_000).round
+  end
+
   # Tokens visiveis: cenario do mapa + criaturas da mesa. Sem sessao, o mapa
   # responde inteiro (e o que o Map Builder edita).
   def tokens
