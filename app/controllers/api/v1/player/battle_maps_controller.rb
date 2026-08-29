@@ -4,7 +4,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # possível. A autorização é pelo `sig` (signed_id do blob) presente na URL que só
   # o viewer autorizado recebeu no payload :full. Ver #background / #valid_background_sig?.
   skip_before_action :authorize_request, only: :background, raise: false
-  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions]
+  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :force_move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions]
 
   # Teto p/ a miniatura inline (webp ~400px). Protege o payload :slim da lista de
   # inflar caso alguém mande algo grande demais como "thumbnail".
@@ -419,6 +419,64 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     }, status: 200
   end
 
+  # POST /api/v1/player/battle_maps/:id/force_move_token
+  #
+  # Deslocamento FORÇADO por regra (Explosão Repulsiva, Onda Trovejante, Técnica
+  # da Mão Aberta…). Endpoint SEPARADO do `move_token` de propósito: a
+  # autorização é outra, e afrouxar a de lá abriria a porta para qualquer
+  # jogador arrastar o token alheio.
+  #
+  # ⚠️ QUEM PODE: o Mestre, ou o jogador cujo PC está no TURNO ATUAL — é ele
+  # quem causa o empurrão. Mesmo predicado das interações de combate
+  # (`current_turn_belongs_to_user?`); sem ele, mover o token do inimigo pelo
+  # cliente do jogador dá 403 e o token "pula e volta".
+  #
+  # ⚠️ LIMITE DE DISTÂNCIA no servidor: o destino tem de estar a no máximo
+  # `MAX_FORCED_CELLS` células da origem. Não é a regra completa (paredes e
+  # ocupação continuam sendo resolvidas no cliente, que tem a geometria) — é o
+  # teto que impede um cliente adulterado de teleportar a criatura pelo mapa.
+  MAX_FORCED_CELLS = 6
+
+  def force_move_token
+    return forbidden unless @map.readable_by?(@current_user)
+    return forbidden unless forced_move_authorized?
+
+    token_id = params[:token_id].to_s
+    new_x = params[:x].to_i
+    new_y = params[:y].to_i
+
+    moved = nil
+    @map.with_lock do
+      @map.reload
+      tokens = Array(map_session_layer.tokens).map(&:deep_dup)
+      idx = tokens.index { |t| (t['id'] || t[:id]).to_s == token_id }
+      return render(json: { error: 'Token nao encontrado' }, status: :not_found) unless idx
+
+      token = tokens[idx]
+      dx = (new_x - (token['x'] || token[:x]).to_i).abs
+      dy = (new_y - (token['y'] || token[:y]).to_i).abs
+      if [dx, dy].max > MAX_FORCED_CELLS
+        return render(json: { error: 'Deslocamento acima do limite' }, status: :unprocessable_entity)
+      end
+
+      size = (token['size'] || token[:size] || 1).to_i
+      if new_x.negative? || new_y.negative? || new_x + size > @map.width || new_y + size > @map.height
+        return render(json: { error: 'Posicao fora dos limites' }, status: :unprocessable_entity)
+      end
+
+      tokens[idx] = token.merge('x' => new_x, 'y' => new_y)
+      map_session_layer.update!(tokens: tokens)
+      moved = tokens[idx]
+    end
+
+    MapRealtime::Broadcaster.token_moved(
+      @map, token_id, new_x, new_y,
+      actor: @current_user,
+      version: map_session_layer.persistence_version,
+    )
+    render json: { token: moved }, status: :ok
+  end
+
   def launch_projectile
     projectile = BattleMapProjectiles.launch!(map: @map, user: @current_user, params: params)
     # Resposta :slim (base, sem cells/fundo/tokens): o front só consome
@@ -486,6 +544,24 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
   # `schedule_id` do request, só se o utilizador puder VER a sessão E ela usar
   # este mapa. Caso contrário, nil = comportamento sem sessão.
+  # Mestre, ou o dono do PC que está no TURNO ATUAL do combate desta mesa.
+  # Espelha `current_turn_belongs_to_user?` das interações de combate — o
+  # deslocamento forçado é consequência da ação de quem está jogando.
+  def forced_move_authorized?
+    return true if Group.user_is_dm?(@current_user)
+
+    sid = authorized_schedule_id
+    return false unless sid
+
+    cs = Schedule.find_by(id: sid)&.combat_state
+    return false unless cs&.active?
+
+    cc = cs.combat_combatants.find_by(position: cs.current_turn_index, is_dead: false)
+    return false unless cc&.combatable_type == Character.name
+
+    cc.combatable&.user_id == @current_user.id
+  end
+
   def authorized_schedule_id
     return @authorized_schedule_id if defined?(@authorized_schedule_id)
 

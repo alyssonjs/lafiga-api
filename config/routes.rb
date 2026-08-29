@@ -312,6 +312,10 @@ Rails.application.routes.draw do
             patch :thumbnail         # persiste a miniatura derivada (sem tocar updated_at)
             post :duplicate
             post :move_token
+            # Deslocamento FORÇADO por regra (empurrão/puxão). Endpoint próprio
+            # porque a autorização é OUTRA: quem move é o ATOR DO TURNO, não o
+            # dono do token — e misturar isso no move_token abriria a porta de lá.
+            post :force_move_token
             post :mutate_tokens
             post :launch_projectile
             post :resolve_projectile
