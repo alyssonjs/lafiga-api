@@ -11,7 +11,8 @@ module Api::V1::Player::Combat
   # Leitura: membro do grupo OU DM.
   # Mutação: APENAS DM.
   class CombatNpcsController < BaseController
-    before_action :authorize_write!, except: [:index, :show]
+    # `summon` tem autorizacao PROPRIA (dono do personagem), no servico.
+    before_action :authorize_write!, except: [:index, :show, :summon]
     before_action :set_npc, only: [:show, :update, :destroy, :defeat, :revive]
 
     # `?include_defeated=1` para incluir derrotados; default mostra só vivos.
@@ -32,6 +33,27 @@ module Api::V1::Player::Combat
       else
         render json: { errors: npc.errors.full_messages }, status: :unprocessable_entity
       end
+    end
+
+    # POST /schedules/:schedule_id/combat_npcs/summon
+    # body: { character_id, companion_id }
+    #
+    # Traz o familiar/invocado da ficha para o tracker COM DONO — e por isso
+    # nao passa pelo `create`, que e so-DM. A autorizacao (ser dono do
+    # personagem, o companion estar na ficha dele) vive no servico.
+    def summon
+      npc = ::Combat::SummonCompanionService.new(
+        schedule: @schedule,
+        character: Character.find_by(id: params[:character_id]),
+        companion_id: params[:companion_id],
+        user: @current_user,
+      ).call
+      ::Combat::Broadcaster.npc_upserted(npc)
+      render json: { npc: ::Combat::Serializers.npc(npc) }, status: :created
+    rescue ::Combat::SummonCompanionService::Erro => e
+      render json: { error: e.message }, status: :forbidden
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
     end
 
     def update

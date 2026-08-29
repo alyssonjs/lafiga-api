@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_25_210100) do
+ActiveRecord::Schema.define(version: 2026_08_29_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -282,6 +282,8 @@ ActiveRecord::Schema.define(version: 2026_08_25_210100) do
     t.jsonb "condition_immunities", default: [], null: false
     t.jsonb "legendary_actions", default: [], null: false
     t.jsonb "lair_actions", default: [], null: false
+    t.bigint "owner_character_id"
+    t.index ["owner_character_id"], name: "index_combat_npcs_on_owner_character_id"
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id"
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id_alive", where: "(defeated_at IS NULL)"
   end
@@ -977,6 +979,7 @@ ActiveRecord::Schema.define(version: 2026_08_25_210100) do
   add_foreign_key "characters_features", "features"
   add_foreign_key "class_levels", "klasses"
   add_foreign_key "combat_combatants", "combat_states"
+  add_foreign_key "combat_npcs", "characters", column: "owner_character_id"
   add_foreign_key "combat_npcs", "schedules"
   add_foreign_key "combat_states", "schedules"
   add_foreign_key "crafting_recipe_ingredients", "crafting_recipes"

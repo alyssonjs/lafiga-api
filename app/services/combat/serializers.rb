@@ -32,6 +32,11 @@ module Combat
         combat_state_id: c.combat_state_id,
         type: c.combatable_type == 'CombatNpc' ? 'npc' : 'pc',
         combatable_id: c.combatable_id,
+        # Dono do ALIADO INVOCADO (familiar/morto-vivo). Nulo em PC e em NPC do
+        # Mestre. O front precisa dele para saber que o jogador pode controlar
+        # este combatente — sem isso o espelho de autorização engole as
+        # mutações antes mesmo de chegarem ao servidor.
+        owner_character_id: (c.combatable.owner_character_id if c.combatable_type == 'CombatNpc' && c.combatable.respond_to?(:owner_character_id)),
         name: c.name,
         position: c.position,
         initiative: c.initiative,

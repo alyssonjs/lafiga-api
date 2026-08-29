@@ -10,6 +10,12 @@
 # pelo DM (set defeated_at = nil).
 class CombatNpc < ApplicationRecord
   belongs_to :schedule
+  # DONO do invocado (familiar do Pacto da Corrente, morto-vivo do patrono da
+  # Morte...). Nulo = NPC do Mestre, que é o caso de todos os existentes.
+  #
+  # ⚠️ Aponta para o PERSONAGEM, não para o usuário: o usuário é derivável, o
+  # contrário não — e o mesmo usuário pode ter dois personagens na mesa.
+  belongs_to :owner_character, class_name: 'Character', optional: true
   has_many :combat_combatants, as: :combatable, dependent: :destroy
 
   validates :name, presence: true
@@ -23,6 +29,16 @@ class CombatNpc < ApplicationRecord
 
   def alive?
     defeated_at.nil?
+  end
+
+  # Quem controla este NPC, quando não é o Mestre. Derivado do personagem dono.
+  def owner_user_id
+    owner_character&.user_id
+  end
+
+  # Invocado por um jogador? (contraposto ao NPC do Mestre)
+  def summoned_ally?
+    owner_character_id.present?
   end
 
   def defeat!

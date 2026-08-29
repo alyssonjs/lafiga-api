@@ -908,11 +908,24 @@ module Api::V1::Player::Combat
       (keys - (COMBAT_EFFECT_FIELDS + PLAYER_TURN_STATE_FIELDS)).empty?
     end
 
-    # O combatente é um PC cujo personagem pertence ao usuário autenticado.
+    # O combatente pertence ao usuário autenticado: ou é o PC dele, ou é um
+    # ALIADO INVOCADO por um PC dele (familiar do Pacto da Corrente, morto-vivo
+    # do patrono da Morte).
+    #
+    # ⚠️ O invocado precisa entrar aqui, e não só na allowlist de efeito, porque
+    # o jogador tem de mexer na ECONOMIA DE AÇÃO dele — a Investida do Familiar
+    # é literalmente "o familiar ataca com a REAÇÃO dele". Efeito-em-alheio não
+    # cobre `actions_used`, de propósito.
     def player_owns_combatant?
-      return false unless @combatant.combatable_type == Character.name
-
-      @combatant.combatable&.user_id == @current_user.id
+      case @combatant.combatable_type
+      when Character.name
+        @combatant.combatable&.user_id == @current_user.id
+      when CombatNpc.name
+        npc = @combatant.combatable
+        npc&.owner_character_id.present? && npc.owner_user_id == @current_user.id
+      else
+        false
+      end
     end
   end
 end

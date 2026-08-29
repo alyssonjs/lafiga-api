@@ -211,6 +211,11 @@ Rails.application.routes.draw do
                 post :defeat
                 post :revive
               end
+              collection do
+                # Invocar um companion da ficha como NPC COM DONO. Fica fora do
+                # `create` (só-DM) de proposito: um invocado e do JOGADOR.
+                post :summon
+              end
             end
 
             resources :session_logs, only: [:index, :create]
