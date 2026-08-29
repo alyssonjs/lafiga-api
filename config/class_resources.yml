@@ -213,3 +213,30 @@ masters_creation:
 vital_meat:
   recharge: long
   classes: [cozinheiro]
+
+# ── Invocações Místicas do Bruxo que concedem magia 1×/descanso longo ──
+# (Etapa A do invocacoes-de-combate-plano). A chave é DERIVADA do slug da
+# invocação (`ei-sign-of-ill-omen` → `inv_sign_of_ill_omen`) por
+# `grantedSpellGateKey` no front — derivada, e não digitada, porque chave
+# digitada errado nunca recarrega e o jogador perde o uso para sempre.
+inv_larceny_of_five_fates:
+  recharge: long
+  classes: [warlock]
+inv_sign_of_ill_omen:
+  recharge: long
+  classes: [warlock]
+inv_whispers_of_aspect:
+  recharge: long
+  classes: [warlock]
+inv_mire_the_mind:
+  recharge: long
+  classes: [warlock]
+inv_dreadful_word:
+  recharge: long
+  classes: [warlock]
+inv_sculptor_of_flesh:
+  recharge: long
+  classes: [warlock]
+inv_minions_of_chaos:
+  recharge: long
+  classes: [warlock]
