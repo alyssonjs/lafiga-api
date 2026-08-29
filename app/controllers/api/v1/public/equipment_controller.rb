@@ -197,18 +197,56 @@ class Api::V1::Public::EquipmentController < ApplicationController
     #
     # `instruments` e `vehicles` estão aqui pela mesma razão: os baldes
     # :gear/:tools os EXCLUEM, então sem a linha o item some do modal.
-    categories = CATEGORIES_DO_SNAPSHOT
-    by_category = {}
-    categories.each do |cat|
-      rows = items_for_category_from_db(cat)
-      next if rows.empty?
+    # ⚠️ CACHEADO, e por PAPEL. Medido em 29/08: montar o snapshot custava
+    # 1,7 s + 1.767 queries por requisição — e ele é pedido a cada boot do modal
+    # "+ Novo Item" num box de produção de 1 CPU. A chave de versão deriva do
+    # próprio catálogo (max updated_at + count de itens, receitas e
+    # ingredientes), então editar QUALQUER item invalida sozinho — sem TTL curto
+    # nem botão de limpar. O papel entra na chave porque o payload DIFERE:
+    # os efeitos de encaixe de gema saem cortados para quem não é mestre.
+    versao = snapshot_cache_version
+    # `stale?` devolve 304 para o cliente que já tem esta versão (o apiClient
+    # manda If-None-Match sozinho) — nem o Redis é consultado.
+    return unless stale?(etag: versao.join('/'))
 
-      by_category[cat] = rows.map { |it| build_equipment_from_item(it) }.compact
+    by_category = Rails.cache.fetch(['equipment_snapshot_v1', *versao], expires_in: 12.hours) do
+      montar_snapshot_por_categoria
     end
     render json: { by_category: by_category }, status: :ok
   end
 
   private
+
+  def montar_snapshot_por_categoria
+    by_category = {}
+    CATEGORIES_DO_SNAPSHOT.each do |cat|
+      rows = items_for_category_from_db(cat)
+      next if rows.empty?
+
+      by_category[cat] = rows.map { |it| build_equipment_from_item(it) }.compact
+    end
+    by_category
+  end
+
+  # Versão do catálogo para cache/ETag do snapshot. max+count cobre criar,
+  # editar e apagar; ingrediente entra porque editar SÓ a receita não toca o
+  # Item. São 6 agregações baratas (tabelas de ~1k linhas) no lugar de 1.767
+  # queries de montagem.
+  def snapshot_cache_version
+    [
+      mestre_olhando? ? 'dm' : 'player',
+      versao_ms(Item.maximum(:updated_at)), Item.count,
+      defined?(CraftingRecipe) ? versao_ms(CraftingRecipe.maximum(:updated_at)) : 0,
+      defined?(CraftingRecipe) ? CraftingRecipe.count : 0,
+      defined?(CraftingRecipeIngredient) ? versao_ms(CraftingRecipeIngredient.maximum(:updated_at)) : 0,
+    ]
+  end
+
+  # Milissegundos, não segundos: `to_i` colapsa duas edições no MESMO segundo
+  # numa versão só — e a segunda ficaria invisível atrás do 304/cache.
+  def versao_ms(t)
+    t ? (t.to_f * 1000).to_i : 0
+  end
 
   # Quem está pedindo é mestre? O catálogo é público (não tem `before_action` de
   # autenticação), mas o `apiClient` do front já manda `Authorization` quando há
@@ -226,27 +264,43 @@ class Api::V1::Public::EquipmentController < ApplicationController
     @mestre_olhando = false
   end
 
-  # Lista itens (records) para a categoria solicitada, vindos do banco
+  # Lista itens (records) para a categoria solicitada, vindos do banco.
+  #
+  # ⚠️ O `includes` da receita é o que mata o N+1 medido em 29/08: o snapshot
+  # rendia 1.767 queries e 1,7 s POR REQUISIÇÃO porque `build_crafting_json`
+  # toca `item.crafting_recipe` (e cada ingrediente toca `ingredient_item` e
+  # `spell`) item a item — 946 itens no catálogo de produção. Com o preload, a
+  # mesma montagem faz ~25 queries.
   def items_for_category_from_db(idx)
-    return [] unless defined?(Item)
+    rel = relation_for_category(idx)
+    return [] if rel.nil?
+
+    rel.includes(crafting_recipe: { ingredients: [:ingredient_item, :spell] }).to_a
+  end
+
+  # A RELAÇÃO de cada balde (sem materializar): quem materializa é o wrapper
+  # acima, num ponto só, com o preload — senão o `includes` teria de ser
+  # repetido em 17 ramos e o próximo balde nasceria sem ele.
+  def relation_for_category(idx)
+    return nil unless defined?(Item)
     key = normalize_category_idx(idx)
     case key
     when :weapons_simple
-      Item.where(kind: 'weapon', category: 'simple').order(:api_index).to_a
+      Item.where(kind: 'weapon', category: 'simple').order(:api_index)
     when :weapons_martial
-      Item.where(kind: 'weapon', category: 'martial').order(:api_index).to_a
+      Item.where(kind: 'weapon', category: 'martial').order(:api_index)
     when :armor_light
-      Item.where(kind: 'armor', category: 'light').order(:api_index).to_a
+      Item.where(kind: 'armor', category: 'light').order(:api_index)
     when :armor_medium
-      Item.where(kind: 'armor', category: 'medium').order(:api_index).to_a
+      Item.where(kind: 'armor', category: 'medium').order(:api_index)
     when :armor_heavy
-      Item.where(kind: 'armor', category: 'heavy').order(:api_index).to_a
+      Item.where(kind: 'armor', category: 'heavy').order(:api_index)
     when :armor_all
-      Item.where(kind: 'armor').order(:api_index).to_a
+      Item.where(kind: 'armor').order(:api_index)
     when :shields
-      Item.where(kind: 'shield').order(:api_index).to_a
+      Item.where(kind: 'shield').order(:api_index)
     when :ammunition
-      Item.where(kind: 'ammunition').order(:api_index).to_a
+      Item.where(kind: 'ammunition').order(:api_index)
     # Pacotes vivem como `kind: :gear` + `category: pack` (enum Item nao tem `pack`).
     when :gear
       # ATENCAO: `where.not` gera `NOT IN`, que e NULL-unsafe — os 205 `gear` com
@@ -256,15 +310,15 @@ class Api::V1::Public::EquipmentController < ApplicationController
       # entao entra na exclusao sem depender disso.
       Item.where(kind: 'gear')
           .where.not(category: ['pack', INSTRUMENT_CATEGORY, BOOK_CATEGORY, *VEHICLE_CATEGORIES])
-          .order(:api_index).to_a
+          .order(:api_index)
     when :packs
-      Item.where(kind: 'gear', category: 'pack').order(:api_index).to_a
+      Item.where(kind: 'gear', category: 'pack').order(:api_index)
     when :tools
       # `IS DISTINCT FROM` e obrigatorio aqui: `where.not` derrubaria os 18 de 20
       # `tool` com `category: nil` junto com o instrumento.
       Item.where(kind: 'tool')
           .where('items.category IS DISTINCT FROM ?', INSTRUMENT_CATEGORY)
-          .order(:api_index).to_a
+          .order(:api_index)
     # Instrumento musical eh FERRAMENTA no PHB (tabela FERRAMENTAS), entao a base
     # nova nasce `kind: tool` + `category: instrument`. O filtro aqui eh SO por
     # categoria, de proposito: instrumento ja catalogado como `gear` (ex.:
@@ -272,36 +326,36 @@ class Api::V1::Public::EquipmentController < ApplicationController
     # :gear e :tools excluem a categoria para o item nao viver em duas abas —
     # mesma mecanica que :gear ja usa para `pack`.
     when :instruments
-      Item.where(category: INSTRUMENT_CATEGORY).order(:api_index).to_a
+      Item.where(category: INSTRUMENT_CATEGORY).order(:api_index)
     # Aba "Equipamentos" do compendio: os tres grupos numa lista so, agrupados
     # no front pela `gear_category`.
     when :vehicles
-      Item.where(category: VEHICLE_CATEGORIES).order(:category, :api_index).to_a
+      Item.where(category: VEHICLE_CATEGORIES).order(:category, :api_index)
     when :consumables
       # Serve TODOS os consumiveis, poção INCLUSIVE: a aba deixou de ser
       # "Poções" e passou a ser "Consumiveis", com a poção como sub-tipo. Antes
       # daqui a poção estava numa aba e cantil/tocha noutra.
-      Item.where(kind: 'consumable').order(:api_index).to_a
+      Item.where(kind: 'consumable').order(:api_index)
     when :potions
       # Pocao MUNDANA. A magica vive em `MagicItem` com `category: potion` e a
       # aba mostra as duas juntas.
-      Item.where(kind: 'consumable', category: POTION_CATEGORY).order(:api_index).to_a
+      Item.where(kind: 'consumable', category: POTION_CATEGORY).order(:api_index)
     when :treasure
-      Item.where(kind: TREASURE_KIND).order(:value_gp, :api_index).to_a
+      Item.where(kind: TREASURE_KIND).order(:value_gp, :api_index)
     when :materials
-      Item.where(kind: MATERIAL_KIND).order(:category, :api_index).to_a
+      Item.where(kind: MATERIAL_KIND).order(:category, :api_index)
     when *MATERIAL_CATEGORIES.map { |c| :"material_#{c.tr('-', '_')}" }
       Item.where(kind: MATERIAL_KIND, category: key.to_s.sub('material_', '').tr('_', '-'))
-          .order(:api_index).to_a
+          .order(:api_index)
     when :books
       # Livro e tomo MUNDANOS. O `kind: book` existia no catalogo e NENHUM balde
       # o servia — 11 livros nao apareciam em aba nenhuma. O Grimorio e
       # `kind: gear` + `category: book`, entao entra pelos dois caminhos.
       Item.where(kind: 'book')
           .or(Item.where(kind: 'gear', category: BOOK_CATEGORY))
-          .order(:api_index).to_a
+          .order(:api_index)
     else
-      []
+      nil
     end
   end
 
