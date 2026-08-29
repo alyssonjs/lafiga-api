@@ -206,9 +206,14 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     # quando ha `schedule_id`; o resto (tabuleiro) continua no mapa. Sem sessao,
     # tudo cai no mapa como antes.
     layer = map_session_layer
+    campos_de_mesa_escritos = []
     if layer.session_scoped?
       mesa = attrs.symbolize_keys.slice(*MapSessionLayer::SESSION_FIELDS)
       tabuleiro = attrs.symbolize_keys.except(*MapSessionLayer::SESSION_FIELDS)
+      # ⚠️ O que a CAMADA escreve não aparece em `@map.previous_changes` — o mapa
+      # nem é tocado. Sem esta lista, `broadcast_update_diffs` não emite evento
+      # nenhum e a medição/névoa/desenho do Mestre não chega a jogador algum.
+      campos_de_mesa_escritos = mesa.keys.map(&:to_s)
       ok = ActiveRecord::Base.transaction do
         layer.update!(mesa) if mesa.any?
         tabuleiro.any? ? @map.update(tabuleiro) : true
@@ -226,7 +231,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
                  .update_all(public_main: false)
       end
       apply_background!(@map)
-      broadcast_update_diffs
+      broadcast_update_diffs(session_fields_written: campos_de_mesa_escritos)
       # Resposta SLIM: o front (flushPatch) DESCARTA o corpo — a verdade chega via
       # `broadcast_update_diffs` (diff realtime) e pelo estado otimista local. Antes
       # reserializávamos o mapa FULL (base64 do fundo + matriz de 40k cells, MBs)
@@ -611,7 +616,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # so o evento especifico — assim front aplica diff em vez de re-renderizar
   # o mapa inteiro. Para mudancas estruturais (width/height/name) emitimos
   # `map_updated` com payload full.
-  def broadcast_update_diffs
+  def broadcast_update_diffs(session_fields_written: [])
     changes = @map.previous_changes
     # Fase 2.0 — edições do Map Builder (layers/stamps/paths/effects) emitem
     # `map_updated` full por ora (DM-only, debounced). Diffs granulares por
@@ -627,12 +632,22 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       return
     end
 
-    MapRealtime::Broadcaster.tokens_changed(@map, @map.tokens, actor: @current_user, version: map_session_layer.persistence_version) if changes.key?('tokens')
-    MapRealtime::Broadcaster.cells_changed(@map, @map.cells, actor: @current_user)               if changes.key?('cells')
-    MapRealtime::Broadcaster.fog_changed(@map, @map.fog, actor: @current_user)                   if changes.key?('fog')
-    MapRealtime::Broadcaster.measurements_changed(@map, @map.measurements, actor: @current_user) if changes.key?('measurements')
-    MapRealtime::Broadcaster.aoe_placements_changed(@map, @map.aoe_placements, actor: @current_user) if changes.key?('aoe_placements')
-    MapRealtime::Broadcaster.drawings_changed(@map, @map.drawings, actor: @current_user)         if changes.key?('drawings')
+    # ⚠️ REGRA (mesma do `persistence_version`): o broadcast emite o que QUEM
+    # GRAVOU gravou. Numa sessão os campos de MESA vão para o vínculo, e o mapa
+    # não muda — então nem o GATILHO (`previous_changes`) nem o PAYLOAD
+    # (`@map.<campo>`) servem. Ler do mapa mandava lista VAZIA; e como o
+    # gatilho também vinha do mapa, na prática não saía evento nenhum: a régua
+    # do Mestre não aparecia para jogador algum, sem erro em tela.
+    layer = map_session_layer
+    escritos = session_fields_written.map(&:to_s)
+    mudou = ->(campo) { changes.key?(campo) || escritos.include?(campo) }
+
+    MapRealtime::Broadcaster.tokens_changed(@map, layer.tokens, actor: @current_user, version: layer.persistence_version) if mudou.call('tokens')
+    MapRealtime::Broadcaster.cells_changed(@map, @map.cells, actor: @current_user)                    if mudou.call('cells')
+    MapRealtime::Broadcaster.fog_changed(@map, layer.fog, actor: @current_user)                       if mudou.call('fog')
+    MapRealtime::Broadcaster.measurements_changed(@map, layer.measurements, actor: @current_user)     if mudou.call('measurements')
+    MapRealtime::Broadcaster.aoe_placements_changed(@map, layer.aoe_placements, actor: @current_user) if mudou.call('aoe_placements')
+    MapRealtime::Broadcaster.drawings_changed(@map, layer.drawings, actor: @current_user)             if mudou.call('drawings')
   rescue StandardError => e
     Rails.logger.warn("[BattleMapsController#broadcast_update_diffs] #{e.class}: #{e.message}")
   end
