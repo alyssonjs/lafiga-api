@@ -102,6 +102,70 @@ RSpec.describe 'Invocar companion para o combate', type: :request do
     end
   end
 
+  describe 'entra no TRACKER quando ha combate' do
+    let!(:cs) { schedule.create_combat_state!(active: true, current_turn_index: 0, round: 2) }
+    let!(:comb_pc) do
+      cs.combat_combatants.create!(position: 0, combatable: pc, name: pc.name, initiative: 17)
+    end
+    let!(:comb_goblin) do
+      goblin = CombatNpc.create!(schedule: schedule, name: 'Goblin', hp_current: 7, hp_max: 7, ac: 15)
+      cs.combat_combatants.create!(position: 1, combatable: goblin, name: 'Goblin', initiative: 9)
+    end
+
+    it 'vira combatente com a iniciativa DO DONO' do
+      # Entrar com iniciativa `nil` TRAVA o avanco de turno (o guard recusa
+      # virar enquanto alguem nao rolou).
+      invocar(dono)
+
+      linha = cs.combat_combatants.find_by(combatable: CombatNpc.find_by(name: 'Diabrete'))
+      expect(linha).to be_present
+      expect(linha.initiative).to eq(17)
+      expect(linha.tie_break_dex).to eq(17)
+    end
+
+    it 'ANEXA no fim e NAO mexe no turno corrente' do
+      # Reordenar aqui mandaria a mesa de volta ao topo da rodada
+      # (`SortInitiativePositionsService` zera `current_turn_index`).
+      cs.update!(current_turn_index: 1)
+
+      invocar(dono)
+
+      expect(cs.reload.current_turn_index).to eq(1)
+      expect(cs.combat_combatants.order(:position).last.name).to eq('Diabrete')
+      expect(comb_pc.reload.position).to eq(0)
+    end
+
+    it 'emite combatant_upserted (senao so aparece apos reload)' do
+      # `npc_upserted` sozinho nao atualiza o tracker: o reducer de combate
+      # escuta `combatant_upserted`.
+      eventos = []
+      allow(ActionCable.server).to receive(:broadcast) do |_stream, payload|
+        eventos << (payload[:event] || payload['event']).to_s
+      end
+
+      invocar(dono)
+
+      expect(eventos).to include('combatant_upserted')
+    end
+
+    it 'invocar duas vezes nao duplica a linha do tracker' do
+      invocar(dono)
+      invocar(dono)
+
+      expect(cs.combat_combatants.where(name: 'Diabrete').count).to eq(1)
+    end
+  end
+
+  describe 'SEM combate ativo' do
+    it 'cria o NPC mas nao inventa tracker' do
+      invocar(dono)
+
+      expect(response).to have_http_status(:created)
+      expect(CombatNpc.find_by(schedule: schedule, name: 'Diabrete')).to be_present
+      expect(CombatCombatant.count).to eq(0)
+    end
+  end
+
   describe 'idempotencia' do
     it 'dois cliques nao colocam dois familiares no tracker' do
       # Com dois iguais, nenhum e "o" familiar — o jogador nao saberia em qual

@@ -32,15 +32,47 @@ module Combat
       companion = buscar_companion
       raise Erro, 'Companion não encontrado na ficha.' unless companion
 
-      existente = @schedule.combat_npcs.alive.find_by(
+      npc = @schedule.combat_npcs.alive.find_by(
         owner_character_id: @character.id, name: companion['name'].to_s,
-      )
-      return existente if existente
+      ) || @schedule.combat_npcs.create!(atributos_de(companion))
 
-      @schedule.combat_npcs.create!(atributos_de(companion))
+      linha = entrar_no_tracker!(npc, companion)
+      # O `npc_upserted` sozinho NAO atualiza o tracker dos outros clientes: o
+      # reducer de combate escuta `combatant_upserted`. Sem este eco, o familiar
+      # so apareceria na iniciativa alheia depois de um reload.
+      ::Combat::Broadcaster.combatant_upserted(linha) if linha
+      npc
     end
 
     private
+
+    # Poe o invocado no TRACKER quando ha combate ativo. Sem isso ele existiria
+    # so na lista de NPCs da mesa: nao seria alvo, nao guardaria PV/condicoes e
+    # — o que importa para a Investida do Familiar — nao teria economia de acao
+    # propria para gastar a reacao.
+    #
+    # ⚠️ ANEXA NO FIM e NAO reordena. `SortInitiativePositionsService` reseta
+    # `current_turn_index` para 0: chama-lo aqui mandaria a mesa de volta ao
+    # topo da rodada no meio do combate. A iniciativa gravada e a DO DONO, para
+    # que a proxima reordenacao feita pelo Mestre coloque o familiar ao lado
+    # dele — e para nao entrar como `nil`, que TRAVA o avanco de turno.
+    def entrar_no_tracker!(npc, companion)
+      cs = @schedule.combat_state
+      return nil unless cs&.active?
+      return nil if cs.combat_combatants.exists?(combatable: npc)
+
+      dono = cs.combat_combatants.find_by(combatable: @character)
+      cs.combat_combatants.create!(
+        combatable: npc,
+        name: npc.name,
+        position: (cs.combat_combatants.maximum(:position) || -1) + 1,
+        initiative: dono&.initiative,
+        tie_break_dex: (companion.dig('stats', 'dex') || 10).to_i,
+        hp_current: npc.hp_current,
+        hp_max: npc.hp_max,
+        ac: npc.ac,
+      )
+    end
 
     def mesmo_grupo?
       @schedule.group_id.present? && @character.group_id == @schedule.group_id
