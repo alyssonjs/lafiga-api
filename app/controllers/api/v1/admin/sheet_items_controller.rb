@@ -3,7 +3,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
   # literal e dava 401 em prod para contas "Mestre" da plataforma.
   before_action :authorize_site_wide_dm
-  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split, :spend_use]
+  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :merge, :split, :spend_use]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID
   def index
@@ -96,6 +96,42 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
     @item.update!(props_json: (@item.props_json || {}).merge(Sheets::Attunement::PROP_KEY => false))
     broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/:id/bind_pact_weapon
+  #
+  # Mesma regra do jogador (exclusividade, ficha travada). O mestre corrigir o
+  # vinculo na mesa e caso real — a mesma razao do attune do DM existir.
+  def bind_pact_weapon
+    alterados = []
+    SheetItem.transaction do
+      sheet = Sheet.lock.find(@item.sheet_id)
+      ok, reason = Sheets::PactWeapon.can_bind?(@item)
+      raise ActiveRecord::Rollback, reason unless ok
+
+      alterados = Sheets::PactWeapon.bind!(@item, sheet: sheet)
+      @bind_ok = true
+    end
+
+    unless @bind_ok
+      _, reason = Sheets::PactWeapon.can_bind?(@item)
+      return render json: { error: reason || 'Nao foi possivel vincular a arma de pacto.' },
+                    status: :unprocessable_entity
+    end
+
+    broadcast_inventory_changed(@item)
+    render json: { sheet_items: alterados.map { |si| si.reload.as_inventory_json } }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/:id/unbind_pact_weapon
+  def unbind_pact_weapon
+    Sheets::PactWeapon.unbind!(@item)
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end

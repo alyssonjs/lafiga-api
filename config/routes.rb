@@ -73,6 +73,8 @@ Rails.application.routes.draw do
             post :unequip
             post :attune
             post :unattune
+            post :bind_pact_weapon
+            post :unbind_pact_weapon
             post :allocate_ammunition
             post :stow_on_mount
             post :spend_use
@@ -283,6 +285,8 @@ Rails.application.routes.draw do
             post :unequip
             post :attune
             post :unattune
+            post :bind_pact_weapon
+            post :unbind_pact_weapon
             post :allocate_ammunition
             post :stow_on_mount
             post :spend_use

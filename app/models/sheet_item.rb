@@ -36,7 +36,10 @@ class SheetItem < ApplicationRecord
   # tipo do item): cargas atuais de varinha/cajado, sintonização, usos restantes.
   # Itens que carregam qualquer uma NÃO empilham — duas varinhas 7/7 são duas
   # instâncias com contadores independentes, não uma pilha de 2 com 1 contador.
-  PER_INSTANCE_PROP_KEYS = %w[charges attuned uses uses_remaining uses_left].freeze
+  # `pact_weapon` entra aqui pelo mesmo motivo de `attuned`: é a MARCA de uma
+  # instância. Sem ela na lista, duas espadas longas idênticas empilhariam e a
+  # arma de pacto viraria "2 espadas, uma delas de pacto" — sem dizer qual.
+  PER_INSTANCE_PROP_KEYS = %w[charges attuned uses uses_remaining uses_left pact_weapon].freeze
   AMMUNITION_CONTAINER_PROP = 'quiver_sheet_item_id'.freeze
   # Item guardado NA MONTARIA. Aponta o `id` do companion (jsonb
   # `sheets.companions`), nao um sheet_item — a montaria nao e um item.

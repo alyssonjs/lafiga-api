@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :allocate_ammunition, :stow_on_mount, :merge, :split, :spend_use]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :merge, :split, :spend_use]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -109,6 +109,46 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
   rescue SheetItems::SpendUseService::InvalidUse => e
     render json: { error: e.message }, status: :unprocessable_entity
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/bind_pact_weapon
+  #
+  # Marca ESTA arma como a arma de pacto do Bruxo e DESMARCA as demais da mesma
+  # ficha, na mesma transacao. A exclusividade e o motivo do endpoint existir:
+  # com ela so no cliente, dois dispositivos vinculariam duas armas e as DUAS
+  # contariam como magicas (fura resistencia a dano nao-magico).
+  def bind_pact_weapon
+    alterados = []
+    SheetItem.transaction do
+      sheet = Sheet.lock.find(@item.sheet_id)
+      ok, reason = Sheets::PactWeapon.can_bind?(@item)
+      raise ActiveRecord::Rollback, reason unless ok
+
+      alterados = Sheets::PactWeapon.bind!(@item, sheet: sheet)
+      @bind_ok = true
+    end
+
+    unless @bind_ok
+      _, reason = Sheets::PactWeapon.can_bind?(@item)
+      return render json: { error: reason || 'Nao foi possivel vincular a arma de pacto.' },
+                    status: :unprocessable_entity
+    end
+
+    broadcast_inventory_changed(@item)
+    render json: { sheet_items: alterados.map { |si| si.reload.as_inventory_json } }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/unbind_pact_weapon
+  #
+  # Sempre permitido: dispensar a arma de pacto nao exige acao no PHB.
+  def unbind_pact_weapon
+    Sheets::PactWeapon.unbind!(@item)
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
