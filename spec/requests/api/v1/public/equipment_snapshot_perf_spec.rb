@@ -55,6 +55,20 @@ RSpec.describe 'Api::V1::Public::Equipment snapshot — custo', type: :request d
     expect(response).to have_http_status(:not_modified)
   end
 
+  it 'a RARIDADE do catálogo chega ao payload (108/152 consumíveis a têm)' do
+    # A coluna sempre existiu; o serializer é que não a emitia — card, detalhe
+    # e bolsa mostravam toda poção como item sem raridade.
+    Item.create!(api_index: 'perf-pocao-rara', name: 'Poção de Teste Rara',
+                 kind: 'consumable', category: 'potion', rarity: 'very_rare', value_gp: 100)
+
+    get '/api/v1/public/equipment_catalog_snapshot'
+
+    linha = response.parsed_body.dig('by_category', 'potions')
+      &.find { |r| r['index'] == 'perf-pocao-rara' }
+    expect(linha).to be_present
+    expect(linha['rarity']).to eq('very_rare')
+  end
+
   it 'editar um item INVALIDA a versão (o mestre não pode ver catálogo velho)' do
     item = Item.create!(api_index: 'perf-versao', name: 'Cadinho', kind: 'tool', value_gp: 2)
     get '/api/v1/public/equipment_catalog_snapshot'

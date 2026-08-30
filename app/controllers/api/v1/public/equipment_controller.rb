@@ -232,8 +232,14 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # editar e apagar; ingrediente entra porque editar SÓ a receita não toca o
   # Item. São 6 agregações baratas (tabelas de ~1k linhas) no lugar de 1.767
   # queries de montagem.
+  # Bump a cada mudança de SHAPE do payload (campo novo no serializer): a chave
+  # de dados não muda quando só o código muda, e o cache de 12h + o 304 do
+  # cliente serviriam o formato velho. v2 = rarity (29/08).
+  SNAPSHOT_SCHEMA_VERSION = 2
+
   def snapshot_cache_version
     [
+      SNAPSHOT_SCHEMA_VERSION,
       mestre_olhando? ? 'dm' : 'player',
       versao_ms(Item.maximum(:updated_at)), Item.count,
       defined?(CraftingRecipe) ? versao_ms(CraftingRecipe.maximum(:updated_at)) : 0,
@@ -562,6 +568,10 @@ class Api::V1::Public::EquipmentController < ApplicationController
       {
         index: it.api_index,
         name: it.name,
+        # Raridade do CATÁLOGO (poções principalmente): a coluna sempre existiu
+        # e 108 dos 152 consumíveis a têm — o serializer é que nunca a emitia,
+        # então card, detalhe e bolsa mostravam tudo como item sem raridade.
+        rarity: it.rarity.presence,
         equipment_category: { index: category_index, name: category_name },
         gear_category: it.category,
         # Vestuário mundano: a peça vive em `category` (gear_category) e o slot
