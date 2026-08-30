@@ -1,5 +1,5 @@
-# Declara USOS LIMITADOS nos itens do catalogo que o PHB descreve com um numero
-# fixo de usos, e semeia o Kit de Primeiros Socorros, que faltava.
+# Declara USOS LIMITADOS nos itens do catalogo que gastam por uso, e semeia o
+# Kit de Primeiros Socorros, que faltava.
 #
 #   bundle exec rake dnd:seed_item_uses            # aplica
 #   DRY_RUN=1 bundle exec rake dnd:seed_item_uses  # so relata
@@ -13,6 +13,13 @@ namespace :dnd do
   # [nome, api_index, category, custo em PO, peso em kg, usos, recarga]
   ITEM_USES_SEED = [
     ['Kit de Primeiros Socorros', 'kit-de-primeiros-socorros', 'kit', 5, 1.5, 10, nil],
+    # Caixa de fogo (PHB: 5 pp, 0,5 kg). O livro NAO da um numero de usos — a
+    # isca e o pederneira gastam-se, mas a tabela nao conta. Dez e HOUSERULE
+    # desta mesa, e a evidencia esta nas fichas: seis jogadores criaram a
+    # propria entrada de catalogo chamada "caixa de fogo x10" para contar o que
+    # gastavam, porque nao havia onde. O teto vive so aqui — o mestre muda num
+    # sitio e vale para todos.
+    ['Caixa de fogo', 'caixa-de-fogo', 'equipment', 0.5, 0.5, 10, nil],
   ].freeze
 
   desc 'Semeia o Kit de Primeiros Socorros e declara usos limitados (DRY_RUN=1 so relata)'
