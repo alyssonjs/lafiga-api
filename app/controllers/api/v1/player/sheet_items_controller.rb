@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :merge, :split, :spend_use]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :merge, :split, :spend_use]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -203,6 +203,19 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/stow_on_belt
+  # body: { belt_id: SheetItem id | null }
+  #
+  # Prende no CINTO (nulo solta). Vocação do slot e contagem são do SERVIÇO;
+  # arma presa fica equipada-fora-das-mãos (sacar = interação livre, PHB).
+  def stow_on_belt
+    items = SheetItems::StowOnBeltService.new(item: @item, belt_id: params[:belt_id]).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::StowOnBeltService::InvalidStow => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   # POST /api/v1/player/sheet_items/:id/allocate_ammunition

@@ -78,6 +78,7 @@ Rails.application.routes.draw do
             post :allocate_ammunition
             post :stow_on_mount
             post :stow_in_bag
+            post :stow_on_belt
             post :spend_use
             post :merge
             post :split
@@ -296,6 +297,7 @@ Rails.application.routes.draw do
             post :allocate_ammunition
             post :stow_on_mount
             post :stow_in_bag
+            post :stow_on_belt
             post :spend_use
             post :merge
             post :split

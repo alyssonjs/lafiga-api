@@ -43,6 +43,7 @@ class SheetItem < ApplicationRecord
   before_validation :resolve_catalog_item
   before_destroy :release_ammunition_contents, if: :quiver?
   before_destroy :release_bag_contents, if: :bag?
+  before_destroy :release_belt_contents, if: :belt?
   before_save :sanitize_slot
   after_save  :enforce_slot_exclusivity_and_conflicts
 
@@ -61,6 +62,7 @@ class SheetItem < ApplicationRecord
   # PONTEIRO. Bolsa dentro de bolsa é uma linha de bolsa com este ponteiro
   # (ciclo barrado no `StowInBagService`).
   BAG_CONTAINER_PROP = 'bag_sheet_item_id'.freeze
+  BELT_CONTAINER_PROP = 'belt_sheet_item_id'.freeze
   # Item guardado NA MONTARIA. Aponta o `id` do companion (jsonb
   # `sheets.companions`), nao um sheet_item — a montaria nao e um item.
   MOUNT_CONTAINER_PROP = 'mount_companion_id'.freeze
@@ -212,6 +214,9 @@ class SheetItem < ApplicationRecord
       # Capacidade da BOLSA (kg, canônico do banco). O ponteiro de conteúdo
       # (`bag_sheet_item_id`) já viaja dentro de `props`.
       bag_capacity_kg: (bag_capacity_kg if bag_capacity_kg.positive?),
+      # Slots do CINTO (contagem, do catálogo). O ponteiro (`belt_sheet_item_id`)
+      # também já viaja dentro de `props`.
+      belt_slot_props: belt_slot_props,
       # Usos: quanto cabe (catálogo) e quanto resta (instância).
       uses_props: uses_props,
       uses_remaining: uses_remaining,
@@ -311,6 +316,34 @@ class SheetItem < ApplicationRecord
     (props_json || {})[BAG_CONTAINER_PROP]
   end
 
+  # CINTO com slots: recipiente de CONTAGEM, não de peso. O criador declara
+  # quantos slots LIVRES (arma, ferramenta, aljava — coisas de sacar) e quantos
+  # de CONSUMÍVEL o cinto oferece. Mesma leitura índice-primeiro da bolsa: a
+  # linha renomeada não pode perder os slots do catálogo.
+  def belt_slot_props
+    return @belt_slot_props if defined?(@belt_slot_props)
+
+    @belt_slot_props = begin
+      registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
+      registro ||= item
+      props = registro&.props || {}
+      livres = props['belt_free_slots'].to_i
+      consumiveis = props['belt_consumable_slots'].to_i
+      (livres.positive? || consumiveis.positive?) ? { 'free' => livres, 'consumable' => consumiveis } : nil
+    rescue StandardError
+      nil
+    end
+  end
+
+  def belt?
+    belt_slot_props.present?
+  end
+
+  # Cinto (SheetItem id) onde esta linha está presa; nil = fora de cinto.
+  def stored_on_belt_id
+    (props_json || {})[BELT_CONTAINER_PROP]
+  end
+
   # O que este recipiente aceita. Vazio = aceita qualquer munição (é o caso da
   # aljava legada, que não declara nada).
   def accepted_ammunition_indexes
@@ -378,6 +411,17 @@ class SheetItem < ApplicationRecord
       props = (guardado.props_json || {}).deep_dup.stringify_keys
       props.delete(BAG_CONTAINER_PROP)
       guardado.update!(props_json: props)
+    end
+  end
+
+  # Apagar o cinto solta o que estava preso nele — mesma regra da bolsa.
+  def release_belt_contents
+    self.class.where(sheet_id: sheet_id)
+        .where("props_json ->> '#{BELT_CONTAINER_PROP}' = ?", id.to_s)
+        .find_each do |preso|
+      props = (preso.props_json || {}).deep_dup.stringify_keys
+      props.delete(BELT_CONTAINER_PROP)
+      preso.update!(props_json: props)
     end
   end
 
