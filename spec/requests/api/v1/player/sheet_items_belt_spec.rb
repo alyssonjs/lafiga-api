@@ -50,15 +50,42 @@ RSpec.describe 'SheetItems — cintos', type: :request do
       cinto = linha!('Cinto', index: cinto_catalogo!('cinto-b2', livres: 2).api_index)
       catalogo!('kit-ladrao', 'Ferramentas de Ladrão', 'tool')
       ferramenta = linha!('Ferramentas de Ladrão', index: 'kit-ladrao')
-      Item.create!(api_index: 'aljava-b2', name: 'Aljava', kind: 'gear',
-                   props: { 'equip_slot' => 'quiver', 'ammunition_container' => true })
-      aljava = linha!('Aljava', index: 'aljava-b2')
+      # Nome NEUTRO de propósito: sem ele, este caso passaria pelo leitor de
+      # nome e não provaria nada sobre a declaração do catálogo.
+      Item.create!(api_index: 'aljava-b2', name: 'Porta-Virotes', kind: 'gear',
+                   props: { 'equipment_slot' => 'quiver' })
+      aljava = linha!('Porta-Virotes', index: 'aljava-b2')
 
       prender(ferramenta, cinto)
       expect(response).to have_http_status(:ok), response.body
 
       prender(aljava, cinto)
       expect(response).to have_http_status(:ok), response.body
+    end
+
+    it 'ALJAVA pelo NOME entra — ficha antiga nao declara recipiente' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-q1', livres: 1).api_index)
+      # Sem catalogo nenhum: so o nome, como as fichas de antes de "recipiente".
+      aljava = linha!('Aljava')
+
+      prender(aljava, cinto)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(aljava.reload.stored_on_belt_id).to eq(cinto.id)
+    end
+
+    it 'QUALQUER recipiente de municao entra, mesmo sem "aljava" no nome' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-q2', livres: 1).api_index)
+      # ⚠️ A chave canônica é `equipment_slot`, não `ammunition_container`:
+      # é ela que o `EquipmentRules.ammunition_container_props` exige.
+      Item.create!(api_index: 'bandoleira-q2', name: 'Bandoleira de Virotes', kind: 'gear',
+                   props: { 'equipment_slot' => 'quiver', 'ammunition_capacity' => 20 })
+      bandoleira = linha!('Bandoleira de Virotes', index: 'bandoleira-q2')
+
+      prender(bandoleira, cinto)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(bandoleira.reload.stored_on_belt_id).to eq(cinto.id)
     end
 
     it 'CONSUMÍVEL só entra se o cinto declarar slots de consumível' do
@@ -214,6 +241,109 @@ RSpec.describe 'SheetItems — cintos', type: :request do
 
       expect(response).to have_http_status(:ok), response.body
       expect(adaga.reload.stored_in_bag_id).to be_nil
+    end
+  end
+
+  # SACAR: a arma do cinto vai para a mão e o que estava lá toma o lugar dela.
+  # É UM movimento — meio dele deixaria duas armas na mesma mão.
+  describe 'sacar do cinto para a mao' do
+    def sacar(item, slot)
+      post "/api/v1/player/sheet_items/#{item.id}/draw_from_belt",
+           params: { slot: slot }, headers: headers, as: :json
+    end
+
+    it 'com a mao VAZIA, a arma sai do cinto e equipa' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-d1', livres: 2).api_index)
+      catalogo!('adaga', 'Adaga', 'weapon')
+      adaga = linha!('Adaga', index: 'adaga')
+      prender(adaga, cinto)
+
+      sacar(adaga, 'main_hand')
+
+      expect(response).to have_http_status(:ok), response.body
+      adaga.reload
+      expect(adaga.equipped).to be(true)
+      expect(adaga.slot).to eq('main_hand')
+      expect(adaga.stored_on_belt_id).to be_nil
+    end
+
+    it 'com a mao OCUPADA, TROCA: a de la vai para o cinto que vagou' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-d2', livres: 1).api_index)
+      catalogo!('adaga', 'Adaga', 'weapon')
+      catalogo!('espada-d2', 'Espada', 'weapon')
+      adaga = linha!('Adaga', index: 'adaga')
+      espada = linha!('Espada', index: 'espada-d2')
+      espada.update!(equipped: true, slot: 'main_hand')
+      prender(adaga, cinto)
+
+      sacar(adaga, 'main_hand')
+
+      expect(response).to have_http_status(:ok), response.body
+      adaga.reload
+      espada.reload
+      expect(adaga.slot).to eq('main_hand')
+      expect(espada.equipped).to be(false)
+      expect(espada.slot).to be_nil
+      # O slot que a adaga largou tem exatamente uma vaga — a espada toma-a.
+      expect(espada.stored_on_belt_id).to eq(cinto.id)
+    end
+
+    it 'o deslocado que NAO cabe no cinto desce para a bolsa vestida' do
+      Item.create!(api_index: 'mochila-d3', name: 'Mochila', kind: 'gear', category: 'bag',
+                   props: { 'capacity_kg' => 20 })
+      mochila = SheetItem.create!(sheet: sheet, item_name: 'Mochila', item_index: 'mochila-d3',
+                                  category: 'Itens Gerais', quantity: 1, source: 'test',
+                                  equipped: true, slot: 'bag')
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-d3', livres: 1).api_index)
+      catalogo!('adaga', 'Adaga', 'weapon')
+      adaga = linha!('Adaga', index: 'adaga')
+      # Escudo nao e arma/ferramenta/aljava: nao tem vocacao de slot livre.
+      catalogo!('escudo-d3', 'Escudo', 'shield')
+      escudo = linha!('Escudo', index: 'escudo-d3')
+      escudo.update!(equipped: true, slot: 'off_hand')
+      prender(adaga, cinto)
+
+      sacar(adaga, 'off_hand')
+
+      expect(response).to have_http_status(:ok), response.body
+      escudo.reload
+      expect(escudo.equipped).to be(false)
+      expect(escudo.stored_on_belt_id).to be_nil
+      expect(escudo.stored_in_bag_id).to eq(mochila.id)
+    end
+
+    it 'so saca o que esta NUM CINTO' do
+      catalogo!('adaga', 'Adaga', 'weapon')
+      solta = linha!('Adaga', index: 'adaga')
+
+      sacar(solta, 'main_hand')
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to match(/não está preso num cinto/)
+    end
+
+    it 'so saca ARMA — a pocao do cinto nao vai para a mao' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-d5', livres: 1, consumiveis: 1).api_index)
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      pocao = linha!('Poção de Cura', index: 'pocao-cura')
+      prender(pocao, cinto)
+
+      sacar(pocao, 'main_hand')
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to match(/Só arma se empunha/)
+    end
+
+    it 'so saca para MAO — nao para a cabeca' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-d6', livres: 1).api_index)
+      catalogo!('adaga', 'Adaga', 'weapon')
+      adaga = linha!('Adaga', index: 'adaga')
+      prender(adaga, cinto)
+
+      sacar(adaga, 'helmet')
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(adaga.reload.stored_on_belt_id).to eq(cinto.id)
     end
   end
 end

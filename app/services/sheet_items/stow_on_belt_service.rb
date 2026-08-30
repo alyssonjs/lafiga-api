@@ -41,6 +41,19 @@ module SheetItems
       end
     end
 
+    # Vocação SEM levantar erro — `nil` quando o item não vai em cinto nenhum.
+    # Serviço de sacar e contagem de vagas usam isto.
+    def self.slot_kind_for(item)
+      new(item: item, belt_id: nil).tipo_de_slot!
+    rescue InvalidStow
+      nil
+    end
+
+    # `true` para o que se empunha. O gatilho é o canônico — ver `arma?`.
+    def self.weapon?(item)
+      new(item: item, belt_id: nil).send(:arma?)
+    end
+
     # Vocação do slot que ESTE item consome, ou InvalidStow se não cabe em
     # nenhuma. Público porque o front espelha a mesma pergunta.
     def tipo_de_slot!
@@ -108,11 +121,7 @@ module SheetItems
       presos = sheet.sheet_items
                     .where("props_json ->> '#{SheetItem::BELT_CONTAINER_PROP}' = ?", cinto.id.to_s)
                     .where.not(id: item.id)
-      ocupados = presos.count do |si|
-        self.class.new(item: si, belt_id: nil).tipo_de_slot! == tipo
-      rescue InvalidStow
-        false
-      end
+      ocupados = presos.count { |si| self.class.slot_kind_for(si) == tipo }
       return if ocupados < total
 
       raise InvalidStow, "Sem vaga: #{ocupados}/#{total} slots #{tipo == 'free' ? 'livres' : 'de consumível'} ocupados."

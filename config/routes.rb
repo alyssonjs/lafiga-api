@@ -79,6 +79,7 @@ Rails.application.routes.draw do
             post :stow_on_mount
             post :stow_in_bag
             post :stow_on_belt
+            post :draw_from_belt
             post :spend_use
             post :merge
             post :split
@@ -298,6 +299,7 @@ Rails.application.routes.draw do
             post :stow_on_mount
             post :stow_in_bag
             post :stow_on_belt
+            post :draw_from_belt
             post :spend_use
             post :merge
             post :split

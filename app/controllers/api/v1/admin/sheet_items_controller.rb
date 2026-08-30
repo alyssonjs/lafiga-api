@@ -3,7 +3,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
   # literal e dava 401 em prod para contas "Mestre" da plataforma.
   before_action :authorize_site_wide_dm
-  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :merge, :split, :spend_use]
+  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :merge, :split, :spend_use]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID
   def index
@@ -159,6 +159,19 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
     broadcast_inventory_changed(@item)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::StowOnBeltService::InvalidStow => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/admin/sheet_items/:id/draw_from_belt
+  # body: { slot: 'main_hand' | 'off_hand' }
+  #
+  # SACAR: a arma do cinto vai para a mão e o que estava lá toma o lugar dela
+  # no cinto. UM movimento — meio dele deixaria duas armas na mesma mão.
+  def draw_from_belt
+    items = SheetItems::DrawFromBeltService.new(item: @item, slot: params[:slot]).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::DrawFromBeltService::InvalidDraw => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
