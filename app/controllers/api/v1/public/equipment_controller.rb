@@ -39,7 +39,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # no front. Constante (e não literal no método) para o spec poder compará-la.
   CATEGORIES_DO_SNAPSHOT = %w[
     simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
-    gear packs tools instruments vehicles consumables potions books ammunition
+    gear packs bags tools instruments vehicles consumables potions books ammunition
     materials treasure
   ].freeze
 
@@ -235,7 +235,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
   # Bump a cada mudança de SHAPE do payload (campo novo no serializer): a chave
   # de dados não muda quando só o código muda, e o cache de 12h + o 304 do
   # cliente serviriam o formato velho. v2 = rarity (29/08).
-  SNAPSHOT_SCHEMA_VERSION = 2
+  SNAPSHOT_SCHEMA_VERSION = 3 # v3 = bolsas (bucket + capacity_kg)
 
   def snapshot_cache_version
     [
@@ -315,10 +315,13 @@ class Api::V1::Public::EquipmentController < ApplicationController
       # "Itens Gerais" mostra hoje). O instrumento tem categoria preenchida,
       # entao entra na exclusao sem depender disso.
       Item.where(kind: 'gear')
-          .where.not(category: ['pack', INSTRUMENT_CATEGORY, BOOK_CATEGORY, *VEHICLE_CATEGORIES])
+          .where.not(category: ['pack', 'bag', INSTRUMENT_CATEGORY, BOOK_CATEGORY, *VEHICLE_CATEGORIES])
           .order(:api_index)
     when :packs
       Item.where(kind: 'gear', category: 'pack').order(:api_index)
+    # Bolsas (29/08): recipiente de PESO com capacidade em kg — aba própria.
+    when :bags
+      Item.where(kind: 'gear', category: 'bag').order(:api_index)
     when :tools
       # `IS DISTINCT FROM` e obrigatorio aqui: `where.not` derrubaria os 18 de 20
       # `tool` com `category: nil` junto com o instrumento.
@@ -380,6 +383,7 @@ class Api::V1::Public::EquipmentController < ApplicationController
     return :books           if %w[books livros tomos].include?(s)
     return :gear            if %w[adventuring-gear gear equipamentos utilidades equipment-gear].include?(s)
     return :packs           if %w[equipment-packs packs mochilas].include?(s)
+    return :bags            if %w[bags bolsas].include?(s)
     return :instruments     if %w[instruments instrumentos musical-instruments].include?(s)
     return :vehicles        if %w[vehicles veiculos transportes mounts-and-vehicles].include?(s)
     return :tools           if %w[tools ferramentas instruments-misc].include?(s)
@@ -538,6 +542,9 @@ class Api::V1::Public::EquipmentController < ApplicationController
       # senao o modal da bolsa mostra "Adventuring Gear" para um alaude.
       category_index, category_name = if it.category.to_s == INSTRUMENT_CATEGORY
         ['instruments', 'Musical Instruments']
+      elsif it.category.to_s == 'bag'
+        # Bolsa (29/08): recipiente de peso — o front mapeia por este índice.
+        ['bags', 'Bolsas']
       elsif VEHICLE_CATEGORIES.include?(it.category.to_s)
         ['vehicles', 'Mounts and Vehicles']
       else
@@ -572,6 +579,8 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # e 108 dos 152 consumíveis a têm — o serializer é que nunca a emitia,
         # então card, detalhe e bolsa mostravam tudo como item sem raridade.
         rarity: it.rarity.presence,
+        # Capacidade da BOLSA (kg canônico). Presente só em `category: bag`.
+        bag_capacity_kg: ((it.props || {})['capacity_kg'].presence if it.category.to_s == 'bag'),
         equipment_category: { index: category_index, name: category_name },
         gear_category: it.category,
         # Vestuário mundano: a peça vive em `category` (gear_category) e o slot

@@ -77,6 +77,7 @@ Rails.application.routes.draw do
             post :unbind_pact_weapon
             post :allocate_ammunition
             post :stow_on_mount
+            post :stow_in_bag
             post :spend_use
             post :merge
             post :split
@@ -294,6 +295,7 @@ Rails.application.routes.draw do
             post :unbind_pact_weapon
             post :allocate_ammunition
             post :stow_on_mount
+            post :stow_in_bag
             post :spend_use
             post :merge
             post :split

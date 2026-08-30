@@ -20,7 +20,8 @@ class SheetItem < ApplicationRecord
   # `quiver` guarda municao; `instrument` da lugar ao instrumento musical, que
   # nas regras e FERRAMENTA (PHB cap. 5) e nao tem casa nenhuma. A mesa quis um
   # lugar para ele; para o bardo, e o instrumento que serve de foco de conjuracao.
-  UTILITY_SLOTS   = %w[quiver instrument].freeze
+  # `bag` (29/08): a BOLSA equipada — houserule como os outros dois.
+  UTILITY_SLOTS   = %w[quiver instrument bag].freeze
   ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS + UTILITY_SLOTS).freeze
 
   # Slot legado → canônico, num lugar SÓ: o `equip` dos dois controllers valida
@@ -41,6 +42,7 @@ class SheetItem < ApplicationRecord
   before_validation :canonicalize_legacy_slot
   before_validation :resolve_catalog_item
   before_destroy :release_ammunition_contents, if: :quiver?
+  before_destroy :release_bag_contents, if: :bag?
   before_save :sanitize_slot
   after_save  :enforce_slot_exclusivity_and_conflicts
 
@@ -54,6 +56,11 @@ class SheetItem < ApplicationRecord
   # arma de pacto viraria "2 espadas, uma delas de pacto" — sem dizer qual.
   PER_INSTANCE_PROP_KEYS = %w[charges attuned uses uses_remaining uses_left pact_weapon].freeze
   AMMUNITION_CONTAINER_PROP = 'quiver_sheet_item_id'.freeze
+  # Item guardado DENTRO de uma bolsa da mesma ficha. Mesmo desenho da aljava,
+  # da montaria e da carroça: o item nunca sai da ficha — a localização é um
+  # PONTEIRO. Bolsa dentro de bolsa é uma linha de bolsa com este ponteiro
+  # (ciclo barrado no `StowInBagService`).
+  BAG_CONTAINER_PROP = 'bag_sheet_item_id'.freeze
   # Item guardado NA MONTARIA. Aponta o `id` do companion (jsonb
   # `sheets.companions`), nao um sheet_item — a montaria nao e um item.
   MOUNT_CONTAINER_PROP = 'mount_companion_id'.freeze
@@ -190,6 +197,9 @@ class SheetItem < ApplicationRecord
       # Recipiente de munição: o que aceita e quanto cabe. Do CATÁLOGO — sem
       # isto o front não sabe desenhar "12 / 20" nem qual munição oferecer.
       ammunition_container_props: ammunition_container_props,
+      # Capacidade da BOLSA (kg, canônico do banco). O ponteiro de conteúdo
+      # (`bag_sheet_item_id`) já viaja dentro de `props`.
+      bag_capacity_kg: (bag_capacity_kg if bag_capacity_kg.positive?),
       # Usos: quanto cabe (catálogo) e quanto resta (instância).
       uses_props: uses_props,
       uses_remaining: uses_remaining,
@@ -254,6 +264,41 @@ class SheetItem < ApplicationRecord
     identity.include?('aljava') || identity.include?('quiver')
   end
 
+  # Esta linha é uma BOLSA? A declaração canônica é o catálogo
+  # (`category: 'bag'` + `props.capacity_kg`); o nome cobre a bolsa avulsa que
+  # o mestre criou à mão — o mesmo par de leitores do `quiver?`.
+  def bag?
+    return true if bag_capacity_kg.positive?
+
+    identity = normalized_inventory_identity
+    identity.include?('bolsa') || identity.include?('mochila') ||
+      identity.include?('sacola') || identity.include?('backpack')
+  end
+
+  # Capacidade em KG, do CATÁLOGO (o banco é canônico em kg). 0 = sem teto
+  # declarado — a bolsa manual do mestre guarda sem limite.
+  #
+  # ⚠️ ÍNDICE primeiro, associação como fallback — e não o contrário. O
+  # `resolve_catalog_item` resolve por NOME e o ItemResolver CRIA um registro
+  # novo quando o nome não casa: a bolsa renomeada ("Bolsa Pequena" sobre o
+  # catálogo `bolsa-viagem`) ganha `item_id` de um CLONE sem capacidade, e a
+  # associação-primeiro leria teto 0 (= sem limite) em silêncio. O `item_index`
+  # é o identificador canônico que a linha aponta.
+  def bag_capacity_kg
+    @bag_capacity_kg ||= begin
+      registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
+      registro ||= item
+      ((registro&.props || {})['capacity_kg']).to_f
+    rescue StandardError
+      0.0
+    end
+  end
+
+  # Bolsa (SheetItem id) onde esta linha está guardada; nil = solta.
+  def stored_in_bag_id
+    (props_json || {})[BAG_CONTAINER_PROP]
+  end
+
   # O que este recipiente aceita. Vazio = aceita qualquer munição (é o caso da
   # aljava legada, que não declara nada).
   def accepted_ammunition_indexes
@@ -309,6 +354,18 @@ class SheetItem < ApplicationRecord
       props = (ammunition.props_json || {}).deep_dup.stringify_keys
       props.delete(AMMUNITION_CONTAINER_PROP)
       ammunition.update!(props_json: props)
+    end
+  end
+
+  # Apagar a bolsa não pode APAGAR o que está dentro: o conteúdo volta solto
+  # para a mochila (mesma regra da aljava).
+  def release_bag_contents
+    self.class.where(sheet_id: sheet_id)
+        .where("props_json ->> '#{BAG_CONTAINER_PROP}' = ?", id.to_s)
+        .find_each do |guardado|
+      props = (guardado.props_json || {}).deep_dup.stringify_keys
+      props.delete(BAG_CONTAINER_PROP)
+      guardado.update!(props_json: props)
     end
   end
 

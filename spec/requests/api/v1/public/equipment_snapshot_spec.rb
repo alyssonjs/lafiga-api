@@ -14,7 +14,7 @@ RSpec.describe 'Api::V1::Public::Equipment snapshot do catálogo', type: :reques
   # entrar lá e não aqui, este teste avisa antes do jogador.
   BALDES_DO_FRONT = %w[
     simple-weapons martial-weapons light-armor medium-armor heavy-armor shields
-    gear consumables potions instruments ammunition books tools packs
+    gear consumables potions instruments ammunition books tools packs bags
     materials treasure vehicles
   ].freeze
 

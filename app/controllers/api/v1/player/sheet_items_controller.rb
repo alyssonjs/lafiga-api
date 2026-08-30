@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :merge, :split, :spend_use]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :merge, :split, :spend_use]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -180,6 +180,22 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     broadcast_inventory_changed(@item)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::StowOnMountService::InvalidStow => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/stow_in_bag
+  # body: { bag_id: SheetItem id | null }
+  #
+  # Guarda o item numa BOLSA da mesma ficha (nulo tira). Capacidade em kg e
+  # guarda de ciclo são do SERVIÇO — duas abas abertas guardariam o mesmo
+  # último quilo se só o cliente somasse.
+  def stow_in_bag
+    SheetItems::StowInBagService.new(item: @item, bag_id: params[:bag_id]).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
+  rescue SheetItems::StowInBagService::InvalidStow => e
     render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
