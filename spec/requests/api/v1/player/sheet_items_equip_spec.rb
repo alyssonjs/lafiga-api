@@ -36,7 +36,7 @@ RSpec.describe 'Api::V1::Player::SheetItemsController equip', type: :request do
       expect(body['equipped']).to eq(true)
     end
 
-    it 'equipa uma aljava e mantém apenas uma no slot quiver' do
+    it 'equipa uma aljava e mantém apenas uma nas COSTAS' do
       first = SheetItem.create!(
         sheet: sheet, item_name: 'Aljava', item_index: 'aljava', category: 'gear',
         quantity: 1, equipped: false, source: 'test', props_json: {}
@@ -57,7 +57,8 @@ RSpec.describe 'Api::V1::Player::SheetItemsController equip', type: :request do
       expect(first.reload).not_to be_equipped
       expect(first.slot).to be_nil
       expect(second.reload).to be_equipped
-      expect(second.slot).to eq('quiver')
+      # O param legado `quiver` entra e canonicaliza para `back`.
+      expect(second.slot).to eq('back')
     end
 
     it 'rejeita slot desconhecido' do

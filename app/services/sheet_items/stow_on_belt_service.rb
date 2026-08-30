@@ -160,7 +160,7 @@ module SheetItems
     end
 
     def bolsa_vestida
-      item.sheet.sheet_items.find { |si| si.equipped? && si.slot.to_s == 'bag' }
+      SheetItem.worn_bag_for(item.sheet)
     end
 
     def prender!(cinto, tipo)

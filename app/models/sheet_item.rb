@@ -21,15 +21,26 @@ class SheetItem < ApplicationRecord
   # nas regras e FERRAMENTA (PHB cap. 5) e nao tem casa nenhuma. A mesa quis um
   # lugar para ele; para o bardo, e o instrumento que serve de foco de conjuracao.
   # `bag` (29/08): a BOLSA equipada — houserule como os outros dois.
-  UTILITY_SLOTS   = %w[quiver instrument bag].freeze
+  # `back` (Costas) recebe o que se carrega às costas: aljava OU bolsa — uma
+  # coisa de cada vez, como no corpo. Fundiu os antigos `quiver` e `bag`
+  # (30/08); a escolha não aperta o arqueiro porque o CINTO tem slot livre que
+  # aceita aljava, então mochila nas costas + aljava na cintura é possível.
+  UTILITY_SLOTS   = %w[back instrument].freeze
   ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS + UTILITY_SLOTS).freeze
 
   # Slot legado → canônico, num lugar SÓ: o `equip` dos dois controllers valida
   # o param ANTES do modelo, então cada porta precisa da mesma tradução — e uma
   # cópia por porta é como a próxima fusão de slot quebra só metade delas.
+  SLOT_ALIASES = {
+    'circlet' => 'helmet',
+    # Costas: aljava e bolsa disputavam duas casas e passaram a disputar uma.
+    'quiver' => 'back',
+    'bag' => 'back',
+  }.freeze
+
   def self.canonicalize_slot(value)
     v = value.to_s
-    v == 'circlet' ? 'helmet' : v
+    SLOT_ALIASES.fetch(v, v)
   end
 
   validates :sheet_id, presence: true
@@ -309,6 +320,12 @@ class SheetItem < ApplicationRecord
     rescue StandardError
       0.0
     end
+  end
+
+  # A BOLSA que o personagem traz às costas, se for uma bolsa que lá está.
+  # O slot é um só; quem decide é a natureza do item.
+  def self.worn_bag_for(sheet)
+    sheet.sheet_items.find { |si| si.equipped? && si.slot.to_s == 'back' && si.bag? }
   end
 
   # Bolsa (SheetItem id) onde esta linha está guardada; nil = solta.

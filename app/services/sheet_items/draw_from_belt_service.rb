@@ -65,7 +65,7 @@ module SheetItems
       if cinto && cabe_no_cinto?(sheet, cinto, deslocado)
         props[SheetItem::BELT_CONTAINER_PROP] = cinto.id
       else
-        bolsa = sheet.sheet_items.find { |si| si.equipped? && si.slot.to_s == 'bag' }
+        bolsa = SheetItem.worn_bag_for(sheet)
         props[SheetItem::BAG_CONTAINER_PROP] = bolsa.id if bolsa&.bag_room_for?(deslocado)
       end
 

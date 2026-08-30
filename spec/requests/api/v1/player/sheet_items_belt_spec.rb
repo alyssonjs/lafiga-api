@@ -351,9 +351,13 @@ RSpec.describe 'SheetItems — cintos', type: :request do
   # caixa toda. Sem isto, um slot escondia a pilha inteira e beber esvaziava
   # tudo de uma vez.
   describe 'consumivel: uma unidade por slot' do
+    # ⚠️ Ordena pelos DOIS campos: `sort_by(&:first)` com chaves iguais (tres
+    # linhas de quantidade 1) devolve ordem arbitraria — `sort_by` do Ruby nao
+    # e estavel, e o teste falhava conforme o seed do rspec.
     def pilhas(nome)
       sheet.sheet_items.reload.where(item_name: nome)
-           .map { |si| [si.quantity, si.stored_on_belt_id] }.sort_by(&:first)
+           .map { |si| [si.quantity, si.stored_on_belt_id] }
+           .sort_by { |qtd, cinto| [qtd, cinto.to_s] }
     end
 
     it 'prender uma pilha leva SO UMA — o resto fica onde estava' do
@@ -376,8 +380,9 @@ RSpec.describe 'SheetItems — cintos', type: :request do
       prender(pocoes.reload, cinto)
 
       expect(response).to have_http_status(:ok), response.body
-      # Duas linhas de 1 no cinto (dois slots) + 1 fora.
-      expect(pilhas('Poção de Cura')).to eq([[1, cinto.id], [1, cinto.id], [1, nil]])
+      # Duas linhas de 1 no cinto (dois slots) + 1 fora. A solta vem primeiro:
+      # a ordenacao e por [quantidade, cinto.to_s], e "" < "42532".
+      expect(pilhas('Poção de Cura')).to eq([[1, nil], [1, cinto.id], [1, cinto.id]])
     end
 
     it 'o terceiro nao entra: dois slots, duas pocoes' do

@@ -389,7 +389,11 @@ class EquipmentRules
       end
       return nil unless db_item
 
-      (db_item.props || {})['equip_slot'].presence
+      # Canonicaliza na SAÍDA: o catálogo tem `equip_slot: 'quiver'` gravado de
+      # antes da fusão em `back`, e devolver o slot morto faria o front sugerir
+      # uma casa que já não existe. Traduzir aqui evita reescrever o catálogo.
+      bruto = (db_item.props || {})['equip_slot'].presence
+      bruto && SheetItem.canonicalize_slot(bruto)
     end
 
     # Props de EQUIPAMENTO DE MONTARIA vindas do catálogo (sela, barda, alforje,

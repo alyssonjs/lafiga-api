@@ -55,7 +55,10 @@ RSpec.describe SheetItem, type: :model do
       expect(SheetItem::ALL_SLOTS).to include('ring_left', 'ring_right', 'amulet', 'cloak',
                                               'boots', 'helmet', 'gloves', 'belt',
                                               'face', 'earrings', 'bracelet_left', 'bracelet_right')
-      expect(SheetItem::ALL_SLOTS).to include('quiver')
+      # 30/08: `quiver` e `bag` FUNDIDOS em `back` (Costas) — é o mesmo lugar
+      # do corpo, e leva uma coisa de cada vez.
+      expect(SheetItem::ALL_SLOTS).to include('back')
+      expect(SheetItem::ALL_SLOTS).not_to include('quiver', 'bag')
     end
   end
 end

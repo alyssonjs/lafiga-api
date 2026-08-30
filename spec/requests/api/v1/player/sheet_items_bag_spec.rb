@@ -35,8 +35,12 @@ RSpec.describe 'SheetItems — bolsas', type: :request do
   end
 
   # O que a ficha tem com aquele nome, e onde está cada pilha.
+  # Ordena pelos DOIS campos: com quantidades iguais, `sort_by(&:first)` devolve
+  # ordem arbitraria (o `sort_by` do Ruby nao e estavel).
   def pilhas(nome)
-    sheet.sheet_items.reload.where(item_name: nome).map { |si| [si.quantity, si.stored_in_bag_id] }.sort_by(&:first)
+    sheet.sheet_items.reload.where(item_name: nome)
+         .map { |si| [si.quantity, si.stored_in_bag_id] }
+         .sort_by { |qtd, bolsa| [qtd, bolsa.to_s] }
   end
 
   describe 'guardar e tirar' do
@@ -162,15 +166,16 @@ RSpec.describe 'SheetItems — bolsas', type: :request do
   end
 
   describe 'slot e catálogo' do
-    it '`bag` é slot válido (a bolsa equipada)' do
+    it '`back` é o slot da bolsa vestida — e aceita o legado `bag`' do
       bolsa_catalogo!('bolsa-eq', 10)
       bolsa = linha!('Bolsa Equipável', index: 'bolsa-eq')
 
       post "/api/v1/player/sheet_items/#{bolsa.id}/equip",
            params: { slot: 'bag' }, headers: headers, as: :json
 
+      # O param legado continua a entrar: a canonicalização acontece na porta.
       expect(response).to have_http_status(:ok), response.body
-      expect(bolsa.reload.slot).to eq('bag')
+      expect(bolsa.reload.slot).to eq('back')
     end
 
     it 'o balde `bags` serve a aba e SAI de gear (item numa aba só)' do
