@@ -346,4 +346,83 @@ RSpec.describe 'SheetItems — cintos', type: :request do
       expect(adaga.reload.stored_on_belt_id).to eq(cinto.id)
     end
   end
+
+  # O slot de consumível leva UMA unidade: é o frasco que a mão alcança, não a
+  # caixa toda. Sem isto, um slot escondia a pilha inteira e beber esvaziava
+  # tudo de uma vez.
+  describe 'consumivel: uma unidade por slot' do
+    def pilhas(nome)
+      sheet.sheet_items.reload.where(item_name: nome)
+           .map { |si| [si.quantity, si.stored_on_belt_id] }.sort_by(&:first)
+    end
+
+    it 'prender uma pilha leva SO UMA — o resto fica onde estava' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c1', livres: 1, consumiveis: 2).api_index)
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      pocoes = linha!('Poção de Cura', index: 'pocao-cura', qty: 3)
+
+      prender(pocoes, cinto)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(pilhas('Poção de Cura')).to eq([[1, cinto.id], [2, nil]])
+    end
+
+    it 'dois slots levam DUAS linhas de um — nao uma de dois' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c2', livres: 1, consumiveis: 2).api_index)
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      pocoes = linha!('Poção de Cura', index: 'pocao-cura', qty: 3)
+      prender(pocoes, cinto)
+
+      prender(pocoes.reload, cinto)
+
+      expect(response).to have_http_status(:ok), response.body
+      # Duas linhas de 1 no cinto (dois slots) + 1 fora.
+      expect(pilhas('Poção de Cura')).to eq([[1, cinto.id], [1, cinto.id], [1, nil]])
+    end
+
+    it 'o terceiro nao entra: dois slots, duas pocoes' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c3', livres: 1, consumiveis: 2).api_index)
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      pocoes = linha!('Poção de Cura', index: 'pocao-cura', qty: 5)
+      prender(pocoes, cinto)
+      prender(pocoes.reload, cinto)
+
+      prender(pocoes.reload, cinto)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to match(%r{2/2 slots de consumível})
+    end
+
+    it 'ARMA vai INTEIRA — nao empilha, nao se divide' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c4', livres: 1).api_index)
+      catalogo!('adaga', 'Adaga', 'weapon')
+      adagas = linha!('Adaga', index: 'adaga', qty: 2)
+
+      prender(adagas, cinto)
+
+      expect(pilhas('Adaga')).to eq([[2, cinto.id]])
+    end
+
+    it 'soltar FUNDE de volta na pilha da bolsa — nao deixa duas linhas' do
+      Item.create!(api_index: 'mochila-c5', name: 'Mochila', kind: 'gear', category: 'bag',
+                   props: { 'capacity_kg' => 20 })
+      mochila = SheetItem.create!(sheet: sheet, item_name: 'Mochila', item_index: 'mochila-c5',
+                                  category: 'Itens Gerais', quantity: 1, source: 'test',
+                                  equipped: true, slot: 'bag')
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c5', livres: 1, consumiveis: 1).api_index)
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      pocoes = linha!('Poção de Cura', index: 'pocao-cura', qty: 3)
+      post "/api/v1/player/sheet_items/#{pocoes.id}/stow_in_bag",
+           params: { bag_id: mochila.id }, headers: headers, as: :json
+      prender(pocoes.reload, cinto)
+      presa = sheet.sheet_items.reload.find { |si| si.stored_on_belt_id == cinto.id }
+
+      prender(presa, nil)
+
+      # Uma linha só, de volta a 3 — e na bolsa vestida.
+      restantes = sheet.sheet_items.reload.where(item_name: 'Poção de Cura')
+      expect(restantes.map(&:quantity)).to eq([3])
+      expect(restantes.first.stored_in_bag_id).to eq(mochila.id)
+    end
+  end
 end

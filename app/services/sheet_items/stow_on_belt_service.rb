@@ -34,7 +34,7 @@ module SheetItems
           validar_nao_e_o_proprio!(cinto)
           tipo = tipo_de_slot!
           validar_vaga!(sheet, cinto, tipo)
-          prender!(cinto)
+          prender!(cinto, tipo)
         end
 
         return inventario(sheet)
@@ -138,19 +138,54 @@ module SheetItems
 
       bolsa = bolsa_vestida
       props[SheetItem::BAG_CONTAINER_PROP] = bolsa.id if bolsa&.bag_room_for?(item)
+
+      # Funde na pilha gémea do destino: a poção que saiu do cinto volta a ser
+      # "×3" na bolsa, e não uma segunda linha "×1" ao lado da "×2".
+      gemea = pilha_gemea(props)
+      if gemea
+        gemea.update!(quantity: gemea.quantity.to_i + item.quantity.to_i)
+        item.destroy!
+        return
+      end
+
       item.update!(props_json: props)
+    end
+
+    def pilha_gemea(destino)
+      candidato = item.dup
+      candidato.equipped = false
+      candidato.slot = nil
+      candidato.props_json = destino
+      SheetItem.stackable_match_for(candidato)
     end
 
     def bolsa_vestida
       item.sheet.sheet_items.find { |si| si.equipped? && si.slot.to_s == 'bag' }
     end
 
-    def prender!(cinto)
+    def prender!(cinto, tipo)
       props = (item.props_json || {}).deep_dup.stringify_keys
       props[SheetItem::BELT_CONTAINER_PROP] = cinto.id
       # Preso no cinto não pode continuar noutro depósito: os ponteiros são
       # exclusivos entre si (o item está num lugar só).
       props.delete(SheetItem::BAG_CONTAINER_PROP)
+
+      # CONSUMÍVEL: o slot leva UMA unidade — é o frasco que a mão alcança, não
+      # a caixa toda. Três poções na bolsa viram uma no cinto e duas onde
+      # estavam; sem isto, um slot escondia a pilha inteira e beber esvaziava
+      # tudo de uma vez. Arma e ferramenta não empilham, então a linha vai
+      # inteira como sempre.
+      if tipo == 'consumable' && item.quantity.to_i > 1
+        preso = item.dup
+        preso.quantity = 1
+        preso.equipped = false
+        preso.slot = nil
+        preso.props_json = props
+        preso.save!
+        item.update!(quantity: item.quantity.to_i - 1)
+        return
+      end
+
       item.update!(props_json: props)
     end
 
