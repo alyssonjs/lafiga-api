@@ -51,9 +51,10 @@ RSpec.describe SheetItem, type: :model do
         SheetItem::COMBAT_SLOTS + SheetItem::ACCESSORY_SLOTS + SheetItem::UTILITY_SLOTS
       )
       expect(SheetItem::ALL_SLOTS).to include('main_hand', 'off_hand', 'armor', 'shield')
+      # 29/08: `face` (rosto) entrou; `circlet` foi FUNDIDO em `helmet`.
       expect(SheetItem::ALL_SLOTS).to include('ring_left', 'ring_right', 'amulet', 'cloak',
                                               'boots', 'helmet', 'gloves', 'belt',
-                                              'circlet', 'earrings', 'bracelet_left', 'bracelet_right')
+                                              'face', 'earrings', 'bracelet_left', 'bracelet_right')
       expect(SheetItem::ALL_SLOTS).to include('quiver')
     end
   end

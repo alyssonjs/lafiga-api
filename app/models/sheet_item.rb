@@ -8,9 +8,13 @@ class SheetItem < ApplicationRecord
   # Slots de acessório (Fase 2.1) — desbloqueiam itens como anel da
   # vontade, manopla da força, manto de resistência, botas aladas, etc.
   # ring_left/ring_right permitem ATÉ 2 anéis equipados simultaneamente.
+  # `face` (rosto: máscara, óculos) entrou em 29/08; `circlet` foi FUNDIDO em
+  # `helmet` na mesma data (cabeça inteira: elmo, chapéu, tiara). Medido antes:
+  # zero linhas persistidas e zero catálogo usavam `circlet` — a fusão é só de
+  # vocabulário, e `canonicalize_legacy_slot` cobre cliente da janela de deploy.
   ACCESSORY_SLOTS = %w[
     ring_left ring_right amulet cloak boots helmet gloves belt
-    circlet earrings bracelet_left bracelet_right
+    face earrings bracelet_left bracelet_right
   ].freeze
   # Slots de utilidade — nao existem no PHB, sao HOUSERULE desta mesa.
   # `quiver` guarda municao; `instrument` da lugar ao instrumento musical, que
@@ -19,6 +23,14 @@ class SheetItem < ApplicationRecord
   UTILITY_SLOTS   = %w[quiver instrument].freeze
   ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS + UTILITY_SLOTS).freeze
 
+  # Slot legado → canônico, num lugar SÓ: o `equip` dos dois controllers valida
+  # o param ANTES do modelo, então cada porta precisa da mesma tradução — e uma
+  # cópia por porta é como a próxima fusão de slot quebra só metade delas.
+  def self.canonicalize_slot(value)
+    v = value.to_s
+    v == 'circlet' ? 'helmet' : v
+  end
+
   validates :sheet_id, presence: true
   validates :item_name, presence: true
   validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
@@ -26,6 +38,7 @@ class SheetItem < ApplicationRecord
                                 message: "deve ser um destes: #{ALL_SLOTS.join(', ')}" }
   validate  :validate_equipment_proficiency
 
+  before_validation :canonicalize_legacy_slot
   before_validation :resolve_catalog_item
   before_destroy :release_ammunition_contents, if: :quiver?
   before_save :sanitize_slot
@@ -323,6 +336,12 @@ class SheetItem < ApplicationRecord
     unless equipped
       self.slot = nil
     end
+  end
+
+  # Slot legado → canônico, ANTES da validação (senão o cliente antigo levaria
+  # 422 no lugar de funcionar). `circlet` → `helmet` desde 29/08.
+  def canonicalize_legacy_slot
+    self.slot = self.class.canonicalize_slot(slot) if slot.present?
   end
 
   def validate_equipment_proficiency

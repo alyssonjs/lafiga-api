@@ -41,7 +41,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
 
   # POST /api/v1/admin/sheet_items/:id/equip
   def equip
-    slot = params[:slot].to_s
+    slot = SheetItem.canonicalize_slot(params[:slot])
     unless SheetItem::ALL_SLOTS.include?(slot)
       return render json: { error: "Invalid slot. Allowed: #{SheetItem::ALL_SLOTS.join(', ')}" }, status: :unprocessable_entity
     end

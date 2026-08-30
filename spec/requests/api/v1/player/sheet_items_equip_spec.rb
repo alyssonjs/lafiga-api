@@ -11,7 +11,7 @@ RSpec.describe 'Api::V1::Player::SheetItemsController equip', type: :request do
   let!(:sheet) { create(:sheet, character: character, race: race, sub_race: sub_race) }
 
   describe 'POST /api/v1/player/sheet_items/:id/equip' do
-    it 'aceita slot de acessório novo (circlet)' do
+    it 'cliente antigo equipando em `circlet` cai em `helmet` (fusão de 29/08)' do
       tiara = SheetItem.create!(
         sheet: sheet,
         item_name: 'Tiara da Luz',
@@ -30,7 +30,9 @@ RSpec.describe 'Api::V1::Player::SheetItemsController equip', type: :request do
 
       expect(response).to have_http_status(:ok), -> { response.body }
       body = response.parsed_body['sheet_item'] || response.parsed_body[:sheet_item]
-      expect(body['slot']).to eq('circlet')
+      # A tiara divide a CABEÇA com o elmo; o slot `circlet` morreu, mas o
+      # cliente da janela de deploy não pode levar 422 — canonicaliza.
+      expect(body['slot']).to eq('helmet')
       expect(body['equipped']).to eq(true)
     end
 

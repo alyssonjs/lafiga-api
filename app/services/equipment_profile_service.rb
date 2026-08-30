@@ -36,7 +36,7 @@ class EquipmentProfileService
     # ── Accessories (Fase 2.1) ───────────────────────────────────────
     # Mapa slot → SheetItem para todos os accessory slots equipados.
     # Inclui ring_left/ring_right (até 2 anéis), amulet, cloak, boots,
-    # helmet, gloves, belt, circlet, earrings, braceletes. Usado por MagicItemRules para varrer efeitos.
+    # helmet (cabeça), face (rosto), gloves, belt, earrings, braceletes. Usado por MagicItemRules para varrer efeitos.
     accessory_slots = SheetItem::ACCESSORY_SLOTS
     accessories = accessory_slots.each_with_object({}) do |slot_name, acc|
       it = equipped.find { |e| e.slot.to_s == slot_name }

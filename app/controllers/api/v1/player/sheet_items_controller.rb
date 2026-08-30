@@ -47,7 +47,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # POST /api/v1/player/sheet_items/:id/equip
   # body: { slot: <SheetItem::ALL_SLOTS>, props_json?: { using_two_hands?: boolean } }
   def equip
-    slot = params[:slot].to_s
+    slot = SheetItem.canonicalize_slot(params[:slot])
     unless SheetItem::ALL_SLOTS.include?(slot)
       return render json: { error: "Invalid slot. Allowed: #{SheetItem::ALL_SLOTS.join(', ')}" }, status: :unprocessable_entity
     end
