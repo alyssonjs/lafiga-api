@@ -118,10 +118,22 @@ module SheetItems
       raise InvalidStow, "Sem vaga: #{ocupados}/#{total} slots #{tipo == 'free' ? 'livres' : 'de consumível'} ocupados."
     end
 
+    # Tirar do cinto devolve à bolsa VESTIDA — é de lá que a mão tirou e é
+    # para lá que arruma. Cai solto só quando não há bolsa vestida ou quando o
+    # item já não cabe nela (a bolsa encheu enquanto ele estava no cinto); aí
+    # o cabeçalho da ficha conta os soltos e diz onde vê-los.
     def soltar!
       props = (item.props_json || {}).deep_dup.stringify_keys
       props.delete(SheetItem::BELT_CONTAINER_PROP)
+      props.delete(SheetItem::BAG_CONTAINER_PROP)
+
+      bolsa = bolsa_vestida
+      props[SheetItem::BAG_CONTAINER_PROP] = bolsa.id if bolsa&.bag_room_for?(item)
       item.update!(props_json: props)
+    end
+
+    def bolsa_vestida
+      item.sheet.sheet_items.find { |si| si.equipped? && si.slot.to_s == 'bag' }
     end
 
     def prender!(cinto)

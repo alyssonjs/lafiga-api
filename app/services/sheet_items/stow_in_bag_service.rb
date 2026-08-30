@@ -142,33 +142,20 @@ module SheetItems
 
     # Peso em KG (canônico do banco) do que JÁ está na bolsa + o candidato.
     # Teto 0 = bolsa sem capacidade declarada (manual do mestre): sem limite.
-    def validar_capacidade!(sheet, bolsa)
+    # A conta vive no MODELO: o cinto também precisa dela ao devolver um item
+    # à bolsa vestida, e duas somas divergiriam no primeiro arredondamento.
+    def validar_capacidade!(_sheet, bolsa)
       teto = bolsa.bag_capacity_kg
       return if teto <= 0
+      return if bolsa.bag_room_for?(item, quantity: quantidade)
 
-      conteudo = sheet.sheet_items
-                      .where("props_json ->> '#{SheetItem::BAG_CONTAINER_PROP}' = ?", bolsa.id.to_s)
-                      .where.not(id: item.id)
-      atual = conteudo.sum { |si| peso_kg(si) }
-      novo = atual + peso_unitario_kg(item) * quantidade
-      return if novo <= teto + 0.0001
-
+      novo = bolsa.bag_load_kg(except: item) + SheetItem.stack_weight_kg(item, quantity: quantidade)
       raise InvalidStow,
             "Não cabe: #{novo.round(2)} kg num teto de #{teto.round(2)} kg."
     end
 
-    def peso_kg(si)
-      peso_unitario_kg(si) * (si.quantity || 1).to_i
-    end
-
     def inventario(sheet)
       sheet.sheet_items.includes(:item).order(:position, :id).map(&:as_inventory_json)
-    end
-
-    def peso_unitario_kg(si)
-      EquipmentRules.item_weight_kg(si).to_f
-    rescue StandardError
-      0.0
     end
   end
 end

@@ -160,4 +160,60 @@ RSpec.describe 'SheetItems — cintos', type: :request do
       expect(adaga.stored_in_bag_id).to be_nil
     end
   end
+
+  # Tirar do cinto arruma na bolsa VESTIDA — é de lá que a mão tirou. Cair
+  # solto era o comportamento e lia-se como perder o item de vista.
+  describe 'soltar devolve à bolsa vestida' do
+    def bolsa_vestida!(slug, capacidade_kg)
+      Item.create!(api_index: slug, name: "Mochila #{slug}", kind: 'gear', category: 'bag',
+                   props: { 'capacity_kg' => capacidade_kg })
+      SheetItem.create!(sheet: sheet, item_name: 'Mochila', item_index: slug, category: 'Itens Gerais',
+                        quantity: 1, source: 'test', equipped: true, slot: 'bag')
+    end
+
+    it 'o item volta PARA a bolsa vestida, nao para o chao' do
+      mochila = bolsa_vestida!('mochila-s1', 15)
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-s1', livres: 1).api_index)
+      catalogo!('adaga', 'Adaga', 'weapon')
+      adaga = linha!('Adaga', index: 'adaga')
+      prender(adaga, cinto)
+
+      prender(adaga, nil)
+
+      adaga.reload
+      expect(adaga.stored_on_belt_id).to be_nil
+      expect(adaga.stored_in_bag_id).to eq(mochila.id)
+    end
+
+    it 'sem bolsa vestida, continua a cair solto' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-s2', livres: 1).api_index)
+      catalogo!('adaga', 'Adaga', 'weapon')
+      adaga = linha!('Adaga', index: 'adaga')
+      prender(adaga, cinto)
+
+      prender(adaga, nil)
+
+      expect(adaga.reload.stored_in_bag_id).to be_nil
+    end
+
+    it 'bolsa vestida SEM VAGA deixa cair solto — nao estoura o teto' do
+      # Teto 1 kg, já com 1 kg dentro: a adaga de 1 kg não cabe de volta.
+      mochila = bolsa_vestida!('mochila-s3', 1)
+      Item.create!(api_index: 'tijolo-1kg-s3', name: 'Tijolo', kind: 'gear', weight_kg: 1.0)
+      lastro = linha!('Tijolo', index: 'tijolo-1kg-s3')
+      post "/api/v1/player/sheet_items/#{lastro.id}/stow_in_bag",
+           params: { bag_id: mochila.id }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), response.body
+
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-s3', livres: 1).api_index)
+      Item.create!(api_index: 'adaga-1kg-s3', name: 'Adaga Pesada', kind: 'weapon', weight_kg: 1.0)
+      adaga = linha!('Adaga Pesada', index: 'adaga-1kg-s3')
+      prender(adaga, cinto)
+
+      prender(adaga, nil)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(adaga.reload.stored_in_bag_id).to be_nil
+    end
+  end
 end

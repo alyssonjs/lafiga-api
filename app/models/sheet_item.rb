@@ -344,6 +344,35 @@ class SheetItem < ApplicationRecord
     (props_json || {})[BELT_CONTAINER_PROP]
   end
 
+  # Peso em KG de uma linha inteira (unitário × quantidade). Canônico do banco.
+  def self.stack_weight_kg(linha, quantity: nil)
+    unitario = EquipmentRules.item_weight_kg(linha).to_f
+    unitario * (quantity || linha.quantity || 1).to_i
+  rescue StandardError
+    0.0
+  end
+
+  # Peso já guardado NESTA bolsa. `except` tira uma linha da soma — quem vai
+  # entrar não pode contar duas vezes se já estava lá.
+  def bag_load_kg(except: nil)
+    escopo = sheet.sheet_items
+                  .where("props_json ->> '#{BAG_CONTAINER_PROP}' = ?", id.to_s)
+    escopo = escopo.where.not(id: except.id) if except
+    escopo.sum { |si| SheetItem.stack_weight_kg(si) }
+  end
+
+  # Cabe? Teto 0 = bolsa sem capacidade declarada: sem limite.
+  #
+  # A tolerância é a mesma do front (`bagCapacity.ts`) para os dois
+  # concordarem na borda — a autoridade é aqui, com as linhas travadas.
+  def bag_room_for?(candidato, quantity: nil)
+    teto = bag_capacity_kg
+    return true if teto <= 0
+
+    novo = bag_load_kg(except: candidato) + SheetItem.stack_weight_kg(candidato, quantity: quantity)
+    novo <= teto + 0.0001
+  end
+
   # O que este recipiente aceita. Vazio = aceita qualquer munição (é o caso da
   # aljava legada, que não declara nada).
   def accepted_ammunition_indexes
