@@ -197,6 +197,18 @@ class SheetItem < ApplicationRecord
       # Recipiente de munição: o que aceita e quanto cabe. Do CATÁLOGO — sem
       # isto o front não sabe desenhar "12 / 20" nem qual munição oferecer.
       ammunition_container_props: ammunition_container_props,
+      # PESO da linha, pela MESMA conta que valida a capacidade da bolsa.
+      #
+      # Faltava, e o front caía em `props_json['weight_lb']` — prop que só
+      # existe em quem a gravou na compra. Sete itens de uma mochila apareciam
+      # com peso "—" e a barra dizia 10 kg enquanto o servidor somava 15: a
+      # tela recusava um movimento que ela própria dizia caber. Uma fonte para
+      # os dois lados, na convenção do LIVRO (kg × 2), como o resto da ficha.
+      weight_lb: begin
+        EquipmentRules.item_weight_lb(self)
+      rescue NameError
+        nil
+      end,
       # Capacidade da BOLSA (kg, canônico do banco). O ponteiro de conteúdo
       # (`bag_sheet_item_id`) já viaja dentro de `props`.
       bag_capacity_kg: (bag_capacity_kg if bag_capacity_kg.positive?),

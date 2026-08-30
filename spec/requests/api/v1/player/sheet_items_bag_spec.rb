@@ -28,9 +28,15 @@ RSpec.describe 'SheetItems — bolsas', type: :request do
                       quantity: qty, source: 'test')
   end
 
-  def guardar(item, bolsa)
+  def guardar(item, bolsa, quantidade: nil)
     post "/api/v1/player/sheet_items/#{item.id}/stow_in_bag",
-         params: { bag_id: bolsa&.id }, headers: headers, as: :json
+         params: { bag_id: bolsa&.id }.merge(quantidade ? { quantity: quantidade } : {}),
+         headers: headers, as: :json
+  end
+
+  # O que a ficha tem com aquele nome, e onde está cada pilha.
+  def pilhas(nome)
+    sheet.sheet_items.reload.where(item_name: nome).map { |si| [si.quantity, si.stored_in_bag_id] }.sort_by(&:first)
   end
 
   describe 'guardar e tirar' do
@@ -43,7 +49,10 @@ RSpec.describe 'SheetItems — bolsas', type: :request do
 
       expect(response).to have_http_status(:ok), response.body
       expect(corda.reload.stored_in_bag_id).to eq(bolsa.id)
-      expect(response.parsed_body.dig('sheet_item', 'props', 'bag_sheet_item_id')).to eq(bolsa.id)
+      # A resposta é o INVENTÁRIO: um movimento parcial toca duas linhas, e a
+      # original pode nem sobreviver (pilha inteira fundida numa gémea).
+      linha = response.parsed_body['sheet_items'].find { |i| i['id'] == corda.id }
+      expect(linha.dig('props', 'bag_sheet_item_id')).to eq(bolsa.id)
     end
 
     it 'bag_id nulo tira da bolsa' do
@@ -178,6 +187,127 @@ RSpec.describe 'SheetItems — bolsas', type: :request do
 
       get '/api/v1/public/equipment_list/gear'
       expect(response.parsed_body['equipment'].map { |r| r['index'] }).not_to include('bolsa-aba')
+    end
+  end
+
+  # Pilhas: mover 3 das 10 flechas é dividir a linha, não etiquetá-la inteira.
+  describe 'quantidade parcial' do
+    it 'sem `quantity`, move a pilha INTEIRA (o que sempre fez)' do
+      bolsa_catalogo!('bolsa-q1', 50)
+      bolsa = linha!('Bolsa', index: 'bolsa-q1')
+      flechas = linha!('Flecha', qty: 10)
+
+      guardar(flechas, bolsa)
+
+      expect(pilhas('Flecha')).to eq([[10, bolsa.id]])
+    end
+
+    it 'com `quantity`, DIVIDE: parte vai, o resto fica onde estava' do
+      bolsa_catalogo!('bolsa-q2', 50)
+      bolsa = linha!('Bolsa', index: 'bolsa-q2')
+      flechas = linha!('Flecha', qty: 10)
+
+      guardar(flechas, bolsa, quantidade: 3)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(pilhas('Flecha')).to eq([[3, bolsa.id], [7, nil]])
+    end
+
+    it 'funde na pilha gemea que ja esta na bolsa, em vez de criar segunda linha' do
+      bolsa_catalogo!('bolsa-q3', 50)
+      bolsa = linha!('Bolsa', index: 'bolsa-q3')
+      flechas = linha!('Flecha', qty: 10)
+      guardar(flechas, bolsa, quantidade: 4)
+
+      guardar(flechas, bolsa, quantidade: 2)
+
+      expect(pilhas('Flecha')).to eq([[4, nil], [6, bolsa.id]])
+    end
+
+    it 'move parte de uma bolsa DIRETO para outra' do
+      bolsa_catalogo!('bolsa-q4', 50)
+      origem = linha!('Bolsa A', index: 'bolsa-q4')
+      destino = linha!('Bolsa B', index: 'bolsa-q4')
+      flechas = linha!('Flecha', qty: 10)
+      guardar(flechas, origem)
+
+      guardar(flechas, destino, quantidade: 6)
+
+      expect(pilhas('Flecha')).to eq([[4, origem.id], [6, destino.id]])
+    end
+
+    it 'quantidade acima do disponivel recusa' do
+      bolsa_catalogo!('bolsa-q5', 50)
+      bolsa = linha!('Bolsa', index: 'bolsa-q5')
+      flechas = linha!('Flecha', qty: 10)
+
+      guardar(flechas, bolsa, quantidade: 11)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to match(/Disponível: 10/)
+      expect(pilhas('Flecha')).to eq([[10, nil]])
+    end
+
+    it 'quantidade zero ou negativa recusa' do
+      bolsa_catalogo!('bolsa-q6', 50)
+      bolsa = linha!('Bolsa', index: 'bolsa-q6')
+      flechas = linha!('Flecha', qty: 10)
+
+      guardar(flechas, bolsa, quantidade: 0)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(pilhas('Flecha')).to eq([[10, nil]])
+    end
+
+    it 'a CAPACIDADE conta so o que vai mover, nao a pilha toda' do
+      bolsa_catalogo!('bolsa-q7', 3)
+      bolsa = linha!('Bolsa', index: 'bolsa-q7')
+      # 10 tijolos de 1 kg: a pilha inteira nao cabe num teto de 3 kg, 3 cabem.
+      tijolos = linha!('Tijolo', index: 'tijolo-1kg', peso_kg: 1.0, qty: 10)
+
+      guardar(tijolos, bolsa, quantidade: 3)
+      expect(response).to have_http_status(:ok), response.body
+
+      guardar(sheet.sheet_items.reload.find_by(item_name: 'Tijolo', quantity: 7), bolsa, quantidade: 1)
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to match(/Não cabe/)
+    end
+  end
+
+  # A conta da tela e a do servidor tem de sair do MESMO numero. Enquanto o
+  # inventario nao mandava peso, o front lia `props_json['weight_lb']` — prop
+  # que so existe em quem a gravou na compra — e a barra da bolsa dizia 10 kg
+  # onde o servidor somava 15: a tela recusava o que ela propria dizia caber.
+  describe 'peso na resposta do inventario' do
+    it 'manda `weight_lb` mesmo sem a prop gravada na linha' do
+      bolsa_catalogo!('bolsa-w1', 15)
+      bolsa = linha!('Bolsa', index: 'bolsa-w1')
+      # Corda de 5 kg no CATALOGO, e nada em props_json.
+      corda = linha!('Corda 15m', index: 'corda-15m', peso_kg: 5.0, qty: 2)
+      expect(corda.props_json.to_h['weight_lb']).to be_nil
+
+      guardar(corda, bolsa)
+
+      linha = response.parsed_body['sheet_items'].find { |i| i['id'] == corda.id }
+      # Convencao do LIVRO: kg × 2.
+      expect(linha['weight_lb']).to eq(10.0)
+    end
+
+    it 'o peso enviado e o MESMO que valida a capacidade' do
+      bolsa_catalogo!('bolsa-w2', 15)
+      bolsa = linha!('Bolsa', index: 'bolsa-w2')
+      corda = linha!('Corda 15m', index: 'corda-15m', peso_kg: 5.0, qty: 2)
+      guardar(corda, bolsa)
+
+      # 10 kg dentro, teto 15: um tijolo de 6 kg nao cabe, um de 4 cabe.
+      pesado = linha!('Bigorna', index: 'bigorna-6kg', peso_kg: 6.0)
+      guardar(pesado, bolsa)
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to match(/16\.0 kg num teto de 15\.0 kg/)
+
+      leve = linha!('Tijolo', index: 'tijolo-4kg', peso_kg: 4.0)
+      guardar(leve, bolsa)
+      expect(response).to have_http_status(:ok), response.body
     end
   end
 end

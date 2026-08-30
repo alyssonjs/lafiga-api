@@ -16,37 +16,95 @@ module SheetItems
   class StowInBagService
     class InvalidStow < StandardError; end
 
-    def initialize(item:, bag_id:)
+    # `quantity` nulo = a pilha INTEIRA (o que sempre foi). Com número, move
+    # só parte: 3 das 10 flechas passam para a outra bolsa e 7 ficam onde
+    # estavam. A divisão é a mesma do StowOnMountService — funde na pilha
+    # gémea do destino se já existir lá uma igual, senão nasce linha nova.
+    def initialize(item:, bag_id:, quantity: nil)
       @item = item
       @bag_id = bag_id.presence
+      @quantity = quantity.presence&.to_i
     end
 
     def call
       sheet = item.sheet
       sheet.with_lock do
         item.lock!
+        validar_quantidade!
 
         if bag_id.nil?
-          remover_da_bolsa!
+          mover!(sheet, nil)
         else
           bolsa = achar_bolsa!(sheet)
           validar_nao_e_a_propria!(bolsa)
           validar_sem_ciclo!(sheet, bolsa)
           validar_capacidade!(sheet, bolsa)
-          guardar!(bolsa)
+          mover!(sheet, bolsa)
         end
+
+        # Devolve o INVENTÁRIO, não a linha: um movimento parcial toca duas
+        # (a que ficou e a que nasceu), e a linha original pode nem existir
+        # depois — mover a pilha inteira para uma gémea destrói-a.
+        return inventario(sheet)
       end
-      item
     end
 
     private
 
     attr_reader :item, :bag_id
 
-    def remover_da_bolsa!
+    # Quantidade a mover: o pedido, ou a pilha inteira quando não vem nenhum.
+    def quantidade
+      @quantidade ||= (@quantity || item.quantity.to_i)
+    end
+
+    def validar_quantidade!
+      return if quantidade.positive? && quantidade <= item.quantity.to_i
+
+      raise InvalidStow, "Quantidade inválida. Disponível: #{item.quantity.to_i}"
+    end
+
+    # Props que o item passa a ter no destino (bolsa nula = fora de qualquer uma).
+    def props_para(bolsa)
       props = (item.props_json || {}).deep_dup.stringify_keys
       props.delete(SheetItem::BAG_CONTAINER_PROP)
-      item.update!(props_json: props)
+      props[SheetItem::BAG_CONTAINER_PROP] = bolsa.id if bolsa
+      props
+    end
+
+    # Pilha gémea já no destino: mesmo item, mesmas props de empilhamento.
+    def pilha_gemea(destino)
+      candidato = item.dup
+      candidato.quantity = quantidade
+      candidato.equipped = false
+      candidato.slot = nil
+      candidato.props_json = destino
+      SheetItem.stackable_match_for(candidato)
+    end
+
+    def mover!(_sheet, bolsa)
+      destino = props_para(bolsa)
+      gemea = pilha_gemea(destino)
+
+      # Pilha inteira e sem gémea onde fundir: só reetiqueta, sem criar linha.
+      if quantidade == item.quantity.to_i && gemea.nil?
+        item.update!(props_json: destino)
+        return
+      end
+
+      if gemea
+        gemea.update!(quantity: gemea.quantity.to_i + quantidade)
+      else
+        movido = item.dup
+        movido.quantity = quantidade
+        movido.equipped = false
+        movido.slot = nil
+        movido.props_json = destino
+        movido.save!
+      end
+
+      restante = item.quantity.to_i - quantidade
+      restante.positive? ? item.update!(quantity: restante) : item.destroy!
     end
 
     def achar_bolsa!(sheet)
@@ -92,7 +150,7 @@ module SheetItems
                       .where("props_json ->> '#{SheetItem::BAG_CONTAINER_PROP}' = ?", bolsa.id.to_s)
                       .where.not(id: item.id)
       atual = conteudo.sum { |si| peso_kg(si) }
-      novo = atual + peso_kg(item)
+      novo = atual + peso_unitario_kg(item) * quantidade
       return if novo <= teto + 0.0001
 
       raise InvalidStow,
@@ -100,15 +158,17 @@ module SheetItems
     end
 
     def peso_kg(si)
-      EquipmentRules.item_weight_kg(si).to_f * (si.quantity || 1).to_i
-    rescue StandardError
-      0.0
+      peso_unitario_kg(si) * (si.quantity || 1).to_i
     end
 
-    def guardar!(bolsa)
-      props = (item.props_json || {}).deep_dup.stringify_keys
-      props[SheetItem::BAG_CONTAINER_PROP] = bolsa.id
-      item.update!(props_json: props)
+    def inventario(sheet)
+      sheet.sheet_items.includes(:item).order(:position, :id).map(&:as_inventory_json)
+    end
+
+    def peso_unitario_kg(si)
+      EquipmentRules.item_weight_kg(si).to_f
+    rescue StandardError
+      0.0
     end
   end
 end

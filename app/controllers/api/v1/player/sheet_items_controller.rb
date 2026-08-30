@@ -192,9 +192,13 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   # guarda de ciclo são do SERVIÇO — duas abas abertas guardariam o mesmo
   # último quilo se só o cliente somasse.
   def stow_in_bag
-    SheetItems::StowInBagService.new(item: @item, bag_id: params[:bag_id]).call
+    items = SheetItems::StowInBagService.new(
+      item: @item,
+      bag_id: params[:bag_id],
+      quantity: params[:quantity]
+    ).call
     broadcast_inventory_changed(@item)
-    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
+    render json: { sheet_items: items }, status: :ok
   rescue SheetItems::StowInBagService::InvalidStow => e
     render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
