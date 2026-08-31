@@ -596,6 +596,10 @@ class Api::V1::Public::EquipmentController < ApplicationController
         # numerico e nao sobrevive a um re-seed do catalogo de magias; o nome e
         # o que o resto da base ja usa (ex.: `sub_klasses.terrain_spells`).
         spell_name: props['spell_name'].presence,
+        # FOCO ARCANO declarado pelo mestre. Sem serializar, ele marca a caixa,
+        # o item vira foco na ficha e a listagem do compêndio não o mostra —
+        # o mestre fica sem saber o que já marcou.
+        arcane_focus: (true if props['arcane_focus'].present? && props['arcane_focus'].to_s != 'false'),
         # Usos limitados (Kit de Primeiros Socorros: 10) e o token de recarga.
         # Sem serializar, o jogador so descobre que o kit tem dez usos DEPOIS de
         # comprar — o dado existe no catalogo e nao chegava a lugar nenhum.

@@ -235,6 +235,9 @@ class SheetItem < ApplicationRecord
       belt_slot_props: belt_slot_props,
       # Slots EXTERNOS da bolsa — mesma mecânica, sem vocação.
       bag_slot_count: (bag_slot_count if bag_slot_count.positive?),
+      # Só viaja quando é `true`: a ausência já significa "não é foco", e gravar
+      # `false` em toda linha do inventário só engorda o JSON.
+      arcane_focus: (true if arcane_focus?),
       # Usos: quanto cabe (catálogo) e quanto resta (instância).
       uses_props: uses_props,
       uses_remaining: uses_remaining,
@@ -385,6 +388,26 @@ class SheetItem < ApplicationRecord
 
   def bag_with_slots?
     bag_slot_count.positive?
+  end
+
+  # FOCO DE CONJURAÇÃO declarado pelo mestre. Capacidade, NÃO casa: a armadura
+  # marcada continua vestida no torso — quem decide slot é o front, e lá o foco
+  # é a última pergunta, não a primeira.
+  #
+  # Catálogo primeiro, linha depois: o mestre marca no editor do item, mas a
+  # linha feita à mão (sem entrada no catálogo) também pode declarar a sua.
+  def arcane_focus?
+    return @arcane_focus if defined?(@arcane_focus)
+
+    @arcane_focus = begin
+      registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
+      registro ||= item
+      declarado = (registro&.props || {})['arcane_focus']
+      declarado = (props_json || {})['arcane_focus'] if declarado.nil?
+      declarado.present? && declarado.to_s != 'false'
+    rescue StandardError
+      false
+    end
   end
 
   # Bolsa (SheetItem id) em cujo slot EXTERNO esta linha está presa.

@@ -147,4 +147,35 @@ RSpec.describe "Api::V1::Public::Equipment", type: :request do
       expect(idxs).to include('spec-equipment-list-pack')
     end
   end
+  # FOCO ARCANO no catálogo (31/08). Sem esta linha no serializer, o mestre
+  # marca a caixa no editor, o item vira foco na FICHA, e a listagem do
+  # compêndio não mostra nada — ele fica sem saber o que já marcou.
+  describe "flag de foco arcano na listagem" do
+    before do
+      Item.find_or_initialize_by(api_index: 'spec-orbe-foco').tap do |it|
+        it.assign_attributes(name: 'Orbe Rúnico (spec)', kind: :gear,
+                             category: 'equipment', props: { 'arcane_focus' => true })
+        it.save!
+      end
+      Item.find_or_initialize_by(api_index: 'spec-corda-comum').tap do |it|
+        it.assign_attributes(name: 'Corda Comum (spec)', kind: :gear, category: 'equipment')
+        it.save!
+      end
+    end
+
+    it "emite `arcane_focus: true` no item marcado" do
+      get "/api/v1/public/equipment/spec-orbe-foco"
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)['arcane_focus']).to be true
+    end
+
+    it "não emite nada no item comum — ausência é a resposta \"não é foco\"" do
+      get "/api/v1/public/equipment/spec-corda-comum"
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)['arcane_focus']).to be_nil
+    end
+  end
+
 end

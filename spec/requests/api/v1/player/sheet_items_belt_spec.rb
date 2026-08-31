@@ -110,7 +110,7 @@ RSpec.describe 'SheetItems — cintos', type: :request do
       expect(adaga.reload.stored_on_belt_id).to be_nil
     end
 
-    it 'o que nao e arma/ferramenta/aljava/consumivel nao entra' do
+    it 'item sem vocacao nenhuma nao entra' do
       cinto = linha!('Cinto', index: cinto_catalogo!('cinto-b5', livres: 2, consumiveis: 2).api_index)
       catalogo!('corda-b5', 'Corda', 'gear')
       corda = linha!('Corda', index: 'corda-b5')
@@ -118,7 +118,10 @@ RSpec.describe 'SheetItems — cintos', type: :request do
       prender(corda, cinto)
 
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(response.parsed_body['error']).to match(/Só arma, ferramenta, aljava ou consumível/)
+      # A mensagem deixou de enumerar em 31/08: livro, instrumento e vestuário
+      # entraram na vaga livre, e a lista antiga virou mentira. O que este
+      # exemplo guarda é a RECUSA — corda genérica continua fora.
+      expect(response.parsed_body['error']).to match(/não vai em cinto/)
     end
   end
 
