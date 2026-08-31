@@ -55,6 +55,7 @@ class SheetItem < ApplicationRecord
   before_destroy :release_ammunition_contents, if: :quiver?
   before_destroy :release_bag_contents, if: :bag?
   before_destroy :release_belt_contents, if: :belt?
+  before_destroy :release_bag_slot_contents, if: :bag_with_slots?
   before_save :sanitize_slot
   after_save  :enforce_slot_exclusivity_and_conflicts
 
@@ -74,6 +75,10 @@ class SheetItem < ApplicationRecord
   # (ciclo barrado no `StowInBagService`).
   BAG_CONTAINER_PROP = 'bag_sheet_item_id'.freeze
   BELT_CONTAINER_PROP = 'belt_sheet_item_id'.freeze
+  # Slot EXTERNO da bolsa: preso POR FORA, não guardado dentro. Ponteiro
+  # próprio porque são dois sítios diferentes — o que está no bolso de fora
+  # não conta para a capacidade em kg, conta para a contagem de slots.
+  BAG_SLOT_CONTAINER_PROP = 'bag_slot_sheet_item_id'.freeze
   # Item guardado NA MONTARIA. Aponta o `id` do companion (jsonb
   # `sheets.companions`), nao um sheet_item — a montaria nao e um item.
   MOUNT_CONTAINER_PROP = 'mount_companion_id'.freeze
@@ -228,6 +233,8 @@ class SheetItem < ApplicationRecord
       # Slots do CINTO (contagem, do catálogo). O ponteiro (`belt_sheet_item_id`)
       # também já viaja dentro de `props`.
       belt_slot_props: belt_slot_props,
+      # Slots EXTERNOS da bolsa — mesma mecânica, sem vocação.
+      bag_slot_count: (bag_slot_count if bag_slot_count.positive?),
       # Usos: quanto cabe (catálogo) e quanto resta (instância).
       uses_props: uses_props,
       uses_remaining: uses_remaining,
@@ -361,6 +368,30 @@ class SheetItem < ApplicationRecord
     (props_json || {})[BELT_CONTAINER_PROP]
   end
 
+  # Slots EXTERNOS da bolsa: quantos bolsos de fora ela tem. Mesma mecânica de
+  # contagem do cinto, mas SEM vocação — o bolso de fora leva o que couber, e
+  # é isso que o distingue. Leitura índice-primeiro, como a capacidade.
+  def bag_slot_count
+    return @bag_slot_count if defined?(@bag_slot_count)
+
+    @bag_slot_count = begin
+      registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
+      registro ||= item
+      ((registro&.props || {})['bag_slots']).to_i
+    rescue StandardError
+      0
+    end
+  end
+
+  def bag_with_slots?
+    bag_slot_count.positive?
+  end
+
+  # Bolsa (SheetItem id) em cujo slot EXTERNO esta linha está presa.
+  def stored_on_bag_slot_id
+    (props_json || {})[BAG_SLOT_CONTAINER_PROP]
+  end
+
   # Peso em KG de uma linha inteira (unitário × quantidade). Canônico do banco.
   def self.stack_weight_kg(linha, quantity: nil)
     unitario = EquipmentRules.item_weight_kg(linha).to_f
@@ -457,6 +488,18 @@ class SheetItem < ApplicationRecord
       props = (guardado.props_json || {}).deep_dup.stringify_keys
       props.delete(BAG_CONTAINER_PROP)
       guardado.update!(props_json: props)
+    end
+  end
+
+  # Apagar a bolsa solta o que estava nos bolsos de FORA — mesma regra do que
+  # estava dentro (`release_bag_contents`) e do cinto.
+  def release_bag_slot_contents
+    self.class.where(sheet_id: sheet_id)
+        .where("props_json ->> '#{BAG_SLOT_CONTAINER_PROP}' = ?", id.to_s)
+        .find_each do |preso|
+      props = (preso.props_json || {}).deep_dup.stringify_keys
+      props.delete(BAG_SLOT_CONTAINER_PROP)
+      preso.update!(props_json: props)
     end
   end
 

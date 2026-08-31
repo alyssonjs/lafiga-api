@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :merge, :split, :spend_use]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -215,6 +215,19 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     broadcast_inventory_changed(@item)
     render json: { sheet_items: items }, status: :ok
   rescue SheetItems::StowOnBeltService::InvalidStow => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/stow_on_bag_slot
+  # body: { bag_id: SheetItem id | null }
+  #
+  # Prende no SLOT EXTERNO da bolsa (nulo solta). É o bolso de fora: sem
+  # vocação (leva o que couber) e sem peso — conta vaga, não quilo.
+  def stow_on_bag_slot
+    items = SheetItems::StowOnBagSlotService.new(item: @item, bag_id: params[:bag_id]).call
+    broadcast_inventory_changed(@item)
+    render json: { sheet_items: items }, status: :ok
+  rescue SheetItems::StowOnBagSlotService::InvalidStow => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
 

@@ -169,6 +169,7 @@ module SheetItems
       # Preso no cinto não pode continuar noutro depósito: os ponteiros são
       # exclusivos entre si (o item está num lugar só).
       props.delete(SheetItem::BAG_CONTAINER_PROP)
+      props.delete(SheetItem::BAG_SLOT_CONTAINER_PROP)
 
       # CONSUMÍVEL: o slot leva UMA unidade — é o frasco que a mão alcança, não
       # a caixa toda. Três poções na bolsa viram uma no cinto e duas onde

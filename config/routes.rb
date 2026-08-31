@@ -80,6 +80,7 @@ Rails.application.routes.draw do
             post :stow_in_bag
             post :stow_on_belt
             post :draw_from_belt
+            post :stow_on_bag_slot
             post :spend_use
             post :merge
             post :split
@@ -300,6 +301,7 @@ Rails.application.routes.draw do
             post :stow_in_bag
             post :stow_on_belt
             post :draw_from_belt
+            post :stow_on_bag_slot
             post :spend_use
             post :merge
             post :split

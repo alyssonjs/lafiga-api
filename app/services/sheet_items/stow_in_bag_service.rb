@@ -68,6 +68,9 @@ module SheetItems
     def props_para(bolsa)
       props = (item.props_json || {}).deep_dup.stringify_keys
       props.delete(SheetItem::BAG_CONTAINER_PROP)
+      # Ponteiros EXCLUSIVOS, nos DOIS sentidos: guardar DENTRO tira do bolso
+      # de fora. A exclusividade só num sentido deixava o item nos dois sítios.
+      props.delete(SheetItem::BAG_SLOT_CONTAINER_PROP)
       props[SheetItem::BAG_CONTAINER_PROP] = bolsa.id if bolsa
       props
     end
