@@ -612,7 +612,13 @@ class CharacterProvisioningService
           # Agora reprovisionamos sempre, mas só substituímos itens que CARREGAM
           # `props_json['provisioning_run_id']` (manuais ficam intocados) e
           # preservamos `equipped`/`slot`/`notes` por (item_index, item_name).
+          # Equipamento e moedas do antecedente entram na PRIMEIRA provisão. Numa
+          # atualização, mexer aqui repunha o que o jogador tirou e somava as
+          # moedas outra vez.
           begin
+            if starting_equipment_granted?(sheet: sheet, source: 'background')
+              Rails.logger.info "CharacterProvisioningService: equipamento de antecedente JÁ dado — bolsa e moedas intocadas (sheet #{sheet.id})"
+            else
             summary = BackgroundRules.apply(key: bg_key, choices: bg_choices.symbolize_keys) rescue nil
             equipment_rows = Array(summary && summary[:equipment])
             slugs = equipment_rows.map do |nm|
@@ -655,6 +661,8 @@ class CharacterProvisioningService
               end
             end
             sheet.apply_coin_delta!(coin_delta) if Sheet::COIN_KEYS.any? { |k| coin_delta[k].to_i > 0 }
+            mark_starting_equipment!(sheet: sheet, source: 'background')
+            end
           rescue => e
             Rails.logger.warn "CharacterProvisioningService: background equipment materialization failed: #{e.class} — #{e.message}"
           end
@@ -825,6 +833,9 @@ class CharacterProvisioningService
       # (CRUD do inventário ao vivo) — esses items NUNCA carregam o run_id,
       # logo nunca são tocados por re-provision.
       begin
+        if starting_equipment_granted?(sheet: sheet, source: 'class')
+          Rails.logger.info "CharacterProvisioningService: equipamento de classe JÁ dado — bolsa intocada (sheet #{sheet.id})"
+        else
         picks = equip['equipmentPicks'] || equip[:equipmentPicks] || []
         now = Time.current
 
@@ -849,6 +860,8 @@ class CharacterProvisioningService
                                   props: attrs['props'] || attrs[:props] ||
                                          attrs['props_json'] || attrs[:props_json] || {})
           end
+        end
+        mark_starting_equipment!(sheet: sheet, source: 'class')
         end
       rescue => e
         Rails.logger.warn "CharacterProvisioningService: class equipment persistence failed: #{e.class} — #{e.message}"
@@ -1030,6 +1043,36 @@ class CharacterProvisioningService
     alvo = sem_acento.call(item_name)
     Item.where('lower(name) = ?', item_name.downcase.strip).first ||
       Item.all.find { |i| sem_acento.call(i.name) == alvo }
+  end
+
+  # O equipamento inicial entra UMA vez — na PRIMEIRA provisão.
+  #
+  # ⚠️ Antes, cada "Concluir Edição" apagava o lote provisionado e reinseria-o:
+  # o que o jogador tinha tirado da bolsa VOLTAVA, e no antecedente as moedas
+  # eram somadas outra vez (`apply_coin_delta!` soma, não define) — a algibeira
+  # de 25 po do nobre engordava a cada atualização.
+  #
+  # O marcador é `metadata['starting_equipment'][source]`. Fichas provisionadas
+  # antes deste campo existir não o têm, então a presença de um LOTE com
+  # `provisioning_run_id` vale como marcador legado — sem isso a primeira
+  # atualização depois deste deploy ainda repunha tudo.
+  def starting_equipment_granted?(sheet:, source:)
+    marcado = (sheet.metadata || {}).dig('starting_equipment', source.to_s)
+    return true if marcado.present?
+
+    SheetItem.where(sheet_id: sheet.id, source: source)
+             .where("props_json ? 'provisioning_run_id'")
+             .exists?
+  end
+
+  def mark_starting_equipment!(sheet:, source:)
+    meta = (sheet.metadata || {}).deep_dup
+    meta['starting_equipment'] = (meta['starting_equipment'] || {}).merge(
+      source.to_s => Time.current.iso8601
+    )
+    sheet.update_column(:metadata, meta)
+  rescue StandardError => e
+    Rails.logger.warn "CharacterProvisioningService: marca de equipamento inicial falhou: #{e.message}"
   end
 
   def reprovision_items!(sheet:, source:, &build_rows)
