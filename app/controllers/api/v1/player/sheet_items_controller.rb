@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -109,6 +109,25 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
   rescue SheetItems::SpendUseService::InvalidUse => e
     render json: { error: e.message }, status: :unprocessable_entity
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/write_book  { content }
+  #
+  # Grava o CONTEÚDO escrito nesta cópia do livro/tomo em
+  # `props_json['book_content']`.
+  #
+  # ⚠️ Endpoint próprio em vez do `update`: aquele faz `update(item_params)` e
+  # `props_json` chega INTEIRO — gravar o texto por lá apagaria em silêncio a
+  # sintonia, o vínculo da munição com a aljava e o peso da linha. Aqui é
+  # `merge`, como no `attune` e no `equip`.
+  def write_book
+    conteudo = params[:content].to_s
+    merged = (@item.props_json || {}).merge('book_content' => conteudo)
+    @item.update!(props_json: merged)
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
