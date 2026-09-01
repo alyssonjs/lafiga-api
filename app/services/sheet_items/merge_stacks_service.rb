@@ -42,6 +42,11 @@ module SheetItems
       if per_instance?(source) || per_instance?(target)
         raise InvalidMerge, 'Itens com cargas ou sintonização não podem ser unidos'
       end
+      # ⚠️ RECIPIENTE guarda conteúdo PRÓPRIO (a munição aponta para o id da
+      # aljava). Unir duas seria escolher, em silêncio, qual conteúdo sobrevive.
+      if SheetItem.container_instance?(source) || SheetItem.container_instance?(target)
+        raise InvalidMerge, 'Aljavas e bolsas guardam conteúdo próprio: não podem ser unidas'
+      end
       raise InvalidMerge, 'Os itens precisam ser do mesmo tipo' unless same_item?(source, target)
     end
 

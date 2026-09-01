@@ -127,6 +127,17 @@ class SheetItem < ApplicationRecord
     return nil if item.nil? || item.equipped?
     return nil if item.sheet_id.blank?
     return nil if per_instance_state?(item.props_json)
+    # ⚠️ RECIPIENTE nunca empilha. Cada aljava é única: guarda uma munição
+    # diferente, em quantidade diferente, e a munição aponta para o ID DELA
+    # (`quiver_sheet_item_id`). Numa linha "Aljava ×2" as duas viram o mesmo id
+    # — equipar uma equipava as duas, e não havia onde pendurar dois conteúdos.
+    #
+    # ⚠️ Bolsa entra pela CAPACIDADE DECLARADA, nunca pelo nome. O `bag?` tem um
+    # leitor tolerante por nome ("bolsa", "sacola") que serve para achar a
+    # bolsa avulsa do mestre — e que no banco de dev casa com "bolsa PO x120",
+    # que é dinheiro. Barrar o empilhamento dela transformaria uma linha de
+    # moedas em 120 linhas.
+    return nil if container_instance?(item)
     # Itens do DM (dm_grant) têm fluxo de empilhamento próprio (scoped por source)
     # no endpoint `grant`; o create genérico não deve mesclar com/para essa pilha.
     return nil if item.source.to_s == 'dm_grant'
@@ -149,6 +160,7 @@ class SheetItem < ApplicationRecord
     want = normalize_stack_props(item.props_json)
     want_notes = item.notes.to_s.strip
     candidates.order(:id).detect do |c|
+      next false if container_instance?(c) # simétrico: nem virar pilha, nem entrar numa
       normalize_stack_props(c.props_json) == want && c.notes.to_s.strip == want_notes
     end
   end
@@ -161,6 +173,17 @@ class SheetItem < ApplicationRecord
 
   # true quando `props_json` carrega estado por-instância (cargas/sintonia/usos)
   # que não pode ser compartilhado numa pilha.
+  # RECIPIENTE por INSTÂNCIA: guarda um conteúdo próprio, então duas unidades
+  # nunca são a mesma linha. Aljava pelo leitor tolerante (o conceito é antigo
+  # e muita ficha só tem o nome); bolsa SÓ pela capacidade declarada — ver a
+  # nota em `stackable_match_for` sobre a "bolsa PO".
+  def self.container_instance?(item)
+    return false unless item
+    item.quiver? || item.bag_capacity_kg.to_f.positive?
+  rescue NameError
+    false
+  end
+
   def self.per_instance_state?(props)
     h = props.is_a?(Hash) ? props.stringify_keys : {}
     PER_INSTANCE_PROP_KEYS.any? { |k| !h[k].nil? && h[k] != false }
