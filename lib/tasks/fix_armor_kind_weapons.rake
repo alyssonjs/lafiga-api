@@ -47,6 +47,24 @@ namespace :dnd do
     corrigidos = []
     pendentes = []
 
+    # PASSE DE REPARO: item já convertido cujas props têm peso/preço mas a
+    # COLUNA ficou nula (rodadas anteriores desta rake, antes de ela ler as
+    # props). Não precisa casar nome nenhum — o dado já está no próprio item.
+    reparados = Item.where(kind: 'weapon').select do |i|
+      pr = i.props || {}
+      (i.weight_kg.nil? && pr['weight_kg'].present?) ||
+        (i.value_gp.nil? && pr['cost_cp'].present?)
+    end
+    reparados.each do |item|
+      pr = item.props || {}
+      next unless aplicar
+
+      item.update!(
+        weight_kg: item.weight_kg || pr['weight_kg'],
+        value_gp: item.value_gp || (pr['cost_cp'].present? ? (pr['cost_cp'].to_f / 100) : nil),
+      )
+    end
+
     suspeitos.sort_by(&:id).each do |item|
       chave =
         if manual[item.id]
@@ -65,12 +83,20 @@ namespace :dnd do
 
       idx, row, base_item = achado
       props = (base_item&.props || {}).presence || row.stringify_keys
+      # ⚠️ PESO e PREÇO vêm das props quando não há registro-base: a arma
+      # canônica nem sempre tem `Item` próprio (escimitarra, espada-longa,
+      # besta-pesada…) e aí só a linha da tabela tem o dado. A CARGA lê a
+      # COLUNA, não as props — sem isto o item pesa zero na bolsa.
+      peso = item.weight_kg || base_item&.weight_kg || props['weight_kg']
+      centavos = props['cost_cp']
+      preco = item.value_gp || base_item&.value_gp ||
+              (centavos.present? ? (centavos.to_f / 100) : nil)
       novo = {
         kind: 'weapon',
         props: props.except('aliases'),
         category: item.category.presence || base_item&.category || row[:category],
-        weight_kg: item.weight_kg || base_item&.weight_kg,
-        value_gp: item.value_gp || base_item&.value_gp,
+        weight_kg: peso,
+        value_gp: preco,
       }
       corrigidos << [item, idx, novo]
       item.update!(novo) if aplicar
@@ -89,7 +115,13 @@ namespace :dnd do
       puts format('  #%-5d %-34s em %d linha(s) de ficha', item.id, item.name.to_s[0, 34], linhas)
     end
 
+    unless reparados.empty?
+      puts
+      puts "== PESO/PRECO repostos na coluna (#{reparados.size}) =="
+      reparados.each { |i| puts format('  #%-5d %-34s %s kg', i.id, i.name.to_s[0, 34], (i.props || {})['weight_kg']) }
+    end
+
     puts
-    puts aplicar ? "OK: #{corrigidos.size} item(ns) com estatistica." : "Seriam corrigidos #{corrigidos.size}."
+    puts aplicar ? "OK: #{corrigidos.size} item(ns) com estatistica, #{reparados.size} com peso/preco reposto." : "Seriam corrigidos #{corrigidos.size} (+#{reparados.size} peso/preco)." 
   end
 end
