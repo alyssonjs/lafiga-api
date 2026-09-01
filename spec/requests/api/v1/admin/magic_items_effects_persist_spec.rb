@@ -54,6 +54,25 @@ RSpec.describe 'Api::V1::Admin::MagicItemsController effects JSON persistence', 
     expect(mi.effects.first['dice']).to eq('2d8')
   end
 
+  it 'persiste damage_type_override (Flecha Flamejante: TROCA o tipo, não soma)' do
+    slug = "spec-mi-typeoverride-#{SecureRandom.hex(4)}"
+    payload = {
+      magic_item: {
+        name: 'Spec Flecha Flamejante',
+        slug: slug,
+        rarity: 'common',
+        category: 'gear',
+        requires_attunement: false,
+        effects: [{ kind: 'damage_type_override', damage_type: 'fogo' }],
+      },
+    }
+    post '/api/v1/admin/magic_items', params: payload.to_json, headers: headers
+
+    expect(response).to have_http_status(:created)
+    mi = MagicItem.find_by(slug: slug)
+    expect(mi.effects).to eq([{ 'kind' => 'damage_type_override', 'damage_type' => 'fogo' }])
+  end
+
   it 'persiste effects com arrays aninhados no PUT (ex.: resistance)' do
     slug = "spec-mi-res-#{SecureRandom.hex(4)}"
     mi = MagicItem.create!(
