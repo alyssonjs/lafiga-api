@@ -86,6 +86,9 @@ module Combat
         ac: npc.ac,
         base_ac: npc.base_ac,
         speed: npc.speed,
+        # Multi-modo (walk/fly/swim/climb/burrow/hover). `respond_to?` pelo
+        # mesmo motivo dos campos 6E: NPC lido antes da migração não quebra.
+        speed_modes: npc.respond_to?(:speed_modes) ? Hash(npc.speed_modes) : {},
         cr: npc.cr,
         proficiency_bonus: npc.proficiency_bonus,
         monster_id: npc.monster_id,

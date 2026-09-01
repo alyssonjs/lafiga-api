@@ -121,4 +121,42 @@ RSpec.describe 'Api::V1::Player::Combat::CombatNpcsController', type: :request d
        .and change { CombatCombatant.count }.by(-1)
     end
   end
+  # DESLOCAMENTO MULTI-MODO (31/08). `speed` era um inteiro só e o importador
+  # achatava o statblock: o Swarm of Wasps (andar 5 / VOO 30) andava 5 ft, com
+  # o voo preso na prosa das notas. `speed_modes` guarda o statblock inteiro.
+  describe 'speed_modes (deslocamento multi-modo)' do
+    it 'cria com os modos e devolve-os no JSON' do
+      post "/api/v1/player/schedules/#{schedule.id}/combat_npcs",
+           params: { npc: { name: 'Swarm of Wasps', hp_current: 22, hp_max: 22, ac: 12,
+                            speed: 5,
+                            speed_modes: { walk: 5, fly: 30, swim: 2, climb: 2 } } },
+           headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:created)
+      npc = response.parsed_body['npc']
+      expect(npc['speed']).to eq(5)
+      expect(npc['speed_modes']).to eq('walk' => 5, 'fly' => 30, 'swim' => 2, 'climb' => 2)
+    end
+
+    it 'edita os modos de um NPC existente — o mestre corrige o statblock achatado' do
+      npc = create(:combat_npc, schedule: schedule, name: 'Vespa', speed: 5)
+
+      patch "/api/v1/player/schedules/#{schedule.id}/combat_npcs/#{npc.id}",
+            params: { npc: { speed_modes: { walk: 5, fly: 30 } } },
+            headers: dm_headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(npc.reload.speed_modes).to eq('walk' => 5, 'fly' => 30)
+    end
+
+    it 'NPC criado antes da coluna serializa `{}` — leitura segura, sem quebrar' do
+      npc = create(:combat_npc, schedule: schedule, name: 'Goblin Antigo')
+
+      get "/api/v1/player/schedules/#{schedule.id}/combat_npcs", headers: player_headers
+
+      linha = response.parsed_body['npcs'].find { |n| n['id'] == npc.id }
+      expect(linha['speed_modes']).to eq({})
+    end
+  end
+
 end

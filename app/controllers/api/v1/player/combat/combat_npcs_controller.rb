@@ -100,13 +100,16 @@ module Api::V1::Player::Combat
       params.require(:npc).permit(
         :name, :hp_current, :hp_max, :ac, :base_ac, :speed, :cr,
         :proficiency_bonus, :monster_id, :notes,
-        stats: {}, saving_throws: {}, skills: {}, equipment: {},
+        # Deslocamento multi-modo (walk/fly/swim/climb/burrow/hover). `speed`
+        # continua sendo o modo de ANDAR; os modos são o statblock inteiro.
+        stats: {}, saving_throws: {}, skills: {}, equipment: {}, speed_modes: {},
         attacks: [[:name, :attack_bonus, :damage_dice, :damage_type, :reach, :range, :description, :uses]],
       ).tap do |p|
         p[:stats]          = p[:stats].to_h.transform_keys(&:to_s)          if p[:stats]
         p[:saving_throws]  = p[:saving_throws].to_h.transform_keys(&:to_s)  if p[:saving_throws]
         p[:skills]         = p[:skills].to_h.transform_keys(&:to_s)         if p[:skills]
         p[:equipment]      = p[:equipment].to_h.transform_keys(&:to_s)      if p[:equipment]
+        p[:speed_modes]    = p[:speed_modes].to_h.transform_keys(&:to_s)    if p[:speed_modes]
         p[:attacks]        = p[:attacks].map { |a| a.to_h.transform_keys(&:to_s) } if p[:attacks]
       end
     end
