@@ -46,12 +46,19 @@ class EquipmentProfileService
     ac = EquipmentRules.ac_for(sheet: @sheet, armor_item: armor, shield_item: shield)
 
     # Carry weight using PHB rules (now in kilograms) with optional variant encumbrance
+    #
+    # ⚠️ LIVRO, não física. O fator é 2 lb por kg (`EquipmentRules::LB_PER_KG`),
+    # que é a mesma conversão do serializer — a espada de 3 lb do PHB pesa 1,5 kg
+    # nesta mesa, não 1,36. Usar o fator físico (0,45359237) aqui dava 68,04 kg
+    # de capacidade para FOR 10 enquanto a tela mostrava 75, e a CARGA lida de
+    # `weight_lb` encolhia 9% — os dois lados da mesma comparação em convenções
+    # diferentes, que é como a comparação deixa de querer dizer alguma coisa.
     total_kg = items.sum { |it| weight_kg(it) * (it.quantity || 1).to_i rescue 0.0 }
     equipped_kg = equipped.sum { |it| weight_kg(it) * (it.quantity || 1).to_i rescue 0.0 }
     str = @sheet.str.to_i
-    # Base capacities (convert from lb to kg: 1 lb = 0.45359237 kg)
-    carrying_capacity_kg = (str * 15 * 0.45359237).round(2)
-    push_drag_lift_kg = (str * 30 * 0.45359237).round(2)
+    # Capacidades base do PHB: FOR × 15 (carregar) e FOR × 30 (empurrar/arrastar).
+    carrying_capacity_kg = lb_to_kg(str * 15).round(2)
+    push_drag_lift_kg = lb_to_kg(str * 30).round(2)
 
     meta = (@sheet.metadata || {})
     # Capacity multipliers from traits/features (e.g., Powerful Build, Aspect of the Beast - Bear)
@@ -96,11 +103,11 @@ class EquipmentProfileService
     speed_pen_ft = 0
     disadv = { ability_checks: [], attack: false, saving_throws: [] }
     if use_variant
-      enc_kg = (str * 5 * 0.45359237)
-      heavy_kg = (str * 10 * 0.45359237)
+      enc_kg = lb_to_kg(str * 5)
+      heavy_kg = lb_to_kg(str * 10)
       # apply multipliers from above
       begin
-        base_capacity_kg = (str * 15 * 0.45359237)
+        base_capacity_kg = lb_to_kg(str * 15)
         factor = base_capacity_kg > 0 ? (carrying_capacity_kg / base_capacity_kg) : 1.0
         enc_kg *= factor
         heavy_kg *= factor
@@ -180,22 +187,28 @@ class EquipmentProfileService
     0.0
   end
 
+  # Libras → quilos pela convenção do LIVRO. Uma função e não um literal: eram
+  # oito literais iguais, e o que os fez divergir da tela foi exatamente isso.
+  def lb_to_kg(lb)
+    lb.to_f / EquipmentRules::LB_PER_KG
+  end
+
   def weight_kg(it)
     p = (it.props_json || {})
     return p['weight_kg'].to_f if p.key?('weight_kg')
     if p.key?('weight_lb')
-      return (p['weight_lb'].to_f * 0.45359237)
+      return lb_to_kg(p['weight_lb'].to_f)
     end
     w = p['weight'] || p['weight_str']
     if w
       # numeric value from catalogs (DnD 5e API uses lb by default)
       if w.is_a?(Numeric)
-        return (w.to_f * 0.45359237)
+        return lb_to_kg(w.to_f)
       end
       mk = w.to_s.match(/([0-9]+(?:\.[0-9]+)?)\s*kg/i)
       return mk[1].to_f if mk
       m = w.to_s.match(/([0-9]+(?:\.[0-9]+)?)\s*lb/i)
-      return (m[1].to_f * 0.45359237) if m
+      return lb_to_kg(m[1].to_f) if m
     end
     0.0
   rescue

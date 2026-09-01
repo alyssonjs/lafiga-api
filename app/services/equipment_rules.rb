@@ -1,4 +1,16 @@
 class EquipmentRules
+  # Convencao do PHB pt-BR: a traducao converteu 1 lb = 0,5 kg (espada longa
+  # 3 lb = 1,5 kg; acido 1 lb = 0,5 kg; mochila 5 lb = 2,5 kg). O fator NAO e
+  # o fisico 2.20462: com ele os numeros do livro nunca batem (1,5 kg viraria
+  # 3,31 lb). A economia de regras do jogo (capacidade de carga, carroca) e em
+  # lb — esta e a UNICA fronteira onde kg vira lb.
+  #
+  # No CORPO da classe e nao dentro do `class << self`: vivia no singleton, e
+  # por isso `EquipmentRules::LB_PER_KG` nao resolvia de fora. Quem precisava
+  # da conversao escrevia o literal — foi assim que o servico de perfil ficou
+  # com o fator fisico e divergiu da tela por 9%.
+  LB_PER_KG = 2.0
+
   # Conversão de moedas -> sempre guardar em cp (cobre) para contas
   CURRENCY = {
     'pc' => 1,     # cobre
@@ -133,13 +145,6 @@ class EquipmentRules
       parts << "#{pc} pc" if pc > 0 || parts.empty?
       parts.join(' ')
     end
-
-    # Convencao do PHB pt-BR: a traducao converteu 1 lb = 0,5 kg (espada longa
-    # 3 lb = 1,5 kg; acido 1 lb = 0,5 kg; mochila 5 lb = 2,5 kg). O fator NAO e
-    # o fisico 2.20462: com ele os numeros do livro nunca batem (1,5 kg viraria
-    # 3,31 lb). A economia de regras do jogo (capacidade de carga, carroca) e em
-    # lb — esta e a UNICA fronteira onde kg vira lb.
-    LB_PER_KG = 2.0
 
     def item_weight_lb(item)
       kg = item_weight_kg(item)
