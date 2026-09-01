@@ -403,11 +403,24 @@ class SheetItem < ApplicationRecord
       registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
       registro ||= item
       declarado = (registro&.props || {})['arcane_focus']
+      # ITEM MÁGICO vive noutra tabela: o editor grava em `MagicItem.properties`
+      # e NÃO há espelho vivo para `items.props` — só o rake de importação o
+      # refaz. Sem esta consulta o mestre marcava a caixa e a ficha nunca via.
+      declarado = magic_item_arcane_focus if declarado.nil?
       declarado = (props_json || {})['arcane_focus'] if declarado.nil?
       declarado.present? && declarado.to_s != 'false'
     rescue StandardError
       false
     end
+  end
+
+  # A flag no gêmeo `MagicItem`, casado pelo slug (= `item_index` da linha).
+  def magic_item_arcane_focus
+    return nil unless item_index.present? && defined?(MagicItem)
+
+    (MagicItem.find_by(slug: item_index)&.properties || {})['arcane_focus']
+  rescue StandardError
+    nil
   end
 
   # Bolsa (SheetItem id) em cujo slot EXTERNO esta linha está presa.

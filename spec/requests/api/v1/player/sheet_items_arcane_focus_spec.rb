@@ -68,6 +68,26 @@ RSpec.describe 'SheetItems — foco arcano e cinto alargado', type: :request do
       expect(comum.as_inventory_json[:arcane_focus]).to be_nil
     end
 
+    it 'ITEM MÁGICO: a flag vem de `MagicItem.properties`, a outra tabela' do
+      # O editor de item mágico grava em `MagicItem`, e NÃO há espelho vivo
+      # para `items.props` — só o rake de importação o refaz. Sem consultar o
+      # gêmeo, o mestre marcava a caixa e a ficha nunca via.
+      MagicItem.create!(name: 'Lâmina do Bruxo', slug: 'lamina-do-bruxo',
+                        rarity: 'rare', category: 'weapon',
+                        properties: { 'arcane_focus' => true })
+      linha = linha!('Lâmina do Bruxo', index: 'lamina-do-bruxo')
+
+      expect(linha.arcane_focus?).to be true
+      expect(linha.as_inventory_json[:arcane_focus]).to be true
+    end
+
+    it 'ITEM MÁGICO sem a flag continua fora' do
+      MagicItem.create!(name: 'Lâmina Comum', slug: 'lamina-comum',
+                        rarity: 'rare', category: 'weapon', properties: {})
+
+      expect(linha!('Lâmina Comum', index: 'lamina-comum').arcane_focus?).to be false
+    end
+
     it 'ARMADURA marcada continua armadura — a flag não muda a natureza' do
       catalogo!('peitoral-foco', 'Peitoral Rúnico', 'armor', props: { 'arcane_focus' => true })
       linha = linha!('Peitoral Rúnico', index: 'peitoral-foco')
