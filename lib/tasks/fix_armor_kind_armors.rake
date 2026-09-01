@@ -22,6 +22,50 @@
 # ROUPA nao e armadura nenhuma (CA 10 + DES). Todos saem na lista, e o `MAP=`
 # resolve os que o Mestre quiser em um comando.
 namespace :dnd do
+  desc 'ROUPA nao e armadura: vira kind=gear com peso/preco da roupa comum. APPLY=1 aplica.'
+  task fix_clothing_kind: :environment do
+    aplicar = ENV['APPLY'].to_s == '1'
+    puts(aplicar ? '== APLICANDO ==' : '== DRY RUN (use APPLY=1 para aplicar) ==')
+
+    # ⚠️ Nome que menciona MATERIAL DE ARMADURA fica de fora: "Roupas + couro" e
+    # "Cota de malha + roupa" sao armadura COM roupa junto — vira-las em `gear`
+    # apagaria a chance de darem CA, que e o oposto do conserto.
+    material = /couro|malha|placa|peles|brunea|talas|acolchoad|anei|escama/i
+
+    base = Item.find_by(kind: 'gear', api_index: 'roupas-comuns')
+    alvos = Item.where(kind: 'armor').select do |i|
+      (i.props || {})['ac_base'].blank? &&
+        i.name.to_s.match?(/roupa/i) &&
+        !i.name.to_s.match?(material)
+    end
+    excluidos = Item.where(kind: 'armor').select do |i|
+      (i.props || {})['ac_base'].blank? && i.name.to_s.match?(/roupa/i) && i.name.to_s.match?(material)
+    end
+
+    alvos.sort_by(&:id).each do |item|
+      puts format('  #%-5d %-34s -> gear (%s kg, %s po) em %d linha(s)', item.id, item.name.to_s[0, 34],
+                  (item.weight_kg || base&.weight_kg).inspect, (item.value_gp || base&.value_gp).inspect,
+                  SheetItem.where(item_id: item.id).count)
+      next unless aplicar
+
+      item.update!(
+        kind: 'gear',
+        weight_kg: item.weight_kg || base&.weight_kg,
+        value_gp: item.value_gp || base&.value_gp,
+      )
+    end
+
+    unless excluidos.empty?
+      puts
+      puts "== DEIXADOS DE FORA (#{excluidos.size}) — tem material de ARMADURA no nome =="
+      excluidos.each { |i| puts format('  #%-5d %-34s (use a rake de armadura)', i.id, i.name.to_s[0, 34]) }
+    end
+
+    puts
+    puts aplicar ? "OK: #{alvos.size} roupa(s) viraram equipamento." : "Seriam convertidas #{alvos.size}."
+  end
+
+
   desc 'Da CA a escudo/armadura gravados como armor sem props. APPLY=1 aplica; MAP="id=indice,..." casa a mao.'
   task fix_armor_kind_armors: :environment do
     require 'active_support/core_ext/string'
