@@ -32,6 +32,28 @@ RSpec.describe 'Api::V1::Admin::MagicItemsController effects JSON persistence', 
     expect(mi.effects).to eq([{ 'kind' => 'speed_bonus', 'value' => 12 }])
   end
 
+  it 'persiste applies_to do damage_bonus_dice (rider de MAGIA: +2d8 trovão em magias de trovão)' do
+    slug = "spec-mi-spellrider-#{SecureRandom.hex(4)}"
+    payload = {
+      magic_item: {
+        name: 'Spec Lâmina Trovejante',
+        slug: slug,
+        rarity: 'rare',
+        category: 'weapon',
+        requires_attunement: true,
+        effects: [
+          { kind: 'damage_bonus_dice', dice: '2d8', damage_type: 'trovão', applies_to: 'spells' },
+        ],
+      },
+    }
+    post '/api/v1/admin/magic_items', params: payload.to_json, headers: headers
+
+    expect(response).to have_http_status(:created)
+    mi = MagicItem.find_by(slug: slug)
+    expect(mi.effects.first['applies_to']).to eq('spells') # sem o permit, a chave era DESCARTADA em silêncio
+    expect(mi.effects.first['dice']).to eq('2d8')
+  end
+
   it 'persiste effects com arrays aninhados no PUT (ex.: resistance)' do
     slug = "spec-mi-res-#{SecureRandom.hex(4)}"
     mi = MagicItem.create!(

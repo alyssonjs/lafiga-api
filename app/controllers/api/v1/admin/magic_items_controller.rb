@@ -10,6 +10,9 @@ class Api::V1::Admin::MagicItemsController < ApplicationController
     :dice,
     :flat,
     :damage_type,
+    # damage_bonus_dice: onde o dado extra entra — 'weapon' (default histórico,
+    # ausente), 'spells' (magias do MESMO tipo de dano) ou 'both'.
+    :applies_to,
     :ability,
     :name,
     :desc,

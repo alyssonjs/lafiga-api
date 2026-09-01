@@ -175,7 +175,11 @@ class MagicItemRules
       when 'damage_bonus_dice'
         dice = (eff['dice'] || eff[:dice]).to_s
         dtype = (eff['damage_type'] || eff[:damage_type]).to_s
-        notes << "+#{dice} #{dtype}".strip
+        applies = (eff['applies_to'] || eff[:applies_to]).to_s
+        # Rider SÓ de magia ('spells') não vira nota de dano da ARMA — quem o
+        # consome é o spellBonusDamageRuntime do front, no cast. A arma continua
+        # mágica (item mágico empunhado supera resistência a dano não-mágico).
+        notes << "+#{dice} #{dtype}".strip unless applies == 'spells'
         is_magical = true if dice.present?
       when 'weapon_is_magical'
         is_magical = true
