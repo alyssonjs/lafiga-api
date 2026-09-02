@@ -56,6 +56,9 @@ Rails.application.routes.draw do
             post :bulk_import
           end
         end
+        # Catálogo de companheiros (montaria, familiar, companheiro animal…).
+        # Só o Mestre cria — leitura fica no namespace público.
+        resources :companion_templates, only: [:index, :show, :create, :update, :destroy]
         post   'catalog_items', to: 'catalog_items#create'
         get    'catalog_items/:api_index', to: 'catalog_items#show',    constraints: { api_index: %r{[^/]+} }
         match  'catalog_items/:api_index', to: 'catalog_items#update',  via: %i[put patch], constraints: { api_index: %r{[^/]+} }
@@ -380,6 +383,7 @@ Rails.application.routes.draw do
         # Ex.: GET /api/v1/public/class_choices/metamagic
         resources :class_choices, only: [:show], constraints: { id: /[a-z_][a-z0-9_]*/ }
         resources :magic_items, only: [:index, :show]
+        resources :companion_templates, only: [:index, :show]
         resources :monsters, only: [:index, :show]
         resources :backgrounds, only: [:index, :show]
         post 'backgrounds/apply', to: 'backgrounds#apply'

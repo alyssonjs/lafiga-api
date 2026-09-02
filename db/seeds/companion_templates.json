@@ -1,0 +1,1262 @@
+[
+  {
+    "slug": "tpl-cat",
+    "name": "Gato",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 12,
+    "hp_max": 2,
+    "speed": "40 ft, escalada 30 ft",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 3,
+      "dex": 15,
+      "con": 10,
+      "int": 3,
+      "wis": 12,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Garras",
+        "attackBonus": "+0",
+        "damage": "1",
+        "damageType": "cortante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Olfato Aguçado. Visão no Escuro 18 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-owl",
+    "name": "Coruja",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 11,
+    "hp_max": 1,
+    "speed": "1,5 m, voo 18 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 3,
+      "dex": 13,
+      "con": 8,
+      "int": 2,
+      "wis": 12,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Garras",
+        "attackBonus": "+3",
+        "damage": "1",
+        "damageType": "cortante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Sobrevoo",
+        "actionCost": "action",
+        "description": "Não provoca ataques de oportunidade ao sair do alcance de um inimigo.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Visão Aguçada e Audição. Sobrevoo. Visão no Escuro 36 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-toad",
+    "name": "Sapo",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 11,
+    "hp_max": 1,
+    "speed": "6 m, natação 6 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 1,
+      "dex": 13,
+      "con": 8,
+      "int": 2,
+      "wis": 8,
+      "cha": 3
+    },
+    "attacks": [],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Anfíbio. Visão no Escuro 9 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-rat",
+    "name": "Rato",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 10,
+    "hp_max": 1,
+    "speed": "6 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 2,
+      "dex": 11,
+      "con": 9,
+      "int": 2,
+      "wis": 10,
+      "cha": 4
+    },
+    "attacks": [
+      {
+        "name": "Mordida",
+        "attackBonus": "+0",
+        "damage": "1",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Olfato Aguçado. Visão no Escuro 9 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-raven",
+    "name": "Corvo",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 12,
+    "hp_max": 1,
+    "speed": "3 m, voo 15 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 2,
+      "dex": 14,
+      "con": 8,
+      "int": 2,
+      "wis": 12,
+      "cha": 6
+    },
+    "attacks": [
+      {
+        "name": "Bico",
+        "attackBonus": "+4",
+        "damage": "1",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Mímica",
+        "actionCost": "action",
+        "description": "Pode mimetizar sons simples que ouviu, incluindo vozes.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Mímica. Visão no Escuro 36 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-snake",
+    "name": "Cobra",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 13,
+    "hp_max": 2,
+    "speed": "9 m, natação 9 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 2,
+      "dex": 16,
+      "con": 11,
+      "int": 1,
+      "wis": 10,
+      "cha": 3
+    },
+    "attacks": [
+      {
+        "name": "Mordida",
+        "attackBonus": "+5",
+        "damage": "1 + veneno",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Percepção às Cegas 3 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-hawk",
+    "name": "Falcão",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 13,
+    "hp_max": 1,
+    "speed": "3 m, voo 18 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 5,
+      "dex": 16,
+      "con": 8,
+      "int": 2,
+      "wis": 14,
+      "cha": 6
+    },
+    "attacks": [
+      {
+        "name": "Garras",
+        "attackBonus": "+5",
+        "damage": "1",
+        "damageType": "cortante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Visão Aguçada. Visão no Escuro 36 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-spider",
+    "name": "Aranha",
+    "companion_type": "familiar",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-familiar",
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Tiny",
+    "ac": 12,
+    "hp_max": 1,
+    "speed": "6 m, escalada 6 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 2,
+      "dex": 14,
+      "con": 8,
+      "int": 1,
+      "wis": 10,
+      "cha": 2
+    },
+    "attacks": [
+      {
+        "name": "Mordida",
+        "attackBonus": "+4",
+        "damage": "1 + veneno",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Entregar Magia de Toque",
+        "actionCost": "reaction",
+        "description": "Entrega uma magia de toque lançada pelo mestre.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Sentido de Teia (detecta vibrações em teias). Visão no Escuro 9 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-riding-horse",
+    "name": "Cavalo de Montaria",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Large",
+    "ac": 10,
+    "hp_max": 13,
+    "speed": "18 m",
+    "prof_bonus": 2,
+    "carry_capacity": 480,
+    "stats": {
+      "str": 16,
+      "dex": 10,
+      "con": 12,
+      "int": 2,
+      "wis": 11,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+5",
+        "damage": "2d4+3 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Desviar",
+        "actionCost": "action",
+        "description": "Ganha vantagem em CA contra um ataque.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {},
+    "description": "Montaria comum. Capacidade de carga 480 lbs.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-warhorse",
+    "name": "Cavalo de Guerra",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Large",
+    "ac": 11,
+    "hp_max": 19,
+    "speed": "18 m",
+    "prof_bonus": 2,
+    "carry_capacity": 540,
+    "stats": {
+      "str": 18,
+      "dex": 12,
+      "con": 13,
+      "int": 2,
+      "wis": 12,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+6",
+        "damage": "2d6+4 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Pisotear",
+        "actionCost": "action",
+        "description": "Tenta pisotear um inimigo prostrado (dano adicional).",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {},
+    "description": "Cavalo treinado para combate. Capacidade de carga 540 lbs.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-mule",
+    "name": "Mula",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Medium",
+    "ac": 10,
+    "hp_max": 11,
+    "speed": "12 m",
+    "prof_bonus": 2,
+    "carry_capacity": 420,
+    "stats": {
+      "str": 14,
+      "dex": 10,
+      "con": 13,
+      "int": 2,
+      "wis": 10,
+      "cha": 5
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+4",
+        "damage": "1d4+2 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Teimosa",
+        "actionCost": "reaction",
+        "description": "Resistente a ser movida contra a vontade.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {},
+    "description": "Animal de carga. Capacidade de carga 420 lbs.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-camel",
+    "name": "Camelo",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Large",
+    "ac": 9,
+    "hp_max": 15,
+    "speed": "15 m",
+    "prof_bonus": 2,
+    "carry_capacity": 480,
+    "stats": {
+      "str": 16,
+      "dex": 8,
+      "con": 14,
+      "int": 2,
+      "wis": 8,
+      "cha": 5
+    },
+    "attacks": [
+      {
+        "name": "Mordida",
+        "attackBonus": "+5",
+        "damage": "1d4+3 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [],
+    "flags": {},
+    "description": "Montaria de deserto; suporta longos trechos sem água. Capacidade de carga 480 lbs (240 kg).",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-draft-horse",
+    "name": "Cavalo Pesado (tração)",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Large",
+    "ac": 10,
+    "hp_max": 19,
+    "speed": "12 m",
+    "prof_bonus": 2,
+    "carry_capacity": 540,
+    "stats": {
+      "str": 18,
+      "dex": 10,
+      "con": 12,
+      "int": 2,
+      "wis": 11,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+6",
+        "damage": "1d4+4 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [],
+    "flags": {},
+    "description": "Cavalo de tração. Puxa veículos; capacidade de carga 540 lbs (270 kg).",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-elephant",
+    "name": "Elefante",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Huge",
+    "ac": 12,
+    "hp_max": 76,
+    "speed": "12 m",
+    "prof_bonus": 2,
+    "carry_capacity": 1320,
+    "stats": {
+      "str": 22,
+      "dex": 9,
+      "con": 17,
+      "int": 3,
+      "wis": 11,
+      "cha": 6
+    },
+    "attacks": [
+      {
+        "name": "Chifrada",
+        "attackBonus": "+8",
+        "damage": "3d8+6 perfurante",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      },
+      {
+        "name": "Pisotear",
+        "attackBonus": "+8",
+        "damage": "3d10+6 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Investida Atropeladora",
+        "actionCost": "action",
+        "description": "Move 6 m em linha reta e chifra: TR de Força CD 12 ou o alvo cai; ação bônus para pisotear.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {},
+    "description": "Animal de carga enorme. Capacidade de carga 1320 lbs (660 kg).",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-mastiff",
+    "name": "Mastim",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Medium",
+    "ac": 12,
+    "hp_max": 5,
+    "speed": "12 m",
+    "prof_bonus": 2,
+    "carry_capacity": 195,
+    "stats": {
+      "str": 13,
+      "dex": 14,
+      "con": 12,
+      "int": 3,
+      "wis": 12,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Mordida",
+        "attackBonus": "+3",
+        "damage": "1d6+1 perfurante",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Derrubar",
+        "actionCost": "action",
+        "description": "Tenta derrubar o alvo após um ataque bem-sucedido.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {},
+    "description": "Cão de guarda. Olfato Aguçado.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-pony",
+    "name": "Pônei",
+    "companion_type": "mount",
+    "origin": "purchased",
+    "origin_spell_id": null,
+    "origin_class_feature": null,
+    "creature_type": "Fera",
+    "size": "Medium",
+    "ac": 10,
+    "hp_max": 11,
+    "speed": "12 m",
+    "prof_bonus": 2,
+    "carry_capacity": 225,
+    "stats": {
+      "str": 15,
+      "dex": 10,
+      "con": 13,
+      "int": 2,
+      "wis": 11,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+4",
+        "damage": "2d4+2 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [],
+    "flags": {},
+    "description": "Montaria pequena. Capacidade de carga 225 lbs.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-imp",
+    "name": "Diabrete",
+    "companion_type": "familiar",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Pacto da Corrente",
+    "creature_type": "Diabo",
+    "size": "Tiny",
+    "ac": 13,
+    "hp_max": 10,
+    "speed": "6 m, voo 12 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 6,
+      "dex": 17,
+      "con": 13,
+      "int": 11,
+      "wis": 12,
+      "cha": 14
+    },
+    "attacks": [
+      {
+        "name": "Ferrão",
+        "attackBonus": "+5",
+        "damage": "1d4+3 perfurante + 3d6 veneno",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Invisibilidade",
+        "actionCost": "action",
+        "description": "Torna-se invisível até atacar ou a concentração acabar.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Metamorfo",
+        "actionCost": "action",
+        "description": "Pode assumir a forma de rato, corvo, aranha ou sua forma verdadeira.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Resistência Mágica. Visão no Escuro Diabólica 36 m. Imunidade ao fogo e veneno.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-pseudodragon",
+    "name": "Pseudodragão",
+    "companion_type": "familiar",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Pacto da Corrente",
+    "creature_type": "Dragão",
+    "size": "Tiny",
+    "ac": 13,
+    "hp_max": 7,
+    "speed": "4,5 m, voo 18 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 6,
+      "dex": 15,
+      "con": 13,
+      "int": 10,
+      "wis": 12,
+      "cha": 10
+    },
+    "attacks": [
+      {
+        "name": "Mordida",
+        "attackBonus": "+4",
+        "damage": "1d4+2 perfurante",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      },
+      {
+        "name": "Ferrão",
+        "attackBonus": "+4",
+        "damage": "1d4+2 perfurante + veneno",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Telepatia Limitada",
+        "actionCost": "action",
+        "description": "Comunica-se telepaticamente com criaturas que falam um idioma num raio de 30 m.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Resistência Mágica. Sentido Aguçado. Visão no Escuro 18 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-quasit",
+    "name": "Quasit",
+    "companion_type": "familiar",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Pacto da Corrente",
+    "creature_type": "Demônio",
+    "size": "Tiny",
+    "ac": 13,
+    "hp_max": 7,
+    "speed": "12 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 5,
+      "dex": 17,
+      "con": 10,
+      "int": 7,
+      "wis": 10,
+      "cha": 10
+    },
+    "attacks": [
+      {
+        "name": "Garras",
+        "attackBonus": "+4",
+        "damage": "1d4+3 perfurante + veneno",
+        "damageType": "perfurante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Invisibilidade",
+        "actionCost": "action",
+        "description": "Torna-se invisível até atacar ou a concentração acabar.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Metamorfo",
+        "actionCost": "action",
+        "description": "Pode assumir a forma de morcego, centopeia, sapo ou sua forma verdadeira.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Resistência Mágica. Visão no Escuro 36 m. Resistência a frio, fogo, relâmpago.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-sprite",
+    "name": "Sprite",
+    "companion_type": "familiar",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Pacto da Corrente",
+    "creature_type": "Fada",
+    "size": "Tiny",
+    "ac": 15,
+    "hp_max": 2,
+    "speed": "3 m, voo 12 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 3,
+      "dex": 18,
+      "con": 10,
+      "int": 14,
+      "wis": 13,
+      "cha": 11
+    },
+    "attacks": [
+      {
+        "name": "Espada Longa",
+        "attackBonus": "+2",
+        "damage": "1",
+        "damageType": "cortante",
+        "range": "1,5 m"
+      },
+      {
+        "name": "Arco Curto",
+        "attackBonus": "+6",
+        "damage": "1 + veneno",
+        "damageType": "perfurante",
+        "range": "12/48 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ajudar",
+        "actionCost": "action",
+        "description": "Concede vantagem ao próximo ataque ou teste de habilidade do aliado.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Invisibilidade",
+        "actionCost": "action",
+        "description": "Torna-se invisível até atacar ou a concentração acabar.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Sentir Coração",
+        "actionCost": "action",
+        "description": "Detecta o alinhamento emocional de uma criatura.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {
+      "shares_senses": true,
+      "deliver_touch_spells": true
+    },
+    "description": "Invisibilidade superior. Sentir Coração. Visão no Escuro 18 m.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-celestial-warhorse",
+    "name": "Cavalo de Guerra Celestial",
+    "companion_type": "greater_mount",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-steed",
+    "origin_class_feature": null,
+    "creature_type": "Celestial",
+    "size": "Large",
+    "ac": 11,
+    "hp_max": 19,
+    "speed": "18 m",
+    "prof_bonus": 2,
+    "carry_capacity": 540,
+    "stats": {
+      "str": 18,
+      "dex": 12,
+      "con": 13,
+      "int": 6,
+      "wis": 12,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+6",
+        "damage": "2d6+4 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Vínculo Telepático",
+        "actionCost": "action",
+        "description": "Comunica-se telepaticamente com o mestre enquanto estiver no mesmo plano.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {},
+    "description": "Montaria celestial invocada por Encontrar Montaria. Compreende um idioma à escolha do mestre.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-celestial-elk",
+    "name": "Alce Celestial",
+    "companion_type": "greater_mount",
+    "origin": "spell",
+    "origin_spell_id": "sp-find-steed",
+    "origin_class_feature": null,
+    "creature_type": "Celestial",
+    "size": "Large",
+    "ac": 11,
+    "hp_max": 13,
+    "speed": "15 m",
+    "prof_bonus": 2,
+    "carry_capacity": 480,
+    "stats": {
+      "str": 16,
+      "dex": 10,
+      "con": 12,
+      "int": 6,
+      "wis": 10,
+      "cha": 6
+    },
+    "attacks": [
+      {
+        "name": "Chifres",
+        "attackBonus": "+5",
+        "damage": "1d6+3 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      },
+      {
+        "name": "Cascos",
+        "attackBonus": "+5",
+        "damage": "2d4+3 contundente",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Investida",
+        "actionCost": "action",
+        "description": "Se mover pelo menos 6 m em linha reta e acertar, causa dano adicional.",
+        "usesOwnerAction": false
+      },
+      {
+        "name": "Vínculo Telepático",
+        "actionCost": "action",
+        "description": "Comunica-se telepaticamente com o mestre enquanto estiver no mesmo plano.",
+        "usesOwnerAction": false
+      }
+    ],
+    "flags": {},
+    "description": "Montaria celestial com chifres. Compreende um idioma à escolha do mestre.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-druid-pixie",
+    "name": "Pixie",
+    "companion_type": "beast_companion",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Companheiro Feérico (Círculo das Fadas)",
+    "creature_type": "Fada",
+    "size": "Tiny",
+    "ac": 15,
+    "hp_max": 1,
+    "speed": "3 m, voo 9 m",
+    "prof_bonus": 4,
+    "carry_capacity": null,
+    "stats": {
+      "str": 2,
+      "dex": 20,
+      "con": 8,
+      "int": 10,
+      "wis": 14,
+      "cha": 15
+    },
+    "attacks": [],
+    "special_actions": [
+      {
+        "name": "Conjurar Magia (1×)",
+        "actionCost": "action",
+        "description": "Comandado pelo druida (ação): conjura uma magia conhecida (ex.: Confusão, Sono, Polimorfar). Não conjura Polimorfar exceto em última instância.",
+        "usesOwnerAction": true
+      }
+    ],
+    "flags": {},
+    "description": "Companheiro feérico tímido. Geralmente invisível, aparecendo apenas quando a sós com o druida. A 0 PV: volta à Faéria; reaparece após descanso longo do druida.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-druid-plant-ally",
+    "name": "Aliado Planta",
+    "companion_type": "beast_companion",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Aliado Planta (Círculo Verdejante)",
+    "creature_type": "Planta",
+    "size": "Small",
+    "ac": 12,
+    "hp_max": 8,
+    "speed": "6 m",
+    "prof_bonus": 2,
+    "carry_capacity": null,
+    "stats": {
+      "str": 8,
+      "dex": 14,
+      "con": 12,
+      "int": 4,
+      "wis": 10,
+      "cha": 6
+    },
+    "attacks": [
+      {
+        "name": "Cipó/Espinho",
+        "attackBonus": "+2",
+        "damage": "1d4",
+        "damageType": "cortante",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Disparada / Desengajar / Esquivar / Ajuda",
+        "actionCost": "bonus_action",
+        "description": "Comandado verbalmente pelo druida (ação bônus) para realizar uma destas ações.",
+        "usesOwnerAction": true
+      }
+    ],
+    "flags": {
+      "use_owner_proficiency": true,
+      "scales_with_owner_level": true
+    },
+    "description": "Companheiro vegetal. Sem comandos: age por conta própria defendendo o druida se este estiver incapacitado ou ausente. Soma o bônus de proficiência do druida à CA, ataques, dano, TS e perícias. PV máximo = max(normal, 4× nível de druida). Nv 9: também besta Média ND ≤ 1/2. Nv 13: planta Grande ND ≤ 1.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-fighter-loyal-warhorse",
+    "name": "Cavalo de Guerra (Cavaleiro Implacável)",
+    "companion_type": "mount",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Montaria Fiel (Cavaleiro Implacável)",
+    "creature_type": "Fera",
+    "size": "Large",
+    "ac": 11,
+    "hp_max": 19,
+    "speed": "18 m",
+    "prof_bonus": 2,
+    "carry_capacity": 540,
+    "stats": {
+      "str": 18,
+      "dex": 12,
+      "con": 13,
+      "int": 2,
+      "wis": 12,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+6",
+        "damage": "2d6+4",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ataque / Disparada / Desengajar",
+        "actionCost": "bonus_action",
+        "description": "Comandada pelo Cavaleiro Implacável (ação bônus): pode realizar uma destas ações.",
+        "usesOwnerAction": true
+      }
+    ],
+    "flags": {
+      "scales_with_owner_level": true
+    },
+    "description": "Montaria leal: PV = max(PV normal, 5× nível de guerreiro). Nv 12+: pode ser besta com ND ≤ 1 e voo. Ações: Ataque, Disparada, Desengajar como ação bônus do mestre.",
+    "source": "PHB"
+  },
+  {
+    "slug": "tpl-fighter-loyal-pony",
+    "name": "Pônei (Cavaleiro Implacável)",
+    "companion_type": "mount",
+    "origin": "class_feature",
+    "origin_spell_id": null,
+    "origin_class_feature": "Montaria Fiel (Cavaleiro Implacável)",
+    "creature_type": "Fera",
+    "size": "Medium",
+    "ac": 10,
+    "hp_max": 11,
+    "speed": "12 m",
+    "prof_bonus": 2,
+    "carry_capacity": 225,
+    "stats": {
+      "str": 15,
+      "dex": 10,
+      "con": 13,
+      "int": 2,
+      "wis": 11,
+      "cha": 7
+    },
+    "attacks": [
+      {
+        "name": "Cascos",
+        "attackBonus": "+4",
+        "damage": "2d4+2",
+        "damageType": "contundente",
+        "range": "1,5 m"
+      }
+    ],
+    "special_actions": [
+      {
+        "name": "Ataque / Disparada / Desengajar",
+        "actionCost": "bonus_action",
+        "description": "Comandada pelo Cavaleiro Implacável (ação bônus): pode realizar uma destas ações.",
+        "usesOwnerAction": true
+      }
+    ],
+    "flags": {
+      "scales_with_owner_level": true
+    },
+    "description": "Montaria pequena para guerreiros Pequenos ou anões. PV = max(PV normal, 5× nível). Mesmas regras do cavalo de guerra.",
+    "source": "PHB"
+  }
+]

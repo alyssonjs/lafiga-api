@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_31_230000) do
+ActiveRecord::Schema.define(version: 2026_09_02_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -301,6 +301,33 @@ ActiveRecord::Schema.define(version: 2026_08_31_230000) do
     t.jsonb "movement_ledger", default: [], null: false
     t.jsonb "active_interaction"
     t.index ["schedule_id"], name: "index_combat_states_on_schedule_id", unique: true
+  end
+
+  create_table "companion_templates", force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "name", null: false
+    t.string "companion_type", null: false
+    t.string "origin", default: "purchased", null: false
+    t.string "origin_spell_id"
+    t.string "origin_class_feature"
+    t.string "creature_type"
+    t.string "size"
+    t.integer "ac"
+    t.integer "hp_max"
+    t.string "speed"
+    t.integer "prof_bonus", default: 2
+    t.integer "carry_capacity"
+    t.jsonb "stats", default: {}
+    t.jsonb "attacks", default: []
+    t.jsonb "special_actions", default: []
+    t.jsonb "flags", default: {}
+    t.text "description"
+    t.string "source"
+    t.text "tags", default: [], array: true
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["companion_type"], name: "index_companion_templates_on_companion_type"
+    t.index ["slug"], name: "index_companion_templates_on_slug", unique: true
   end
 
   create_table "crafting_recipe_ingredients", force: :cascade do |t|
