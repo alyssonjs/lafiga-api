@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_02_160000) do
+ActiveRecord::Schema.define(version: 2026_09_02_180000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -284,6 +284,7 @@ ActiveRecord::Schema.define(version: 2026_09_02_160000) do
     t.jsonb "lair_actions", default: [], null: false
     t.bigint "owner_character_id"
     t.jsonb "speed_modes", default: {}, null: false
+    t.string "token_image_url"
     t.index ["owner_character_id"], name: "index_combat_npcs_on_owner_character_id"
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id"
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id_alive", where: "(defeated_at IS NULL)"

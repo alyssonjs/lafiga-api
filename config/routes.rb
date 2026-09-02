@@ -383,7 +383,9 @@ Rails.application.routes.draw do
         # Ex.: GET /api/v1/public/class_choices/metamagic
         resources :class_choices, only: [:show], constraints: { id: /[a-z_][a-z0-9_]*/ }
         resources :magic_items, only: [:index, :show]
-        resources :companion_templates, only: [:index, :show]
+        resources :companion_templates, only: [:index, :show] do
+          member { get :token_image }
+        end
         resources :monsters, only: [:index, :show]
         resources :backgrounds, only: [:index, :show]
         post 'backgrounds/apply', to: 'backgrounds#apply'

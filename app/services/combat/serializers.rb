@@ -106,6 +106,9 @@ module Combat
         condition_immunities:  npc.respond_to?(:condition_immunities)  ? Array(npc.condition_immunities)  : [],
         legendary_actions:     npc.respond_to?(:legendary_actions)     ? Array(npc.legendary_actions)     : [],
         lair_actions:          npc.respond_to?(:lair_actions)          ? Array(npc.lair_actions)          : [],
+        # PNG do token (companheiro vindo do catálogo). `respond_to?` pelo mesmo
+        # motivo dos campos 6E: NPC lido antes da migração não quebra.
+        token_image_url: npc.respond_to?(:token_image_url) ? npc.token_image_url : nil,
         notes: npc.notes,
         defeated_at: npc.defeated_at,
         updated_at: npc.updated_at,

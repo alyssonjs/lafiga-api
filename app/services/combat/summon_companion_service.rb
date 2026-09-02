@@ -97,6 +97,10 @@ module Combat
         stats: (c['stats'] || {}).transform_keys(&:to_s),
         attacks: Array(c['attacks']).map { |a| ataque(a) },
         notes: c['description'].to_s,
+        # O PNG que o Mestre subiu no catálogo viaja com o invocado. Sem isto
+        # ele morria aqui: o familiar entrava no combate como quadrado cinza,
+        # igual a todos os outros.
+        token_image_url: c['image'].presence,
       }
     end
 

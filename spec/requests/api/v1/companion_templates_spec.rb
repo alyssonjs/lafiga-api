@@ -150,3 +150,88 @@ RSpec.describe 'Proficiencias do companheiro', type: :request do
     expect(tpl.reload.attacks.first['proficient']).to be(false)
   end
 end
+
+RSpec.describe 'Token do companheiro (PNG)', type: :request do
+  let(:dm_role) { Role.find_by(name: 'DM') || create(:role, name: 'DM') }
+  let(:dm_user) { create(:user, role: dm_role) }
+
+  # PNG 1x1 real — um arquivo inventado nao passa pela validacao de content type.
+  def dados_png
+    Base64.decode64(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+    )
+  end
+
+  # Upload multipart (o caminho do editor).
+  def png_1x1
+    Rack::Test::UploadedFile.new(StringIO.new(dados_png), 'image/png', original_filename: 'token.png')
+  end
+
+  # Anexo DIRETO (montar o cenario sem passar por requisicao): o
+  # `Rack::Test::UploadedFile` sobre StringIO nao serve aqui — o ActiveStorage
+  # chama `open` nele.
+  def anexo_direto
+    { io: StringIO.new(dados_png), filename: 'token.png', content_type: 'image/png' }
+  end
+
+  it 'o Mestre sobe o PNG e ele volta como URL no shape do front' do
+    post '/api/v1/admin/companion_templates',
+         params: {
+           companion_template: { name: 'Lobo Pintado', companion_type: 'beast_companion' },
+           token_image: png_1x1,
+         },
+         headers: bearer_headers_for(dm_user)
+
+    expect(response).to have_http_status(:created)
+    tpl = CompanionTemplate.find_by(slug: 'lobo-pintado')
+    expect(tpl.token_image).to be_attached
+
+    # ⚠️ A chave e `image` (nao `tokenImageUrl`): e o campo que o `Companion` da
+    # ficha ja tem, entao instanciar o modelo leva o token junto sem tradutor.
+    get '/api/v1/public/companion_templates'
+    linha = response.parsed_body['companion_templates'].find { |t| t['templateId'] == 'lobo-pintado' }
+    expect(linha['image']).to match(%r{/api/v1/public/companion_templates/#{tpl.id}/token_image\?v=\d+})
+  end
+
+  it 'serve o blob a QUALQUER UM — o token aparece no mapa da mesa inteira' do
+    tpl = CompanionTemplate.create!(slug: 'urso-png', name: 'Urso PNG', companion_type: 'beast_companion')
+    tpl.token_image.attach(anexo_direto)
+
+    # Sem token de autenticacao nenhum: e assim que o jogador carrega o desenho.
+    get "/api/v1/public/companion_templates/#{tpl.id}/token_image"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq('image/png')
+  end
+
+  it 'recusa arquivo que nao e imagem' do
+    post '/api/v1/admin/companion_templates',
+         params: {
+           companion_template: { name: 'Nao Imagem', companion_type: 'mount' },
+           token_image: Rack::Test::UploadedFile.new(
+             StringIO.new('nao sou imagem'), 'text/plain', original_filename: 'x.txt'
+           ),
+         },
+         headers: bearer_headers_for(dm_user)
+
+    expect(response).to have_http_status(:unprocessable_entity)
+    expect(CompanionTemplate.find_by(slug: 'nao-imagem')).to be_nil
+  end
+
+  # ⚠️ Campo ausente significa "nao mexi", nao "apague" — sem um caminho
+  # explicito, tirar o PNG seria impossivel pelo editor.
+  it 'remove o PNG so quando pedido explicitamente' do
+    tpl = CompanionTemplate.create!(slug: 'com-png', name: 'Com PNG', companion_type: 'mount')
+    tpl.token_image.attach(anexo_direto)
+
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: { companion_template: { name: 'Com PNG II' } },
+          headers: bearer_headers_for(dm_user)
+    expect(tpl.reload.token_image).to be_attached
+
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: { companion_template: { name: 'Com PNG II' }, remove_token_image: '1' },
+          headers: bearer_headers_for(dm_user)
+    expect(tpl.reload.token_image).not_to be_attached
+  end
+end

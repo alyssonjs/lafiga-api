@@ -16,6 +16,15 @@ class CompanionTemplate < ApplicationRecord
 
   SIZES = %w[Tiny Small Medium Large Huge].freeze
 
+  # PNG do TOKEN — o desenho que representa a criatura no mapa. Mesma casa do
+  # `MapAsset#image`: ActiveStorage, e o mapa referencia a URL em vez de embutir
+  # a imagem (o token avulso guarda um data-URL de 500 KB no JSONB do mapa; um
+  # companheiro do catálogo entraria em TODO mapa onde fosse invocado).
+  ALLOWED_TOKEN_TYPES = %w[image/png image/jpeg image/webp image/gif].freeze
+  MAX_TOKEN_BYTES = 2.megabytes
+
+  has_one_attached :token_image
+
   validates :slug, presence: true, uniqueness: true
   validates :name, presence: true
   validates :companion_type, inclusion: { in: TYPES }
@@ -24,6 +33,7 @@ class CompanionTemplate < ApplicationRecord
 
   before_validation :normalizar_slug
   before_save :normalizar_ataques
+  validate :token_image_valido
 
   scope :do_tipo, ->(t) { where(companion_type: t) if t.present? }
   scope :busca, lambda { |q|
@@ -59,12 +69,38 @@ class CompanionTemplate < ApplicationRecord
       tags: tags || [],
       skillProficiencies: skill_proficiencies || [],
       saveProficiencies: save_proficiencies || [],
+      # `image` e não `tokenImageUrl`: é o campo que o `Companion` da ficha já
+      # tem, então instanciar o modelo (spread) leva o token junto sem tradutor.
+      image: token_image_url,
       # As bandeiras viajam achatadas: é assim que o `Companion` as espera.
       **bandeiras_json,
     }
   end
 
+  # Path relativo (sem host) — o front prefixa com a baseURL da API. Aponta para
+  # o endpoint PRÓPRIO, que serve o blob em 1 requisição com cache imutável, sem
+  # o redirect 302 do ActiveStorage. `v=` é o id do blob: muda só no re-upload.
+  def token_image_url
+    return nil unless token_image.attached?
+
+    ver = token_image.blob&.id || updated_at.to_i
+    "/api/v1/public/companion_templates/#{id}/token_image?v=#{ver}"
+  rescue StandardError
+    nil
+  end
+
   private
+
+  def token_image_valido
+    return unless token_image.attached?
+
+    if token_image.blob.byte_size.to_i > MAX_TOKEN_BYTES
+      errors.add(:token_image, "muito grande (máx. #{MAX_TOKEN_BYTES / 1.megabyte} MB)")
+    end
+    return if ALLOWED_TOKEN_TYPES.include?(token_image.blob.content_type)
+
+    errors.add(:token_image, 'tipo inválido (use PNG, JPEG, WebP ou GIF)')
+  end
 
   # `flags` guarda só o que o TIPO usa; o default de cada uma é `false`, e a
   # ausência significa isso — não gravamos oito booleanos em toda linha.

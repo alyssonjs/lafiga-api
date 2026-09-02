@@ -20,29 +20,31 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
   before_action :set_template, only: [:show, :update, :destroy]
 
   def index
-    scope = CompanionTemplate.all
+    scope = CompanionTemplate.with_attached_token_image
     scope = scope.do_tipo(params[:companion_type] || params[:type])
     scope = scope.busca(params[:q] || params[:search])
     scope = scope.order(:companion_type, :name).limit(500)
-    render json: { companion_templates: scope.as_json(except: [:created_at, :updated_at]) }, status: :ok
+    render json: { companion_templates: scope.map { |t| linha(t) } }, status: :ok
   end
 
   def show
-    render json: { companion_template: @template.as_json(except: [:created_at, :updated_at]) }, status: :ok
+    render json: { companion_template: linha(@template) }, status: :ok
   end
 
   def create
     @template = CompanionTemplate.new(permitted)
+    anexar_token_image(@template)
     if @template.save
-      render json: { companion_template: @template }, status: :created
+      render json: { companion_template: linha(@template) }, status: :created
     else
       render json: { errors: @template.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
+    anexar_token_image(@template)
     if @template.update(permitted)
-      render json: { companion_template: @template }, status: :ok
+      render json: { companion_template: linha(@template) }, status: :ok
     else
       render json: { errors: @template.errors.full_messages }, status: :unprocessable_entity
     end
@@ -54,6 +56,25 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
   end
 
   private
+
+  # O PNG chega em multipart, fora do corpo JSON. `remove_token_image` é o
+  # caminho explícito para APAGAR — sem ele, tirar a imagem seria impossível:
+  # um campo ausente significa "não mexi", não "apague".
+  def anexar_token_image(template)
+    if ActiveModel::Type::Boolean.new.cast(params[:remove_token_image])
+      template.token_image.purge_later if template.token_image.attached?
+      return
+    end
+
+    arquivo = params[:token_image] || params.dig(:companion_template, :token_image)
+    template.token_image.attach(arquivo) if arquivo.present?
+  end
+
+  # Linha crua (o que o editor edita) + a URL do token, que não é coluna.
+  def linha(template)
+    template.as_json(except: [:created_at, :updated_at])
+            .merge('token_image_url' => template.token_image_url)
+  end
 
   def set_template
     @template = CompanionTemplate.find_by(slug: params[:id]) || CompanionTemplate.find(params[:id])
