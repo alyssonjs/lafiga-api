@@ -45,17 +45,61 @@ class ItemResolver
   WEAPON_CATEGORIES = ['Armas', 'weapon', 'weapons'].freeze
   ARMOR_CATEGORIES  = ['Armaduras & Escudos', 'armor', 'armors'].freeze
 
-  # Heuristicas para inferir kind a partir do nome quando categoria for nula
-  # (acessorios "wearing" do excel chegam sem categoria).
+  # CABEÇALHOS de seção de ficha que o Excel manda como se fossem itens.
+  #
+  # ⚠️ Medido em prod: "CD de magia" virou Item e está em 14 fichas; "Armas",
+  # em 15. Não são coisas — são títulos de coluna. Criá-los polui o catálogo e
+  # a bolsa de todo mundo que importou. Devolver nil aqui deixa a linha da
+  # ficha SEM vínculo (o fallback por nome do front ainda a mostra), que é
+  # infinitamente melhor que um item-fantasma compartilhado por 14 personagens.
+  SECTION_HEADER_SLUGS = %w[
+    armas armaduras armaduras-escudos armadura equipamento equipamentos
+    inventario vestuario acessorios
+    cd-de-magia cd-de-habilidade cd-do-chi cd-de-conjuracao
+  ].freeze
+
+  # Acessórios "wearing" do excel (chegam sem categoria): nome → peça de
+  # vestuário. A peça carrega a CATEGORIA do catálogo e o EQUIP_SLOT — o item
+  # criado pelo import já nasce DECLARADO, como se tivesse saído do editor.
+  #
+  # ⚠️ Esta constante existia desde o início e NUNCA foi usada — os acessórios
+  # do import caíam em `gear` pelado e dependiam da regex de nome do front, a
+  # família de bugs que o sistema declarado (02/09) veio matar.
   ACCESSORY_KEYWORDS = {
-    'amulet'   => ['amuleto'],
+    'amulet'   => ['amuleto', 'colar', 'gargantilha', 'medalhao', 'relicario', 'talisma'],
     'ring'     => ['anel'],
-    'cloak'    => ['manto', 'capa'],
-    'boots'    => ['botas', 'sapato'],
-    'helmet'   => ['elmo', 'capacete'],
+    'cloak'    => ['manto', 'capa', 'capote', 'broche'],
+    'boots'    => ['botas', 'sapato', 'tornozeleira'],
+    'helmet'   => ['elmo', 'capacete', 'tiara', 'diadema', 'chapeu'],
     'gloves'   => ['luvas', 'manopla'],
     'belt'     => ['cinto', 'cinturao'],
+    'belt_leg' => ['cinto de perna', 'cinto da perna', 'coldre'],
+    'mask'     => ['mascara', 'oculos'],
+    'earrings' => ['brinco'],
+    'bracelet_left' => ['bracelete', 'pulseira'],
   }.freeze
+
+  # Peça → slot de equipagem (espelho do PIECE_TO_SLOT do front).
+  ACCESSORY_PIECE_TO_SLOT = {
+    'amulet' => 'amulet', 'ring' => 'ring_left', 'cloak' => 'cloak',
+    'boots' => 'boots', 'helmet' => 'helmet', 'gloves' => 'gloves',
+    'belt' => 'belt', 'belt_leg' => 'belt_leg_left', 'mask' => 'face',
+    'earrings' => 'earrings', 'bracelet_left' => 'bracelet_left',
+  }.freeze
+
+  # Peça de acessório para este nome, ou nil. ⚠️ 'belt_leg' testa ANTES de
+  # 'belt': "Cinto de perna" contém "cinto" — a mesma pegadinha que o dry-run
+  # do backfill pegou.
+  def accessory_piece_for(name)
+    nm = ActiveSupport::Inflector.transliterate(name.to_s).downcase
+    return 'belt_leg' if ACCESSORY_KEYWORDS['belt_leg'].any? { |k| nm.include?(k) }
+
+    ACCESSORY_KEYWORDS.each do |piece, keywords|
+      next if piece == 'belt_leg'
+      return piece if keywords.any? { |k| nm.include?(k) }
+    end
+    nil
+  end
 
   def initialize
     @cache_by_api_index = {}
@@ -70,6 +114,7 @@ class ItemResolver
     return nil if nm.blank? || nm =~ /\A\d+(\.\d+)?\z/
 
     slug0 = slugify(nm)
+    return nil if SECTION_HEADER_SLUGS.include?(slug0)
     if (canon_index = AMBIGUOUS_WEAPON_SLUG_TO_CANON[slug0])
       canon_item = Item.find_by(api_index: canon_index)
       return canon_item if canon_item
@@ -248,6 +293,12 @@ class ItemResolver
 
   def infer_kind(name, category)
     cat = category.to_s.strip
+    nm0 = ActiveSupport::Inflector.transliterate(name.to_s).downcase
+    # ⚠️ ROUPA nunca é armadura, mesmo vinda da coluna "Armaduras & Escudos" da
+    # ficha — foi assim que "Roupas"/"Roupa C." nasceram `kind: armor` sem CA
+    # nenhuma. Roupa comum é gear (CA 10 + DES, sem item).
+    return 'gear' if nm0.match?(/\broupas?\b|\bvestes?\b|\btraje\b/)
+
     return 'weapon' if WEAPON_CATEGORIES.any? { |c| c.casecmp?(cat) }
     return 'armor'  if ARMOR_CATEGORIES.any?  { |c| c.casecmp?(cat) }
 
@@ -262,10 +313,33 @@ class ItemResolver
     'gear'
   end
 
+  # Cria o registro JÁ DECLARADO: o item que nasce do import carimba
+  # `equip_slot` (e a peça, quando acessório) como se tivesse saído do editor.
+  # Antes nascia só com nome+kind — a casca vazia que dependia da regex de
+  # nome do front e virou o Coldre-de-coxa-inequipável, a armadura-sem-CA, etc.
+  #
+  # `source: 'import-auto'` deixa auditável o que o import inventou: é a
+  # pergunta que os rakes de conserto fazem primeiro.
   def create_item!(api_index:, name:, kind:)
+    piece = kind == 'gear' ? accessory_piece_for(name) : nil
+    props = {}
+    case kind
+    when 'weapon' then props['equip_slot'] = 'main_hand'
+    when 'armor'  then props['equip_slot'] = 'armor'
+    when 'book'   then props['equip_slot'] = 'main_hand'
+    when 'shield'
+      props['equip_slot'] = 'shield'
+      props['ac_bonus'] = 2 # PHB: todo escudo dá +2
+    when 'gear'
+      props['equip_slot'] = ACCESSORY_PIECE_TO_SLOT[piece] if piece
+    end
+
     Item.find_or_create_by!(api_index: api_index) do |i|
       i.name = name
       i.kind = kind
+      i.category = piece if piece
+      i.props = props if props.any?
+      i.source = 'import-auto'
     end
   rescue ActiveRecord::RecordNotUnique
     Item.find_by(api_index: api_index)

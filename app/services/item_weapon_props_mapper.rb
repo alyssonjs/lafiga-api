@@ -9,12 +9,27 @@
 class ItemWeaponPropsMapper
   class << self
     # @return [Hash, nil] hash com chaves symbol alinhadas a WEAPON_TABLE, ou nil se não for arma / props vazios.
+    # Chaves que caracterizam DADO DE ARMA nas props do Item. Fora desta lista
+    # (equip_slot, card_icon_id, aliases, wardrobe_piece, stackable, custo,
+    # peso…) a prop é identidade/cosmética e NÃO faz o registro "declarar" arma.
+    WEAPON_DATA_KEYS = %w[
+      damage_die damage_type type hands properties light finesse heavy reach
+      loading special thrown versatile versatile_die range ammunition
+      ammunition_index two-handed
+    ].freeze
+
     def from_item(db_item)
       return nil unless db_item
       return nil unless db_item.respond_to?(:weapon?) && db_item.weapon?
 
       p = (db_item.props || {}).stringify_keys
       return nil if p.blank?
+      # ⚠️ Só chave DE ARMA conta como "props declaradas". `equip_slot` (o
+      # carimbo do sistema declarado de 02/09), ícone, aliases etc. não dizem
+      # NADA sobre dano — e um registro-casca com só o carimbo passava a
+      # sombrear a WEAPON_TABLE: a adaga virava `light: false, damage_die: nil`
+      # e a validação da mão secundária a recusava ("deve ser leve").
+      return nil if p.slice(*WEAPON_DATA_KEYS).blank?
 
       props_tokens = Array(p['properties']).map { |x| x.to_s.downcase }
       hands = (p['hands'] || (props_tokens.include?('two-handed') ? 2 : 1)).to_i
