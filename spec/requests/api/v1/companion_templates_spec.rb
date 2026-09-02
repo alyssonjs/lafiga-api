@@ -97,3 +97,56 @@ RSpec.describe 'Catálogo de companheiros', type: :request do
     expect(response).to have_http_status(:unprocessable_entity)
   end
 end
+
+RSpec.describe 'Proficiencias do companheiro', type: :request do
+  let(:dm_role) { Role.find_by(name: 'DM') || create(:role, name: 'DM') }
+  let(:dm_user) { create(:user, role: dm_role) }
+
+  it 'grava pericias e resistencias e devolve no shape do front' do
+    post '/api/v1/admin/companion_templates',
+         params: { companion_template: {
+           name: 'Urso do DM', companion_type: 'beast_companion',
+           skill_proficiencies: %w[Percepção Furtividade],
+           save_proficiencies: %w[str con],
+         } },
+         headers: bearer_headers_for(dm_user)
+
+    expect(response).to have_http_status(:created)
+
+    get '/api/v1/public/companion_templates'
+    linha = response.parsed_body['companion_templates'].find { |t| t['templateId'] == 'urso-do-dm' }
+    expect(linha['skillProficiencies']).to eq(%w[Percepção Furtividade])
+    expect(linha['saveProficiencies']).to eq(%w[str con])
+  end
+
+  # ⚠️ `ability`/`proficient` sao o que torna o bonus DERIVADO. Sem eles nos
+  # strong params o ataque volta a ser um numero copiado que envelhece.
+  it 'preserva de onde o bonus do ataque sai' do
+    tpl = CompanionTemplate.create!(slug: 'urso-x', name: 'Urso X', companion_type: 'beast_companion')
+
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: { companion_template: {
+            attacks: [{ name: 'Mordida', damage: '1d8+4', damageType: 'perfurante',
+                        ability: 'str', proficient: true }],
+          } }.to_json,
+          headers: bearer_headers_for(dm_user).merge('CONTENT_TYPE' => 'application/json')
+
+    expect(response).to have_http_status(:ok)
+    expect(tpl.reload.attacks.first['ability']).to eq('str')
+    expect(tpl.attacks.first['proficient']).to be(true)
+  end
+
+  # ⚠️ Corpo NAO-JSON entrega "false" como STRING, e o front decide por
+  # `=== false`: sem normalizar, desligar o Prof no editor nao desligava nada.
+  it 'a string "false" nao vira proficiencia concedida' do
+    tpl = CompanionTemplate.create!(slug: 'urso-y', name: 'Urso Y', companion_type: 'beast_companion')
+
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: { companion_template: {
+            attacks: [{ name: 'Coice', damage: '1d4', ability: 'str', proficient: 'false' }],
+          } },
+          headers: bearer_headers_for(dm_user)
+
+    expect(tpl.reload.attacks.first['proficient']).to be(false)
+  end
+end

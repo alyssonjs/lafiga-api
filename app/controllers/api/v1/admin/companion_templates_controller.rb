@@ -4,8 +4,10 @@
 class Api::V1::Admin::CompanionTemplatesController < ApplicationController
   # ⚠️ Array de HASHES em strong params: `attacks: []` sozinho DESCARTA o
   # conteudo (Rails so aceita escalares em array cru). Listar as chaves.
+  # `ability`/`proficient`: de onde o bonus SAI (FOR ou DES + proficiencia), em
+  # vez de um numero copiado que fica errado assim que o atributo muda.
   ATTACK_PERMIT = [:name, :attackBonus, :attack_bonus, :damage, :damageType,
-                   :damage_type, :range, :notes].freeze
+                   :damage_type, :range, :notes, :ability, :proficient].freeze
 
   SPECIAL_ACTION_PERMIT = [:name, :actionCost, :action_cost, :description,
                            :usesOwnerAction, :uses_owner_action, :recharge].freeze
@@ -65,6 +67,7 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
       :origin_class_feature, :creature_type, :size, :ac, :hp_max, :speed,
       :prof_bonus, :carry_capacity, :description, :source,
       { stats: {} }, { tags: [] },
+      { skill_proficiencies: [] }, { save_proficiencies: [] },
       { attacks: ATTACK_PERMIT },
       { special_actions: SPECIAL_ACTION_PERMIT },
       { flags: FLAGS_PERMIT }

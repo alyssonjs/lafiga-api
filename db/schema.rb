@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_02_120000) do
+ActiveRecord::Schema.define(version: 2026_09_02_160000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -326,6 +326,8 @@ ActiveRecord::Schema.define(version: 2026_09_02_120000) do
     t.text "tags", default: [], array: true
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.text "skill_proficiencies", default: [], array: true
+    t.text "save_proficiencies", default: [], array: true
     t.index ["companion_type"], name: "index_companion_templates_on_companion_type"
     t.index ["slug"], name: "index_companion_templates_on_slug", unique: true
   end

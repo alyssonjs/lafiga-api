@@ -23,6 +23,7 @@ class CompanionTemplate < ApplicationRecord
   validates :size, inclusion: { in: SIZES }, allow_blank: true
 
   before_validation :normalizar_slug
+  before_save :normalizar_ataques
 
   scope :do_tipo, ->(t) { where(companion_type: t) if t.present? }
   scope :busca, lambda { |q|
@@ -56,6 +57,8 @@ class CompanionTemplate < ApplicationRecord
       description: description,
       source: source,
       tags: tags || [],
+      skillProficiencies: skill_proficiencies || [],
+      saveProficiencies: save_proficiencies || [],
       # As bandeiras viajam achatadas: é assim que o `Companion` as espera.
       **bandeiras_json,
     }
@@ -77,6 +80,23 @@ class CompanionTemplate < ApplicationRecord
       duration: f['duration'],
       requiresConcentration: !!f['requires_concentration'],
     }.compact
+  end
+
+  # ⚠️ `proficient` chega como STRING ("true"/"false") quando o corpo nao e JSON.
+  # O front decide por `=== false`, entao a string "false" concederia a
+  # proficiencia que o Mestre acabou de desligar — falha ABERTA, a pior.
+  # Guardamos sempre booleano de verdade.
+  def normalizar_ataques
+    return if attacks.blank?
+
+    self.attacks = attacks.map do |a|
+      linha = a.respond_to?(:to_h) ? a.to_h : a
+      next linha unless linha.is_a?(Hash)
+
+      linha = linha.stringify_keys
+      linha['proficient'] = ActiveModel::Type::Boolean.new.cast(linha['proficient']).present? if linha.key?('proficient')
+      linha
+    end
   end
 
   def normalizar_slug
