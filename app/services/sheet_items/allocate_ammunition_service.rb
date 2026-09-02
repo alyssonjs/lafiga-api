@@ -68,6 +68,15 @@ module SheetItems
       return if aceitos.empty?
       return if aceitos.include?(ammunition.item_index.to_s)
 
+      # ⚠️ Compara a FAMÍLIA, não o índice inteiro: "flecha-de-fogo" é flecha,
+      # e a aljava que aceita "flecha" tem de aceitá-la. Antes disto as três
+      # munições mágicas do catálogo eram recusadas por toda aljava do banco.
+      familia = ammunition.ammunition_family
+      if familia.present?
+        aceitas = aceitos.filter_map { |a| SheetItem.ammunition_family(a) }
+        return if aceitas.include?(familia)
+      end
+
       raise InvalidAllocation,
             "#{quiver.item_name} não guarda #{ammunition.item_name}."
     end

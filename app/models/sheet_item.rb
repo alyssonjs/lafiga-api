@@ -494,6 +494,50 @@ class SheetItem < ApplicationRecord
     Array(ammunition_container_props&.dig('ammunition_types'))
   end
 
+  # FAMÍLIA de munição (flecha, virote, bala, agulha) — a chave canônica que a
+  # aljava compara, e não o índice inteiro do item.
+  #
+  # ⚠️ O bug que isto conserta: a aljava declara `["flecha", "virote"]` e a
+  # comparação era `aceitos.include?(item_index)`. Uma munição MÁGICA
+  # ("flecha-de-fogo", "virote-de-gelo", "agulhas-de-zarabatana") nunca casava
+  # o índice inteiro e era recusada por TODA aljava do banco — as três do
+  # catálogo estavam inutilizáveis.
+  #
+  # Ordem: a família DECLARADA (`sub_category` do item mágico: arrow/bolt/
+  # needle) vence; sem ela, o nome/índice é o leitor tolerante do legado.
+  AMMO_FAMILY_SYNONYMS = {
+    'flecha' => %w[flecha flechas arrow arrows seta setas],
+    'virote' => %w[virote virotes bolt bolts crossbow-bolt crossbow-bolts quarrel],
+    'bala'   => %w[bala balas pedra pedras sling-bullet bullet],
+    'agulha' => %w[agulha agulhas needle needles blowgun-needle],
+  }.freeze
+
+  def self.ammunition_family(raw)
+    texto = ActiveSupport::Inflector.transliterate(raw.to_s).downcase
+    AMMO_FAMILY_SYNONYMS.each do |familia, sinonimos|
+      return familia if sinonimos.any? { |s| texto.match?(/(?:^|[- ])#{Regexp.escape(s)}(?:$|[- ])/) }
+    end
+    nil
+  end
+
+  # A família DESTA pilha de munição.
+  def ammunition_family
+    declarada = magic_twin_sub_category.presence || item&.sub_category.presence
+    familia = self.class.ammunition_family(declarada) if declarada.present?
+    familia || self.class.ammunition_family(item_index) || self.class.ammunition_family(item_name)
+  end
+
+  # `sub_category` do item mágico gêmeo (mesmo slug) — é lá que a munição
+  # mágica declara ser flecha/virote/agulha.
+  def magic_twin_sub_category
+    return nil if item_index.blank?
+    return nil unless defined?(MagicItem)
+
+    MagicItem.find_by(slug: item_index)&.sub_category
+  rescue StandardError
+    nil
+  end
+
   # Quantas peças cabem. `nil` = sem limite declarado.
   def ammunition_capacity
     ammunition_container_props&.dig('ammunition_capacity')
@@ -512,11 +556,30 @@ class SheetItem < ApplicationRecord
   # zarabatana, que a regex por nome não conhecia — elas existiam no catálogo
   # como munição e mesmo assim não podiam entrar num recipiente. O nome
   # continua valendo para item solto, sem catálogo por trás.
+  # É uma pilha de MUNIÇÃO?
+  #
+  # ⚠️ DECLARAÇÃO primeiro. A regex de nome conhecia só flecha e virote — a
+  # "Agulhas de Zarabatana" (munição mágica com `category: ammunition`
+  # declarada) não era sequer reconhecida como munição, e o erro que o jogador
+  # via era "o item selecionado não é uma pilha de munição". Bala de funda
+  # tinha o mesmo destino.
   def ammunition?
     return true if item&.kind.to_s == 'ammunition'
+    return true if magic_twin_category.to_s == 'ammunition'
 
-    identity = normalized_inventory_identity
-    identity.match?(/(?:^|[- ])(flecha|flechas|arrow|arrows|virote|virotes|bolt|bolts)(?:$|[- ])/)
+    # Leitor tolerante do legado: agora cobre as QUATRO famílias, não duas.
+    self.class.ammunition_family(item_index).present? ||
+      self.class.ammunition_family(item_name).present?
+  end
+
+  # `category` do item mágico gêmeo — onde a munição mágica se declara.
+  def magic_twin_category
+    return nil if item_index.blank?
+    return nil unless defined?(MagicItem)
+
+    MagicItem.find_by(slug: item_index)&.category
+  rescue StandardError
+    nil
   end
 
   def ammunition_container_id
