@@ -32,7 +32,7 @@ module SheetItems
         else
           cinto = achar_cinto!(sheet)
           validar_nao_e_o_proprio!(cinto)
-          tipo = tipo_de_slot!
+          tipo = tipo_de_slot!(cinto)
           validar_vaga!(sheet, cinto, tipo)
           prender!(cinto, tipo)
         end
@@ -72,13 +72,37 @@ module SheetItems
 
     # Vocação do slot que ESTE item consome, ou InvalidStow se não cabe em
     # nenhuma. Público porque o front espelha a mesma pergunta.
-    def tipo_de_slot!
+    #
+    # `cinto` opcional: o CINTO DE PERNA aceita menos coisa que o da cintura —
+    # a mesma arma pode caber num e não no outro, então a pergunta depende de
+    # ONDE se está pendurando.
+    def tipo_de_slot!(cinto = nil)
+      return tipo_de_slot_perna! if cinto && self.class.leg_belt?(cinto)
+
       # Consumível PRIMEIRO: a poção tem vaga própria, e um dia um consumível
       # vai ter nome de vestuário. A vaga certa importa mais que a ordem.
       return 'consumable' if consumivel?
       return 'free' if arma? || ferramenta? || aljava? || livro? || instrumento? || vestuario?
 
       raise InvalidStow, 'Este item não vai em cinto.'
+    end
+
+    # CINTO DE PERNA: só o que se enfia num coldre de coxa — arma PEQUENA
+    # (adaga, agulha: a propriedade `light` do PHB) e consumível.
+    #
+    # ⚠️ Cabe menos DE PROPÓSITO. Espada longa, aljava, livro e instrumento vão
+    # no cinturão da cintura; deixá-los aqui faria do coldre um segundo cinto
+    # com outro nome, e a mesa perde a razão de ter os dois.
+    def tipo_de_slot_perna!
+      return 'consumable' if consumivel?
+      return 'free' if arma_pequena?
+
+      raise InvalidStow, 'No cinto de perna só cabem armas pequenas e consumíveis.'
+    end
+
+    # O cinto está vestido numa PERNA?
+    def self.leg_belt?(cinto)
+      SheetItem::LEG_BELT_SLOTS.include?(cinto.slot.to_s)
     end
 
     private
@@ -102,6 +126,20 @@ module SheetItems
       sub = (catalogo&.props || {})['weapon_sub_category'].presence ||
             (item.props_json || {})['weapon_sub_category'].presence
       sub.present? && sub.to_s != 'instrument'
+    end
+
+    # Arma PEQUENA = arma com a propriedade `light` do PHB (adaga, clava leve,
+    # machadinha). É o teste do livro, não um palpite por nome — e a agulha
+    # caseira do mestre passa a caber assim que ele marcar `leve` no editor.
+    def arma_pequena?
+      return false unless arma?
+
+      props = begin
+        EquipmentRules.weapon_props(item) || {}
+      rescue StandardError
+        {}
+      end
+      props[:light] == true || props['light'] == true
     end
 
     def ferramenta?

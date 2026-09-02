@@ -12,10 +12,18 @@ class SheetItem < ApplicationRecord
   # `helmet` na mesma data (cabeça inteira: elmo, chapéu, tiara). Medido antes:
   # zero linhas persistidas e zero catálogo usavam `circlet` — a fusão é só de
   # vocabulário, e `canonicalize_legacy_slot` cobre cliente da janela de deploy.
+  # `belt_leg_left`/`belt_leg_right` (02/09): CINTO DE PERNA, um por perna. É
+  # cinto de verdade — mesmo ponteiro, mesma contagem de vagas — mas vestido
+  # noutro lugar e com vocação MAIS ESTREITA: só arma pequena e consumível.
+  # Slots próprios (e não um segundo item no slot `belt`) porque o personagem
+  # usa os três ao mesmo tempo: cinturão na cintura e um coldre em cada perna.
   ACCESSORY_SLOTS = %w[
     ring_left ring_right amulet cloak boots helmet gloves belt
     face earrings bracelet_left bracelet_right
+    belt_leg_left belt_leg_right
   ].freeze
+  # Slots de cinto de PERNA — a vocação estreita olha para cá.
+  LEG_BELT_SLOTS = %w[belt_leg_left belt_leg_right].freeze
   # Slots de utilidade — nao existem no PHB, sao HOUSERULE desta mesa.
   # `quiver` guarda municao; `instrument` da lugar ao instrumento musical, que
   # nas regras e FERRAMENTA (PHB cap. 5) e nao tem casa nenhuma. A mesa quis um
