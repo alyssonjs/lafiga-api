@@ -108,6 +108,43 @@ RSpec.describe 'Invocar companion para o combate', type: :request do
       expect(npc.speed).to eq(20)
     end
 
+    # ⚠️ O Sopro Gelado morria na invocacao: o servico copiava nome/PV/CA/
+    # atributos/ataques e MAIS NADA. A mecanica que o F2a estruturou (CD, TR,
+    # 4d8, cone) nao chegava ao combate nem como texto.
+    it 'as acoes especiais chegam ao combate COM a mecanica' do
+      sheet.update!(companions: [familiar.merge('specialActions' => [
+        {
+          'name' => 'Sopro Gelado', 'actionCost' => 'action',
+          'description' => 'Cone gelado de 4,5 m.', 'usesOwnerAction' => false,
+          'mechanics' => {
+            'saveAbility' => 'dex', 'saveDc' => 12, 'halfOnSave' => true,
+            'damage' => { 'dice' => '4d8', 'type' => 'frio' },
+            'area' => { 'shape' => 'cone', 'sizeFt' => 15 },
+          },
+        },
+        { 'name' => 'Faro Apurado', 'description' => 'Vantagem em Percepcao.' },
+      ])])
+
+      invocar(dono)
+      npc = CombatNpc.find_by(schedule: schedule, name: 'Diabrete')
+
+      expect(npc.special_actions.size).to eq(2)
+      sopro = npc.special_actions.first
+      expect(sopro['name']).to eq('Sopro Gelado')
+      expect(sopro.dig('mechanics', 'saveDc')).to eq(12)
+      expect(sopro.dig('mechanics', 'damage', 'dice')).to eq('4d8')
+      expect(sopro.dig('mechanics', 'area')).to eq({ 'shape' => 'cone', 'sizeFt' => 15 })
+
+      # Acao sem mecanica vai igual, so com o texto — nada inventado.
+      expect(npc.special_actions.last['name']).to eq('Faro Apurado')
+      expect(npc.special_actions.last).not_to have_key('mechanics')
+    end
+
+    it 'companheiro sem acoes nao ganha lista fantasma' do
+      invocar(dono)
+      expect(CombatNpc.find_by(schedule: schedule, name: 'Diabrete').special_actions).to eq([])
+    end
+
     it 'modo zerado nao entra — ausente e ausente' do
       sheet.update!(companions: [familiar.merge('speedModes' => { 'walk' => 30, 'fly' => 0, 'swim' => nil })])
 

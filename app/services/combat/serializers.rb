@@ -109,6 +109,10 @@ module Combat
         # PNG do token (companheiro vindo do catálogo). `respond_to?` pelo mesmo
         # motivo dos campos 6E: NPC lido antes da migração não quebra.
         token_image_url: npc.respond_to?(:token_image_url) ? npc.token_image_url : nil,
+        # Ações especiais do companheiro invocado (com o bloco `mechanics` do
+        # F2a quando a descrição o revelou). `respond_to?` pelo mesmo motivo dos
+        # campos 6E: NPC lido antes da migração não quebra.
+        special_actions: npc.respond_to?(:special_actions) ? Array(npc.special_actions) : [],
         notes: npc.notes,
         defeated_at: npc.defeated_at,
         updated_at: npc.updated_at,

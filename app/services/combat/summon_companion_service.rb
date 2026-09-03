@@ -100,6 +100,9 @@ module Combat
         proficiency_bonus: c['profBonus'].to_i,
         stats: (c['stats'] || {}).transform_keys(&:to_s),
         attacks: Array(c['attacks']).map { |a| ataque(a) },
+        # ⚠️ Sem isto o Sopro Gelado não chegava ao combate em forma NENHUMA —
+        # nem como texto. A mecânica que o F2a estruturou morria aqui.
+        special_actions: Array(c['specialActions']).map { |a| acao_especial(a) },
         notes: c['description'].to_s,
         # O PNG que o Mestre subiu no catálogo viaja com o invocado. Sem isto
         # ele morria aqui: o familiar entrava no combate como quadrado cinza,
@@ -134,6 +137,19 @@ module Combat
       return andar if andar.positive?
 
       texto.to_s[/\d+/]&.to_i
+    end
+
+    # A ação vai INTEIRA — o texto continua sendo a fonte de verdade para o que
+    # a mecânica não cobre, e `mechanics` é o que o motor de área consegue rolar.
+    def acao_especial(a)
+      return {} unless a.is_a?(Hash)
+
+      {
+        'name' => a['name'].to_s,
+        'actionCost' => a['actionCost'].presence || 'action',
+        'description' => a['description'].to_s,
+        'usesOwnerAction' => !!a['usesOwnerAction'],
+      }.tap { |linha| linha['mechanics'] = a['mechanics'] if a['mechanics'].present? }
     end
 
     def ataque(a)
