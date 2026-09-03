@@ -59,6 +59,8 @@ Rails.application.routes.draw do
         # Catálogo de companheiros (montaria, familiar, companheiro animal…).
         # Só o Mestre cria — leitura fica no namespace público.
         resources :companion_templates, only: [:index, :show, :create, :update, :destroy]
+        # NPC básico: só o Mestre. Não há irmão em `public/` de propósito.
+        resources :basic_npcs, only: [:index, :show, :create, :update, :destroy]
         post   'catalog_items', to: 'catalog_items#create'
         get    'catalog_items/:api_index', to: 'catalog_items#show',    constraints: { api_index: %r{[^/]+} }
         match  'catalog_items/:api_index', to: 'catalog_items#update',  via: %i[put patch], constraints: { api_index: %r{[^/]+} }

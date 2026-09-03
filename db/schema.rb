@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_03_200000) do
+ActiveRecord::Schema.define(version: 2026_09_03_220000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -60,6 +60,24 @@ ActiveRecord::Schema.define(version: 2026_09_03_200000) do
     t.index ["api_index"], name: "index_backgrounds_on_api_index", unique: true
     t.index ["parent_api_index"], name: "index_backgrounds_on_parent_api_index"
     t.index ["published"], name: "index_backgrounds_on_published"
+  end
+
+  create_table "basic_npcs", force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "name", null: false
+    t.string "role"
+    t.text "notes"
+    t.integer "hp", default: 10, null: false
+    t.integer "ac", default: 10, null: false
+    t.integer "initiative_bonus", default: 0, null: false
+    t.jsonb "speed_modes", default: {}
+    t.jsonb "stats", default: {}
+    t.jsonb "attacks", default: []
+    t.bigint "token_map_asset_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["slug"], name: "index_basic_npcs_on_slug", unique: true
+    t.index ["token_map_asset_id"], name: "index_basic_npcs_on_token_map_asset_id"
   end
 
   create_table "battle_maps", force: :cascade do |t|
