@@ -113,6 +113,10 @@ module Combat
         # F2a quando a descrição o revelou). `respond_to?` pelo mesmo motivo dos
         # campos 6E: NPC lido antes da migração não quebra.
         special_actions: npc.respond_to?(:special_actions) ? Array(npc.special_actions) : [],
+        # ⚠️ O DONO também no NPC, não só no combatente: sem ele o front não
+        # distingue o companheiro INVOCADO do NPC que o Mestre fez à mão, e os
+        # dois caíam na mesma lista.
+        owner_character_id: npc.owner_character_id,
         notes: npc.notes,
         defeated_at: npc.defeated_at,
         updated_at: npc.updated_at,
