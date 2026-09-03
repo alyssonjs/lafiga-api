@@ -300,3 +300,84 @@ RSpec.describe 'Deslocamento multi-modo do companheiro', type: :request do
     expect(linha['speedModes']).to eq({ 'walk' => 50, 'swim' => 25 })
   end
 end
+
+RSpec.describe 'Token da BIBLIOTECA de objetos', type: :request do
+  let(:dm_role) { Role.find_by(name: 'DM') || create(:role, name: 'DM') }
+  let(:dm_user) { create(:user, role: dm_role) }
+
+  def dados_png
+    Base64.decode64(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+    )
+  end
+
+  def anexo_direto
+    { io: StringIO.new(dados_png), filename: 'token.png', content_type: 'image/png' }
+  end
+
+  let!(:asset) do
+    a = MapAsset.new(name: 'Lobo do mapa', kind: 'object', category: 'Meus', user: dm_user)
+    a.image.attach(anexo_direto)
+    a.save!
+    a
+  end
+
+  # ⚠️ REFERENCIA, nao copia: 1962 assets na biblioteca, e o token velho
+  # mentiria se o Mestre corrigisse o asset depois.
+  it 'aponta para o asset e o front recebe a URL dele' do
+    post '/api/v1/admin/companion_templates',
+         params: { companion_template: {
+           name: 'Lobo da Biblioteca', companion_type: 'beast_companion',
+           token_map_asset_id: asset.id,
+         } }.to_json,
+         headers: bearer_headers_for(dm_user).merge('CONTENT_TYPE' => 'application/json')
+
+    expect(response).to have_http_status(:created)
+
+    get '/api/v1/public/companion_templates'
+    linha = response.parsed_body['companion_templates'].find { |t| t['templateId'] == 'lobo-da-biblioteca' }
+    expect(linha['image']).to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.id}")
+  end
+
+  # ⚠️ Uma fonte por vez: com as duas gravadas, a precedencia decidiria em
+  # silencio e o Mestre nao saberia qual venceu.
+  it 'subir um PNG desfaz a escolha da biblioteca' do
+    tpl = CompanionTemplate.create!(
+      slug: 'lobo-x', name: 'Lobo X', companion_type: 'beast_companion',
+      token_map_asset_id: asset.id
+    )
+
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: {
+            companion_template: { name: 'Lobo X' },
+            token_image: Rack::Test::UploadedFile.new(
+              StringIO.new(dados_png), 'image/png', original_filename: 'meu.png'
+            ),
+          },
+          headers: bearer_headers_for(dm_user)
+
+    expect(response).to have_http_status(:ok)
+    tpl.reload
+    expect(tpl.token_image).to be_attached
+    expect(tpl.token_map_asset_id).to be_nil
+    expect(tpl.token_image_url).to match(%r{/companion_templates/#{tpl.id}/token_image})
+  end
+
+  it 'escolher da biblioteca desfaz o PNG proprio' do
+    tpl = CompanionTemplate.create!(slug: 'lobo-y', name: 'Lobo Y', companion_type: 'beast_companion')
+    tpl.token_image.attach(anexo_direto)
+
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: { companion_template: { token_map_asset_id: asset.id } }.to_json,
+          headers: bearer_headers_for(dm_user).merge('CONTENT_TYPE' => 'application/json')
+
+    expect(response).to have_http_status(:ok)
+    expect(tpl.reload.token_map_asset_id).to eq(asset.id)
+    expect(tpl.token_image_url).to include("map_assets/#{asset.id}/image")
+  end
+
+  it 'sem token nenhum, sem URL' do
+    tpl = CompanionTemplate.create!(slug: 'lobo-z', name: 'Lobo Z', companion_type: 'beast_companion')
+    expect(tpl.token_image_url).to be_nil
+  end
+end

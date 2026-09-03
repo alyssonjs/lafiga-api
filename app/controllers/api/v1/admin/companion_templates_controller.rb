@@ -44,6 +44,7 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
   def create
     @template = CompanionTemplate.new(permitted)
     anexar_token_image(@template)
+    resolver_conflito_de_token(@template)
     if @template.save
       render json: { companion_template: linha(@template) }, status: :created
     else
@@ -53,7 +54,9 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
 
   def update
     anexar_token_image(@template)
-    if @template.update(permitted)
+    @template.assign_attributes(permitted)
+    resolver_conflito_de_token(@template)
+    if @template.save
       render json: { companion_template: linha(@template) }, status: :ok
     else
       render json: { errors: @template.errors.full_messages }, status: :unprocessable_entity
@@ -77,7 +80,19 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
     end
 
     arquivo = params[:token_image] || params.dig(:companion_template, :token_image)
-    template.token_image.attach(arquivo) if arquivo.present?
+    return if arquivo.blank?
+
+    template.token_image.attach(arquivo)
+    # ⚠️ Uma fonte por vez: subir um PNG desfaz a escolha da biblioteca, senão
+    # ficariam duas verdades e a precedência decidiria em silêncio qual vence.
+    template.token_map_asset_id = nil
+  end
+
+  # Escolher da biblioteca é o inverso: apaga o anexo próprio.
+  def resolver_conflito_de_token(template)
+    return unless template.token_map_asset_id_changed? && template.token_map_asset_id.present?
+
+    template.token_image.purge_later if template.token_image.attached?
   end
 
   # Linha crua (o que o editor edita) + a URL do token, que não é coluna.
@@ -96,7 +111,7 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
     params.require(:companion_template).permit(
       :slug, :name, :companion_type, :origin, :origin_spell_id,
       :origin_class_feature, :creature_type, :size, :ac, :hp_max, :speed,
-      :prof_bonus, :carry_capacity, :description, :source,
+      :prof_bonus, :carry_capacity, :description, :source, :token_map_asset_id,
       { stats: {} }, { tags: [] }, { speed_modes: {} },
       { skill_proficiencies: [] }, { save_proficiencies: [] },
       { attacks: ATTACK_PERMIT },

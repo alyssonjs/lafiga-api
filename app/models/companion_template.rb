@@ -80,17 +80,37 @@ class CompanionTemplate < ApplicationRecord
     }
   end
 
-  # Path relativo (sem host) — o front prefixa com a baseURL da API. Aponta para
-  # o endpoint PRÓPRIO, que serve o blob em 1 requisição com cache imutável, sem
-  # o redirect 302 do ActiveStorage. `v=` é o id do blob: muda só no re-upload.
+  # Path relativo (sem host) — o front prefixa com a baseURL da API.
+  #
+  # ⚠️ Duas fontes, com precedência: o PNG PRÓPRIO (upload) vence a biblioteca.
+  # É a ordem que respeita a última escolha do Mestre — subir um arquivo depois
+  # de escolher da biblioteca tem de valer.
+  #
+  # O da biblioteca aponta para o endpoint do `map_assets`, que já serve o blob
+  # com cache imutável e SEM gate de DM (o token é da mesa inteira).
   def token_image_url
-    return nil unless token_image.attached?
+    return proprio_token_url if token_image.attached?
+    return biblioteca_token_url if token_map_asset_id.present?
 
-    ver = token_image.blob&.id || updated_at.to_i
-    "/api/v1/public/companion_templates/#{id}/token_image?v=#{ver}"
+    nil
   rescue StandardError
     nil
   end
+
+  private
+
+  # Endpoint PRÓPRIO: 1 requisição com cache imutável, sem o redirect 302 do
+  # ActiveStorage. `v=` é o id do blob — muda só no re-upload.
+  def proprio_token_url
+    ver = token_image.blob&.id || updated_at.to_i
+    "/api/v1/public/companion_templates/#{id}/token_image?v=#{ver}"
+  end
+
+  def biblioteca_token_url
+    "/api/v1/admin/map_assets/#{token_map_asset_id}/image?v=#{token_map_asset_id}"
+  end
+
+  public
 
   private
 
