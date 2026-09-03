@@ -155,3 +155,71 @@ RSpec.describe 'Api::V1::Admin::Monsters', type: :request do
     end
   end
 end
+
+RSpec.describe 'Token do monstro (biblioteca de objetos)', type: :request do
+  let(:dm_role) { Role.find_by(name: 'DM') || create(:role, name: 'DM') }
+  let(:dm) { create(:user, role: dm_role) }
+  let(:headers) { bearer_headers_for(dm).merge('Content-Type' => 'application/json') }
+
+  let!(:asset) do
+    a = MapAsset.new(name: 'Lobo do mapa', kind: 'object', category: 'Meus', user: dm)
+    a.image.attach(
+      io: StringIO.new(Base64.decode64(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+      )),
+      filename: 'token.png', content_type: 'image/png'
+    )
+    a.save!
+    a
+  end
+
+  let!(:lobo) do
+    Monster.create!(slug: 'mon-lobo', name: 'Lobo', source: 'srd',
+                    payload: { 'ac' => 13, 'hp' => 11, 'cr' => '1/4' })
+  end
+
+  it 'grava a referencia e devolve a URL no payload que o front consome' do
+    patch "/api/v1/admin/monsters/#{lobo.slug}",
+          params: { monster: { name: 'Lobo', token_map_asset_id: asset.id } }.to_json,
+          headers: headers
+
+    expect(response).to have_http_status(:ok)
+    expect(lobo.reload.token_map_asset_id).to eq(asset.id)
+
+    corpo = response.parsed_body['monster']
+    expect(corpo['tokenMapAssetId']).to eq(asset.id)
+    expect(corpo['tokenImageUrl']).to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.id}")
+  end
+
+  # ⚠️ O token e COLUNA, nao statblock: o re-import do Open5e reescreve o
+  # `payload` inteiro e apagaria a escolha do Mestre se ele vivesse la.
+  it 'reescrever o payload NAO apaga o token' do
+    lobo.update!(token_map_asset_id: asset.id)
+
+    patch "/api/v1/admin/monsters/#{lobo.slug}",
+          params: { monster: { name: 'Lobo', payload: { 'ac' => 14, 'hp' => 12 } } }.to_json,
+          headers: headers
+
+    expect(response).to have_http_status(:ok)
+    lobo.reload
+    expect(lobo.token_map_asset_id).to eq(asset.id)
+    expect(lobo.payload['ac']).to eq(14)
+    # E nao vaza para dentro do statblock.
+    expect(lobo.payload).not_to have_key('tokenMapAssetId')
+  end
+
+  it 'monstro sem token nao ganha as chaves' do
+    get '/api/v1/admin/monsters', headers: bearer_headers_for(dm)
+
+    linha = response.parsed_body['monsters'].find { |m| m['id'] == 'mon-lobo' }
+    expect(linha).not_to have_key('tokenImageUrl')
+  end
+
+  it 'o publico tambem recebe o token — o desenho e da mesa inteira' do
+    lobo.update!(token_map_asset_id: asset.id)
+
+    get '/api/v1/public/monsters'
+    linha = response.parsed_body['monsters'].find { |m| m['id'] == 'mon-lobo' }
+    expect(linha['tokenImageUrl']).to include("map_assets/#{asset.id}/image")
+  end
+end

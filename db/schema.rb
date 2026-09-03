@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_03_180000) do
+ActiveRecord::Schema.define(version: 2026_09_03_200000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -576,12 +576,14 @@ ActiveRecord::Schema.define(version: 2026_09_03_180000) do
     t.jsonb "payload", default: {}, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "token_map_asset_id"
     t.index ["cr_numeric"], name: "index_monsters_on_cr_numeric"
     t.index ["monster_type"], name: "index_monsters_on_monster_type"
     t.index ["name"], name: "index_monsters_on_name"
     t.index ["payload"], name: "index_monsters_on_payload", using: :gin
     t.index ["slug"], name: "index_monsters_on_slug", unique: true
     t.index ["source"], name: "index_monsters_on_source"
+    t.index ["token_map_asset_id"], name: "index_monsters_on_token_map_asset_id"
   end
 
   create_table "push_subscriptions", force: :cascade do |t|

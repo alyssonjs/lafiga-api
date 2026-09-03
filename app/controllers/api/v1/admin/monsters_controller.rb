@@ -93,18 +93,28 @@ class Api::V1::Admin::MonstersController < ApplicationController
   # com o mesmo shape do front.
   def permitted_attrs
     raw = params.require(:monster).to_unsafe_h
+    # ⚠️ `tokenMapAssetId` é COLUNA, não statblock: tem de sair do payload, senão
+    # o re-import do Open5e (idempotente, reescreve o payload) apagaria o token
+    # que o Mestre escolheu.
+    fora_do_payload = %w[name slug source name_en token_map_asset_id tokenMapAssetId]
     payload =
       if raw['payload'].is_a?(Hash)
-        raw['payload']
+        raw['payload'].except('tokenMapAssetId', 'tokenImageUrl')
       else
-        raw.except('name', 'slug', 'source', 'name_en')
+        raw.except(*fora_do_payload)
       end
+
+    token_asset = raw['token_map_asset_id'] || raw['tokenMapAssetId'] ||
+                  raw.dig('payload', 'tokenMapAssetId')
+
     {
       name:    raw['name'],
       slug:    raw['slug'].presence,
       name_en: raw['name_en'].presence || raw.dig('payload', 'nameEN'),
       source:  raw['source'].presence || 'homebrew',
       payload: payload || {},
+      # `nil` explícito LIMPA o token (o Mestre tirou o desenho); ausente mantém.
+      token_map_asset_id: token_asset.presence&.to_i,
     }.compact
   end
 end

@@ -46,7 +46,21 @@ class Monster < ApplicationRecord
     base['cr']        ||= cr
     base['xp']        ||= xp
     base['source']    ||= source
+    # Token da biblioteca de objetos. Vai no payload porque é o shape que o
+    # front consome (`MonsterEntry`) — mas VIVE em coluna, para o re-import do
+    # Open5e não o sobrescrever.
+    base['tokenMapAssetId'] = token_map_asset_id if token_map_asset_id.present?
+    base['tokenImageUrl']   = token_image_url if token_image_url
     base
+  end
+
+  # Path relativo (sem host) — o front prefixa com a baseURL da API. O endpoint
+  # do `map_assets` já serve o blob com cache imutável e SEM gate de DM: o token
+  # é da mesa inteira.
+  def token_image_url
+    return nil if token_map_asset_id.blank?
+
+    "/api/v1/admin/map_assets/#{token_map_asset_id}/image?v=#{token_map_asset_id}"
   end
 
   def self.cr_to_number(cr_value)
