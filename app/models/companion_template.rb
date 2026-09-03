@@ -60,6 +60,9 @@ class CompanionTemplate < ApplicationRecord
       ac: ac.to_i,
       hpMax: hp_max.to_i,
       speed: speed,
+      # Em PÉS, o mesmo shape de `combat_npcs.speed_modes` e do bestiário.
+      # A string `speed` acima é a EXIBIÇÃO; isto é o que o combate usa.
+      speedModes: speed_modes.presence || {},
       attacks: attacks || [],
       specialActions: special_actions || [],
       profBonus: prof_bonus.to_i,

@@ -39,8 +39,9 @@ namespace :dnd do
       atributos = linha.slice(
         'slug', 'name', 'companion_type', 'origin', 'origin_spell_id',
         'origin_class_feature', 'creature_type', 'size', 'ac', 'hp_max',
-        'speed', 'prof_bonus', 'carry_capacity', 'stats', 'attacks',
-        'special_actions', 'flags', 'description', 'source'
+        'speed', 'speed_modes', 'prof_bonus', 'carry_capacity', 'stats', 'attacks',
+        'special_actions', 'flags', 'skill_proficiencies', 'save_proficiencies',
+        'description', 'source'
       )
 
       if existente

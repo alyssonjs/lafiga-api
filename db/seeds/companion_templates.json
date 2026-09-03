@@ -11,6 +11,10 @@
     "ac": 12,
     "hp_max": 2,
     "speed": "40 ft, escalada 30 ft",
+    "speed_modes": {
+      "walk": 40,
+      "climb": 30
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -44,6 +48,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -63,6 +69,10 @@
     "ac": 11,
     "hp_max": 1,
     "speed": "1,5 m, voo 18 m",
+    "speed_modes": {
+      "walk": 5,
+      "fly": 60
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -102,6 +112,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -121,6 +133,10 @@
     "ac": 11,
     "hp_max": 1,
     "speed": "6 m, natação 6 m",
+    "speed_modes": {
+      "walk": 20,
+      "swim": 20
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -146,6 +162,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -165,6 +183,9 @@
     "ac": 10,
     "hp_max": 1,
     "speed": "6 m",
+    "speed_modes": {
+      "walk": 20
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -198,6 +219,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -217,6 +240,10 @@
     "ac": 12,
     "hp_max": 1,
     "speed": "3 m, voo 15 m",
+    "speed_modes": {
+      "walk": 10,
+      "fly": 50
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -256,6 +283,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -275,6 +304,10 @@
     "ac": 13,
     "hp_max": 2,
     "speed": "9 m, natação 9 m",
+    "speed_modes": {
+      "walk": 30,
+      "swim": 30
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -308,6 +341,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -327,6 +362,10 @@
     "ac": 13,
     "hp_max": 1,
     "speed": "3 m, voo 18 m",
+    "speed_modes": {
+      "walk": 10,
+      "fly": 60
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -360,6 +399,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -379,6 +420,10 @@
     "ac": 12,
     "hp_max": 1,
     "speed": "6 m, escalada 6 m",
+    "speed_modes": {
+      "walk": 20,
+      "climb": 20
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -412,6 +457,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -431,6 +478,9 @@
     "ac": 10,
     "hp_max": 13,
     "speed": "18 m",
+    "speed_modes": {
+      "walk": 60
+    },
     "prof_bonus": 2,
     "carry_capacity": 480,
     "stats": {
@@ -458,6 +508,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Montaria comum. Capacidade de carga 480 lbs.",
     "source": "PHB"
@@ -474,6 +526,9 @@
     "ac": 11,
     "hp_max": 19,
     "speed": "18 m",
+    "speed_modes": {
+      "walk": 60
+    },
     "prof_bonus": 2,
     "carry_capacity": 540,
     "stats": {
@@ -501,6 +556,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Cavalo treinado para combate. Capacidade de carga 540 lbs.",
     "source": "PHB"
@@ -517,6 +574,9 @@
     "ac": 10,
     "hp_max": 11,
     "speed": "12 m",
+    "speed_modes": {
+      "walk": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": 420,
     "stats": {
@@ -544,6 +604,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Animal de carga. Capacidade de carga 420 lbs.",
     "source": "PHB"
@@ -560,6 +622,9 @@
     "ac": 9,
     "hp_max": 15,
     "speed": "15 m",
+    "speed_modes": {
+      "walk": 50
+    },
     "prof_bonus": 2,
     "carry_capacity": 480,
     "stats": {
@@ -580,6 +645,8 @@
       }
     ],
     "special_actions": [],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Montaria de deserto; suporta longos trechos sem água. Capacidade de carga 480 lbs (240 kg).",
     "source": "PHB"
@@ -596,6 +663,9 @@
     "ac": 10,
     "hp_max": 19,
     "speed": "12 m",
+    "speed_modes": {
+      "walk": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": 540,
     "stats": {
@@ -616,6 +686,8 @@
       }
     ],
     "special_actions": [],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Cavalo de tração. Puxa veículos; capacidade de carga 540 lbs (270 kg).",
     "source": "PHB"
@@ -632,6 +704,9 @@
     "ac": 12,
     "hp_max": 76,
     "speed": "12 m",
+    "speed_modes": {
+      "walk": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": 1320,
     "stats": {
@@ -666,6 +741,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Animal de carga enorme. Capacidade de carga 1320 lbs (660 kg).",
     "source": "PHB"
@@ -682,6 +759,9 @@
     "ac": 12,
     "hp_max": 5,
     "speed": "12 m",
+    "speed_modes": {
+      "walk": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": 195,
     "stats": {
@@ -709,6 +789,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Cão de guarda. Olfato Aguçado.",
     "source": "PHB"
@@ -725,6 +807,9 @@
     "ac": 10,
     "hp_max": 11,
     "speed": "12 m",
+    "speed_modes": {
+      "walk": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": 225,
     "stats": {
@@ -745,6 +830,8 @@
       }
     ],
     "special_actions": [],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Montaria pequena. Capacidade de carga 225 lbs.",
     "source": "PHB"
@@ -761,6 +848,10 @@
     "ac": 13,
     "hp_max": 10,
     "speed": "6 m, voo 12 m",
+    "speed_modes": {
+      "walk": 20,
+      "fly": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -800,6 +891,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -819,6 +912,10 @@
     "ac": 13,
     "hp_max": 7,
     "speed": "4,5 m, voo 18 m",
+    "speed_modes": {
+      "walk": 15,
+      "fly": 60
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -859,6 +956,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -878,6 +977,9 @@
     "ac": 13,
     "hp_max": 7,
     "speed": "12 m",
+    "speed_modes": {
+      "walk": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -917,6 +1019,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -936,6 +1040,10 @@
     "ac": 15,
     "hp_max": 2,
     "speed": "3 m, voo 12 m",
+    "speed_modes": {
+      "walk": 10,
+      "fly": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -982,6 +1090,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "shares_senses": true,
       "deliver_touch_spells": true
@@ -1001,6 +1111,9 @@
     "ac": 11,
     "hp_max": 19,
     "speed": "18 m",
+    "speed_modes": {
+      "walk": 60
+    },
     "prof_bonus": 2,
     "carry_capacity": 540,
     "stats": {
@@ -1028,6 +1141,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Montaria celestial invocada por Encontrar Montaria. Compreende um idioma à escolha do mestre.",
     "source": "PHB"
@@ -1044,6 +1159,9 @@
     "ac": 11,
     "hp_max": 13,
     "speed": "15 m",
+    "speed_modes": {
+      "walk": 50
+    },
     "prof_bonus": 2,
     "carry_capacity": 480,
     "stats": {
@@ -1084,6 +1202,8 @@
         "usesOwnerAction": false
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Montaria celestial com chifres. Compreende um idioma à escolha do mestre.",
     "source": "PHB"
@@ -1100,6 +1220,10 @@
     "ac": 15,
     "hp_max": 1,
     "speed": "3 m, voo 9 m",
+    "speed_modes": {
+      "walk": 10,
+      "fly": 30
+    },
     "prof_bonus": 4,
     "carry_capacity": null,
     "stats": {
@@ -1119,6 +1243,8 @@
         "usesOwnerAction": true
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {},
     "description": "Companheiro feérico tímido. Geralmente invisível, aparecendo apenas quando a sós com o druida. A 0 PV: volta à Faéria; reaparece após descanso longo do druida.",
     "source": "PHB"
@@ -1135,6 +1261,9 @@
     "ac": 12,
     "hp_max": 8,
     "speed": "6 m",
+    "speed_modes": {
+      "walk": 20
+    },
     "prof_bonus": 2,
     "carry_capacity": null,
     "stats": {
@@ -1162,6 +1291,8 @@
         "usesOwnerAction": true
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "use_owner_proficiency": true,
       "scales_with_owner_level": true
@@ -1181,6 +1312,9 @@
     "ac": 11,
     "hp_max": 19,
     "speed": "18 m",
+    "speed_modes": {
+      "walk": 60
+    },
     "prof_bonus": 2,
     "carry_capacity": 540,
     "stats": {
@@ -1208,6 +1342,8 @@
         "usesOwnerAction": true
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "scales_with_owner_level": true
     },
@@ -1226,6 +1362,9 @@
     "ac": 10,
     "hp_max": 11,
     "speed": "12 m",
+    "speed_modes": {
+      "walk": 40
+    },
     "prof_bonus": 2,
     "carry_capacity": 225,
     "stats": {
@@ -1253,6 +1392,8 @@
         "usesOwnerAction": true
       }
     ],
+    "skill_proficiencies": [],
+    "save_proficiencies": [],
     "flags": {
       "scales_with_owner_level": true
     },

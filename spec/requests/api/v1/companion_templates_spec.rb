@@ -235,3 +235,68 @@ RSpec.describe 'Token do companheiro (PNG)', type: :request do
     expect(tpl.reload.token_image).not_to be_attached
   end
 end
+
+RSpec.describe 'Mecanica da acao especial', type: :request do
+  let(:dm_role) { Role.find_by(name: 'DM') || create(:role, name: 'DM') }
+  let(:dm_user) { create(:user, role: dm_role) }
+  let!(:tpl) do
+    CompanionTemplate.create!(slug: 'lobo-inv', name: 'Lobo Invernal', companion_type: 'beast_companion')
+  end
+
+  # ⚠️ `mechanics` e hash ANINHADO num array de hashes: sem as chaves nos strong
+  # params o Rails descarta o bloco inteiro e a acao volta a ser so prosa.
+  it 'persiste CD, atributo do TR, dado e area' do
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: { companion_template: {
+            special_actions: [{
+              name: 'Sopro Gelado', actionCost: 'action', description: 'Cone gelado.',
+              mechanics: {
+                saveAbility: 'dex', saveDc: 12, halfOnSave: true,
+                damage: { dice: '4d8', type: 'frio' },
+                area: { shape: 'cone', sizeFt: 15 },
+              },
+            }],
+          } }.to_json,
+          headers: bearer_headers_for(dm_user).merge('CONTENT_TYPE' => 'application/json')
+
+    expect(response).to have_http_status(:ok)
+    mec = tpl.reload.special_actions.first['mechanics']
+    expect(mec['saveAbility']).to eq('dex')
+    expect(mec['saveDc']).to eq(12)
+    expect(mec['damage']).to eq({ 'dice' => '4d8', 'type' => 'frio' })
+    expect(mec['area']).to eq({ 'shape' => 'cone', 'sizeFt' => 15 })
+  end
+
+  it 'acao sem mecanica continua valendo pelo texto' do
+    patch "/api/v1/admin/companion_templates/#{tpl.slug}",
+          params: { companion_template: {
+            special_actions: [{ name: 'Faro Apurado', description: 'Vantagem em Percepcao.' }],
+          } }.to_json,
+          headers: bearer_headers_for(dm_user).merge('CONTENT_TYPE' => 'application/json')
+
+    acao = tpl.reload.special_actions.first
+    expect(acao['description']).to eq('Vantagem em Percepcao.')
+    expect(acao['mechanics']).to be_nil
+  end
+end
+
+RSpec.describe 'Deslocamento multi-modo do companheiro', type: :request do
+  let(:dm_role) { Role.find_by(name: 'DM') || create(:role, name: 'DM') }
+  let(:dm_user) { create(:user, role: dm_role) }
+
+  it 'grava os modos NUMERICOS e devolve no shape do front' do
+    post '/api/v1/admin/companion_templates',
+         params: { companion_template: {
+           name: 'Lobo Aquatico', companion_type: 'mount',
+           speed: '15 m, natacao 7,5 m',
+           speed_modes: { walk: 50, swim: 25 },
+         } }.to_json,
+         headers: bearer_headers_for(dm_user).merge('CONTENT_TYPE' => 'application/json')
+
+    expect(response).to have_http_status(:created)
+
+    get '/api/v1/public/companion_templates'
+    linha = response.parsed_body['companion_templates'].find { |t| t['templateId'] == 'lobo-aquatico' }
+    expect(linha['speedModes']).to eq({ 'walk' => 50, 'swim' => 25 })
+  end
+end

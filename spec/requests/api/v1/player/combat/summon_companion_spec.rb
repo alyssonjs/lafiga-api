@@ -89,10 +89,30 @@ RSpec.describe 'Invocar companion para o combate', type: :request do
       expect(npc.attacks.first['damage_dice']).to eq('1d4+3')
     end
 
-    it 'le a velocidade do TEXTO do companion' do
-      # O companion guarda "20 ft, voo 40 ft"; o NPC guarda um inteiro.
+    # ⚠️ FALLBACK. Companheiro antigo so tem a string, e dela sai o andar — o
+    # VOO 40 do diabrete some. Era este o defeito: o multi-modo morria aqui.
+    it 'sem modos declarados, le a velocidade do TEXTO (e perde o voo)' do
       invocar(dono)
-      expect(CombatNpc.find_by(schedule: schedule, name: 'Diabrete').speed).to eq(20)
+      npc = CombatNpc.find_by(schedule: schedule, name: 'Diabrete')
+      expect(npc.speed).to eq(20)
+      expect(npc.speed_modes).to eq({})
+    end
+
+    it 'com modos declarados, o VOO chega ao combate' do
+      sheet.update!(companions: [familiar.merge('speedModes' => { 'walk' => 20, 'fly' => 40 })])
+
+      invocar(dono)
+      npc = CombatNpc.find_by(schedule: schedule, name: 'Diabrete')
+      expect(npc.speed_modes).to eq({ 'walk' => 20, 'fly' => 40 })
+      # O inteiro do `speed` passa a sair do ANDAR declarado, nao do texto.
+      expect(npc.speed).to eq(20)
+    end
+
+    it 'modo zerado nao entra — ausente e ausente' do
+      sheet.update!(companions: [familiar.merge('speedModes' => { 'walk' => 30, 'fly' => 0, 'swim' => nil })])
+
+      invocar(dono)
+      expect(CombatNpc.find_by(schedule: schedule, name: 'Diabrete').speed_modes).to eq({ 'walk' => 30 })
     end
 
     it 'ficha com hpCurrent 0 invoca com PV CHEIO, nao morto' do

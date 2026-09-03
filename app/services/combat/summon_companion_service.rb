@@ -92,7 +92,11 @@ module Combat
         # colocaria o familiar morto no tracker.
         hp_current: positivo(c['hpCurrent']) || c['hpMax'].to_i,
         ac: c['ac'].to_i,
-        speed: velocidade_em_pes(c['speed']),
+        speed: velocidade_em_pes(c['speed'], c['speedModes']),
+        # ⚠️ Sem isto o multi-modo morria aqui: a montaria nadadora entrava no
+        # combate com o deslocamento de ANDAR e mais nada. A coluna e o leitor
+        # do front já existiam desde 31/08.
+        speed_modes: modos_de_deslocamento(c),
         proficiency_bonus: c['profBonus'].to_i,
         stats: (c['stats'] || {}).transform_keys(&:to_s),
         attacks: Array(c['attacks']).map { |a| ataque(a) },
@@ -109,10 +113,26 @@ module Combat
       n.positive? ? n : nil
     end
 
-    # O companion guarda a velocidade como TEXTO ("40 ft, escalada 30 ft") e o
-    # NPC guarda um inteiro. Lê o primeiro número — a locomoção alternativa não
-    # cabe no campo e fica nas notas.
-    def velocidade_em_pes(texto)
+    MODOS = %w[walk fly swim climb burrow].freeze
+
+    # Os modos NUMÉRICOS do modelo, higienizados. Ausentes = `{}` (o leitor do
+    # front cai na string, como sempre fez).
+    def modos_de_deslocamento(companion)
+      brutos = companion['speedModes']
+      return {} unless brutos.is_a?(Hash)
+
+      modos = brutos.slice(*MODOS).transform_values { |v| v.to_i }.reject { |_, v| v <= 0 }
+      modos['hover'] = true if brutos['hover']
+      modos
+    end
+
+    # O NPC guarda UM inteiro no `speed`. Com os modos declarados, o andar é a
+    # resposta certa; sem eles, sobra ler o primeiro número do texto — que é o
+    # que achatava o statblock e continua sendo só o fallback.
+    def velocidade_em_pes(texto, modos = nil)
+      andar = modos.is_a?(Hash) ? modos['walk'].to_i : 0
+      return andar if andar.positive?
+
       texto.to_s[/\d+/]&.to_i
     end
 

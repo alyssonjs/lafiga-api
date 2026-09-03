@@ -9,8 +9,18 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
   ATTACK_PERMIT = [:name, :attackBonus, :attack_bonus, :damage, :damageType,
                    :damage_type, :range, :notes, :ability, :proficient].freeze
 
+  # ⚠️ `mechanics` e um hash ANINHADO dentro de um array de hashes. Sem listar
+  # as chaves dele, o Rails descarta o bloco inteiro e a acao volta a ser so
+  # prosa — o defeito que o F2a existe para fechar.
+  MECHANICS_PERMIT = [
+    :saveAbility, :save_ability, :saveDc, :save_dc, :halfOnSave, :half_on_save,
+    { damage: [:dice, :type] },
+    { area: [:shape, :sizeFt, :size_ft, :widthFt, :width_ft] },
+  ].freeze
+
   SPECIAL_ACTION_PERMIT = [:name, :actionCost, :action_cost, :description,
-                           :usesOwnerAction, :uses_owner_action, :recharge].freeze
+                           :usesOwnerAction, :uses_owner_action, :recharge,
+                           { mechanics: MECHANICS_PERMIT }].freeze
 
   FLAGS_PERMIT = [:use_owner_proficiency, :scales_with_owner_level,
                   :owner_level_required, :shares_senses, :deliver_touch_spells,
@@ -87,7 +97,7 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
       :slug, :name, :companion_type, :origin, :origin_spell_id,
       :origin_class_feature, :creature_type, :size, :ac, :hp_max, :speed,
       :prof_bonus, :carry_capacity, :description, :source,
-      { stats: {} }, { tags: [] },
+      { stats: {} }, { tags: [] }, { speed_modes: {} },
       { skill_proficiencies: [] }, { save_proficiencies: [] },
       { attacks: ATTACK_PERMIT },
       { special_actions: SPECIAL_ACTION_PERMIT },
