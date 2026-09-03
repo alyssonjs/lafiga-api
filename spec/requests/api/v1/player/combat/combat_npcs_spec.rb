@@ -71,6 +71,45 @@ RSpec.describe 'Api::V1::Player::Combat::CombatNpcsController', type: :request d
       expect(response).to have_http_status(:forbidden)
     end
 
+    # ⚠️ O token escolhido na biblioteca chegava até o cliente e não passava:
+    # a lista branca do front e este `permit` o deixavam de fora, e o NPC
+    # entrava no mapa como quadrado colorido — sem erro nenhum na tela.
+    describe 'token da biblioteca de objetos' do
+      let(:asset) { create(:map_asset, kind: 'object') }
+
+      it 'aceita o ID e DERIVA a url relativa' do
+        com_token = payload.deep_dup
+        com_token[:npc][:token_map_asset_id] = asset.id
+        post "/api/v1/player/schedules/#{schedule.id}/combat_npcs",
+             params: com_token, headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:created)
+        expect(response.parsed_body['npc']['token_image_url'])
+          .to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.id}")
+      end
+
+      # O cliente não dita o `src` que os jogadores vão renderizar.
+      it 'IGNORA uma url crua mandada pelo cliente' do
+        cru = payload.deep_dup
+        cru[:npc][:token_image_url] = 'https://exemplo.invalido/rastreador.png'
+        post "/api/v1/player/schedules/#{schedule.id}/combat_npcs",
+             params: cru, headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:created)
+        expect(schedule.combat_npcs.last.token_image_url).to be_nil
+      end
+
+      it 'id inexistente não grava token' do
+        fantasma = payload.deep_dup
+        fantasma[:npc][:token_map_asset_id] = 999_999
+        post "/api/v1/player/schedules/#{schedule.id}/combat_npcs",
+             params: fantasma, headers: dm_headers, as: :json
+
+        expect(response).to have_http_status(:created)
+        expect(schedule.combat_npcs.last.token_image_url).to be_nil
+      end
+    end
+
     it '422 with invalid stats key' do
       bad = payload.deep_dup
       bad[:npc][:stats] = { foo: 1 }

@@ -100,6 +100,11 @@ module Api::V1::Player::Combat
       params.require(:npc).permit(
         :name, :hp_current, :hp_max, :ac, :base_ac, :speed, :cr,
         :proficiency_bonus, :monster_id, :notes,
+        # Token da biblioteca de objetos. ⚠️ Entra o **id** do asset, nunca a
+        # URL: o cliente não dita o `src` que os jogadores vão renderizar, e o
+        # path derivado aqui é relativo (o absoluto do dev viraria `localhost`
+        # depois do deploy).
+        :token_map_asset_id,
         # Deslocamento multi-modo (walk/fly/swim/climb/burrow/hover). `speed`
         # continua sendo o modo de ANDAR; os modos são o statblock inteiro.
         stats: {}, saving_throws: {}, skills: {}, equipment: {}, speed_modes: {},
@@ -111,6 +116,13 @@ module Api::V1::Player::Combat
         p[:equipment]      = p[:equipment].to_h.transform_keys(&:to_s)      if p[:equipment]
         p[:speed_modes]    = p[:speed_modes].to_h.transform_keys(&:to_s)    if p[:speed_modes]
         p[:attacks]        = p[:attacks].map { |a| a.to_h.transform_keys(&:to_s) } if p[:attacks]
+
+        # O id é VIRTUAL: sai do payload e vira a URL derivada. Id inexistente
+        # não grava nada — melhor sem token que com um `src` quebrado.
+        asset_id = p.delete(:token_map_asset_id)
+        if asset_id.present? && MapAsset.exists?(id: asset_id)
+          p[:token_image_url] = MapAssetTokenUrl.for(asset_id)
+        end
       end
     end
   end

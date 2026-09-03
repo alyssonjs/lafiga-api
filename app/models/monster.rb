@@ -58,9 +58,7 @@ class Monster < ApplicationRecord
   # do `map_assets` já serve o blob com cache imutável e SEM gate de DM: o token
   # é da mesa inteira.
   def token_image_url
-    return nil if token_map_asset_id.blank?
-
-    "/api/v1/admin/map_assets/#{token_map_asset_id}/image?v=#{token_map_asset_id}"
+    MapAssetTokenUrl.for(token_map_asset_id)
   end
 
   def self.cr_to_number(cr_value)
