@@ -16,6 +16,12 @@ module SheetItems
 
     MOUNTS = %w[mount greater_mount].freeze
 
+    # ⚠️ A capacidade da montaria diz quanto PESO ela aguenta; o alforje diz
+    # ONDE a tralha vai. São coisas diferentes, e faltava a segunda: dava para
+    # guardar a flauta num lobo sem nada nas costas. Medido em 02/09: das 3
+    # montarias com carga no banco, só UMA tinha alforje.
+    CONTAINER_SLOT = 'bags'
+
     def initialize(item:, companion_id:, quantity:)
       @item = item
       @companion_id = companion_id.presence
@@ -56,8 +62,18 @@ module SheetItems
       companion = Array(sheet.companions).find { |c| c.is_a?(Hash) && c['id'].to_s == companion_id.to_s }
       raise InvalidStow, 'Montaria não encontrada nesta ficha' unless companion
       raise InvalidStow, 'Este companheiro não é uma montaria' unless MOUNTS.include?(companion['type'].to_s)
+      raise InvalidStow, mensagem_sem_alforje(companion) unless container?(companion)
 
       companion
+    end
+
+    # Alforje (ou o que ocupe o slot `bags`) equipado na montaria.
+    def container?(companion)
+      (companion['equipment'] || {})[CONTAINER_SLOT].present?
+    end
+
+    def mensagem_sem_alforje(companion)
+      "#{companion['name']} não tem alforje. Equipe um no slot de bolsas antes de guardar carga."
     end
 
     def props_for(companion)

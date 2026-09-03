@@ -12,7 +12,11 @@ RSpec.describe 'Api::V1::Player::SheetItemsController stow_on_mount', type: :req
   let!(:sheet) do
     s = create(:sheet, character: character)
     s.update!(companions: [
-                { 'id' => 'mnt-1', 'name' => 'Mula', 'type' => 'mount', 'hpMax' => 11, 'hpCurrent' => 11 },
+                # ⚠️ Com ALFORJE: a capacidade diz quanto peso a montaria aguenta,
+                # o alforje diz ONDE a tralha vai. Sem ele nada entra.
+                { 'id' => 'mnt-1', 'name' => 'Mula', 'type' => 'mount', 'hpMax' => 11, 'hpCurrent' => 11,
+                  'equipment' => { 'bags' => { 'name' => 'Alforje', 'itemIndex' => 'gi-alforje', 'capacityLb' => 30 } } },
+                { 'id' => 'mnt-pelado', 'name' => 'Pangare', 'type' => 'mount', 'hpMax' => 11, 'hpCurrent' => 11 },
                 { 'id' => 'fam-1', 'name' => 'Coruja', 'type' => 'familiar', 'hpMax' => 1, 'hpCurrent' => 1 },
               ])
     s
@@ -47,6 +51,33 @@ RSpec.describe 'Api::V1::Player::SheetItemsController stow_on_mount', type: :req
 
     expect(response).to have_http_status(:ok)
     expect(prop(item)).to be_nil
+  end
+
+  # ⚠️ O BUG: dava para guardar a flauta num lobo sem nada nas costas. A
+  # capacidade da montaria e o alforje sao coisas diferentes — faltava a segunda.
+  it 'montaria SEM alforje recusa a carga' do
+    item = bag!
+
+    expect { stow(item, companion_id: 'mnt-pelado') }.not_to(change { prop(item) })
+
+    expect(response).to have_http_status(:unprocessable_entity)
+    expect(response.parsed_body['error']).to match(/alforje/i)
+  end
+
+  it 'equipar o alforje libera a carga na mesma montaria' do
+    item = bag!
+    stow(item, companion_id: 'mnt-pelado')
+    expect(prop(item)).to be_nil
+
+    sheet.update!(companions: Array(sheet.companions).map do |c|
+      next c unless c['id'] == 'mnt-pelado'
+
+      c.merge('equipment' => { 'bags' => { 'name' => 'Alforje', 'capacityLb' => 30 } })
+    end)
+
+    stow(item, companion_id: 'mnt-pelado')
+    expect(response).to have_http_status(:ok)
+    expect(prop(item)).to eq('mnt-pelado')
   end
 
   it 'REGRESSAO: familiar nao carrega carga — so montaria' do
