@@ -164,3 +164,13 @@ RSpec.describe 'poda de objetos sem alta' do
     expect(fonte).to match(/unless aplica\n\s+counts\[:removeria\] \+= 1\n\s+next/)
   end
 end
+
+RSpec.describe 'poda — arte própria do Mestre fica fora' do
+  let(:fonte) { File.read(Rails.root.join('lib/tasks/inkarnate_objects_prune.rake')) }
+
+  it 'a categoria "Meus" nunca entra na mira', :aggregate_failures do
+    # o que ele enviou não veio do catálogo: "sem alta" ali não é descartável
+    expect(fonte).to match(/CATEGORIAS_DO_MESTRE = \['Meus'\]\.freeze/)
+    expect(fonte).to match(/where\.not\(category: CATEGORIAS_DO_MESTRE\)/)
+  end
+end

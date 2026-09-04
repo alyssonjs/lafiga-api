@@ -7,6 +7,10 @@
 # "BW", que a API não entrega). São itens de baixa resolução que só poluem a
 # biblioteca.
 #
+# ⚠️ NUNCA toca em arte PRÓPRIA do Mestre (categoria "Meus"): ela não veio do
+# catálogo, então não existe versão em alta p/ ela — "sem alta" ali não quer
+# dizer descartável, quer dizer que é dele.
+#
 # ⚠️ NUNCA remove um objeto POSICIONADO num mapa. O token guarda só o `assetId`
 # no jsonb de `battle_maps.tokens` — não há chave estrangeira, então apagar o
 # asset deixaria o objeto no mapa apontando p/ imagem que não existe mais. Esses
@@ -18,7 +22,10 @@
 #   docker exec lafiga-web-1 bundle exec rails inkarnate:objects_prune
 #   docker exec -e APPLY=1 lafiga-web-1 bundle exec rails inkarnate:objects_prune
 namespace :inkarnate do
-  desc 'Remove objetos sem arte em alta, preservando os posicionados em mapas. APPLY=1 executa.'
+  # O que o Mestre enviou é dele: fora da poda, sempre.
+  CATEGORIAS_DO_MESTRE = ['Meus'].freeze
+
+  desc 'Remove objetos do catálogo sem arte em alta, preservando arte própria e os posicionados em mapas. APPLY=1 executa.'
   task objects_prune: :environment do
     aplica = ENV['APPLY'] == '1'
     limit  = ENV['LIMIT'].to_i
@@ -33,6 +40,7 @@ namespace :inkarnate do
     alvos = MapAsset
             .joins(image_attachment: :blob)
             .where(kind: 'object')
+            .where.not(category: CATEGORIAS_DO_MESTRE)
             .where.not('active_storage_blobs.filename LIKE ?', 'ink-%')
             .order(:id)
     alvos = alvos.limit(limit) if limit.positive?
