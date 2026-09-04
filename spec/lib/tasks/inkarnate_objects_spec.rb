@@ -79,3 +79,47 @@ RSpec.describe 'índice de objetos do Inkarnate' do
     expect(fonte).to include('MapAsset::ALLOWED_CONTENT_TYPES')
   end
 end
+
+# Texturas: o mesmo contrato, mas de CRIAÇÃO — produção não tem nenhuma.
+RSpec.describe 'índice de texturas do Inkarnate' do
+  INDICE_TEX = Rails.root.join('db/data/inkarnate_textures.json')
+  RAKE_TEX = Rails.root.join('lib/tasks/inkarnate_textures.rake')
+
+  let(:dados) { JSON.parse(File.read(INDICE_TEX)) }
+  let(:itens) { dados['itens'] }
+
+  it 'tem itens, categoria declarada e a contagem bate' do
+    expect(itens.size).to eq(dados['total'])
+    expect(itens.size).to be > 200
+    expect(dados['categoria']).to be_present
+    expect(dados['categoria'].length).to be <= 40
+  end
+
+  it 'o nome é único (a idempotência da rake é por kind+category+name)' do
+    nomes = itens.map { |i| i['n'].to_s.downcase }
+
+    expect(nomes.uniq.size).to eq(nomes.size)
+    expect(nomes.count(&:empty?)).to eq(0)
+  end
+
+  it 'cabe nos limites das colunas e traz tipo de imagem aceito' do
+    expect(itens.count { |i| i['n'].length > 80 }).to eq(0)
+    expect(itens.count { |i| i['g'] && i['g'].length > 60 }).to eq(0)
+    expect(itens.count { |i| i['vg'] && i['vg'].length > 80 }).to eq(0)
+    tipos = itens.map { |i| i['ct'] }.uniq
+
+    expect(tipos - MapAsset::ALLOWED_CONTENT_TYPES).to be_empty
+  end
+
+  it 'toda textura tem origem no CDN do Inkarnate' do
+    expect(itens.all? { |i| i['u'].to_s.start_with?('https://cdn2.inkarnate.com/') }).to be(true)
+  end
+
+  it 'a rake não duplica: existe? antes de criar' do
+    fonte = File.read(RAKE_TEX)
+
+    expect(fonte).to match(/MapAsset\.exists\?\(kind: 'texture', category: categoria, name: nome\)/)
+    expect(fonte).to include('MapAsset::MAX_BYTES')
+    expect(fonte).to include('MapAsset::ALLOWED_CONTENT_TYPES')
+  end
+end
