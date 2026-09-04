@@ -215,13 +215,57 @@ RSpec.describe 'índice do catálogo do Inkarnate' do
   it '⚠️ a idempotência é pelo NOME DO ARQUIVO (ink-<assetId>), não pelo nome do item' do
     # é o que deixa rodar em pedaços e retomar, e o que impede duplicar o que a
     # conversão anterior já trouxe
-    expect(fonte).to match(/SELECT filename FROM active_storage_blobs WHERE filename LIKE 'ink-%'/)
-    expect(fonte).to include('ink-(\\d+)')
+    expect(fonte).to include('SELECT filename FROM active_storage_blobs WHERE filename LIKE ?')
+    expect(fonte).to include('#{prefixo}-(\\d+)')
     expect(fonte).to match(/reject \{ \|i\| presentes\.include\?\(i\['aid'\]\) \}/)
   end
 
   it 'respeita os limites do próprio model em vez de repetir os números' do
     expect(fonte).to include('MapAsset::MAX_BYTES')
     expect(fonte).to include('MapAsset::ALLOWED_CONTENT_TYPES')
+  end
+end
+
+# Catálogo de TEXTURAS: a mesma história dos objetos — a biblioteca tinha o
+# recorte importado à mão (243) contra 707 no catálogo.
+RSpec.describe 'índice do catálogo de texturas' do
+  INDICE_TEXCAT = Rails.root.join('db/data/inkarnate_textures_catalog.json')
+  RAKE_IMPORT = Rails.root.join('lib/tasks/inkarnate_catalog_import.rake')
+
+  let(:dados) { JSON.parse(File.read(INDICE_TEXCAT)) }
+  let(:itens) { dados['itens'] }
+  let(:fonte) { File.read(RAKE_IMPORT) }
+
+  it 'traz o catálogo inteiro, em muitos packs' do
+    expect(itens.size).to eq(dados['total'])
+    expect(itens.size).to be > 600
+    expect(itens.map { |i| [i['c'], i['g']] }.uniq.size).to be > 40
+  end
+
+  it '⚠️ a categoria é o ESTILO, não "Terrenos"', :aggregate_failures do
+    # com 54 packs numa categoria só, o "Core" de Fantasy World e o de
+    # Watercolor Cities colidiriam na mesma subcategoria
+    expect(itens.map { |i| i['c'] }.uniq.size).to be >= 5
+    expect(itens.map { |i| i['c'] }).not_to include('Terrenos')
+  end
+
+  it 'o nome é único dentro de (categoria, pack)' do
+    chaves = itens.map { |i| [i['c'], i['g'], i['n'].downcase] }
+
+    expect(chaves.uniq.size).to eq(chaves.size)
+  end
+
+  it 'cabe nos limites das colunas e vem do CDN do Inkarnate' do
+    expect(itens.count { |i| i['n'].to_s.length > 80 }).to eq(0)
+    expect(itens.count { |i| i['c'].to_s.length > 40 }).to eq(0)
+    expect(itens.count { |i| i['g'].to_s.length > 60 }).to eq(0)
+    expect(itens.flat_map { |i| i['us'] }.all? { |u| u.start_with?('https://cdn2.inkarnate.com/') }).to be(true)
+  end
+
+  it '⚠️ o prefixo do arquivo separa textura de objeto — e `inktex-` não casa com `ink-%`' do
+    # é o que impede a poda de objetos de mirar uma textura
+    expect(fonte).to match(/prefixo = kind == 'texture' \? 'inktex' : 'ink'/)
+    expect('inktex-123.png').not_to start_with('ink-')
+    expect(fonte).to match(/kind: kind,/)
   end
 end

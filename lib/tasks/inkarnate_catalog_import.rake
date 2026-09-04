@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Importa o CATÁLOGO INTEIRO de objetos que a conta acessa.
+# Importa o CATÁLOGO INTEIRO (objetos ou texturas) que a conta acessa.
 #
 # A conversão em alta (`inkarnate:objects`) só melhorava o que já tínhamos
 # importado à mão: 2.783 registros, ~18% do catálogo. O que faltava na
@@ -18,8 +18,9 @@
 #   docker exec -e DRY_RUN=1 lafiga-web-1 bundle exec rails inkarnate:catalog_import
 #   docker exec -e LIMIT=200 lafiga-web-1 bundle exec rails inkarnate:catalog_import
 #   docker exec -e STYLE='Fantasy Battlemaps' lafiga-web-1 bundle exec rails inkarnate:catalog_import
+#   docker exec -e KIND=texture lafiga-web-1 bundle exec rails inkarnate:catalog_import
 namespace :inkarnate do
-  desc 'Importa o catálogo de objetos do Inkarnate. DRY_RUN=1 simula; LIMIT/STYLE/PACK recortam.'
+  desc 'Importa o catálogo do Inkarnate. KIND=object|texture; DRY_RUN=1 simula; LIMIT/STYLE/PACK recortam.'
   task catalog_import: :environment do
     require 'open-uri'
     require 'json'
@@ -28,7 +29,14 @@ namespace :inkarnate do
     limit = ENV['LIMIT'].to_i
     style = ENV['STYLE'].presence
     pack  = ENV['PACK'].presence
-    arq   = Rails.root.join('db/data/inkarnate_catalog.json')
+    kind  = ENV['KIND'].presence || 'object'
+    abort "KIND inválido: #{kind}" unless %w[object texture].include?(kind)
+    # ⚠️ Prefixos diferentes E que não se confundem no LIKE: 'inktex-...' não
+    # casa com 'ink-%', então a poda de objetos nunca mira uma textura.
+    prefixo = kind == 'texture' ? 'inktex' : 'ink'
+    arq = Rails.root.join(
+      kind == 'texture' ? 'db/data/inkarnate_textures_catalog.json' : 'db/data/inkarnate_catalog.json',
+    )
     abort "índice não encontrado: #{arq}" unless File.exist?(arq)
 
     indice = JSON.parse(File.read(arq))
@@ -38,8 +46,12 @@ namespace :inkarnate do
 
     # Já presentes: qualquer MapAsset cuja imagem é `ink-<assetId>.*`.
     presentes = ActiveRecord::Base.connection
-                                  .select_values("SELECT filename FROM active_storage_blobs WHERE filename LIKE 'ink-%'")
-                                  .filter_map { |f| f[/\Aink-(\d+)\./, 1]&.to_i }
+                                  .select_values(
+                                    ActiveRecord::Base.sanitize_sql_array(
+                                      ['SELECT filename FROM active_storage_blobs WHERE filename LIKE ?', "#{prefixo}-%"],
+                                    ),
+                                  )
+                                  .filter_map { |f| f[/\A#{prefixo}-(\d+)\./, 1]&.to_i }
                                   .to_set
 
     pendentes = itens.reject { |i| presentes.include?(i['aid']) }
@@ -88,14 +100,14 @@ namespace :inkarnate do
       ext = tipo.split('/').last.sub('jpeg', 'jpg')
       asset = MapAsset.new(
         name: it['n'],
-        kind: 'object',
+        kind: kind,
         category: it['c'],
         group_name: it['g'],
         variant_group: it['vg'],
         variant_order: it['vo'].to_i,
         enabled: true,
       )
-      asset.image.attach(io: StringIO.new(dados), filename: "ink-#{it['aid']}.#{ext}", content_type: tipo)
+      asset.image.attach(io: StringIO.new(dados), filename: "#{prefixo}-#{it['aid']}.#{ext}", content_type: tipo)
       if asset.save
         counts[:criado] += 1
         bytes += dados.bytesize
@@ -111,7 +123,7 @@ namespace :inkarnate do
     end
 
     counts.delete(:ultimo_log)
-    puts "== importação do catálogo #{dry ? '(DRY RUN) ' : ''}== #{counts.sort.to_h.inspect}"
+    puts "== importação do catálogo (#{kind}) #{dry ? '(DRY RUN) ' : ''}== #{counts.sort.to_h.inspect}"
     puts "== baixados #{(bytes / 1_048_576.0).round(1)} MB" if bytes.positive?
   end
 end
