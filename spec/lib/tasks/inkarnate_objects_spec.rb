@@ -264,8 +264,50 @@ RSpec.describe 'índice do catálogo de texturas' do
 
   it '⚠️ o prefixo do arquivo separa textura de objeto — e `inktex-` não casa com `ink-%`' do
     # é o que impede a poda de objetos de mirar uma textura
-    expect(fonte).to match(/prefixo = kind == 'texture' \? 'inktex' : 'ink'/)
+    expect(fonte).to match(/prefixo = \{ 'texture' => 'inktex', 'path' => 'inkpath' \}\.fetch\(kind, 'ink'\)/)
     expect('inktex-123.png').not_to start_with('ink-')
     expect(fonte).to match(/kind: kind,/)
+  end
+end
+
+# Caminhos (Shape/Path tool): o asset do Inkarnate é uma RECEITA, não imagem.
+RSpec.describe 'índice do catálogo de caminhos' do
+  INDICE_PATHS = Rails.root.join('db/data/inkarnate_paths_catalog.json')
+
+  let(:dados) { JSON.parse(File.read(INDICE_PATHS)) }
+  let(:itens) { dados['itens'] }
+  let(:fonte) { File.read(Rails.root.join('lib/tasks/inkarnate_catalog_import.rake')) }
+
+  it 'resolve a receita: o que fica no índice é a URL do TILE que se repete' do
+    gerador = File.read(Rails.root.join('db/data/gerar_inkarnate_paths_catalog.py'))
+
+    expect(gerador).to include('stampStroke')
+    expect(gerador).to include('strokeAssetId')
+    expect(itens.size).to eq(dados['total'])
+    expect(itens.size).to be > 300
+    expect(itens.flat_map { |i| i['us'] }.all? { |u| u.start_with?('https://cdn2.inkarnate.com/') }).to be(true)
+  end
+
+  it 'guarda a PROPORÇÃO do tile — é ela que dá a largura natural do traço' do
+    expect(itens.all? { |i| i['w'].to_i.positive? && i['h'].to_i.positive? }).to be(true)
+    # tiles de caminho são longos: repetem na horizontal
+    expect(itens.count { |i| i['w'].to_i > i['h'].to_i }).to be > (itens.size * 0.8)
+  end
+
+  it 'a ponta (cap) entra quando existe, e a falta dela não derruba o item' do
+    comCap = itens.count { |i| i['cap'] }
+    expect(comCap).to be > 200
+    expect(comCap).to be < itens.size
+  end
+
+  it 'o rake conhece o KIND path, com prefixo próprio de arquivo' do
+    expect(fonte).to match(/%w\[object texture path\]/)
+    expect(fonte).to match(/'path' => 'inkpath'/)
+  end
+
+  it '⚠️ o "já presentes" é contado ANTES do LIMIT (senão o corte se disfarça de importado)' do
+    antes = fonte.index('já presentes')
+    depois = fonte.index('pendentes = limit.positive?')
+    expect(antes).to be < depois
   end
 end
