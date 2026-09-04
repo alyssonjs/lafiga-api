@@ -174,3 +174,54 @@ RSpec.describe 'poda — arte própria do Mestre fica fora' do
     expect(fonte).to match(/where\.not\(category: CATEGORIAS_DO_MESTRE\)/)
   end
 end
+
+# Importação do catálogo INTEIRO: a biblioteca tinha ~18% do que a conta
+# acessa, e o que faltava eram os itens, não a qualidade deles.
+RSpec.describe 'índice do catálogo do Inkarnate' do
+  INDICE_CAT = Rails.root.join('db/data/inkarnate_catalog.json')
+  RAKE_CAT = Rails.root.join('lib/tasks/inkarnate_catalog_import.rake')
+
+  let(:dados) { JSON.parse(File.read(INDICE_CAT)) }
+  let(:itens) { dados['itens'] }
+  let(:fonte) { File.read(RAKE_CAT) }
+
+  it 'traz o catálogo inteiro, em muitos packs e categorias' do
+    expect(itens.size).to eq(dados['total'])
+    expect(itens.size).to be > 10_000
+    expect(itens.map { |i| i['c'] }.uniq.size).to be >= 5
+    expect(itens.map { |i| [i['c'], i['g']] }.uniq.size).to be > 50
+  end
+
+  it 'cabe nos limites das colunas do MapAsset' do
+    expect(itens.count { |i| i['n'].to_s.length > 80 }).to eq(0)
+    expect(itens.count { |i| i['c'].to_s.length > 40 }).to eq(0)
+    expect(itens.count { |i| i['g'].to_s.length > 60 }).to eq(0)
+    expect(itens.count { |i| i['vg'] && i['vg'].length > 80 }).to eq(0)
+    expect(itens.count { |i| i['n'].to_s.strip.empty? }).to eq(0)
+  end
+
+  it 'o nome é único dentro de (categoria, pack) — o catálogo repete título entre variantes' do
+    chaves = itens.map { |i| [i['c'], i['g'], i['n'].downcase] }
+
+    expect(chaves.uniq.size).to eq(chaves.size)
+  end
+
+  it 'toda imagem vem do CDN do Inkarnate, com um degrau de recuo p/ o teto de 5 MB' do
+    urls = itens.flat_map { |i| i['us'] }
+    expect(urls.all? { |u| u.start_with?('https://cdn2.inkarnate.com/') }).to be(true)
+    expect(itens.count { |i| i['us'].size > 2 }).to eq(0)
+  end
+
+  it '⚠️ a idempotência é pelo NOME DO ARQUIVO (ink-<assetId>), não pelo nome do item' do
+    # é o que deixa rodar em pedaços e retomar, e o que impede duplicar o que a
+    # conversão anterior já trouxe
+    expect(fonte).to match(/SELECT filename FROM active_storage_blobs WHERE filename LIKE 'ink-%'/)
+    expect(fonte).to include('ink-(\\d+)')
+    expect(fonte).to match(/reject \{ \|i\| presentes\.include\?\(i\['aid'\]\) \}/)
+  end
+
+  it 'respeita os limites do próprio model em vez de repetir os números' do
+    expect(fonte).to include('MapAsset::MAX_BYTES')
+    expect(fonte).to include('MapAsset::ALLOWED_CONTENT_TYPES')
+  end
+end
