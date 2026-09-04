@@ -48,11 +48,23 @@ RSpec.describe 'índice de objetos do Inkarnate' do
     expect(itens.all? { |i| i['vo'].nil? || i['vo'].is_a?(Integer) }).to be(true)
   end
 
-  it 'cluster de variantes só existe com dois ou mais membros NOSSOS' do
-    porGrupo = itens.filter_map { |i| i['vg'] }.tally
-    solitarios = porGrupo.select { |_, n| n < 2 }
+  # Cluster de UM membro é ruído na biblioteca. A conta, porém, é feita contra
+  # a UNIÃO com o que já está em produção: um grupo partido entre duas levas de
+  # conversão teria a metade nova descartada se olhássemos só este arquivo.
+  it 'a regra do cluster conta junto o que já está em produção' do
+    gerador = File.read(Rails.root.join('db/data/gerar_inkarnate_objects.py'))
 
-    expect(solitarios).to be_empty, "grupos de um: #{solitarios.keys.first(5).inspect}"
+    expect(gerador).to include('jaEmProd')
+    expect(gerador).to match(/conta\[vg\] \+ jaEmProd\.get\(vg, 0\) < 2/)
+  end
+
+  it 'a esmagadora maioria dos agrupados está em cluster de verdade' do
+    porGrupo = itens.filter_map { |i| i['vg'] }.tally
+    emCluster = porGrupo.sum { |_, n| n >= 2 ? n : 0 }
+    total = porGrupo.values.sum
+
+    expect(total).to be > 100
+    expect(emCluster.to_f / total).to be > 0.8
   end
 
   it 'as URLs de imagem são do CDN do Inkarnate, da maior variante p/ a menor' do
