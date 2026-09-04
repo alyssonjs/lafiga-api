@@ -135,3 +135,32 @@ RSpec.describe 'índice de texturas do Inkarnate' do
     expect(fonte).to include('MapAsset::ALLOWED_CONTENT_TYPES')
   end
 end
+
+# Poda: o único jeito de a biblioteca ficar só com arte em alta. Destrutivo em
+# produção, então o que estes testes guardam é o que NÃO pode acontecer.
+RSpec.describe 'poda de objetos sem alta' do
+  RAKE_PRUNE = Rails.root.join('lib/tasks/inkarnate_objects_prune.rake')
+
+  let(:fonte) { File.read(RAKE_PRUNE) }
+
+  it '⚠️ nunca remove objeto POSICIONADO num mapa (o token guarda só o assetId)' do
+    # sem chave estrangeira, apagar o asset deixa o objeto no mapa apontando
+    # p/ imagem que não existe mais
+    expect(fonte).to include("jsonb_array_elements(coalesce(bm.tokens, '[]'::jsonb))")
+    expect(fonte).to match(/if em_uso\.include\?\(ma\.id\)/)
+    expect(fonte).to match(/counts\[:em_uso_preservado\]/)
+  end
+
+  it 'só mira objeto SEM arte em alta' do
+    expect(fonte).to match(/where\(kind: 'object'\)/)
+    expect(fonte).to match(/where\.not\('active_storage_blobs\.filename LIKE \?', 'ink-%'\)/)
+  end
+
+  it 'destrutivo exige APPLY=1 — sem ele só conta' do
+    expect(fonte).to match(/aplica = ENV\['APPLY'\] == '1'/)
+    conta = fonte.index('counts[:removeria]')
+    destroi = fonte.index('ma.destroy')
+    expect(conta).to be < destroi
+    expect(fonte).to match(/unless aplica\n\s+counts\[:removeria\] \+= 1\n\s+next/)
+  end
+end
