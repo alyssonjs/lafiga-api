@@ -8,8 +8,13 @@ não "Terrenos": com 54 packs numa categoria só, o "Core" de Fantasy World e o
 """
 import json, os, sys, collections
 
-SP = os.path.dirname(os.path.abspath(__file__))
-ALVO_PX = 512
+# Os dumps crus (cat2-tex/packs2/styles) NÃO são comitados: apontar a pasta
+# deles por `INK_DUMPS=/caminho`; o destino continua sendo o 1º argumento.
+SP = os.environ.get('INK_DUMPS') or os.path.dirname(os.path.abspath(__file__))
+# x8 (4096²): a textura do Inkarnate cobre 80 células por repetição em 100% —
+# em x2 (1024²) cada célula ficava com ~13 px e o continente virava borrão.
+# ⚠️ `us[1]` continua sendo o degrau de recuo (x4) p/ o teto de 5 MB do model.
+ALVO_PX = 4096
 
 d = json.load(open(SP + '/cat2-tex.json'))
 A = d.get('assets') or d.get('items') or d

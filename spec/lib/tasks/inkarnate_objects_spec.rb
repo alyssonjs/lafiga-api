@@ -262,6 +262,22 @@ RSpec.describe 'índice do catálogo de texturas' do
     expect(itens.flat_map { |i| i['us'] }.all? { |u| u.start_with?('https://cdn2.inkarnate.com/') }).to be(true)
   end
 
+  # Em x2 (1024²) cada célula ficava com ~13 px: a textura cobre 80 células por
+  # repetição em 100%, como no Inkarnate, e só o x8 (4096²) aguenta isso.
+  it '⚠️ mira o nível x8 do CDN, com o x4 como degrau de recuo p/ o teto de 5 MB', :aggregate_failures do
+    expect(dados['alvo_px']).to eq(4096)
+    x8 = {
+      594921 => 'https://cdn2.inkarnate.com/sb6xbgafkwtevzpqz0847q8c8me5', # Green Light (terra padrão)
+      594920 => 'https://cdn2.inkarnate.com/465ql508yz3jkl8e3mxkq6dfnwp8', # Water (água padrão)
+      573870 => 'https://cdn2.inkarnate.com/4lau8epmpbmshphq9u5y9vco03ho', # Grass
+      573872 => 'https://cdn2.inkarnate.com/t39pltd0w7d8z2kbyjttg8zkr70b', # Dirt
+    }
+    porAid = itens.index_by { |i| i['aid'] }
+    x8.each { |aid, url| expect(porAid.fetch(aid)['us'].first).to eq(url) }
+    # a esmagadora maioria traz o recuo; só quem não tem x4 no CDN fica com 1 URL
+    expect(itens.count { |i| i['us'].size == 2 }).to be > (itens.size * 0.95)
+  end
+
   it '⚠️ o prefixo do arquivo separa textura de objeto — e `inktex-` não casa com `ink-%`' do
     # é o que impede a poda de objetos de mirar uma textura
     expect(fonte).to match(/prefixo = \{ 'texture' => 'inktex', 'path' => 'inkpath' \}\.fetch\(kind, 'ink'\)/)
