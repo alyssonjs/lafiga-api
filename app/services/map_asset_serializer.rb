@@ -21,6 +21,9 @@ class MapAssetSerializer
       userId: asset.user_id,
       imageUrl: image_url_for(asset),
       sourceRef: source_ref_for(asset),
+      # Sombra por stamp do catálogo ('none' | {b,x,y,i} em unidades de cena);
+      # nil = o item usa o padrão do estilo (o front decide qual é).
+      shadow: asset.try(:meta)&.[]('shadow'),
       createdAt: asset.created_at&.iso8601,
       updatedAt: asset.updated_at&.iso8601,
     }

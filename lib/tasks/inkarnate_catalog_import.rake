@@ -77,7 +77,9 @@ namespace :inkarnate do
     # UPGRADE mira o complemento: quem JÁ está na biblioteca. O aid vem do nome
     # do arquivo, o registro (id + tamanho atual) da junção com o anexo.
     atuais = {}
-    if upgrade
+    # UPGRADE troca imagem; META=1 regrava metadados — os dois precisam do
+    # mapa aid→registro dos já presentes.
+    if upgrade || ENV['META'] == '1'
       ActiveStorage::Blob.joins(:attachments)
                          .where(active_storage_attachments: { record_type: 'MapAsset', name: 'image' })
                          .where('active_storage_blobs.filename LIKE ?', "#{prefixo}-%")
@@ -93,6 +95,29 @@ namespace :inkarnate do
     alvo = upgrade ? itens.select { |i| atuais.key?(i['aid']) } : faltantes
     pendentes = limit.positive? ? alvo.first(limit) : alvo
     puts "== a #{upgrade ? 'verificar (UPGRADE)' : 'importar'} agora: #{pendentes.size}#{limit.positive? ? " (LIMIT=#{limit} de #{alvo.size})" : ''}"
+
+    # META=1: SÓ regrava o meta dos já presentes a partir do catálogo — sem
+    # baixar nada. É o backfill de prod depois que o catálogo ganhou a sombra.
+    if ENV['META'] == '1'
+      c = Hash.new(0)
+      itens.each do |it|
+        atual = atuais[it['aid']]
+        next unless atual
+        meta = meta_de.call(it)
+        asset = MapAsset.find_by(id: atual[:id])
+        next c[:sumiu] += 1 unless asset
+        if asset.meta == meta
+          c[:igual] += 1
+        elsif dry
+          c[:regravaria] += 1
+        else
+          asset.update_columns(meta: meta)
+          c[:regravado] += 1
+        end
+      end
+      puts "== backfill de meta (#{kind}) #{dry ? '(DRY RUN) ' : ''}== #{c.sort.to_h.inspect}"
+      next
+    end
 
     counts = Hash.new(0)
     bytes  = 0
@@ -120,6 +145,9 @@ namespace :inkarnate do
       nil
     end
     largura = ->(bin) { MiniMagick::Image.read(bin)[:width] rescue nil }
+    # Sombra do catálogo → meta['shadow'] ('none' | {b,x,y,i} em unidades de
+    # cena, 200/célula). Ausente no item = padrão do estilo = meta sem a chave.
+    meta_de = ->(it) { it['sh'] ? { 'shadow' => it['sh'] } : {} }
 
     pendentes.each_with_index do |it, i|
       if dry
@@ -161,6 +189,7 @@ namespace :inkarnate do
         end
 
         antigo = asset.image.blob
+        asset.meta = meta_de.call(it)
         asset.image.attach(io: StringIO.new(dados), filename: "#{prefixo}-#{it['aid']}.#{ext}", content_type: tipo)
         if asset.save
           # ⚠️ purge SÍNCRONO do blob anterior: o Rails só enfileira `purge_later`
@@ -187,6 +216,7 @@ namespace :inkarnate do
         variant_group: it['vg'],
         variant_order: it['vo'].to_i,
         enabled: true,
+        meta: meta_de.call(it),
       )
       asset.image.attach(io: StringIO.new(dados), filename: "#{prefixo}-#{it['aid']}.#{ext}", content_type: tipo)
       if asset.save

@@ -224,6 +224,17 @@ RSpec.describe 'índice do catálogo do Inkarnate' do
     expect(fonte).to include('MapAsset::MAX_BYTES')
     expect(fonte).to include('MapAsset::ALLOWED_CONTENT_TYPES')
   end
+  it "a sombra por item ('sh') é 'none' ou a receita completa {b,x,y,i}" do
+    com_sombra = itens.select { |i| i.key?('sh') }
+    expect(com_sombra.size).to be > 5_000 # a regra existe de verdade no catálogo
+    com_sombra.each do |i|
+      next if i['sh'] == 'none'
+
+      expect(i['sh'].keys.sort).to eq(%w[b i x y]), "receita incompleta em #{i['n']}: #{i['sh']}"
+      expect(i['sh'].values).to all(be_a(Numeric))
+    end
+  end
+
 end
 
 # Catálogo de TEXTURAS: a mesma história dos objetos — a biblioteca tinha o

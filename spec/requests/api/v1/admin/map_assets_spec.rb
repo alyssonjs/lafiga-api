@@ -108,6 +108,30 @@ RSpec.describe 'Api::V1::Admin::MapAssets', type: :request do
     end
   end
 
+  # Sombra por stamp do catálogo (meta['shadow']): 'none' = arte com sombra
+  # pintada; {b,x,y,i} = receita custom em unidades de cena (200/célula);
+  # ausente = o front usa o padrão do estilo.
+  describe 'shadow no contrato' do
+    it 'expõe o meta.shadow como veio do catálogo, e nil sem meta', :aggregate_failures do
+      sem = create(:map_asset, :texture, user: dm)
+      none = MapAsset.new(name: 'Morro', kind: 'object', category: 'Fantasy Battlemaps',
+                          meta: { 'shadow' => 'none' })
+      none.image.attach(io: StringIO.new('png-fake'), filename: 'ink-1.png', content_type: 'image/png')
+      none.save!
+      custom = MapAsset.new(name: 'Tenda', kind: 'object', category: 'Fantasy Battlemaps',
+                            meta: { 'shadow' => { 'b' => 88, 'x' => 32, 'y' => 32, 'i' => 0.6 } })
+      custom.image.attach(io: StringIO.new('png-fake'), filename: 'ink-2.png', content_type: 'image/png')
+      custom.save!
+
+      get '/api/v1/admin/map_assets', headers: bearer_headers_for(dm)
+
+      por_id = response.parsed_body['map_assets'].index_by { |x| x['id'] }
+      expect(por_id[sem.id]['shadow']).to be_nil
+      expect(por_id[none.id]['shadow']).to eq('none')
+      expect(por_id[custom.id]['shadow']).to eq({ 'b' => 88, 'x' => 32, 'y' => 32, 'i' => 0.6 })
+    end
+  end
+
   it 'lista todos e filtra por kind' do
     a1 = create(:map_asset, :texture, user: dm)
     a2 = create(:map_asset, :stamp, user: dm)

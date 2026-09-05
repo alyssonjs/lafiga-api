@@ -53,12 +53,25 @@ for a in D['assets']:
     it = {'aid': a['id'], 'n': nome[:80], 'c': cat, 'g': grp, 'us': urls,
           'vo': a.get('order') if isinstance(a.get('order'), int) else 0}
     if gid: it['vg'] = f'ink-{gid}'
+    # SOMBRA por stamp (regra do editor deles): 'none' = arte com sombra já
+    # pintada (morros, penhascos, árvores grandes) — o mapa NÃO põe outra;
+    # 'custom' = receita própria (blur/offset/intensidade em UNIDADES de cena,
+    # 200 por célula); o resto cai no padrão do estilo e fica FORA do item.
+    data = a.get('data') or {}
+    if data.get('shadow') == 'none':
+        it['sh'] = 'none'
+    elif data.get('shadow') == 'custom' and (data.get('customShadow') or {}).get('enabled'):
+        cs = data['customShadow']
+        it['sh'] = {'b': cs.get('blurRadius') or 0, 'x': cs.get('offsetX') or 0,
+                    'y': cs.get('offsetY') or 0, 'i': cs.get('intensity') or 0}
     itens.append(it); resumo['itens'] += 1
 
 conta = collections.Counter(x['vg'] for x in itens if x.get('vg'))
 for x in itens:
     if x.get('vg') and conta[x['vg']] < 2: x.pop('vg')
 resumo['em grupo de variantes'] = sum(1 for x in itens if x.get('vg'))
+resumo['sombra none'] = sum(1 for x in itens if x.get('sh') == 'none')
+resumo['sombra custom'] = sum(1 for x in itens if isinstance(x.get('sh'), dict))
 
 itens.sort(key=lambda x: (x['c'], x['g'], x['vo'], x['aid']))
 dest = sys.argv[1] if len(sys.argv) > 1 else SP + '/inkarnate_catalog.json'

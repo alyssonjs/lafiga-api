@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_03_220000) do
+ActiveRecord::Schema.define(version: 2026_09_05_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -557,6 +557,7 @@ ActiveRecord::Schema.define(version: 2026_09_03_220000) do
     t.string "group_name", limit: 60
     t.integer "variant_order", default: 0, null: false
     t.string "variant_group", limit: 80
+    t.jsonb "meta", default: {}, null: false
     t.index ["category", "group_name", "variant_group"], name: "index_map_assets_on_cat_group_variant"
     t.index ["group_name"], name: "index_map_assets_on_group_name"
     t.index ["kind", "category"], name: "index_map_assets_on_kind_and_category"
