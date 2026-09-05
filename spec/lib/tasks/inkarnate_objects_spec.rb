@@ -327,3 +327,57 @@ RSpec.describe 'índice do catálogo de caminhos' do
     expect(antes).to be < depois
   end
 end
+
+# UPGRADE=1: a biblioteca já tinha a textura, mas no nível x2 (1024²) do CDN;
+# com 80 células por repetição isso dava ~13 px por célula. O modo troca o
+# anexo por um maior SEM trocar o registro — os mapas referenciam `up-<id>`.
+RSpec.describe 'importação do catálogo — modo UPGRADE' do
+  let(:fonte) { File.read(Rails.root.join('lib/tasks/inkarnate_catalog_import.rake')) }
+  # ⚠️ `String#index` devolvendo nil vira range SEM INÍCIO (Ruby ≥ 2.7) e o
+  # recorte passa a ser o arquivo inteiro em silêncio — daí o `fetch`-like.
+  let(:bloco) do
+    ini = fonte.index("if upgrade\n        atual = atuais[it['aid']]") or raise 'ramo do UPGRADE não encontrado'
+    fim = fonte.index('asset = MapAsset.new(', ini) or raise 'criação não encontrada'
+    fonte[ini...fim]
+  end
+
+  it 'mira o COMPLEMENTO: só quem já está na biblioteca, pelo aid do nome do arquivo' do
+    expect(fonte).to match(/upgrade = ENV\['UPGRADE'\] == '1'/)
+    expect(fonte).to match(/alvo = upgrade \? itens\.select \{ \|i\| atuais\.key\?\(i\['aid'\]\) \} : faltantes/)
+    # o aid sai do filename `<prefixo>-<aid>.<ext>` e o registro da junção com o anexo
+    expect(fonte).to include("record_type: 'MapAsset', name: 'image'")
+  end
+
+  it '⚠️ mantém o mesmo map_asset.id — troca o anexo, nunca cria outro registro' do
+    # o ramo de UPGRADE termina em `next` ANTES do `MapAsset.new` da criação
+    expect(bloco).to match(/MapAsset\.with_attached_image\.find_by\(id: atual\[:id\]\)/)
+    expect(bloco).to match(/asset\.image\.attach\(io: StringIO\.new\(dados\)/)
+    expect(bloco.scan(/^\s+next$/).size).to be >= 3
+    expect(bloco).not_to include('MapAsset.new(')
+  end
+
+  it 'só troca quando a nova é MAIOR (largura; bytes como recuo) — senão conta como pulado' do
+    expect(bloco).to match(/nova_w > atual_w/)
+    expect(bloco).to match(/dados\.bytesize > atual\[:bytes\]/)
+    pulado = bloco.index('counts[:pulado_nao_maior]')
+    troca = bloco.index('asset.image.attach(io:') # ⚠️ 'attached?' também casa o prefixo
+    expect(pulado).to be < troca
+  end
+
+  it '⚠️ o blob anterior é purgado de forma SÍNCRONA (a fila em processo morre com o Puma)' do
+    expect(bloco).to match(/antigo = asset\.image\.blob\n/)
+    expect(bloco).to match(/antigo\.purge$/)
+    # e o novo é analisado na hora p/ o próximo UPGRADE comparar por largura
+    expect(bloco).to match(/asset\.image\.blob\.analyze/)
+  end
+
+  it '⚠️ carrega o MiniMagick antes de medir — sem o require a 1ª medição vira nil em silêncio' do
+    expect(fonte.index("require 'mini_magick'")).to be < fonte.index('largura = ->(bin)')
+  end
+
+  it 'DRY_RUN não baixa nada e LIMIT recorta o alvo do UPGRADE' do
+    expect(fonte).to match(/counts\[upgrade \? :verificaria : :criaria\] \+= 1/)
+    expect(fonte.index('counts[upgrade ? :verificaria : :criaria]')).to be < fonte.index('dados, tipo = baixar.call(it)')
+    expect(fonte).to match(/pendentes = limit\.positive\? \? alvo\.first\(limit\) : alvo/)
+  end
+end
