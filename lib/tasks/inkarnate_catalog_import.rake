@@ -94,6 +94,10 @@ namespace :inkarnate do
     end
     alvo = upgrade ? itens.select { |i| atuais.key?(i['aid']) } : faltantes
     pendentes = limit.positive? ? alvo.first(limit) : alvo
+    # Sombra do catálogo → meta['shadow'] ('none' | {b,x,y,i} em unidades de
+    # cena, 200/célula). Ausente no item = padrão do estilo = meta sem a chave.
+    meta_de = ->(it) { it['sh'] ? { 'shadow' => it['sh'] } : {} }
+
     puts "== a #{upgrade ? 'verificar (UPGRADE)' : 'importar'} agora: #{pendentes.size}#{limit.positive? ? " (LIMIT=#{limit} de #{alvo.size})" : ''}"
 
     # META=1: SÓ regrava o meta dos já presentes a partir do catálogo — sem
@@ -145,9 +149,6 @@ namespace :inkarnate do
       nil
     end
     largura = ->(bin) { MiniMagick::Image.read(bin)[:width] rescue nil }
-    # Sombra do catálogo → meta['shadow'] ('none' | {b,x,y,i} em unidades de
-    # cena, 200/célula). Ausente no item = padrão do estilo = meta sem a chave.
-    meta_de = ->(it) { it['sh'] ? { 'shadow' => it['sh'] } : {} }
 
     pendentes.each_with_index do |it, i|
       if dry
