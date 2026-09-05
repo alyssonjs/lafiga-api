@@ -78,6 +78,36 @@ RSpec.describe 'Api::V1::Admin::MapAssets', type: :request do
     expect(response).to have_http_status(:unprocessable_entity)
   end
 
+  # O front sabe que uma textura veio do catálogo do Inkarnate (80 células por
+  # repetição, seamless) só pelo nome do arquivo que a rake carimbou no anexo.
+  describe 'sourceRef no contrato' do
+    it 'expõe o nome do arquivo sem extensão p/ anexo importado do catálogo', :aggregate_failures do
+      tex = MapAsset.new(name: 'Green Light', kind: 'texture', category: 'Watercolor Cities')
+      tex.image.attach(io: StringIO.new('jpg-fake'), filename: 'inktex-594921.jpg', content_type: 'image/jpeg')
+      tex.save!
+      obj = MapAsset.new(name: 'Pedra', kind: 'object', category: 'Fantasy Battlemaps')
+      obj.image.attach(io: StringIO.new('png-fake'), filename: 'ink-12345.png', content_type: 'image/png')
+      obj.save!
+
+      get '/api/v1/admin/map_assets', headers: bearer_headers_for(dm)
+
+      expect(response).to have_http_status(:ok)
+      por_id = response.parsed_body['map_assets'].index_by { |x| x['id'] }
+      expect(por_id[tex.id]['sourceRef']).to eq('inktex-594921')
+      expect(por_id[obj.id]['sourceRef']).to eq('ink-12345')
+    end
+
+    it 'é nil p/ upload do utilizador (o nome do arquivo dele não é referência de origem)' do
+      a = create(:map_asset, :texture, user: dm) # anexa 'asset.png'
+
+      get '/api/v1/admin/map_assets', params: { kind: 'texture' }, headers: bearer_headers_for(dm)
+
+      rec = response.parsed_body['map_assets'].find { |x| x['id'] == a.id }
+      expect(rec).to have_key('sourceRef')
+      expect(rec['sourceRef']).to be_nil
+    end
+  end
+
   it 'lista todos e filtra por kind' do
     a1 = create(:map_asset, :texture, user: dm)
     a2 = create(:map_asset, :stamp, user: dm)
