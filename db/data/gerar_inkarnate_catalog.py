@@ -11,7 +11,9 @@ estilo de cena → pack → grupo de variantes → ordem.
 """
 import json, os, sys, collections
 
-SP = os.path.dirname(os.path.abspath(__file__))
+# Os dumps crus (stamp-groups/packs2/styles) NÃO são comitados: apontar a
+# pasta deles por `INK_DUMPS=/caminho` (mesmo contrato do gerador de texturas).
+SP = os.environ.get('INK_DUMPS') or os.path.dirname(os.path.abspath(__file__))
 ALVO_PX = 512
 
 D = json.load(open(SP + '/stamp-groups.json'))
@@ -25,21 +27,33 @@ def variante(a):
     L = max(sz.get('w') or 0, sz.get('h') or 0)
     imgs = a.get('images') or {}
     escala = (('x1', 8), ('x2', 4), ('x4', 2), ('x8', 1))
-    i = next((k for k, (v, d) in enumerate(escala) if (L / d >= ALVO_PX or v == 'x8') and imgs.get(v)), None)
-    if i is None: return []
+    # ⚠️ Nos assets LEGADOS (packs "Core 0.9"/"(Classic)") a chave x8 existe com
+    # valor null — nunca renderizados em alta. Só níveis com URL contam, e
+    # quando nenhum alcança o alvo cai no MAIOR disponível (o stamp de 296 px
+    # não tem 512 em nível nenhum; antes isso virava "sem imagem" e o item
+    # sumia do catálogo — a lacuna dos mapas antigos).
+    niveis = [(v, d) for v, d in escala if imgs.get(v)]
+    if not niveis: return []
+    i = next((k for k, (v, d) in enumerate(niveis) if L / d >= ALVO_PX), len(niveis) - 1)
     # escolhida + UM degrau de recuo (teto de 5 MB do model)
-    return [imgs[v] for v, _ in escala[i::-1] if imgs.get(v)][:2]
+    return [imgs[v] for v, _ in niveis[i::-1]][:2]
 
 itens = []; resumo = collections.Counter(); usados = collections.Counter()
 for a in D['assets']:
-    pk = P.get(a.get('packId')) or {}
-    st = S.get(pk.get('sceneStyleId')) or {}
-    cat = (st.get('title') or '').strip()
-    grp = (pk.get('title') or '').strip()[:60]
-    if not cat or not grp:
-        resumo['sem estilo/pack'] += 1; continue
-    if not pk.get('official'):
-        resumo['pack não-oficial (fora)'] += 1; continue
+    if a.get('packId') is None:
+        # Upload PRIVADO da conta ("Anão", "Caraguejo"…): sem pack e sem
+        # estilo — categoria própria; `official` não se aplica ao que é dele.
+        cat = grp = 'Meus Uploads'
+        resumo['upload privado'] += 1
+    else:
+        pk = P.get(a.get('packId')) or {}
+        st = S.get(pk.get('sceneStyleId')) or {}
+        cat = (st.get('title') or '').strip()
+        grp = (pk.get('title') or '').strip()[:60]
+        if not cat or not grp:
+            resumo['sem estilo/pack'] += 1; continue
+        if not pk.get('official'):
+            resumo['pack não-oficial (fora)'] += 1; continue
     urls = variante(a)
     if not urls:
         resumo['sem imagem'] += 1; continue

@@ -39,14 +39,20 @@ def variante(a):
 
 itens = []; resumo = collections.Counter(); usados = collections.Counter()
 for a in A:
-    pk = P.get(a.get('packId')) or {}
-    st = S.get(pk.get('sceneStyleId')) or {}
-    cat = (st.get('title') or '').strip()
-    grp = (pk.get('title') or '').strip()[:60]
-    if not cat or not grp:
-        resumo['sem estilo/pack'] += 1; continue
-    if not pk.get('official'):
-        resumo['pack não-oficial'] += 1; continue
+    if a.get('packId') is None:
+        # Upload PRIVADO da conta ("Ground1", "cracked ground"…): sem pack e
+        # sem estilo — categoria própria; `official` não se aplica ao que é dele.
+        cat = grp = 'Meus Uploads'
+        resumo['upload privado'] += 1
+    else:
+        pk = P.get(a.get('packId')) or {}
+        st = S.get(pk.get('sceneStyleId')) or {}
+        cat = (st.get('title') or '').strip()
+        grp = (pk.get('title') or '').strip()[:60]
+        if not cat or not grp:
+            resumo['sem estilo/pack'] += 1; continue
+        if not pk.get('official'):
+            resumo['pack não-oficial'] += 1; continue
     urls = variante(a)
     if not urls:
         resumo['sem imagem'] += 1; continue
