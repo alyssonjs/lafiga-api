@@ -10,16 +10,37 @@ class Api::V1::Admin::MapAssetsController < ApplicationController
   before_action :authorize_site_wide_dm, except: %i[image thumb]
   before_action :set_map_asset, only: %i[update destroy]
 
+  # A biblioteca pede o CATÁLOGO INTEIRO de uma vez (a busca do painel varre
+  # todas as categorias no cliente). São 16.595 objetos e 6,84 MB de JSON —
+  # medido em prod: 4,0 s a carregar, 3,6 s a serializar, 3,1 s no to_json, com
+  # o browser a esperar ~17 s. Recalcular isso a cada abertura é o desperdício:
+  # o catálogo só muda quando alguém importa ou edita um item.
+  #
+  # Duas camadas, ambas invalidadas pela VERSÃO do catálogo:
+  #  - Redis guarda o corpo JÁ SERIALIZADO (não o ActiveRecord) → as três fases
+  #    caras desaparecem e sobra um GET no Redis;
+  #  - ETag → o browser que já tem a lista recebe 304 e nem baixa os 6,84 MB.
   def index
-    # with_attached_image: eager-load do attachment+blob → sem N+1 ao serializar a
-    # biblioteca inteira (46+ itens); antes eram ~2 queries por item só p/ a URL.
-    # ⚠️ o thumb entra no eager-load JUNTO: serializar `thumbUrl` sem ele
-    # devolveria o N+1 que o `with_attached_image` tinha matado.
-    assets = MapAsset.with_attached_image.with_attached_thumb
-    assets = assets.of_kind(params[:kind]) if MapAsset::KINDS.include?(params[:kind].to_s)
-    assets = assets.where(category: params[:category]) if params[:category].present?
-    assets = assets.order(created_at: :desc)
-    render json: { map_assets: MapAssetSerializer.serialize_collection(assets) }, status: :ok
+    versao = versao_do_catalogo
+    # `stale?` responde 304 sozinho quando o browser já tem esta versão.
+    return unless stale?(etag: [versao, params[:kind], params[:category]], public: false)
+
+    corpo = Rails.cache.fetch("map_assets/#{versao}/#{params[:kind]}/#{params[:category]}",
+                              expires_in: 12.hours) do
+      # with_attached_image: eager-load do attachment+blob → sem N+1 ao serializar
+      # a biblioteca inteira; antes eram ~2 queries por item só p/ a URL.
+      # ⚠️ o thumb entra no eager-load JUNTO: serializar `thumbUrl` sem ele
+      # devolveria o N+1 que o `with_attached_image` tinha matado.
+      assets = MapAsset.with_attached_image.with_attached_thumb
+      assets = assets.of_kind(params[:kind]) if MapAsset::KINDS.include?(params[:kind].to_s)
+      assets = assets.where(category: params[:category]) if params[:category].present?
+      assets = assets.order(created_at: :desc)
+      { map_assets: MapAssetSerializer.serialize_collection(assets) }.to_json
+    end
+
+    # `body:` e não `json:` — o corpo JÁ é JSON; `render json:` numa String
+    # devolveria a string ASPADA (o payload inteiro como um literal).
+    render body: corpo, content_type: 'application/json', status: :ok
   end
 
   # Serve a imagem do asset em 1 requisição, com CACHE IMUTÁVEL (o `?v=` no URL muda
@@ -106,6 +127,17 @@ class Api::V1::Admin::MapAssetsController < ApplicationController
   end
 
   private
+
+  # Impressão digital barata do catálogo. `updated_at` do registo não muda quando
+  # só o ANEXO troca (foi o caso das 17.317 miniaturas), então o maior id de
+  # anexo entra também — senão a lista ficaria presa numa versão velha.
+  def versao_do_catalogo
+    [
+      MapAsset.maximum(:updated_at)&.to_i,
+      MapAsset.count,
+      ActiveStorage::Attachment.where(record_type: 'MapAsset').maximum(:id),
+    ].join('-')
+  end
 
   def set_map_asset
     @map_asset = MapAsset.find_by(id: params[:id])
