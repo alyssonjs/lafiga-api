@@ -72,7 +72,9 @@ def fase_niveis():
     alvo = os.path.join(SAIDA, 'thumbs_urls.json')
     os.makedirs(SAIDA, exist_ok=True)
     urls = json.load(open(alvo)) if os.path.exists(alvo) else {}
-    faltam = [a for a in aids_pref if str(a) not in urls]
+    # re-pede também quem foi resolvido ANTES de guardarmos todos os níveis
+    faltam = [a for a in aids_pref
+              if str(a) not in urls or not (urls[str(a)] or {}).get('n')]
     print(f'== aids: {len(aids_pref)}; já resolvidos: {len(urls)}; a pedir: {len(faltam)}')
     tok = token()
     c = collections.Counter()
@@ -105,9 +107,16 @@ def fase_niveis():
         for a in recebidos:
             imgs = a.get('images') or {}
             # o MENOR nível com URL — é o que vira miniatura
-            u = next((imgs[v] for v in ('x1', 'x2', 'x4', 'x8') if imgs.get(v)), None)
-            if u:
-                urls[str(a['id'])] = {'u': u, 'p': aids_pref.get(a['id'], 'ink')}
+            # ⚠️ TODOS os níveis, não só o menor: o x1 de um asset pequeno dá
+            # 14x31 px, e o card tem ~100 px — 57% sairiam DESFOCADOS. A fase
+            # `promover` mede o x1 baixado e sobe de nível quando não chega.
+            niveis = {v: imgs[v] for v in ('x1', 'x2', 'x4', 'x8') if imgs.get(v)}
+            if niveis:
+                urls[str(a['id'])] = {
+                    'u': niveis[next(iter(niveis))],
+                    'n': niveis,
+                    'p': aids_pref.get(a['id'], 'ink'),
+                }
                 c['ok'] += 1
             else:
                 c['sem_imagem'] += 1
@@ -147,6 +156,70 @@ def fase_baixar():
     print(f'== baixados: {n} ficheiros, {tam / 1048576:.0f} MB')
 
 
+def fase_promover():
+    """Sobe de nível o que ficou menor que o card.
+
+    O `x1` é o menor que o CDN serve — ótimo para um carimbo grande, minúsculo
+    para um pequeno (medido: 57% abaixo de 100 px, e o card tem ~100). Aqui
+    MEDIMOS o ficheiro já baixado e, quando não alcança ALVO_PX, baixamos o
+    nível seguinte. Empírico de propósito: a razão entre nível e píxeis não é
+    a mesma para todo asset, então deduzi-la erraria.
+    """
+    from PIL import Image
+    urls = json.load(open(os.path.join(SAIDA, 'thumbs_urls.json')))
+    orig = os.path.join(SAIDA, 'x1')
+    c = collections.Counter()
+    fila = []
+    for arq in sorted(os.listdir(orig)):
+        if not arq.endswith('.img'):
+            continue
+        aid = arq[:-4]
+        ent = urls.get(aid) or {}
+        niveis = ent.get('n') or {}
+        if not niveis:
+            c['sem_niveis'] += 1
+            continue
+        try:
+            with Image.open(os.path.join(orig, arq)) as im:
+                lado = max(im.size)
+        except Exception:                            # noqa: BLE001
+            c['ilegivel'] += 1
+            continue
+        if lado >= ALVO_PX:
+            c['ja_serve'] += 1
+            continue
+        ordem = [v for v in ('x1', 'x2', 'x4', 'x8') if v in niveis]
+        atual = ent.get('nivel', ordem[0] if ordem else None)
+        i = ordem.index(atual) if atual in ordem else 0
+        # quantos degraus faltam: cada degrau DOBRA o lado
+        passos = 0
+        while lado * (2 ** passos) < ALVO_PX and i + passos + 1 < len(ordem):
+            passos += 1
+        if passos == 0:
+            c['no_maior'] += 1     # nem o maior nível chega: fica como está
+            continue
+        fila.append((aid, niveis[ordem[i + passos]], ordem[i + passos]))
+    print(f'== a promover: {len(fila)}; {dict(c)}')
+    lista = os.path.join(SAIDA, '_promover.txt')
+    for k in range(0, len(fila), 500):
+        pedaco = fila[k:k + 500]
+        with open(lista, 'w') as f:
+            for aid, u, _v in pedaco:
+                f.write(f'url = "{u}"\noutput = "{orig}/{aid}.img"\n')
+        subprocess.run(['curl', '-sS', '--parallel', '--parallel-max', '12',
+                        '-H', f'User-Agent: {UA}',
+                        '-H', 'Accept: image/webp,image/png,image/*',
+                        '--max-time', '120', '-K', lista],
+                       capture_output=True, timeout=1800)
+        for aid, _u, v in pedaco:
+            urls[aid]['nivel'] = v
+        json.dump(urls, open(os.path.join(SAIDA, 'thumbs_urls.json'), 'w'))
+        print(f'  … {min(k + 500, len(fila))}/{len(fila)}')
+    if os.path.exists(lista):
+        os.remove(lista)
+    print('== promoção terminada; correr `reduzir` de novo (apaga thumbs/ antes)')
+
+
 def fase_reduzir():
     from PIL import Image
     urls = json.load(open(os.path.join(SAIDA, 'thumbs_urls.json')))
@@ -183,5 +256,6 @@ def fase_reduzir():
 
 if __name__ == '__main__':
     fase = sys.argv[1] if len(sys.argv) > 1 else ''
-    {'niveis': fase_niveis, 'baixar': fase_baixar, 'reduzir': fase_reduzir}.get(
+    {'niveis': fase_niveis, 'baixar': fase_baixar, 'promover': fase_promover,
+     'reduzir': fase_reduzir}.get(
         fase, lambda: sys.exit(__doc__))()
