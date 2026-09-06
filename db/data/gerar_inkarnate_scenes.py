@@ -81,6 +81,27 @@ def replay(cmds):
     return ents, camadas
 
 
+def ordem_das_camadas(cmds):
+    """Pilha das camadas (a de baixo primeiro), pelo `atIndex` do log.
+
+    ⚠️ `sceneLayers` NÃO vem em ordem de z: a cena "Melee" traz [fg, bg], e
+    compor na ordem do array pintava o oceano POR CIMA do continente. O nome
+    também não serve de régua — há cenas com camadas de pincel batizadas com
+    UUID ou `layer-brush-71`.
+    """
+    ordem = []
+    for bruto in cmds:
+        for c in achata(bruto):
+            if c.get('cmdType') != 'cmd-layer-add':
+                continue
+            lid = c.get('layerId')
+            if lid in ordem:
+                continue
+            i = c.get('atIndex')
+            ordem.insert(min(i, len(ordem)) if isinstance(i, int) else len(ordem), lid)
+    return ordem
+
+
 def celula_da_cena(ents):
     """A régua do mapa é o grid QUE O UTILIZADOR DEIXOU — em unidades de cena."""
     for v in ents.values():
@@ -118,7 +139,20 @@ def baixa_preview(cena, destino):
     return im.size
 
 
-def compoe_fundo(cena, destino):
+def _alfa_da_mascara(dados):
+    """A máscara vive no ALFA — o RGB dela é preto puro em todas as cenas.
+
+    ⚠️ Converter para 'L' lia essa cor e devolvia 0, apagando a camada inteira:
+    foi o que sumiu com o continente do "Melee". Máscara de PALETA guarda a
+    transparência em bytes, e só o RGBA a resolve; sem canal alfa (RGB puro), o
+    RGBA nasce opaco — que é o certo: máscara cheia não recorta nada.
+    """
+    from PIL import Image
+    import io
+    return Image.open(io.BytesIO(dados)).convert('RGBA').getchannel('A')
+
+
+def compoe_fundo(cena, destino, ordem=()):
     """bg + fg(recortado pela máscara) + top = o TERRENO, sem objeto nem grade."""
     from PIL import Image, ImageChops
     import io
@@ -126,14 +160,16 @@ def compoe_fundo(cena, destino):
     if os.path.exists(destino):
         return _tamanho(destino)
     comp = None
-    for L in cena.get('sceneLayers') or []:
+    pos = {lid: i for i, lid in enumerate(ordem)}
+    camadas = sorted(cena.get('sceneLayers') or [],
+                     key=lambda L: pos.get(L.get('layerId'), len(pos)))
+    for L in camadas:
         imgs = {im.get('canvasName'): im.get('imageUrl') for im in (L.get('layerImages') or [])}
         if not imgs.get('brush'):
             continue
         camada = Image.open(io.BytesIO(_baixa(imgs['brush']))).convert('RGBA')
         if imgs.get('mask'):
-            m = Image.open(io.BytesIO(_baixa(imgs['mask'])))
-            m = m.getchannel('A') if 'A' in m.getbands() else m.convert('L')
+            m = _alfa_da_mascara(_baixa(imgs['mask']))
             camada.putalpha(ImageChops.multiply(camada.getchannel('A'), m))
         if comp is None:
             comp = Image.new('RGBA', camada.size, (0, 0, 0, 0))
@@ -166,7 +202,8 @@ def main():
         if not os.path.exists(arq_cmds):
             resumo['sem log de comandos'] += 1
             continue
-        ents, camadas = replay(json.load(open(arq_cmds)))
+        cmds = json.load(open(arq_cmds))
+        ents, camadas = replay(cmds)
         norm = cena.get('normSceneSize') or {}
         # Cenas LEGADAS (majorVersion nulo): sceneLayers vazio e ZERO comandos —
         # o conteúdo delas não vive no log v2. Sobra o render achatado, que é
@@ -254,7 +291,7 @@ def main():
                 os.remove(caminho_fundo)   # troca terreno-puro pelo achatado
             px = baixa_preview(cena, caminho_fundo)
         else:
-            px = compoe_fundo(cena, caminho_fundo)
+            px = compoe_fundo(cena, caminho_fundo, ordem_das_camadas(cmds))
         cenas.append({
             'sid': int(sid),
             'titulo': (cena.get('title') or '').strip()[:120] or f'Inkarnate {sid}',

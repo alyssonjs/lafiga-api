@@ -158,6 +158,25 @@ RSpec.describe 'índice de cenas do Inkarnate' do
     expect(gerador).to include('DETALHE_FAIXAS')
   end
 
+  it '⚠️ a máscara da camada é o ALFA — ler a COR dela apaga o terreno inteiro' do
+    # O RGB da máscara é preto puro em TODAS as cenas: a informação está só no
+    # alfa. `convert("L")` devolvia 0 e sumiu com o continente do "Melee".
+    # Máscara de paleta guarda a transparência em bytes, e só o RGBA a resolve.
+    expect(gerador).to match(/def _alfa_da_mascara/)
+    expect(gerador).to match(/convert\('RGBA'\)\.getchannel\('A'\)/)
+    expect(gerador).not_to match(/convert\('L'\)/)
+  end
+
+  it '⚠️ a pilha das camadas vem do LOG (atIndex), não da ordem do array' do
+    # `sceneLayers` não vem em z: o "Melee" traz [fg, bg], e compor na ordem do
+    # array pintava o oceano por cima do continente. O nome também não serve —
+    # há cenas com camada de pincel batizada com UUID ou `layer-brush-71`.
+    expect(gerador).to match(/def ordem_das_camadas/)
+    expect(gerador).to match(/cmd-layer-add/)
+    expect(gerador).to match(/atIndex/)
+    expect(gerador).to match(/compoe_fundo\(cena, caminho_fundo, ordem_das_camadas\(cmds\)\)/)
+  end
+
   it 'objeto sem arte na biblioteca NÃO vira token (seria retângulo vazio)' do
     expect(fonte).to match(/counts\[:token_sem_asset\]/)
     expect(gerador).to match(/resumo\['sem arte no catálogo'\]/)
