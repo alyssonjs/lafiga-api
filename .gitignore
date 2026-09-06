@@ -37,3 +37,4 @@ translate-key.json
 # Local dev exports/backups.
 /docs/*.xlsx
 /docs/*.dev-backup
+__pycache__/
