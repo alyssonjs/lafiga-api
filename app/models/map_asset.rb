@@ -16,6 +16,12 @@ class MapAsset < ApplicationRecord
 
   belongs_to :user, optional: true
   has_one_attached :image
+  # MINIATURA da biblioteca. Existe porque a grelha mostra o item num quadrado
+  # de ~100 px e sem ela baixava a ARTE inteira (medido em prod: 254 KB, ~300 px
+  # por card; uma busca de 400 = 68 MB). Não se gera aqui: prod não tem
+  # ImageMagick/vips — nasce no `gerar_inkarnate_thumbs.py` e entra pelo rake
+  # `inkarnate:thumbs_import`. OPCIONAL: sem ela o front cai na imagem cheia.
+  has_one_attached :thumb
 
   validates :name, presence: true, length: { maximum: 80 }
   validates :kind, presence: true, inclusion: { in: KINDS }

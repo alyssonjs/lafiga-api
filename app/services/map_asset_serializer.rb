@@ -20,6 +20,8 @@ class MapAssetSerializer
       enabled: asset.enabled,
       userId: asset.user_id,
       imageUrl: image_url_for(asset),
+      # nil quando ainda não há miniatura → o front usa a imagem cheia
+      thumbUrl: thumb_url_for(asset),
       sourceRef: source_ref_for(asset),
       # Sombra por stamp do catálogo ('none' | {b,x,y,i} em unidades de cena);
       # nil = o item usa o padrão do estilo (o front decide qual é).
@@ -53,6 +55,16 @@ class MapAssetSerializer
 
     base = asset.image.blob&.filename&.base.to_s
     SOURCE_REF_PREFIXES.any? { |p| base.start_with?(p) } ? base : nil
+  rescue StandardError
+    nil
+  end
+
+  # Miniatura (~160 px, webp) — o que a GRELHA da biblioteca deve pedir.
+  # Mesmo `?v=` por id do blob: cache eterno que se invalida sozinho.
+  def self.thumb_url_for(asset)
+    return nil unless asset.respond_to?(:thumb) && asset.thumb.attached?
+
+    "/api/v1/admin/map_assets/#{asset.id}/thumb?v=#{asset.thumb.blob&.id}"
   rescue StandardError
     nil
   end

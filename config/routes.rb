@@ -117,6 +117,7 @@ Rails.application.routes.draw do
         # 302 do ActiveStorage); o resto exige DM site-wide.
         resources :map_assets, only: [:index, :create, :update, :destroy] do
           member { get :image }
+          member { get :thumb }
         end
         resources :backgrounds, only: [:index, :show, :create, :update, :destroy]
         resources :wiki_sections, only: %i[create update destroy] do

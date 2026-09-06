@@ -7,13 +7,15 @@
 class Api::V1::Admin::MapAssetsController < ApplicationController
   # `image` é público (serve o blob com cache imutável — jogadores/DM carregam as
   # imagens do mapa sem auth de DM, igual ao antigo redirect assinado).
-  before_action :authorize_site_wide_dm, except: :image
+  before_action :authorize_site_wide_dm, except: %i[image thumb]
   before_action :set_map_asset, only: %i[update destroy]
 
   def index
     # with_attached_image: eager-load do attachment+blob → sem N+1 ao serializar a
     # biblioteca inteira (46+ itens); antes eram ~2 queries por item só p/ a URL.
-    assets = MapAsset.with_attached_image
+    # ⚠️ o thumb entra no eager-load JUNTO: serializar `thumbUrl` sem ele
+    # devolveria o N+1 que o `with_attached_image` tinha matado.
+    assets = MapAsset.with_attached_image.with_attached_thumb
     assets = assets.of_kind(params[:kind]) if MapAsset::KINDS.include?(params[:kind].to_s)
     assets = assets.where(category: params[:category]) if params[:category].present?
     assets = assets.order(created_at: :desc)
@@ -48,6 +50,29 @@ class Api::V1::Admin::MapAssetsController < ApplicationController
     response.cache_control[:extras] = ['immutable']
     send_data data,
               type: asset.image.blob.content_type || 'application/octet-stream',
+              disposition: 'inline'
+  end
+
+  # MINIATURA da biblioteca (~160 px), mesmo contrato de cache do #image.
+  # ⚠️ 404 quando não existe — o front cai na imagem cheia sozinho. Nunca
+  # servir a arte grande aqui como recuo: o ponto todo é não baixar 254 KB
+  # para um quadrado de 100 px, e um recuo silencioso esconderia a falha.
+  def thumb
+    asset = MapAsset.with_attached_thumb.find_by(id: params[:id])
+    return head(:not_found) unless asset&.thumb&.attached?
+
+    data = begin
+      asset.thumb.download
+    rescue ActiveStorage::FileNotFoundError
+      Rails.logger.warn("[map_assets#thumb] blob sem arquivo asset=#{asset.id}")
+      nil
+    end
+    return head(:not_found) if data.nil?
+
+    expires_in 1.year, public: true
+    response.cache_control[:extras] = ['immutable']
+    send_data data,
+              type: asset.thumb.blob.content_type || 'image/webp',
               disposition: 'inline'
   end
 
