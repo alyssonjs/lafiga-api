@@ -68,6 +68,7 @@ class BattleMapSerializer
       drawings: layer_value(session_layer, :drawings, map.drawings) || [],
       fog: session_layer ? session_layer.fog : map.fog,
       backgroundImage: background_image_src(map),
+      landMaskUrl: land_mask_src(map),
       backgroundImageOffsetX: map.background_image_offset_x,
       backgroundImageOffsetY: map.background_image_offset_y,
       backgroundImagePixelWidth: map.background_image_pixel_width,
@@ -171,5 +172,15 @@ class BattleMapSerializer
     blob = map.background_image.blob
     sig = Rails.application.message_verifier(BACKGROUND_SIG_PURPOSE).generate(blob.id)
     "/api/v1/player/battle_maps/#{map.id}/background?v=#{blob.id}&sig=#{CGI.escape(sig)}"
+  end
+
+  # Mesmo contrato do fundo (sig por blob, mesmo purpose): a máscara é um blob
+  # do próprio mapa e só quem recebeu o payload :full ganha a URL assinada.
+  def self.land_mask_src(map)
+    return nil unless map.respond_to?(:land_mask) && map.land_mask.attached?
+
+    blob = map.land_mask.blob
+    sig = Rails.application.message_verifier(BACKGROUND_SIG_PURPOSE).generate(blob.id)
+    "/api/v1/player/battle_maps/#{map.id}/land_mask?v=#{blob.id}&sig=#{CGI.escape(sig)}"
   end
 end

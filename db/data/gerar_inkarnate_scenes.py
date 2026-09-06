@@ -145,6 +145,39 @@ def _alfa_da_mascara(dados):
     return Image.open(io.BytesIO(dados)).convert('RGBA').getchannel('A')
 
 
+def salva_mascara_de_terra(cena, ordem, destino):
+    """Exporta a silhueta de TERRA da cena (alfa = terra) para semear a
+    Ferramenta de Terra: litoral vivo/editável e pintar/apagar na união.
+
+    Só vale quando a máscara DISTINGUE terra de mar (1%..99% opaca): a do
+    "Arredores Argoba" é 100% opaca (mapa todo é terra) e viraria só uma
+    moldura de contorno na borda do mapa. Reduzida a ≤2048 px — silhueta não
+    precisa dos 4096 da arte. Resumível pelo arquivo no destino.
+    """
+    from PIL import Image
+    import io
+    if os.path.exists(destino):
+        return True
+    pos = {lid: i for i, lid in enumerate(ordem)}
+    camadas = sorted(cena.get('sceneLayers') or [],
+                     key=lambda L: (L.get('layerId') != 'layer-fg', pos.get(L.get('layerId'), len(pos))))
+    for L in camadas:
+        um = {im.get('canvasName'): im.get('imageUrl') for im in (L.get('layerImages') or [])}
+        if not um.get('mask'):
+            continue
+        m = Image.open(io.BytesIO(_baixa(um['mask']))).convert('RGBA')
+        alfa = m.getchannel('A')
+        h = alfa.histogram()
+        opaco = sum(h[250:]) / max(1, sum(h))
+        if not (0.01 < opaco < 0.99):
+            return False
+        if m.width > 2048:
+            m = m.resize((2048, round(m.height * 2048 / m.width)), Image.LANCZOS)
+        m.save(destino, 'WEBP', quality=90, method=4)
+        return True
+    return False
+
+
 def compoe_fundo(cena, destino, ordem=()):
     """bg + fg(recortado pela máscara) + top = o TERRENO, sem objeto nem grade."""
     from PIL import Image, ImageChops
@@ -270,7 +303,10 @@ def main():
                 os.remove(caminho_fundo)   # troca terreno-puro pelo achatado
             px = baixa_preview(cena, caminho_fundo)
         else:
-            px = compoe_fundo(cena, caminho_fundo, ordem_das_camadas(cmds))
+            ordem = ordem_das_camadas(cmds)
+            px = compoe_fundo(cena, caminho_fundo, ordem)
+            if salva_mascara_de_terra(cena, ordem, os.path.join(dir_fundos, f'{sid}-mask.webp')):
+                resumo['máscaras de terra'] += 1
         cenas.append({
             'sid': int(sid),
             'titulo': (cena.get('title') or '').strip()[:120] or f'Inkarnate {sid}',
@@ -279,6 +315,7 @@ def main():
             'celula_u': round(C, 4),
             'modo': 'plano' if plano else 'estruturado',
             'fundo': nome_fundo if px else None,
+            'mascara': os.path.exists(os.path.join(dir_fundos, f'{sid}-mask.webp')),
             'fundo_px': list(px) if px else None,
             'tokens': tokens,
         })

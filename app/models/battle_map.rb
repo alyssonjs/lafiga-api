@@ -63,6 +63,11 @@ class BattleMap < ApplicationRecord
   # :full — dezenas de MB → serialização de 40s). A coluna legada permanece como
   # fallback até o backfill (rake battle_maps:backfill_background) migrar tudo.
   has_one_attached :background_image
+  # Silhueta de TERRA dos mapas importados do Inkarnate (alfa = terra). Semeia
+  # a máscara da Ferramenta de Terra: litoral/sombras ficam VIVOS e editáveis
+  # sobre a costa importada, e pintar/apagar opera na união — sem ela, todo
+  # traço nasce ilhado com "outro litoral" (Láfiga 2.0, 06/09).
+  has_one_attached :land_mask
 
   BACKGROUND_ALLOWED_CONTENT_TYPES = %w[image/png image/jpeg image/webp image/gif].freeze
   BACKGROUND_MAX_BYTES = 25.megabytes

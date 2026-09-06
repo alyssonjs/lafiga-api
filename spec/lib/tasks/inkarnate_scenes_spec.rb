@@ -155,7 +155,20 @@ RSpec.describe 'índice de cenas do Inkarnate' do
     expect(gerador).to match(/def ordem_das_camadas/)
     expect(gerador).to match(/cmd-layer-add/)
     expect(gerador).to match(/atIndex/)
-    expect(gerador).to match(/compoe_fundo\(cena, caminho_fundo, ordem_das_camadas\(cmds\)\)/)
+    # a ordem é resolvida uma vez e REUSADA na máscara de terra
+    expect(gerador).to match(/ordem = ordem_das_camadas\(cmds\)/)
+    expect(gerador).to match(/compoe_fundo\(cena, caminho_fundo, ordem\)/)
+  end
+
+  it '⚠️ a silhueta de terra (semente da Ferramenta) só existe quando distingue terra de mar' do
+    # máscara 100% opaca (mapa todo terra, "Arredores") viraria moldura na
+    # borda; só 1%..99% opaca vira silhueta. Alfa = terra, ≤2048 px.
+    expect(gerador).to match(/def salva_mascara_de_terra/)
+    expect(gerador).to match(/0\.01 < opaco < 0\.99/)
+    expect(fonte).to match(/mapa\.land_mask\.attach/)
+    # <img> não manda JWT: a autz da rota é por sig, isenta do authorize_request
+    controller = File.read(Rails.root.join('app/controllers/api/v1/player/battle_maps_controller.rb'))
+    expect(controller).to match(/skip_before_action :authorize_request, only: %i\[background land_mask\]/)
   end
 
   it 'objeto sem arte na biblioteca NÃO vira token (seria retângulo vazio)' do

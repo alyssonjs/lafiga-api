@@ -179,11 +179,25 @@ namespace :inkarnate do
           content_type: 'image/webp',
         )
       end
+      # Silhueta de terra (alfa = terra): semeia a Ferramenta de Terra — o
+      # litoral fica vivo/editável e pintar/apagar opera na união. Só existe
+      # para cena cuja máscara distingue terra de mar (o gerador decide).
+      caminho_mascara = File.join(dir, "#{sid}-mask.webp")
+      mascara_antiga = nil
+      if File.exist?(caminho_mascara)
+        mascara_antiga = mapa.land_mask.attached? ? mapa.land_mask.blob : nil
+        mapa.land_mask.attach(
+          io: File.open(caminho_mascara),
+          filename: "ink-scene-mask-#{sid}.webp",
+          content_type: 'image/webp',
+        )
+      end
 
       if mapa.save
         # ⚠️ purge SÍNCRONO do fundo anterior: a fila em processo morre com o
         # Puma (mesma razão do import do catálogo).
         antigo&.purge
+        mascara_antiga&.purge
         counts[existente ? :substituido : :criado] += 1
         puts "   ##{mapa.id} #{c['titulo']} — #{largura}x#{altura}, #{tokens.size} objetos"
       else

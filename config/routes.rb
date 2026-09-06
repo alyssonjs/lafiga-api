@@ -332,6 +332,7 @@ Rails.application.routes.draw do
         resources :battle_maps, only: [:index, :show, :create, :update, :destroy] do
           member do
             get :background          # serve o blob do fundo (Active Storage) p/ <img>, autz por sig
+            get :land_mask           # silhueta de terra importada (Inkarnate), mesma autz por sig
             get :regions             # regiões COM dmNotes — só quem escreve no mapa; nunca transmitido
             patch :thumbnail         # persiste a miniatura derivada (sem tocar updated_at)
             post :duplicate

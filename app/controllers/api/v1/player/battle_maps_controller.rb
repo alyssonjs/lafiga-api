@@ -3,7 +3,8 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # `background` serve a imagem do fundo p/ <img>/new Image() — sem header de auth
   # possível. A autorização é pelo `sig` (signed_id do blob) presente na URL que só
   # o viewer autorizado recebeu no payload :full. Ver #background / #valid_background_sig?.
-  skip_before_action :authorize_request, only: :background, raise: false
+  # Fundo e silhueta de terra: <img> não manda JWT — a autz é por `sig` (por blob).
+  skip_before_action :authorize_request, only: %i[background land_mask], raise: false
   before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :force_move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions]
 
   # Teto p/ a miniatura inline (webp ~400px). Protege o payload :slim da lista de
@@ -82,6 +83,37 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     rescue ActiveStorage::FileNotFoundError
       Rails.logger.warn(
         "[battle_maps#background] blob sem arquivo no storage " \
+        "map=#{map.id} blob=#{blob.id} key=#{blob.key}",
+      )
+      nil
+    end
+    return head(:not_found) if data.nil?
+
+    expires_in 1.year, public: false
+    response.cache_control[:extras] = ['immutable']
+    send_data data,
+              type: blob.content_type || 'application/octet-stream',
+              disposition: 'inline'
+  end
+
+
+  # A silhueta de terra importada — mesmo fluxo do fundo (sig por blob).
+  def land_mask
+    map = BattleMap.with_attached_land_mask.find_by(id: params[:id])
+    return head(:not_found) unless map&.land_mask&.attached?
+
+    blob = map.land_mask.blob
+    return head(:forbidden) unless valid_background_sig?(blob, params[:sig])
+
+    # Registro do anexo existe, mas o arquivo pode não estar no storage (banco
+    # restaurado sem o `storage/`, volume perdido). Isso é "não encontrado", não
+    # erro de servidor: um 500 aqui polui o log e o front trata 404 degradando
+    # para o mapa sem fundo.
+    data = begin
+      blob.download
+    rescue ActiveStorage::FileNotFoundError
+      Rails.logger.warn(
+        "[battle_maps#land_mask] blob sem arquivo no storage " \
         "map=#{map.id} blob=#{blob.id} key=#{blob.key}",
       )
       nil
