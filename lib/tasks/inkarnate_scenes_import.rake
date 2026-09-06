@@ -21,6 +21,12 @@ namespace :inkarnate do
     dry = ENV['DRY_RUN'] == '1'
     limit = ENV['LIMIT'].to_i
     only = ENV['SID'].presence
+    # SUBSTITUI=1 reimporta cena JÁ presente, atualizando o mapa NO LUGAR (o id
+    # sobrevive, e com ele os vínculos de sessão). Recusa mapa que foi editado
+    # depois de importado, salvo FORCE=1 — reimportar por cima do trabalho do
+    # Mestre é destrutivo e silencioso.
+    substitui = ENV['SUBSTITUI'] == '1'
+    force = ENV['FORCE'] == '1'
     dir = ENV['SCENES_DIR'].presence || Rails.root.join('tmp/inkarnate_fundos').to_s
 
     arq = Rails.root.join('db/data/inkarnate_scenes.json')
@@ -49,7 +55,8 @@ namespace :inkarnate do
 
     faltantes = cenas.reject { |c| presentes.include?(c['sid']) }
     puts "== cenas #{indice['gerado_em']}: #{cenas.size} no índice, #{cenas.size - faltantes.size} já importadas"
-    pendentes = limit.positive? ? faltantes.first(limit) : faltantes
+    alvo = substitui ? cenas : faltantes
+    pendentes = limit.positive? ? alvo.first(limit) : alvo
     puts "== a importar agora: #{pendentes.size} (dono: #{dono.email})"
 
     # aid do Inkarnate -> MapAsset, pelo mesmo nome de arquivo do import do catálogo.
@@ -114,6 +121,11 @@ namespace :inkarnate do
         }
         tok['rotation'] = t['rot'] if t['rot']
         tok['sublayer'] = t['sub'] if t['sub']
+        # NÍVEL DE DETALHE: mapa denso guarda os objetos pequenos para quando o
+        # zoom os torna visíveis. Ausente = aparece sempre (ver
+        # `mapDetailVisibility.visibleAtZoom`, unidade = o mesmo número do
+        # controlo de zoom).
+        tok['zoomMin'] = t['zmin'] if t['zmin']
         # Sombra POR STAMP, congelada no token igual ao carimbo do editor
         # (sessão e página pública não carregam a biblioteca).
         sombra = meta.is_a?(Hash) ? meta['shadow'] : nil
@@ -131,14 +143,30 @@ namespace :inkarnate do
         tokens << tok
       end
 
-      if dry
-        counts[:criaria] += 1
-        puts "[dry] #{c['titulo']} #{largura}x#{altura} — #{tokens.size} objetos"
+      # Mapa já importado desta cena: reconhecido pelo nome do anexo.
+      existente = BattleMap.joins(background_image_attachment: :blob)
+                           .find_by(active_storage_blobs: { filename: "ink-scene-#{sid}.webp" })
+      if existente && !substitui
+        counts[:ja_importado] += 1
+        next
+      end
+      if existente && !force && existente.updated_at > existente.created_at + 5.minutes
+        counts[:editado_preservado] += 1
+        warn "#{c['titulo']}: mapa ##{existente.id} foi editado depois do import — use FORCE=1 para sobrescrever"
         next
       end
 
-      mapa = BattleMap.new(
-        user: dono,
+      com_detalhe = tokens.count { |t| t['zoomMin'] }
+      if dry
+        counts[existente ? :substituiria : :criaria] += 1
+        puts "[dry] #{c['titulo']} #{largura}x#{altura} — #{tokens.size} objetos" \
+             "#{com_detalhe.positive? ? " (#{com_detalhe} com nível de detalhe)" : ''}" \
+             "#{existente ? " [substitui ##{existente.id}]" : ''}"
+        next
+      end
+
+      mapa = existente || BattleMap.new(user: dono)
+      mapa.assign_attributes(
         name: c['titulo'],
         width: largura,
         height: altura,
@@ -151,6 +179,7 @@ namespace :inkarnate do
         mapa.background_image_pixel_height = c['fundo_px'][1]
       end
       if caminho
+        antigo = mapa.background_image.attached? ? mapa.background_image.blob : nil
         mapa.background_image.attach(
           io: File.open(caminho),
           filename: "ink-scene-#{sid}.webp",
@@ -159,8 +188,12 @@ namespace :inkarnate do
       end
 
       if mapa.save
-        counts[:criado] += 1
-        puts "   ##{mapa.id} #{c['titulo']} — #{largura}x#{altura}, #{tokens.size} objetos"
+        # ⚠️ purge SÍNCRONO do fundo anterior: a fila em processo morre com o
+        # Puma (mesma razão do import do catálogo).
+        antigo&.purge
+        counts[existente ? :substituido : :criado] += 1
+        puts "   ##{mapa.id} #{c['titulo']} — #{largura}x#{altura}, #{tokens.size} objetos" \
+             "#{com_detalhe.positive? ? " (#{com_detalhe} com detalhe por zoom)" : ''}"
       else
         counts[:invalido] += 1
         warn "#{c['titulo']}: #{mapa.errors.full_messages.join(', ')}"

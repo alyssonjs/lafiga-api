@@ -25,10 +25,18 @@ UNIDADES_POR_CELULA_PADRAO = 200.0   # régua do catálogo quando a cena não te
 LADO_MAX = 1000                      # BattleMap::MAX_DIM
 LADO_MIN_PLAUSIVEL = 20              # grid que dá menos que isto é lixo herdado, não grade
 LADO_LEGADO = 40                     # lado maior das cenas antigas (o default deles: 8192/204,8)
-# Acima disto o mapa entra PLANO: o renderer desenha um drawImage por objeto a
-# cada quadro, e um mapa-mundo do Inkarnate traz dezenas de milhares de árvores.
-# Melhor um fundo fiel e navegável do que um mapa editável que engasga.
+# Acima disto o mapa ganha NÍVEL DE DETALHE por zoom em vez de entrar plano: um
+# mapa-mundo do Inkarnate traz dezenas de milhares de árvores, e desenhar todas
+# de longe é ilegível além de lento (é o que os mapas de papel sempre fizeram).
 TETO_ESTRUTURADO = 3000
+
+# Faixas de detalhe por POSTO DE TAMANHO (o maior primeiro): até tantos objetos,
+# tal `zoomMin`. Orçamento por posto — e não por tamanho absoluto — porque é o
+# que limita o custo POR CONSTRUÇÃO, qualquer que seja a distribuição do mapa:
+# "Arredores Argoba" tem 3.460 objetos de 1 célula ou mais, e um corte por
+# tamanho deixaria os 3.460 desenhando juntos com o mapa inteiro na tela.
+# Medido nos três mapas densos: pico de ~1.770 desenhados, a maioria < 1.200.
+DETALHE_FAIXAS = ((900, None), (2400, 1.2), (5000, 2.0), (10 ** 9, 2.6))
 
 
 def achata(cmd):
@@ -221,9 +229,21 @@ def main():
 
         # ordem de pintura: sublayer asc, e dentro dela a ordem do próprio editor
         tokens.sort(key=lambda t: t.get('sub', 0))
-        # Denso demais para virar token: entra PLANO, com o render achatado
-        # deles como fundo (os objetos ficam na imagem, não editáveis).
-        plano = legado or len(tokens) > TETO_ESTRUTURADO
+        # Denso demais para desenhar tudo de uma vez: os objetos CONTINUAM
+        # editáveis, mas só aparecem no zoom em que se enxergam. O maior fica
+        # sem limite; o resto entra conforme se aproxima.
+        if not legado and len(tokens) > TETO_ESTRUTURADO:
+            resumo['cenas com NÍVEL DE DETALHE'] += 1
+            porte = sorted(tokens, key=lambda t: -max(t['w'], t['h']))
+            i = 0
+            for teto, zmin in DETALHE_FAIXAS:
+                while i < min(teto, len(porte)):
+                    if zmin is not None:
+                        porte[i]['zmin'] = zmin
+                    i += 1
+                if i >= len(porte):
+                    break
+        plano = legado
         nome_fundo = f'{sid}.webp'
         caminho_fundo = os.path.join(dir_fundos, nome_fundo)
         if plano:
