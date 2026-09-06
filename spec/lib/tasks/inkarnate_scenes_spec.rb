@@ -121,30 +121,6 @@ RSpec.describe 'índice de cenas do Inkarnate' do
     expect(fonte).to include("tok['shadowMode'] = 'none'")
   end
 
-  it '⚠️ mapa DENSO ganha nível de detalhe em vez de virar imagem chapada' do
-    densos = cenas.select { |c| c['tokens'].size > 3_000 }
-    expect(densos).not_to be_empty, 'o índice deixou de ter mapa denso — reveja este teste'
-    densos.each do |c|
-      sem_limite = c['tokens'].count { |t| t['zmin'].nil? }
-      # o teto do sempre-visível é o que limita o custo com o mapa INTEIRO na
-      # tela; sem ele, "Arredores" desenharia 3.460 objetos de uma vez
-      expect(sem_limite).to be <= 1_000, "#{c['titulo']}: #{sem_limite} objetos sem limite de zoom"
-      expect(sem_limite).to be > 0, "#{c['titulo']}: nada aparece de longe"
-      # e todo limite tem de ser ALCANÇÁVEL (o zoom da aplicação vai até 3)
-      expect(c['tokens'].filter_map { |t| t['zmin'] }.max).to be <= 3
-    end
-  end
-
-  it 'o detalhe segue o POSTO DE TAMANHO — o maior é o que fica visível de longe' do
-    denso = cenas.select { |c| c['tokens'].size > 3_000 }.max_by { |c| c['tokens'].size }
-    sempre = denso['tokens'].reject { |t| t['zmin'] }
-    tarde = denso['tokens'].select { |t| t['zmin'].to_f >= 2.5 }
-    menor_sempre = sempre.map { |t| [t['w'], t['h']].max }.min
-    maior_tarde = tarde.map { |t| [t['w'], t['h']].max }.max
-    expect(menor_sempre).to be >= maior_tarde,
-                            'objeto que só aparece de perto é maior que um que aparece de longe'
-  end
-
   it '⚠️ SUBSTITUI não sobrescreve mapa que o Mestre editou depois do import' do
     expect(fonte).to match(/existente\.updated_at > existente\.created_at/)
     expect(fonte).to match(/counts\[:editado_preservado\]/)
@@ -153,9 +129,14 @@ RSpec.describe 'índice de cenas do Inkarnate' do
     expect(fonte).to match(/mapa = existente \|\| BattleMap\.new/)
   end
 
-  it 'o rake grava o limite de zoom que o front lê' do
-    expect(fonte).to include("tok['zoomMin'] = t['zmin'] if t['zmin']")
-    expect(gerador).to include('DETALHE_FAIXAS')
+  it '⚠️ NENHUM objeto importado nasce escondido por zoom' do
+    # Houve aqui uma atribuição automática de `zoomMin` por tamanho, para
+    # aliviar os mapas-mundo. O utilizador viu e rejeitou: sumiço automático
+    # confunde mais do que o custo que evita. O controlo por objeto continua
+    # na interface — o que não pode voltar é o import decidir sozinho.
+    expect(cenas.sum { |c| c['tokens'].count { |t| t['zmin'] } }).to eq(0)
+    expect(gerador).not_to match(/DETALHE_FAIXAS/)
+    expect(fonte).not_to match(/zoomMin/)
   end
 
   it '⚠️ a máscara da camada é o ALFA — ler a COR dela apaga o terreno inteiro' do

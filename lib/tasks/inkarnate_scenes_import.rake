@@ -121,11 +121,6 @@ namespace :inkarnate do
         }
         tok['rotation'] = t['rot'] if t['rot']
         tok['sublayer'] = t['sub'] if t['sub']
-        # NÍVEL DE DETALHE: mapa denso guarda os objetos pequenos para quando o
-        # zoom os torna visíveis. Ausente = aparece sempre (ver
-        # `mapDetailVisibility.visibleAtZoom`, unidade = o mesmo número do
-        # controlo de zoom).
-        tok['zoomMin'] = t['zmin'] if t['zmin']
         # Sombra POR STAMP, congelada no token igual ao carimbo do editor
         # (sessão e página pública não carregam a biblioteca).
         sombra = meta.is_a?(Hash) ? meta['shadow'] : nil
@@ -156,11 +151,9 @@ namespace :inkarnate do
         next
       end
 
-      com_detalhe = tokens.count { |t| t['zoomMin'] }
       if dry
         counts[existente ? :substituiria : :criaria] += 1
         puts "[dry] #{c['titulo']} #{largura}x#{altura} — #{tokens.size} objetos" \
-             "#{com_detalhe.positive? ? " (#{com_detalhe} com nível de detalhe)" : ''}" \
              "#{existente ? " [substitui ##{existente.id}]" : ''}"
         next
       end
@@ -192,8 +185,7 @@ namespace :inkarnate do
         # Puma (mesma razão do import do catálogo).
         antigo&.purge
         counts[existente ? :substituido : :criado] += 1
-        puts "   ##{mapa.id} #{c['titulo']} — #{largura}x#{altura}, #{tokens.size} objetos" \
-             "#{com_detalhe.positive? ? " (#{com_detalhe} com detalhe por zoom)" : ''}"
+        puts "   ##{mapa.id} #{c['titulo']} — #{largura}x#{altura}, #{tokens.size} objetos"
       else
         counts[:invalido] += 1
         warn "#{c['titulo']}: #{mapa.errors.full_messages.join(', ')}"
