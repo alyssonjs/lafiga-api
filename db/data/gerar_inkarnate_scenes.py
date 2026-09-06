@@ -178,6 +178,25 @@ def salva_mascara_de_terra(cena, ordem, destino):
     return False
 
 
+def salva_miniatura(caminho_fundo, destino):
+    """Miniatura do CARD da lista (~420 px) a partir do fundo já composto.
+
+    ⚠️ Sem isto a miniatura só nasce quando o construtor captura a tela — e se
+    o fundo ainda não carregou, ela congela a textura de base chapada ("a
+    miniatura não pega nada"). Gerada aqui, é determinística e certa desde o
+    primeiro import. Teto do endpoint: 300 KB em base64.
+    """
+    from PIL import Image
+    if os.path.exists(destino):
+        return True
+    with Image.open(caminho_fundo) as im:
+        im = im.convert('RGB')
+        larg = 420
+        im = im.resize((larg, max(1, round(im.height * larg / im.width))), Image.LANCZOS)
+        im.save(destino, 'WEBP', quality=80, method=4)
+    return True
+
+
 def compoe_fundo(cena, destino, ordem=()):
     """bg + fg(recortado pela máscara) + top = o TERRENO, sem objeto nem grade."""
     from PIL import Image, ImageChops
@@ -307,6 +326,9 @@ def main():
             px = compoe_fundo(cena, caminho_fundo, ordem)
             if salva_mascara_de_terra(cena, ordem, os.path.join(dir_fundos, f'{sid}-mask.webp')):
                 resumo['máscaras de terra'] += 1
+        if px:
+            salva_miniatura(caminho_fundo, os.path.join(dir_fundos, f'{sid}-thumb.webp'))
+            resumo['miniaturas'] += 1
         cenas.append({
             'sid': int(sid),
             'titulo': (cena.get('title') or '').strip()[:120] or f'Inkarnate {sid}',

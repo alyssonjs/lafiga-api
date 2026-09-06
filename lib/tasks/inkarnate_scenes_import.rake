@@ -179,6 +179,14 @@ namespace :inkarnate do
           content_type: 'image/webp',
         )
       end
+      # Miniatura do card da lista: gerada no gerador a partir do fundo, senão
+      # ela só nasceria quando o construtor capturasse a tela — e sairia com a
+      # textura chapada se o fundo ainda não tivesse carregado.
+      caminho_thumb = File.join(dir, "#{sid}-thumb.webp")
+      if File.exist?(caminho_thumb)
+        b64 = Base64.strict_encode64(File.binread(caminho_thumb))
+        mapa.background_thumbnail = "data:image/webp;base64,#{b64}"
+      end
       # Silhueta de terra (alfa = terra): semeia a Ferramenta de Terra — o
       # litoral fica vivo/editável e pintar/apagar opera na união. Só existe
       # para cena cuja máscara distingue terra de mar (o gerador decide).
