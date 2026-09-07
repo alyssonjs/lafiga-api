@@ -38,9 +38,12 @@ namespace :inkarnate do
       end
 
     counts = Hash.new(0)
-    indice['cenas'].each do |sid, cena|
-      map_id = mapa_por_sid[sid]
-      next counts[:cena_sem_mapa] += 1 unless map_id
+    # ⚠️ Itera pelos MAPAS de cena, não pelo índice: uma cena cujos textos
+    # caíram todos (censo corrigido) SOME do índice — e é exatamente nela que a
+    # poda mais importa (79 fantasmas viviam em cenas assim).
+    counts[:cena_sem_mapa] = (indice['cenas'].keys - mapa_por_sid.keys).size
+    mapa_por_sid.each do |sid, map_id|
+      cena = indice['cenas'][sid] || { 'tokens' => [] }
 
       m = BattleMap.find(map_id)
       atuais = m.tokens || []
