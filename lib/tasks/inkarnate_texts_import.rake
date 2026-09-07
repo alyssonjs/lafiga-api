@@ -44,6 +44,15 @@ namespace :inkarnate do
 
       m = BattleMap.find(map_id)
       atuais = m.tokens || []
+      # ⚠️ REMOVE os `ink-text-<sid>-*` que saíram do índice — e SÓ esses. O
+      # replay do censo ignorava remoções no formato `entityIds` e ressuscitou
+      # 316 textos apagados no Inkarnate (o "Midbar" gigante do 1.x); corrigido
+      # o censo, esta poda tira os fantasmas sem tocar em texto criado à mão.
+      validos = cena['tokens'].map { |t| t['id'] }.to_set
+      prefixo = "ink-text-#{sid}-"
+      antes = atuais.size
+      atuais = atuais.reject { |t| t['id'].to_s.start_with?(prefixo) && !validos.include?(t['id']) }
+      removidos = antes - atuais.size
       por_id = atuais.each_with_index.to_h { |t, i| [t['id'], i] }
       novos = []
       trocados = 0
@@ -56,13 +65,14 @@ namespace :inkarnate do
           novos << tok
         end
       end
-      if novos.empty? && trocados.zero?
+      if novos.empty? && trocados.zero? && removidos.zero?
         counts[:sem_mudanca] += 1
         next
       end
       counts[:textos_novos] += novos.size
       counts[:textos_regravados] += trocados
-      puts "#{dry ? '[dry] ' : ''}#{m.name} (#{sid}): +#{novos.size} textos#{trocados.positive? ? ", #{trocados} regravados" : ''}"
+      counts[:textos_removidos] += removidos
+      puts "#{dry ? '[dry] ' : ''}#{m.name} (#{sid}): +#{novos.size} textos#{trocados.positive? ? ", #{trocados} regravados" : ''}#{removidos.positive? ? ", -#{removidos} fantasmas" : ''}"
       next if dry
 
       # update_column: importar rótulo não é editar o mapa — não reordena a
