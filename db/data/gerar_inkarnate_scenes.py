@@ -486,6 +486,65 @@ def fracao_coberta(tinta, caixa_px):
     return (h[255] / tot) if tot else 0.0
 
 
+def estado_do_snapshot(det, avisos=None):
+    """Estado final de uma cena ANTIGA, no mesmo formato que o replay produz.
+
+    ⚠️ As cenas do editor 1.x não têm log em `api/v2` — `historyLength` vem 0 e
+    `sceneLayers` vazio, e por isso 11 mapas entraram como IMAGEM PLANA, sem um
+    único objeto (27.680 no total). O conteúdo delas está em
+    `api/scenes/<id>` (sem o v2), no campo `snapshot`: entidades já dobradas,
+    ordem das camadas e as URLs dos canvases. Não é preciso replicar comandos.
+    """
+    sn = det.get('snapshot') or {}
+    ents_bruto = sn.get('entities') or {}
+    if not ents_bruto:
+        return None
+    por_camada = sn.get('entityToLayer') or {}
+    ents = {}
+    for eid, e in ents_bruto.items():
+        ents[int(eid)] = {'e': dict(e), 'camada': por_camada.get(str(eid))}
+    camadas = {lid: (L or {}).get('isVisible', True)
+               for lid, L in (sn.get('layers') or {}).items()}
+    # `layerIds` já vem de baixo para cima, como a `ordem` do replay
+    ordem = list(sn.get('layerIds') or [])
+    if avisos is not None:
+        avisos['cenas do formato ANTIGO (snapshot)'] += 1
+    return ents, camadas, ordem, sn
+
+
+def canvases_do_snapshot(sn, visiveis=None, avisos=None):
+    """Os pincéis de uma cena antiga, de `layerSnapshots`.
+
+    Cada camada traz `result` (canvas pronto) ou `unmasked` + `mask` para
+    aplicar. Mesma saída de `canvases_da_cena`: o resto do pipeline não
+    distingue de onde veio.
+    """
+    from PIL import Image, ImageChops
+    import io
+    canv, vazias = {}, set()
+    for lid, imgs in (sn.get('layerSnapshots') or {}).items():
+        if not imgs:
+            continue
+        if visiveis is not None and visiveis.get(lid) is False:
+            continue
+        url = imgs.get('result') or imgs.get('unmasked')
+        if not url:
+            continue
+        camada = Image.open(io.BytesIO(_baixa(url))).convert('RGBA')
+        if imgs.get('mask') and not imgs.get('result'):
+            m = _alfa_da_mascara(_baixa(imgs['mask']))
+            if m.getbbox() is None and avisos is not None:
+                avisos['⚠️ máscara vazia no CDN apaga a camada'] += 1
+            camada.putalpha(ImageChops.multiply(camada.getchannel('A'), m))
+        if camada.getchannel('A').getbbox() is None:
+            vazias.add(lid)
+            if avisos is not None:
+                avisos['camada de pincel VAZIA'] += 1
+            continue
+        canv[lid] = camada
+    return canv, vazias
+
+
 def canvases_da_cena(cena, visiveis=None, avisos=None):
     """Os pincéis da cena, já recortados, e quais deles não pintam NADA.
 
@@ -586,17 +645,28 @@ def main():
         det = json.load(open(f))
         cena = det.get('item') or det
         arq_cmds = f'{SP}/cenas-cmds/{sid}.json'
-        if not os.path.exists(arq_cmds):
-            resumo['sem log de comandos'] += 1
-            continue
-        cmds = json.load(open(arq_cmds))
+        cmds = json.load(open(arq_cmds)) if os.path.exists(arq_cmds) else []
         ents, camadas = replay(cmds)
         norm = cena.get('normSceneSize') or {}
-        # Cenas LEGADAS (majorVersion nulo): sceneLayers vazio e ZERO comandos —
-        # o conteúdo delas não vive no log v2. Sobra o render achatado, que é
-        # tudo o que existe; entram planas, dimensionadas pela proporção dele.
+        ordem = ordem_das_camadas(cmds)
+        sn_antigo = None
+        # Cena do editor 1.x: `api/v2` não a serve (historyLength 0, sceneLayers
+        # vazio) e ela entrava PLANA, sem um objeto. O conteúdo está no
+        # `snapshot` de `api/scenes/<id>` — 27.680 objetos em 10 mapas.
+        if not norm.get('w'):
+            arq_ant = f'{SP}/legado/{sid}.json'
+            if os.path.exists(arq_ant):
+                est = estado_do_snapshot(json.load(open(arq_ant)), resumo)
+                if est:
+                    ents, camadas, ordem, sn_antigo = est
+                    sz = sn_antigo.get('sceneSize') or {}
+                    if sz.get('w'):
+                        norm = {'w': float(sz['w']), 'h': float(sz['h'])}
         legado = not norm.get('w')
         if legado:
+            if not cmds and not os.path.exists(f'{SP}/legado/{sid}.json'):
+                resumo['sem log de comandos'] += 1
+                continue
             pd = cena.get('previewDimensions') or {}
             if not (pd.get('w') and pd.get('h')):
                 resumo['legado sem preview (fora)'] += 1
@@ -617,11 +687,15 @@ def main():
 
         # O corte fundo/tokens: tudo abaixo do ULTIMO pincel visivel e terreno
         # (tinta E objetos, intercalados); so o topo livre vira token editavel.
-        ordem = ordem_das_camadas(cmds)
         pos = {lid: i for i, lid in enumerate(ordem)}
         # Só conta como tinta a camada que PINTA de facto: baixa os pincéis
         # antes de cortar (o resultado é reaproveitado na composição).
-        canv, vazias = canvases_da_cena(cena, camadas, resumo) if not legado else ({}, set())
+        if legado:
+            canv, vazias = {}, set()
+        elif sn_antigo is not None:
+            canv, vazias = canvases_do_snapshot(sn_antigo, camadas, resumo)
+        else:
+            canv, vazias = canvases_da_cena(cena, camadas, resumo)
         corte = max((pos[l] for l in canv if l in pos), default=-1)
         if vazias:
             resumo['corte poupado por camada vazia'] += len(vazias)
