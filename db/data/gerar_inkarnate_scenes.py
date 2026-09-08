@@ -210,13 +210,6 @@ def salva_miniatura(caminho_fundo, destino):
     return True
 
 
-# Modos de mistura que o Inkarnate escreve direto no `globalCompositeOperation`
-# do canvas. `darken` fica de FORA da assadura de propósito: medido no acervo,
-# a diferença de compor um penhasco escuro com min() contra o terreno é de 0,1
-# a 1,9 em 255 — invisível, e assar 2.241 penhascos custaria a edição deles.
-BLEND_DE_TINTA = ('multiply', 'hard-light', 'soft-light', 'overlay', 'luminosity',
-                  'screen', 'lighten', 'color-burn', 'color-dodge', 'difference',
-                  'exclusion')
 
 
 def efeitos_do_stamp(e):
@@ -335,6 +328,9 @@ def _mistura(Cb, Cs, modo):
 def compoe_com_mistura(comp, img, pos, modo):
     """`alpha_composite` que respeita o modo de mistura, na área do sprite.
 
+    Só serve ao objeto que já é PINTURA por estar debaixo de tinta: o que
+    continua token mistura no renderizador, contra o cenário vivo.
+
     A fórmula é a do spec de compositing (Co = αs(1-αb)Cs + αsαb·B + (1-αs)αbCb):
     com o fundo TRANSPARENTE o blend some e sobra a arte crua — que é
     justamente o que o canvas faz, e a razão de assar o objeto só quando ele
@@ -436,49 +432,6 @@ def assa_stamps(comp, stamps, A, k, cache_dir, avisos):
         else:
             comp.alpha_composite(img, destino)
         avisos['assados no fundo'] += 1
-
-
-def _caixa(e, A):
-    """Retângulo do sprite em unidades de cena (mesma conta da geometria)."""
-    a = A.get(e.get('stampId'))
-    if not a:
-        return None
-    d = a.get('data') or {}
-    sz, off = d.get('size') or {}, d.get('offset') or {'x': 0, 'y': 0}
-    esc = e.get('scale') or 1
-    w, h = (sz.get('w') or 0) * esc, (sz.get('h') or 0) * esc
-    if w <= 0 or h <= 0:
-        return None
-    x0 = e.get('x', 0) + off.get('x', 0) * esc
-    y0 = e.get('y', 0) + off.get('y', 0) * esc
-    return (x0, y0, x0 + w, y0 + h)
-
-
-def coberto_por(caixa, caixas, celula=512.0, grelha=None):
-    """Alguém do conjunto se sobrepõe a esta caixa?
-
-    Um objeto assado desce para o FUNDO, abaixo de todo token — então só pode
-    ser assado se nenhum token o cobrir, senão a pilha inverte e o que estava
-    por cima passa a esconder o que estava por baixo.
-    """
-    if grelha is None:
-        return any(caixa[0] < c[2] and c[0] < caixa[2] and caixa[1] < c[3] and c[1] < caixa[3]
-                   for c in caixas)
-    for gx in range(int(caixa[0] // celula), int(caixa[2] // celula) + 1):
-        for gy in range(int(caixa[1] // celula), int(caixa[3] // celula) + 1):
-            for c in grelha.get((gx, gy), ()):
-                if caixa[0] < c[2] and c[0] < caixa[2] and caixa[1] < c[3] and c[1] < caixa[3]:
-                    return True
-    return False
-
-
-def indexa(caixas, celula=512.0):
-    g = {}
-    for c in caixas:
-        for gx in range(int(c[0] // celula), int(c[2] // celula) + 1):
-            for gy in range(int(c[1] // celula), int(c[3] // celula) + 1):
-                g.setdefault((gx, gy), []).append(c)
-    return g
 
 
 def compoe_fundo(cena, destino, ordem=(), assar=None, visiveis=None,
@@ -584,57 +537,23 @@ def main():
         corte = max((pos[l] for l in pinceis
                      if l in pos and camadas.get(l) is not False), default=-1)
 
-        # Quem mistura com o terreno (`blendMode`) só fica igual ao editor se
-        # for composto CONTRA ele — então vai para o fundo, desde que nenhum
-        # objeto que continua token o cubra (senão a pilha inverteria).
-        acima = [c for c in (_caixa(v['e'], A) for v in ents.values()
-                             if v['e'].get('entityType') == 'stamp'
-                             and camadas.get(v['camada']) is not False
-                             and pos.get(v['camada'], len(pos)) >= corte
-                             and v['e'].get('blendMode') not in BLEND_DE_TINTA) if c]
-        malha = indexa(acima)
-        livres = set()
-        for v in ents.values():
-            e = v['e']
-            if e.get('blendMode') not in BLEND_DE_TINTA:
-                continue
-            if camadas.get(v['camada']) is False or pos.get(v['camada'], len(pos)) < corte:
-                continue
-            cx = _caixa(e, A)
-            if cx and not coberto_por(cx, acima, grelha=malha):
-                livres.add(e.get('entityId'))
-
-        tokens = []
-        assar = collections.defaultdict(list)
-        for v in ents.values():
-            e = v['e']
-            if e.get('entityType') != 'stamp':
-                continue
-            if camadas.get(v['camada']) is False:
-                resumo['em camada oculta'] += 1
-                continue
-            if not legado and pos.get(v['camada'], len(pos)) < corte:
-                assar[v['camada']].append(e)
-                continue
-            if not legado and e.get('entityId') in livres:
-                assar[v['camada']].append(e)
-                resumo['assados por MISTURA com o terreno'] += 1
-                continue
+        def monta_token(e):
+            """Entidade -> token do mapa: geometria, sombra e efeitos de cor."""
             a = A.get(e.get('stampId'))
             if not a:
                 resumo['asset desconhecido'] += 1
-                continue
+                return None
             if a['id'] not in no_catalogo:
                 sem_arte[a.get('title') or a['id']] += 1
                 resumo['sem arte no catálogo'] += 1
-                continue
+                return None
             dados = a.get('data') or {}
             sz, off = dados.get('size') or {}, dados.get('offset') or {'x': 0, 'y': 0}
             esc = e.get('scale') or 1
             w, h = (sz.get('w') or 0) * esc, (sz.get('h') or 0) * esc
             if w <= 0 or h <= 0:
                 resumo['sem tamanho'] += 1
-                continue
+                return None
             x = (e.get('x', 0) + off.get('x', 0) * esc) / C
             y = (e.get('y', 0) + off.get('y', 0) * esc) / C
             t = {'aid': a['id'], 'x': round(x, 4), 'y': round(y, 4),
@@ -649,8 +568,24 @@ def main():
             if ef:
                 t['ef'] = ef
                 resumo['tokens com efeito de cor/mistura'] += 1
-            tokens.append(t)
             resumo['tokens'] += 1
+            return t
+
+        tokens = []
+        assar = collections.defaultdict(list)
+        for v in ents.values():
+            e = v['e']
+            if e.get('entityType') != 'stamp':
+                continue
+            if camadas.get(v['camada']) is False:
+                resumo['em camada oculta'] += 1
+                continue
+            if not legado and pos.get(v['camada'], len(pos)) < corte:
+                assar[v['camada']].append(e)
+                continue
+            t = monta_token(e)
+            if t:
+                tokens.append(t)
 
         # ordem de pintura: sublayer asc, e dentro dela a ordem do próprio editor
         tokens.sort(key=lambda t: t.get('sub', 0))
