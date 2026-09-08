@@ -510,14 +510,18 @@ def canvases_da_cena(cena, visiveis=None, avisos=None):
             continue
         camada = Image.open(io.BytesIO(_baixa(imgs['brush']))).convert('RGBA')
         if imgs.get('mask'):
-            # ⚠️ Máscara VAZIA recorta tudo, e é isso mesmo: a do `layer-fg` do
-            # mapa 93 vem 100% transparente do CDN e a vegetação some. Ignorá-la
-            # é pior — o verde cobre o mapa inteiro, quando no editor ele só
-            # existe nas serras. O recorte verdadeiro vive nos `cmd-mask` do
-            # log (caminhos vetoriais) e ainda não é reconstruído aqui.
+            # ⚠️ Máscara VAZIA recorta tudo — e a do `layer-fg` do mapa 93 vem
+            # 100% transparente do CDN, o que apaga a camada de vegetação.
+            # Três caminhos foram tentados e MEDIDOS antes de aceitar a perda:
+            #   ignorá-la      -> o verde cobre o mapa inteiro (pior);
+            #   `cmd-mask`     -> os `arcToPaths` reconstroem 1,4% dos 24% que
+            #                     o render mostra (o log tem só 3 comandos);
+            #   ler do render  -> relva e terra são próximas demais em cor, a
+            #                     classificação sai em manchas de ruído.
+            # Fica o recorte do CDN; o resumo avisa quando a camada some.
             m = _alfa_da_mascara(_baixa(imgs['mask']))
             if m.getbbox() is None and avisos is not None:
-                avisos['⚠️ máscara vazia apaga a camada (vegetação perdida)'] += 1
+                avisos['⚠️ máscara vazia no CDN apaga a camada'] += 1
             camada.putalpha(ImageChops.multiply(camada.getchannel('A'), m))
         if camada.getchannel('A').getbbox() is None:
             vazias.add(lid)
