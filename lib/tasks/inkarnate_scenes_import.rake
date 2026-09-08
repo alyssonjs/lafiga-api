@@ -121,6 +121,9 @@ namespace :inkarnate do
         }
         tok['rotation'] = t['rot'] if t['rot']
         tok['sublayer'] = t['sub'] if t['sub']
+        # Cor e mistura do stamp (o `ctx.filter`/`globalCompositeOperation` do
+        # editor deles). Congelado no token pela mesma razao da sombra.
+        tok['imageFx'] = t['ef'] if t['ef'].present?
         # Sombra POR STAMP, congelada no token igual ao carimbo do editor
         # (sessão e página pública não carregam a biblioteca).
         sombra = meta.is_a?(Hash) ? meta['shadow'] : nil

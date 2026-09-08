@@ -210,6 +210,159 @@ def salva_miniatura(caminho_fundo, destino):
     return True
 
 
+# Modos de mistura que o Inkarnate escreve direto no `globalCompositeOperation`
+# do canvas. `darken` fica de FORA da assadura de propósito: medido no acervo,
+# a diferença de compor um penhasco escuro com min() contra o terreno é de 0,1
+# a 1,9 em 255 — invisível, e assar 2.241 penhascos custaria a edição deles.
+BLEND_DE_TINTA = ('multiply', 'hard-light', 'soft-light', 'overlay', 'luminosity',
+                  'screen', 'lighten', 'color-burn', 'color-dodge', 'difference',
+                  'exclusion')
+
+
+def efeitos_do_stamp(e):
+    """hue/saturação/brilho/contraste/desfoque/mistura — só o que sai do padrão.
+
+    Receita COPIADA do editor deles (`computeFilters` no bundle): a ordem é
+    hue-rotate, saturate, CONTRAST, brightness, blur — contraste antes do
+    brilho, que não é a ordem que se escreveria por instinto.
+    """
+    ef = {}
+    hue = e.get('hue') or 0
+    sat = e.get('saturation')
+    bri = e.get('brightness')
+    con = e.get('contrast')
+    if hue:
+        ef['hue'] = round(float(hue), 2)
+    if sat is not None and sat != 100:
+        ef['sat'] = round(float(sat), 2)
+    if con is not None and con != 100:
+        ef['con'] = round(float(con), 2)
+    if bri is not None and bri != 100:
+        ef['bri'] = round(float(bri), 2)
+    # `blur: true` com raio 0 é o padrão de 8.344 objetos — ligado e sem efeito.
+    if e.get('blur') and (e.get('blurRadius') or 0):
+        ef['blur'] = round(float(e['blurRadius']), 2)
+    if e.get('blendMode'):
+        ef['blend'] = e['blendMode']
+    return ef
+
+
+def _matriz(rgb, m):
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    import numpy as np
+    return np.stack([
+        m[0][0] * r + m[0][1] * g + m[0][2] * b,
+        m[1][0] * r + m[1][1] * g + m[1][2] * b,
+        m[2][0] * r + m[2][1] * g + m[2][2] * b,
+    ], axis=-1)
+
+
+def aplica_filtros(img, ef):
+    """O mesmo que `ctx.filter` faria no browser, em sRGB e na ordem deles.
+
+    As matrizes são as da spec de Filter Effects (a mesma luminância
+    0.213/0.715/0.072 que o Chrome usa) — copiar a fórmula é o que garante que
+    o assado no fundo e o token vivo pintem a MESMA cor.
+    """
+    import math
+    import numpy as np
+    from PIL import Image, ImageFilter
+    if not any(k in ef for k in ('hue', 'sat', 'con', 'bri', 'blur')):
+        return img
+    a = np.asarray(img.convert('RGBA'), dtype=np.float64) / 255.0
+    rgb, alfa = a[..., :3], a[..., 3:]
+    if 'hue' in ef:
+        t = math.radians(ef['hue'])
+        c, sn = math.cos(t), math.sin(t)
+        rgb = _matriz(rgb, [
+            [0.213 + c * 0.787 - sn * 0.213, 0.715 - c * 0.715 - sn * 0.715, 0.072 - c * 0.072 + sn * 0.928],
+            [0.213 - c * 0.213 + sn * 0.143, 0.715 + c * 0.285 + sn * 0.140, 0.072 - c * 0.072 - sn * 0.283],
+            [0.213 - c * 0.213 - sn * 0.787, 0.715 - c * 0.715 + sn * 0.715, 0.072 + c * 0.928 + sn * 0.072],
+        ])
+    if 'sat' in ef:
+        k = ef['sat'] / 100.0
+        rgb = _matriz(rgb, [
+            [0.213 + 0.787 * k, 0.715 - 0.715 * k, 0.072 - 0.072 * k],
+            [0.213 - 0.213 * k, 0.715 + 0.285 * k, 0.072 - 0.072 * k],
+            [0.213 - 0.213 * k, 0.715 - 0.715 * k, 0.072 + 0.928 * k],
+        ])
+    if 'con' in ef:
+        k = ef['con'] / 100.0
+        rgb = (rgb - 0.5) * k + 0.5
+    if 'bri' in ef:
+        rgb = rgb * (ef['bri'] / 100.0)
+    saida = Image.fromarray(
+        (np.clip(np.concatenate([rgb, alfa], axis=-1), 0, 1) * 255).astype('uint8'), 'RGBA')
+    if 'blur' in ef:
+        saida = saida.filter(ImageFilter.GaussianBlur(ef['blur']))
+    return saida
+
+
+def _mistura(Cb, Cs, modo):
+    import numpy as np
+    if modo == 'multiply':
+        return Cs * Cb
+    if modo == 'screen':
+        return Cs + Cb - Cs * Cb
+    if modo == 'darken':
+        return np.minimum(Cs, Cb)
+    if modo == 'lighten':
+        return np.maximum(Cs, Cb)
+    if modo == 'difference':
+        return np.abs(Cs - Cb)
+    if modo == 'exclusion':
+        return Cs + Cb - 2 * Cs * Cb
+    if modo == 'hard-light':
+        return np.where(Cs <= 0.5, 2 * Cs * Cb, 1 - 2 * (1 - Cs) * (1 - Cb))
+    if modo == 'overlay':
+        return np.where(Cb <= 0.5, 2 * Cs * Cb, 1 - 2 * (1 - Cs) * (1 - Cb))
+    if modo == 'soft-light':
+        d = np.where(Cb <= 0.25, ((16 * Cb - 12) * Cb + 4) * Cb, np.sqrt(np.maximum(Cb, 0)))
+        return np.where(Cs <= 0.5,
+                        Cb - (1 - 2 * Cs) * Cb * (1 - Cb),
+                        Cb + (2 * Cs - 1) * (d - Cb))
+    if modo == 'color-dodge':
+        return np.where(Cb <= 0, 0.0, np.where(Cs >= 1, 1.0, np.minimum(1.0, Cb / np.maximum(1 - Cs, 1e-6))))
+    if modo == 'color-burn':
+        return np.where(Cb >= 1, 1.0, np.where(Cs <= 0, 0.0, 1 - np.minimum(1.0, (1 - Cb) / np.maximum(Cs, 1e-6))))
+    if modo == 'luminosity':
+        lum = lambda C: 0.3 * C[..., 0:1] + 0.59 * C[..., 1:2] + 0.11 * C[..., 2:3]
+        d = lum(Cs) - lum(Cb)
+        return np.clip(Cb + d, 0, 1)
+    return Cs   # modo desconhecido: como o canvas faria com source-over
+
+
+def compoe_com_mistura(comp, img, pos, modo):
+    """`alpha_composite` que respeita o modo de mistura, na área do sprite.
+
+    A fórmula é a do spec de compositing (Co = αs(1-αb)Cs + αsαb·B + (1-αs)αbCb):
+    com o fundo TRANSPARENTE o blend some e sobra a arte crua — que é
+    justamente o que o canvas faz, e a razão de assar o objeto só quando ele
+    tem terreno por baixo.
+    """
+    import numpy as np
+    from PIL import Image
+    x, y = pos
+    x0, y0 = max(0, x), max(0, y)
+    x1, y1 = min(comp.width, x + img.width), min(comp.height, y + img.height)
+    if x1 <= x0 or y1 <= y0:
+        return
+    recorte = img.crop((x0 - x, y0 - y, x1 - x, y1 - y))
+    base = comp.crop((x0, y0, x1, y1))
+    s = np.asarray(recorte.convert('RGBA'), dtype=np.float64) / 255.0
+    b = np.asarray(base.convert('RGBA'), dtype=np.float64) / 255.0
+    Cs, As = s[..., :3], s[..., 3:]
+    Cb, Ab = b[..., :3], b[..., 3:]
+    B = _mistura(Cb, Cs, modo)
+    Co = As * (1 - Ab) * Cs + As * Ab * B + (1 - As) * Ab * Cb
+    Ao = As + Ab * (1 - As)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        Cout = np.where(Ao > 0, Co / np.maximum(Ao, 1e-6), 0)
+    saida = Image.fromarray(
+        (np.clip(np.concatenate([Cout, Ao], axis=-1), 0, 1) * 255).astype('uint8'), 'RGBA')
+    comp.paste(saida, (x0, y0))
+
+
 def _arte_do_stamp(a, cache_dir):
     """Arte no maior nível do CDN, cacheada em disco — só para ASSAR no fundo."""
     from PIL import Image
@@ -262,20 +415,70 @@ def assa_stamps(comp, stamps, A, k, cache_dir, avisos):
         if e.get('flipY'):
             img = img.transpose(Image.FLIP_TOP_BOTTOM)
             ay = img.height - ay
+        ef = efeitos_do_stamp(e)
+        img = aplica_filtros(img, ef)
         op = e.get('opacity')
         if isinstance(op, (int, float)) and 0 <= op < 1:
             img.putalpha(img.getchannel('A').point(lambda v: int(v * op)))
         x, y = e.get('x', 0) * k, e.get('y', 0) * k
         ang = (e.get('angle') or 0) % 360
+        modo = ef.get('blend')
         if ang:
             lado = int(2 * math.hypot(max(ax, img.width - ax), max(ay, img.height - ay))) + 2
             folha = Image.new('RGBA', (lado, lado), (0, 0, 0, 0))
             folha.alpha_composite(img, (round(lado / 2 - ax), round(lado / 2 - ay)))
             folha = folha.rotate(-ang, resample=Image.BICUBIC, center=(lado / 2, lado / 2))
-            comp.alpha_composite(folha, (round(x - lado / 2), round(y - lado / 2)))
+            img, ax, ay = folha, lado / 2, lado / 2
+        destino = (round(x - ax), round(y - ay))
+        if modo:
+            compoe_com_mistura(comp, img, destino, modo)
+            avisos['assados COM mistura'] += 1
         else:
-            comp.alpha_composite(img, (round(x - ax), round(y - ay)))
+            comp.alpha_composite(img, destino)
         avisos['assados no fundo'] += 1
+
+
+def _caixa(e, A):
+    """Retângulo do sprite em unidades de cena (mesma conta da geometria)."""
+    a = A.get(e.get('stampId'))
+    if not a:
+        return None
+    d = a.get('data') or {}
+    sz, off = d.get('size') or {}, d.get('offset') or {'x': 0, 'y': 0}
+    esc = e.get('scale') or 1
+    w, h = (sz.get('w') or 0) * esc, (sz.get('h') or 0) * esc
+    if w <= 0 or h <= 0:
+        return None
+    x0 = e.get('x', 0) + off.get('x', 0) * esc
+    y0 = e.get('y', 0) + off.get('y', 0) * esc
+    return (x0, y0, x0 + w, y0 + h)
+
+
+def coberto_por(caixa, caixas, celula=512.0, grelha=None):
+    """Alguém do conjunto se sobrepõe a esta caixa?
+
+    Um objeto assado desce para o FUNDO, abaixo de todo token — então só pode
+    ser assado se nenhum token o cobrir, senão a pilha inverte e o que estava
+    por cima passa a esconder o que estava por baixo.
+    """
+    if grelha is None:
+        return any(caixa[0] < c[2] and c[0] < caixa[2] and caixa[1] < c[3] and c[1] < caixa[3]
+                   for c in caixas)
+    for gx in range(int(caixa[0] // celula), int(caixa[2] // celula) + 1):
+        for gy in range(int(caixa[1] // celula), int(caixa[3] // celula) + 1):
+            for c in grelha.get((gx, gy), ()):
+                if caixa[0] < c[2] and c[0] < caixa[2] and caixa[1] < c[3] and c[1] < caixa[3]:
+                    return True
+    return False
+
+
+def indexa(caixas, celula=512.0):
+    g = {}
+    for c in caixas:
+        for gx in range(int(c[0] // celula), int(c[2] // celula) + 1):
+            for gy in range(int(c[1] // celula), int(c[3] // celula) + 1):
+                g.setdefault((gx, gy), []).append(c)
+    return g
 
 
 def compoe_fundo(cena, destino, ordem=(), assar=None, visiveis=None,
@@ -381,6 +584,26 @@ def main():
         corte = max((pos[l] for l in pinceis
                      if l in pos and camadas.get(l) is not False), default=-1)
 
+        # Quem mistura com o terreno (`blendMode`) só fica igual ao editor se
+        # for composto CONTRA ele — então vai para o fundo, desde que nenhum
+        # objeto que continua token o cubra (senão a pilha inverteria).
+        acima = [c for c in (_caixa(v['e'], A) for v in ents.values()
+                             if v['e'].get('entityType') == 'stamp'
+                             and camadas.get(v['camada']) is not False
+                             and pos.get(v['camada'], len(pos)) >= corte
+                             and v['e'].get('blendMode') not in BLEND_DE_TINTA) if c]
+        malha = indexa(acima)
+        livres = set()
+        for v in ents.values():
+            e = v['e']
+            if e.get('blendMode') not in BLEND_DE_TINTA:
+                continue
+            if camadas.get(v['camada']) is False or pos.get(v['camada'], len(pos)) < corte:
+                continue
+            cx = _caixa(e, A)
+            if cx and not coberto_por(cx, acima, grelha=malha):
+                livres.add(e.get('entityId'))
+
         tokens = []
         assar = collections.defaultdict(list)
         for v in ents.values():
@@ -392,6 +615,10 @@ def main():
                 continue
             if not legado and pos.get(v['camada'], len(pos)) < corte:
                 assar[v['camada']].append(e)
+                continue
+            if not legado and e.get('entityId') in livres:
+                assar[v['camada']].append(e)
+                resumo['assados por MISTURA com o terreno'] += 1
                 continue
             a = A.get(e.get('stampId'))
             if not a:
@@ -418,6 +645,10 @@ def main():
             z = e.get('z')
             if isinstance(z, (int, float)) and z:
                 t['sub'] = max(-5, min(5, int(z)))
+            ef = efeitos_do_stamp(e)
+            if ef:
+                t['ef'] = ef
+                resumo['tokens com efeito de cor/mistura'] += 1
             tokens.append(t)
             resumo['tokens'] += 1
 
