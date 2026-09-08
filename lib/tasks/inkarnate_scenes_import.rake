@@ -159,11 +159,24 @@ namespace :inkarnate do
       end
 
       mapa = existente || BattleMap.new(user: dono)
+      # SUBSTITUI num mapa vivo FUNDE em vez de zerar: so os tokens do import
+      # (id "ink-<sid>-*") sao repostos; criaturas e cenario colocados a mao
+      # ficam (por cima), e o terreno pintado (cells) sobrevive quando as
+      # dimensoes nao mudaram. Zera-los apagaria trabalho do Mestre.
+      if existente
+        de_fora = existente.tokens.reject { |t| t['id'].to_s.start_with?("ink-#{sid}-") }
+        tokens += de_fora
+      end
+      celulas = if existente && existente.width == largura && existente.height == altura
+                  existente.cells
+                else
+                  Array.new(altura) { Array.new(largura, 'empty') }
+                end
       mapa.assign_attributes(
         name: c['titulo'],
         width: largura,
         height: altura,
-        cells: Array.new(altura) { Array.new(largura, 'empty') },
+        cells: celulas,
         tokens: tokens,
         map_kind: tipo_por_estilo[c['estilo']] || 'battle',
       )
