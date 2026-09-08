@@ -75,23 +75,36 @@ def replay(cmds):
 
 
 def ordem_das_camadas(cmds):
-    """Pilha das camadas (a de baixo primeiro), pelo `atIndex` do log.
+    """Pilha das camadas (a de baixo primeiro), REPLAY completo do log.
 
     ⚠️ `sceneLayers` NÃO vem em ordem de z: a cena "Melee" traz [fg, bg], e
     compor na ordem do array pintava o oceano POR CIMA do continente. O nome
     também não serve de régua — há cenas com camadas de pincel batizadas com
     UUID ou `layer-brush-71`.
+
+    ⚠️ `cmd-layer-reorder` é AUTORITÁRIO (traz a lista inteira) e tem de ser
+    replicado: derivar só dos `atIndex` pôs as poças da "Mephit dungeon" no
+    topo quando na pilha real elas vivem DEBAIXO da tinta do chão — o anel de
+    lava é a tinta com buraco por cima da poça inteira.
     """
     ordem = []
     for bruto in cmds:
         for c in achata(bruto):
-            if c.get('cmdType') != 'cmd-layer-add':
-                continue
-            lid = c.get('layerId')
-            if lid in ordem:
-                continue
-            i = c.get('atIndex')
-            ordem.insert(min(i, len(ordem)) if isinstance(i, int) else len(ordem), lid)
+            t = c.get('cmdType')
+            if t == 'cmd-layer-add':
+                lid = c.get('layerId')
+                if lid in ordem:
+                    continue
+                i = c.get('atIndex')
+                ordem.insert(min(i, len(ordem)) if isinstance(i, int) else len(ordem), lid)
+            elif t == 'cmd-layer-remove':
+                lid = c.get('layerId')
+                if lid in ordem:
+                    ordem.remove(lid)
+            elif t == 'cmd-layer-reorder':
+                novo = [l for l in (c.get('newLayerOrder') or []) if l]
+                if novo:
+                    ordem = novo + [l for l in ordem if l not in novo]
     return ordem
 
 
@@ -197,18 +210,92 @@ def salva_miniatura(caminho_fundo, destino):
     return True
 
 
-def compoe_fundo(cena, destino, ordem=()):
-    """bg + fg(recortado pela máscara) + top = o TERRENO, sem objeto nem grade."""
+def _arte_do_stamp(a, cache_dir):
+    """Arte no maior nível do CDN, cacheada em disco — só para ASSAR no fundo."""
+    from PIL import Image
+    dest = os.path.join(cache_dir, f"{a['id']}.png")
+    if not os.path.exists(dest):
+        imgs = a.get('images') or {}
+        u = imgs.get('x8') or imgs.get('x4') or imgs.get('x2') or imgs.get('x1')
+        if not u:
+            return None
+        with open(dest, 'wb') as f:
+            f.write(_baixa(u))
+    return Image.open(dest).convert('RGBA')
+
+
+def assa_stamps(comp, stamps, A, k, cache_dir, avisos):
+    """Pinta stamps DIRETO no fundo — os que vivem debaixo de tinta.
+
+    Objeto sob pincel não pode ser token: mover ele revelaria o buraco que o
+    pintor deixou na tinta de cima (é assim que a Mephit faz o anel de lava).
+    Âncora: (x,y) da entidade corresponde ao ponto (-offset) da arte; rotação
+    em GRAUS horários em torno da âncora, igual ao editor.
+    """
+    import math
+    from PIL import Image
+    for e in sorted(stamps, key=lambda e: (e.get('z') or 0, e.get('order') or 0, e.get('entityId') or 0)):
+        a = A.get(e.get('stampId'))
+        if not a:
+            avisos['assado sem asset'] += 1
+            continue
+        try:
+            arte = _arte_do_stamp(a, cache_dir)
+        except Exception:
+            arte = None
+        if arte is None:
+            avisos['assado sem arte'] += 1
+            continue
+        dados = a.get('data') or {}
+        sz, off = dados.get('size') or {}, dados.get('offset') or {'x': 0, 'y': 0}
+        esc = e.get('scale') or 1
+        w_px = (sz.get('w') or 0) * esc * k
+        h_px = (sz.get('h') or 0) * esc * k
+        if w_px < 1 or h_px < 1:
+            continue
+        img = arte.resize((max(1, round(w_px)), max(1, round(h_px))), Image.LANCZOS)
+        ax = -off.get('x', 0) * esc * k
+        ay = -off.get('y', 0) * esc * k
+        if e.get('flipX'):
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+            ax = img.width - ax
+        if e.get('flipY'):
+            img = img.transpose(Image.FLIP_TOP_BOTTOM)
+            ay = img.height - ay
+        op = e.get('opacity')
+        if isinstance(op, (int, float)) and 0 <= op < 1:
+            img.putalpha(img.getchannel('A').point(lambda v: int(v * op)))
+        x, y = e.get('x', 0) * k, e.get('y', 0) * k
+        ang = (e.get('angle') or 0) % 360
+        if ang:
+            lado = int(2 * math.hypot(max(ax, img.width - ax), max(ay, img.height - ay))) + 2
+            folha = Image.new('RGBA', (lado, lado), (0, 0, 0, 0))
+            folha.alpha_composite(img, (round(lado / 2 - ax), round(lado / 2 - ay)))
+            folha = folha.rotate(-ang, resample=Image.BICUBIC, center=(lado / 2, lado / 2))
+            comp.alpha_composite(folha, (round(x - lado / 2), round(y - lado / 2)))
+        else:
+            comp.alpha_composite(img, (round(x - ax), round(y - ay)))
+        avisos['assados no fundo'] += 1
+
+
+def compoe_fundo(cena, destino, ordem=(), assar=None, visiveis=None,
+                 unidades_larg=None, A=None, cache_dir=None, avisos=None):
+    """bg + fg(recortado pela máscara) + top = o TERRENO, sem objeto nem grade.
+
+    `assar` = {layerId: [entidades]} INTERCALA objetos entre as camadas de
+    tinta, na posição verdadeira da pilha — camada de objetos que vive abaixo
+    de um pincel é parte do sanduíche do terreno, não token.
+    """
     from PIL import Image, ImageChops
     import io
     # resumível: compor de novo custa ~6 MB de download por cena
     if os.path.exists(destino):
         return _tamanho(destino)
-    comp = None
-    pos = {lid: i for i, lid in enumerate(ordem)}
-    camadas = sorted(cena.get('sceneLayers') or [],
-                     key=lambda L: pos.get(L.get('layerId'), len(pos)))
-    for L in camadas:
+    canv = {}
+    for L in cena.get('sceneLayers') or []:
+        lid = L.get('layerId')
+        if visiveis is not None and visiveis.get(lid) is False:
+            continue
         imgs = {im.get('canvasName'): im.get('imageUrl') for im in (L.get('layerImages') or [])}
         if not imgs.get('brush'):
             continue
@@ -216,11 +303,19 @@ def compoe_fundo(cena, destino, ordem=()):
         if imgs.get('mask'):
             m = _alfa_da_mascara(_baixa(imgs['mask']))
             camada.putalpha(ImageChops.multiply(camada.getchannel('A'), m))
-        if comp is None:
-            comp = Image.new('RGBA', camada.size, (0, 0, 0, 0))
-        comp.alpha_composite(camada)
-    if comp is None:
+        canv[lid] = camada
+    if not canv:
         return None
+    W, H = next(iter(canv.values())).size
+    comp = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    pos = {lid: i for i, lid in enumerate(ordem)}
+    k = (W / unidades_larg) if unidades_larg else None
+    fila = sorted(set(list(canv) + list(assar or {})), key=lambda l: pos.get(l, len(pos)))
+    for lid in fila:
+        if lid in canv:
+            comp.alpha_composite(canv[lid])
+        if assar and lid in assar and k and A:
+            assa_stamps(comp, assar[lid], A, k, cache_dir, avisos)
     # WebP com alfa: o vazio da masmorra continua transparente (o mapa mostra o
     # fundo dele por baixo) e pesa ~10× menos que PNG.
     comp.save(destino, 'WEBP', quality=88, method=4)
@@ -238,9 +333,13 @@ def main():
     no_catalogo = {i['aid'] for i in json.load(open(cat))['itens']} if os.path.exists(cat) else set(A)
 
     cenas, resumo = [], collections.Counter()
+    os.makedirs(os.path.join(SP, 'arte-assada'), exist_ok=True)
     sem_arte = collections.Counter()
+    so = os.environ.get('INK_SID')   # reprocessa SO esta cena e FUNDE no indice
     for f in sorted(glob.glob(SP + '/cenas/*.json')):
         sid = os.path.basename(f)[:-5]
+        if so and sid != so:
+            continue
         det = json.load(open(f))
         cena = det.get('item') or det
         arq_cmds = f'{SP}/cenas-cmds/{sid}.json'
@@ -273,13 +372,26 @@ def main():
         larg = max(5, min(LADO_MAX, round(norm['w'] / C)))
         alt = max(5, min(LADO_MAX, round(norm['h'] / C)))
 
+        # O corte fundo/tokens: tudo abaixo do ULTIMO pincel visivel e terreno
+        # (tinta E objetos, intercalados); so o topo livre vira token editavel.
+        ordem = ordem_das_camadas(cmds)
+        pos = {lid: i for i, lid in enumerate(ordem)}
+        pinceis = [L.get('layerId') for L in (cena.get('sceneLayers') or [])
+                   if any(im.get('canvasName') == 'brush' for im in (L.get('layerImages') or []))]
+        corte = max((pos[l] for l in pinceis
+                     if l in pos and camadas.get(l) is not False), default=-1)
+
         tokens = []
+        assar = collections.defaultdict(list)
         for v in ents.values():
             e = v['e']
             if e.get('entityType') != 'stamp':
                 continue
             if camadas.get(v['camada']) is False:
                 resumo['em camada oculta'] += 1
+                continue
+            if not legado and pos.get(v['camada'], len(pos)) < corte:
+                assar[v['camada']].append(e)
                 continue
             a = A.get(e.get('stampId'))
             if not a:
@@ -322,8 +434,14 @@ def main():
                 os.remove(caminho_fundo)   # troca terreno-puro pelo achatado
             px = baixa_preview(cena, caminho_fundo)
         else:
-            ordem = ordem_das_camadas(cmds)
-            px = compoe_fundo(cena, caminho_fundo, ordem)
+            if so:
+                # reprocesso dirigido: joga fora o cache e compoe do zero
+                for velho in (caminho_fundo, os.path.join(dir_fundos, sid + '-thumb.webp')):
+                    if os.path.exists(velho):
+                        os.remove(velho)
+            px = compoe_fundo(cena, caminho_fundo, ordem, assar=assar, visiveis=camadas,
+                              unidades_larg=norm['w'], A=A,
+                              cache_dir=os.path.join(SP, 'arte-assada'), avisos=resumo)
             if salva_mascara_de_terra(cena, ordem, os.path.join(dir_fundos, f'{sid}-mask.webp')):
                 resumo['máscaras de terra'] += 1
         if px:
@@ -339,13 +457,18 @@ def main():
             'fundo': nome_fundo if px else None,
             'mascara': os.path.exists(os.path.join(dir_fundos, f'{sid}-mask.webp')),
             'fundo_px': list(px) if px else None,
+            'assados': sum(len(v) for v in assar.values()) or None,
             'tokens': tokens,
         })
         resumo['cenas'] += 1
         print(f'  {sid} {cenas[-1]["titulo"][:32]:<32} {larg:>4}x{alt:<4} céls  '
               f'{len(tokens):>5} tokens  célula={C:.1f}u  {"PLANO" if plano else ""}', flush=True)
 
-    json.dump({'gerado_em': '2026-09-05', 'total': len(cenas), 'cenas': cenas},
+    if so and os.path.exists(dest_json):
+        velho = json.load(open(dest_json))
+        novos = {c['sid']: c for c in cenas}
+        cenas = [novos.pop(c['sid'], c) for c in velho.get('cenas', [])] + list(novos.values())
+    json.dump({'gerado_em': '2026-09-08', 'total': len(cenas), 'cenas': cenas},
               open(dest_json, 'w'), ensure_ascii=False, separators=(',', ':'))
     print(f'\n{len(cenas)} cenas -> {dest_json} ({os.path.getsize(dest_json)/1024:.0f} KB)')
     for k, v in resumo.most_common():
