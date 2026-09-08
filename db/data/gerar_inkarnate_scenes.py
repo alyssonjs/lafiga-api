@@ -434,8 +434,102 @@ def assa_stamps(comp, stamps, A, k, cache_dir, avisos):
         avisos['assados no fundo'] += 1
 
 
+# Quanto do sprite precisa estar debaixo de tinta para ele deixar de ser
+# objeto. Mover um objeto coberto revelaria o buraco que o pintor deixou — mas
+# um respingo não é cobertura: o `layer-top` do mapa 93 pinta menos de 1% da
+# área e levava 1.040 pedras para o fundo.
+COBERTURA_PARA_ASSAR = 0.35
+# Alfa a partir do qual a tinta conta como tinta (abaixo disto é véu).
+ALFA_DE_TINTA = 128
+
+
+def _caixa_px(e, A, k):
+    """Retângulo do sprite em píxeis do canvas do fundo."""
+    a = A.get(e.get('stampId'))
+    if not a or not k:
+        return None
+    d = a.get('data') or {}
+    sz, off = d.get('size') or {}, d.get('offset') or {'x': 0, 'y': 0}
+    esc = e.get('scale') or 1
+    w, h = (sz.get('w') or 0) * esc, (sz.get('h') or 0) * esc
+    if w <= 0 or h <= 0:
+        return None
+    x0 = (e.get('x', 0) + off.get('x', 0) * esc) * k
+    y0 = (e.get('y', 0) + off.get('y', 0) * esc) * k
+    return (x0, y0, x0 + w * k, y0 + h * k)
+
+
+def tinta_acumulada(canv, ordem, acima_de):
+    """Silhueta da tinta das camadas de pincel ACIMA desta posição da pilha."""
+    from PIL import Image, ImageChops
+    pos = {lid: i for i, lid in enumerate(ordem)}
+    acc = None
+    for lid, im in canv.items():
+        if pos.get(lid, -1) <= acima_de:
+            continue
+        a = im.getchannel('A').point(lambda v: 255 if v >= ALFA_DE_TINTA else 0)
+        acc = a if acc is None else ImageChops.lighter(acc, a)
+    return acc
+
+
+def fracao_coberta(tinta, caixa_px):
+    """Fração da caixa do sprite que está debaixo de tinta."""
+    if tinta is None:
+        return 0.0
+    x0, y0, x1, y1 = (max(0, int(caixa_px[0])), max(0, int(caixa_px[1])),
+                      min(tinta.width, int(caixa_px[2])), min(tinta.height, int(caixa_px[3])))
+    if x1 <= x0 or y1 <= y0:
+        return 0.0
+    corte = tinta.crop((x0, y0, x1, y1))
+    h = corte.histogram()
+    tot = sum(h)
+    return (h[255] / tot) if tot else 0.0
+
+
+def canvases_da_cena(cena, visiveis=None, avisos=None):
+    """Os pincéis da cena, já recortados, e quais deles não pintam NADA.
+
+    ⚠️ Camada que não pinta um pixel não é terreno: contá-la no corte mandou
+    1.040 objetos do mapa 93 para o fundo (o `layer-top` de lá tem 421
+    pinceladas no log e um canvas vazio no CDN), e o mestre perdeu as pedras.
+
+    ⚠️ Máscara toda transparente NÃO recorta — ignora-se. A do `layer-fg` da
+    mesma cena é 100% vazia e multiplicá-la apagava a camada VERDE inteira; no
+    editor deles a vegetação aparece. Onde a máscara tem conteúdo (o continente
+    do "Melee") ela continua a valer.
+    """
+    from PIL import Image, ImageChops
+    import io
+    canv, vazias = {}, set()
+    for L in cena.get('sceneLayers') or []:
+        lid = L.get('layerId')
+        if visiveis is not None and visiveis.get(lid) is False:
+            continue
+        imgs = {im.get('canvasName'): im.get('imageUrl') for im in (L.get('layerImages') or [])}
+        if not imgs.get('brush'):
+            continue
+        camada = Image.open(io.BytesIO(_baixa(imgs['brush']))).convert('RGBA')
+        if imgs.get('mask'):
+            # ⚠️ Máscara VAZIA recorta tudo, e é isso mesmo: a do `layer-fg` do
+            # mapa 93 vem 100% transparente do CDN e a vegetação some. Ignorá-la
+            # é pior — o verde cobre o mapa inteiro, quando no editor ele só
+            # existe nas serras. O recorte verdadeiro vive nos `cmd-mask` do
+            # log (caminhos vetoriais) e ainda não é reconstruído aqui.
+            m = _alfa_da_mascara(_baixa(imgs['mask']))
+            if m.getbbox() is None and avisos is not None:
+                avisos['⚠️ máscara vazia apaga a camada (vegetação perdida)'] += 1
+            camada.putalpha(ImageChops.multiply(camada.getchannel('A'), m))
+        if camada.getchannel('A').getbbox() is None:
+            vazias.add(lid)
+            if avisos is not None:
+                avisos['camada de pincel VAZIA'] += 1
+            continue
+        canv[lid] = camada
+    return canv, vazias
+
+
 def compoe_fundo(cena, destino, ordem=(), assar=None, visiveis=None,
-                 unidades_larg=None, A=None, cache_dir=None, avisos=None):
+                 unidades_larg=None, A=None, cache_dir=None, avisos=None, canv=None):
     """bg + fg(recortado pela máscara) + top = o TERRENO, sem objeto nem grade.
 
     `assar` = {layerId: [entidades]} INTERCALA objetos entre as camadas de
@@ -447,19 +541,8 @@ def compoe_fundo(cena, destino, ordem=(), assar=None, visiveis=None,
     # resumível: compor de novo custa ~6 MB de download por cena
     if os.path.exists(destino):
         return _tamanho(destino)
-    canv = {}
-    for L in cena.get('sceneLayers') or []:
-        lid = L.get('layerId')
-        if visiveis is not None and visiveis.get(lid) is False:
-            continue
-        imgs = {im.get('canvasName'): im.get('imageUrl') for im in (L.get('layerImages') or [])}
-        if not imgs.get('brush'):
-            continue
-        camada = Image.open(io.BytesIO(_baixa(imgs['brush']))).convert('RGBA')
-        if imgs.get('mask'):
-            m = _alfa_da_mascara(_baixa(imgs['mask']))
-            camada.putalpha(ImageChops.multiply(camada.getchannel('A'), m))
-        canv[lid] = camada
+    if canv is None:
+        canv, _ = canvases_da_cena(cena, visiveis, avisos)
     if not canv:
         return None
     W, H = next(iter(canv.values())).size
@@ -532,10 +615,25 @@ def main():
         # (tinta E objetos, intercalados); so o topo livre vira token editavel.
         ordem = ordem_das_camadas(cmds)
         pos = {lid: i for i, lid in enumerate(ordem)}
-        pinceis = [L.get('layerId') for L in (cena.get('sceneLayers') or [])
-                   if any(im.get('canvasName') == 'brush' for im in (L.get('layerImages') or []))]
-        corte = max((pos[l] for l in pinceis
-                     if l in pos and camadas.get(l) is not False), default=-1)
+        # Só conta como tinta a camada que PINTA de facto: baixa os pincéis
+        # antes de cortar (o resultado é reaproveitado na composição).
+        canv, vazias = canvases_da_cena(cena, camadas, resumo) if not legado else ({}, set())
+        corte = max((pos[l] for l in canv if l in pos), default=-1)
+        if vazias:
+            resumo['corte poupado por camada vazia'] += len(vazias)
+        # Silhueta da tinta acima de cada camada de objetos — quem decide, por
+        # OBJETO, se ele está mesmo escondido ou só passou por baixo de um
+        # respingo. Memoizada por posição: são poucas camadas.
+        k_px = None
+        if canv and norm.get('w'):
+            k_px = next(iter(canv.values())).width / norm['w']
+        tinta_por_pos = {}
+
+        def tinta_para(camada_do_objeto):
+            i = pos.get(camada_do_objeto, len(pos))
+            if i not in tinta_por_pos:
+                tinta_por_pos[i] = tinta_acumulada(canv, ordem, i)
+            return tinta_por_pos[i]
 
         def monta_token(e):
             """Entidade -> token do mapa: geometria, sombra e efeitos de cor."""
@@ -581,8 +679,13 @@ def main():
                 resumo['em camada oculta'] += 1
                 continue
             if not legado and pos.get(v['camada'], len(pos)) < corte:
-                assar[v['camada']].append(e)
-                continue
+                cx = _caixa_px(e, A, k_px)
+                coberto = (fracao_coberta(tinta_para(v['camada']), cx)
+                           if (cx and k_px) else 1.0)
+                if coberto >= COBERTURA_PARA_ASSAR:
+                    assar[v['camada']].append(e)
+                    continue
+                resumo['sob tinta RALA -> segue objeto'] += 1
             t = monta_token(e)
             if t:
                 tokens.append(t)
@@ -607,7 +710,8 @@ def main():
                         os.remove(velho)
             px = compoe_fundo(cena, caminho_fundo, ordem, assar=assar, visiveis=camadas,
                               unidades_larg=norm['w'], A=A,
-                              cache_dir=os.path.join(SP, 'arte-assada'), avisos=resumo)
+                              cache_dir=os.path.join(SP, 'arte-assada'), avisos=resumo,
+                              canv=canv)
             if salva_mascara_de_terra(cena, ordem, os.path.join(dir_fundos, f'{sid}-mask.webp')):
                 resumo['máscaras de terra'] += 1
         if px:
