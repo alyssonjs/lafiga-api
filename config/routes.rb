@@ -335,6 +335,11 @@ Rails.application.routes.draw do
             get :background          # serve o blob do fundo (Active Storage) p/ <img>, autz por sig
             get :land_mask           # silhueta de terra importada (Inkarnate), mesma autz por sig
             get :regions             # regiões COM dmNotes — só quem escreve no mapa; nunca transmitido
+            # VARIANTES do mapa (o que cada mesa fez). `promote` traz a variante
+            # para o original; `reset` devolve a mesa ao estado de fábrica.
+            get :variants
+            post 'variants/:schedule_id/promote', action: :promote_variant, as: :promote_variant
+            post 'variants/:schedule_id/reset', action: :reset_variant, as: :reset_variant
             patch :thumbnail         # persiste a miniatura derivada (sem tocar updated_at)
             post :duplicate
             post :move_token

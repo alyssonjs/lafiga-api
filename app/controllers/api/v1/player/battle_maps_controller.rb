@@ -5,7 +5,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # o viewer autorizado recebeu no payload :full. Ver #background / #valid_background_sig?.
   # Fundo e silhueta de terra: <img> não manda JWT — a autz é por `sig` (por blob).
   skip_before_action :authorize_request, only: %i[background land_mask], raise: false
-  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :force_move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions]
+  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :force_move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions, :variants, :promote_variant, :reset_variant]
 
   # Teto p/ a miniatura inline (webp ~400px). Protege o payload :slim da lista de
   # inflar caso alguém mande algo grande demais como "thumbnail".
@@ -59,6 +59,43 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     return forbidden unless @map.writable_by?(@current_user)
 
     render json: { regions: (@map.regions.is_a?(Array) ? @map.regions : []) }, status: 200
+  end
+
+  # GET /api/v1/player/battle_maps/:id/variants
+  # As mesas que jogam este mapa e o que cada uma tem de diferente do original.
+  def variants
+    return forbidden unless @map.writable_by?(@current_user)
+
+    render json: { variants: MapVariant.list(@map) }, status: 200
+  end
+
+  # POST /api/v1/player/battle_maps/:id/variants/:schedule_id/promote
+  # A variante vira o estado de fábrica (névoa/medidas/desenhos/áreas).
+  # ⚠️ Criaturas e projéteis no chão NÃO sobem: são daquela noite. Cenário nem
+  # precisa — objeto mexido em sessão já grava no mapa (MapSessionLayer).
+  def promote_variant
+    return forbidden unless @map.writable_by?(@current_user)
+
+    campos = MapVariant.promote!(map: @map, schedule_id: params[:schedule_id])
+    render json: { battle_map: BattleMapSerializer.serialize(@map, mode: :slim), promoted: campos }, status: 200
+  rescue ActiveRecord::RecordNotFound
+    render json: { errors: 'variante não encontrada' }, status: :not_found
+  rescue ActiveRecord::RecordInvalid => e
+    # A validação do mapa vale na promoção: variante com medida/desenho torto
+    # (dado antigo) é recusada com o motivo, não com um 500 sem pista.
+    render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/battle_maps/:id/variants/:schedule_id/reset
+  # A mesa volta ao estado de fábrica — a mesma semente de quem abre o mapa
+  # pela primeira vez.
+  def reset_variant
+    return forbidden unless @map.writable_by?(@current_user)
+
+    MapVariant.reset!(map: @map, schedule_id: params[:schedule_id])
+    render json: { variants: MapVariant.list(@map) }, status: 200
+  rescue ActiveRecord::RecordNotFound
+    render json: { errors: 'variante não encontrada' }, status: :not_found
   end
 
   # GET /api/v1/player/battle_maps/:id/background?sig=<blob signed_id>
