@@ -27,7 +27,7 @@ class FeatRules
     },
     'duravel' => {
       id: 'duravel',
-      name: 'Durável',
+      name: 'Resistente',
       # ⚠️ MESMO talento que `resistente` no YAML/banco, sob outra chave. O
       # documento (`Talentos.docx`) fixou o nome em "Resistente", e o banco já
       # indexa por lá com a regra completa — esta entrada fica só para fichas e
@@ -36,7 +36,7 @@ class FeatRules
       # funde banco + FeatRules.
       deprecated_for: 'resistente',
       aliases: ['Resistente', 'Durable'],
-      description: 'Sua vitalidade é forte. Você se recupera mais rápido durante descansos.',
+      description: %q(<p>Duro e resistente, você ganha os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Constituição em 1, até o máximo de 20.</p></li><li><p>Quando você rolar um Dado de Vida para recuperar pontos de vida, o valor mínimo de pontos de vida que você recupera dessa rolagem será igual a duas vezes seu modificador de Constituição (mínimo de 2).</p></li></ul>),
       # PHB: Durable não tem prereq de ability_score. (Antes do fix, o Ruby
       # exigia CON 13 — divergente do livro.)
       prerequisites: {},
@@ -65,7 +65,7 @@ class FeatRules
     'sentinela' => {
       id: 'sentinela',
       name: 'Sentinela',
-      description: 'Você domina técnicas para obter vantagem a cada vez que qualquer inimigo baixar a guarda, ganhando os seguintes benefícios: Quando você atinge uma criatura com um ataque de oportunidade, o deslocamento da criatura se torna 0 pelo resto do turno. As criaturas provocam ataques de oportunidade de você mesmo se realizarem a ação de Desengajar antes de saírem do seu alcance. Quando uma criatura a até 1,5 metro de você realizar um ataque contra um alvo diferente de você (e o alvo não possuir esse talento), você pode usar sua reação para realizar um ataque corpo-a-corpo com arma contra a criatura atacante.',
+      description: %q(<p>Você domina técnicas para obter vantagem a cada vez que qualquer inimigo baixar a guarda, ganhando os seguintes benefícios:</p><ul><li><p>Quando você atinge uma criatura com um ataque de oportunidade, o deslocamento da criatura se torna 0 pelo resto do turno.</p></li><li><p>As criaturas provocam ataques de oportunidade de você mesmo se realizarem a ação de Desengajar antes de saírem do seu alcance.</p></li><li><p>Quando uma criatura a até 1,5 metro de você realizar um ataque contra um alvo diferente de você (e o alvo não possuir esse talento), você pode usar sua reação para realizar um ataque corpo-a-corpo com arma contra a criatura atacante.</p></li></ul>),
       prerequisites: { ability_score: { str: 13, con: 13 } },
       ability_bonuses: { str: 1, con: 1 },
       proficiency_bonuses: {},
@@ -77,7 +77,7 @@ class FeatRules
     'resiliente' => {
       id: 'resiliente',
       name: 'Resiliente',
-      description: 'Escolha um valor de habilidade. Você ganha os seguintes benefícios: Aumente o valor de habilidade escolhido em 1, até o máximo de 20. Você ganha proficiência em testes de resistência usando a habilidade escolhida.',
+      description: %q(<p>Escolha um valor de habilidade. Você ganha os seguintes benefícios:</p><ul><li><p>Aumente o valor de habilidade escolhido em 1, até o máximo de 20.</p></li><li><p>Você ganha proficiência em testes de resistência usando a habilidade escolhida.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: { choose: { amount: 1, options: ['str', 'dex', 'con', 'int', 'wis', 'cha'] } },
       proficiency_bonuses: { saving_throws: { choose: { amount: 1, options: ['str', 'dex', 'con', 'int', 'wis', 'cha'] } } },
@@ -116,7 +116,7 @@ class FeatRules
       # PT alternativo usado em fichas legadas / planilhas de jogadores
       # (campanhas antigas anotam como "Iniciado em Magia" ou EN "Magic Initiate").
       aliases: ['Iniciado em Magia', 'Iniciado em magia', 'Magic Initiate'],
-      description: 'Escolha uma classe: bardo, bruxo, clérigo, druida, feiticeiro ou mago. Você aprende dois truques da lista de magias da classe escolhida. Além disso, escolha uma magia de 1° nível da mesma lista. Você aprende essa magia e pode conjura-la com o menor nível possível. Uma vez que a conjure, você precisa terminar um descanso longo para poder conjura-la novamente. Essa restrição aplica-se apenas à magia adquirida através desse talento. Sua habilidade de conjuração depende da classe que você escolher: Carisma para bardo, bruxo ou feiticeiro; Sabedoria para clérigo ou druida; ou Inteligência para mago.',
+      description: %q(<p>Escolha uma classe: bardo, bruxo, clérigo, druida, feiticeiro ou mago. Você aprende dois truques da lista de magias da classe escolhida.</p><p>Além disso, escolha uma magia de 1° nível da mesma lista. Você aprende essa magia e pode conjura-la com o menor nível possível. Uma vez que a conjure, você precisa terminar um descanso longo para poder conjura-la novamente. Essa restrição aplica-se apenas à magia adquirida através desse talento.</p><p>Sua habilidade de conjuração depende da classe que você escolher: Carisma para bardo, bruxo ou feiticeiro; Sabedoria para clérigo ou druida; ou Inteligência para mago.</p>),
       prerequisites: {},
       # PHB 5e: Magic Initiate NAO e half-feat — sem +1 atributo. Espelha
       # `config/feats_improved.yml` e `front-lafiga/src/app/data/featsData.ts`.
@@ -469,7 +469,7 @@ class FeatRules
     'poliglota' => {
       id: 'poliglota',
       name: 'Poliglota',
-      description: 'Você estudou línguas e códigos, ganhando os seguintes benefícios: Aumente seu valor de Inteligência em 1, até o máximo de 20. Você aprende três idiomas, à sua escolha. Você é capaz de criar criptogramas escritos. Outros não podem decifrar um código criado por você a não ser que você os ensine, elas sejam bem sucedidas num teste de inteligência (CD igual ao seu valor de Inteligência + seu bônus de proficiência) ou usem mágica para decifrá-lo.',
+      description: %q(<p>Você estudou línguas e códigos, ganhando os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Inteligência em 1, até o máximo de 20.</p></li><li><p>Você aprende três idiomas, à sua escolha.</p></li><li><p>Você é capaz de criar criptogramas escritos. Outros não podem decifrar um código criado por você a não ser que você os ensine, elas sejam bem sucedidas num teste de inteligência (CD igual ao seu valor de Inteligência + seu bônus de proficiência) ou usem mágica para decifrá-lo.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: { int: 1 },
       proficiency_bonuses: { languages_choose: 3 },
@@ -491,7 +491,7 @@ class FeatRules
     'protecao_leve' => {
       id: 'protecao_leve',
       name: 'Proteção Leve',
-      description: 'Você treinou até dominar o uso de armaduras leves, ganhando os seguintes benefícios: Aumente seu valor de Força em 1, até o máximo de 20. Você ganha proficiência com armadura leves.',
+      description: %q(<p>Você treinou até dominar o uso de armaduras leves, ganhando os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Força em 1, até o máximo de 20.</p></li><li><p>Você ganha proficiência com armadura leves.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: { str: 1 },
       proficiency_bonuses: { armors: ['leve'] },
@@ -504,7 +504,7 @@ class FeatRules
     'protecao_moderada' => {
       id: 'protecao_moderada',
       name: 'Proteção Moderada',
-      description: 'Você treinou até dominar o uso de armaduras médias e escudos, ganhando os seguintes benefícios: Aumente seu valor de Força em 1, até o máximo de 20. Você ganha proficiência com armadura média e escudos.',
+      description: %q(<p>Você treinou até dominar o uso de armaduras médias e escudos, ganhando os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Força em 1, até o máximo de 20.</p></li><li><p>Você ganha proficiência com armadura média e escudos.</p></li></ul>),
       prerequisites: { proficiencies: { armors: ['leve'] } },
       ability_bonuses: { str: 1 },
       proficiency_bonuses: { armors: ['média'], shields: true },
@@ -517,7 +517,7 @@ class FeatRules
     'protecao_pesada' => {
       id: 'protecao_pesada',
       name: 'Proteção Pesada',
-      description: 'Você treinou até dominar o uso de armaduras pesadas, ganhando os seguintes benefícios: Aumente seu valor de Força em 1, até o máximo de 20. Você ganha proficiência com armadura pesada.',
+      description: %q(<p>Você treinou até dominar o uso de armaduras pesadas, ganhando os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Força em 1, até o máximo de 20.</p></li><li><p>Você ganha proficiência com armadura pesada.</p></li></ul>),
       prerequisites: { proficiencies: { armors: ['média'] } },
       ability_bonuses: { str: 1 },
       proficiency_bonuses: { armors: ['pesada'] },
@@ -602,7 +602,7 @@ class FeatRules
     'sorrateiro' => {
       id: 'sorrateiro',
       name: 'Sorrateiro',
-      description: 'Você é especialista em espreitar através das sombras. Você ganha os seguintes benefícios: Você pode tentar se esconder quando estiver levemente obscurecido para a criatura de quem você está tentando se esconder. Quando você estiver escondido de uma criatura e errar um ataque à distância contra ela, realizar esse ataque não revelará sua posição. Penumbra não impõem desvantagem nos seus testes de Sabedoria (Percepção) relacionados a visão.',
+      description: %q(<p>Você é especialista em espreitar através das sombras. Você ganha os seguintes benefícios:</p><ul><li><p>Você pode tentar se esconder quando estiver levemente obscurecido para a criatura de quem você está tentando se esconder.</p></li><li><p>Quando você estiver escondido de uma criatura e errar um ataque à distância contra ela, realizar esse ataque não revelará sua posição.</p></li><li><p>Penumbra não impõem desvantagem nos seus testes de Sabedoria (Percepção) relacionados a visão.</p></li></ul>),
       prerequisites: { ability_score: { dex: 13 } },
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -756,7 +756,7 @@ class FeatRules
     'conjurador_de_ritual' => {
       id: 'conjurador_de_ritual',
       name: 'Conjurador de Ritual',
-      description: 'Você aprendeu um número de magias que você pode conjurar como rituais. Essas magias são escritas em um livro de rituais, o qual deve estar em suas mãos enquanto você conjura uma dessas magias. Quando você escolhe esse talento, você adquire um livro de rituais que contém duas magias de 1º nível, à sua escolha. Escolha uma das seguintes classes: bardo, bruxo, clérigo, druida, feiticeiro ou mago. Você deve escolher suas magias da lista de magias dessa classe e as magias escolhidas devem ter o descritor ritual. A classe que você escolhe também determina a habilidade de conjuração dessas magias: Carisma para bardo, bruxo ou feiticeiro; Sabedoria para clérigo ou druida; ou Inteligência para mago. Se você encontrar uma magia na forma escrita, como a contida em um pergaminho de magia ou o grimório de um mago, você é capaz de adicioná-la ao seu livro de rituais. A magia deve estar na lista de magias da classe escolhida, o nível da magia não pode ser maior que metade do seu nível (arredondado para cima) e deve conter o descritor ritual. O processo para copiar a magia no seu livro de rituais leva 2 horas por nível da magia e custa 50 po por nível. O custo representa os componentes materiais que você gasta para experimentar a magia até dominá-la, bem como as finas tintas utilizadas para escrevê-la.',
+      description: %q(<p>Você aprendeu um número de magias que você pode conjurar como rituais. Essas magias são escritas em um livro de rituais, o qual deve estar em suas mãos enquanto você conjura uma dessas magias.</p><p>Quando você escolhe esse talento, você adquire um livro de rituais que contém duas magias de 1º nível, à sua escolha. Escolha uma das seguintes classes: bardo, bruxo, clérigo, druida, feiticeiro ou mago. Você deve escolher suas magias da lista de magias dessa classe e as magias escolhidas devem ter o descritor ritual. A classe que você escolhe também determina a habilidade de conjuração dessas magias: Carisma para bardo, bruxo ou feiticeiro; Sabedoria para clérigo ou druida; ou Inteligência para mago.</p><p>Se você encontrar uma magia na forma escrita, como a contida em um pergaminho de magia ou o grimório de um mago, você é capaz de adicioná-la ao seu livro de rituais. A magia deve estar na lista de magias da classe escolhida, o nível da magia não pode ser maior que metade do seu nível (arredondado para cima) e deve conter o descritor ritual. O processo para copiar a magia no seu livro de rituais leva 2 horas por nível da magia e custa 50 po por nível. O custo representa os componentes materiais que você gasta para experimentar a magia até dominá-la, bem como as finas tintas utilizadas para escrevê-la.</p>),
       prerequisites: { ability_score: { int_or_wis: 13 } },
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -919,7 +919,7 @@ class FeatRules
       id: 'investida_poderosa',
       name: 'Investida Poderosa',
       aliases: ['Charger'],
-      description: 'Quando você usa a ação de Disparada, você pode usar sua ação bônus para realizar um ataque corpo-a-corpo com arma ou para empurrar uma criatura. Se você se mover, pelo menos, 3 metros em linha reta, imediatamente antes de realizar essa ação bônus, você pode tanto ganhar +5 de bônus na jogada de dano do ataque (se você escolher realizar um ataque corpo-a-corpo e atingir) ou empurrar o alvo até 3 metros de você (se você escolher empurrar e for bem sucedido).',
+      description: %q(<p>Quando você usa a ação de Disparada, você pode usar sua ação bônus para realizar um ataque corpo-a-corpo com arma ou para empurrar uma criatura.</p><p>Se você se mover, pelo menos, 3 metros em linha reta, imediatamente antes de realizar essa ação bônus, você pode tanto ganhar +5 de bônus na jogada de dano do ataque (se você escolher realizar um ataque corpo-a-corpo e atingir) ou empurrar o alvo até 3 metros de você (se você escolher empurrar e for bem sucedido).</p>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -942,7 +942,7 @@ class FeatRules
       id: 'adepto_elemental',
       name: 'Adepto Elemental',
       aliases: ['Elemental Adept'],
-      description: 'Quando você ganha esse talento, escolha um dos tipos de dano a seguir: ácido, elétrico, fogo, frio ou trovão. As magias que você conjurará ignoram resistência a dano do tipo escolhido. Além disso, quando você rola o dano para uma magia que você conjurará que causar dano desse tipo, você pode tratar qualquer 1 num dado de dano como um 2. Você pode escolher esse talento diversas vezes. A cada vez que o fizer, você deve escolher um tipo diferente de dano.',
+      description: %q(<p>Quando você ganha esse talento, escolha um dos tipos de dano a seguir: ácido, elétrico, fogo, frio ou trovão.</p><p>As magias que você conjurará ignoram resistência a dano do tipo escolhido. Além disso, quando você rola o dano para uma magia que você conjurará que causar dano desse tipo, você pode tratar qualquer 1 num dado de dano como um 2.</p><p>Você pode escolher esse talento diversas vezes. A cada vez que o fizer, você deve escolher um tipo diferente de dano.</p>),
       prerequisites: { spellcasting: true },
       ability_bonuses: {},
       proficiency_bonuses: {},
