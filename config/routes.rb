@@ -132,6 +132,11 @@ Rails.application.routes.draw do
             put  :wallet, to: 'wallets#update'
             get  :xp,     to: 'xp#show'
             put  :xp,     to: 'xp#update'
+
+            # Sobrescritas do Mestre (PV máx, deslocamento, atributos). Só no
+            # namespace admin: a MARCA na ficha é para todos, a escrita é dele.
+            patch  :dm_overrides, to: 'sheet_dm_overrides#update'
+            delete :dm_overrides, to: 'sheet_dm_overrides#destroy'
           end
           resources :coin_pouches, only: [:create, :update, :destroy]
         end

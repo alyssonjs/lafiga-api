@@ -425,12 +425,29 @@ class CharacterSheetSummaryService
         nil
       end
 
+      # ── SOBRESCRITA DO MESTRE — a ÚLTIMA camada ──────────────────────────
+      # Vem depois de TUDO (raça, classe, talento, item, modifier_bag e o cap de
+      # 20 de `ABILITY_SCORE_CAP`), porque existe justamente para o que a regra
+      # não cobre: se passasse antes, o cap engoliria uma FOR 22 dada por
+      # maldição. `computed` é tirado ANTES de aplicar — é o número que a ficha
+      # mostra ao lado para avisar quando o calculado passa o cravado.
+      dm_overrides = (@sheet.dm_overrides.presence || {})
+      hp_max_efetivo = @sheet.hp_max
+      computed_snapshot = Sheets::DmOverrides.snapshot_computed(
+        abilities: abilities, movement: movement, hp_max: @sheet.hp_max
+      )
+      unless dm_overrides.empty?
+        hp_max_efetivo = Sheets::DmOverrides.apply!(
+          dm_overrides, abilities: abilities, movement: movement, hp_max: @sheet.hp_max
+        )
+      end
+
       {
         sheet: {
           id: @sheet.id,
           character_id: @sheet.character_id,
           name: @sheet.character&.name,
-          hp_max: @sheet.hp_max,
+          hp_max: hp_max_efetivo,
           hp_current: @sheet.hp_current,
           temp_hp: @sheet.temp_hp,
           experience_points: @sheet.experience_points.to_i,
@@ -449,6 +466,20 @@ class CharacterSheetSummaryService
         avatar_customization: @sheet.avatar_customization || {},
         abilities: abilities,
         movement: movement,
+        # O que o mestre cravou, com o valor que o motor daria ao lado. O front
+        # marca a ficha por aqui (a MARCA é para todos; a edição, só para o
+        # mestre) e usa `computed` para não assar a sobrescrita na base quando o
+        # personagem volta ao wizard de edição.
+        dm_overrides: dm_overrides.each_with_object({}) do |(k, v), acc|
+          next unless v.is_a?(Hash)
+          acc[k] = v.merge('computed' => computed_snapshot[k] || v['computed'])
+        end,
+        # O que o motor daria em CADA chave sobrescrevível, sem sobrescrita
+        # nenhuma. O editor do mestre mostra isto como "calculado" antes de
+        # haver ajuste, e é a única fonte confiável do `computed` na hora de
+        # gravar — recalcular do lado do controller exigiria rodar o summary
+        # duas vezes.
+        dm_overridable: computed_snapshot,
         senses: senses,
         natural_weapons: build_natural_weapons(@sheet, abilities: abilities),
         prof_bonus: prof,

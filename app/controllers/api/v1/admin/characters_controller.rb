@@ -170,6 +170,7 @@ class Api::V1::Admin::CharactersController < ApplicationController
     metadata
     coins
     experience_points
+    dm_overrides
   ].freeze
 
   def sheet_json_for_list(sheet, slim: false)
