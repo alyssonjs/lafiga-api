@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
-# Ao criar uma nova sessão (Schedule) para o mesmo grupo, copia o estado jogável
-# da sessão cronologicamente anterior: mapa (cópia profunda), NPCs de combate,
+# Ao criar uma nova sessão (Schedule) para o mesmo grupo, retoma o estado jogável
+# da sessão cronologicamente anterior: mapa (por REFERÊNCIA), NPCs de combate,
 # estado de combate + combatentes (com HP/iniciativa), e IDs de fichas NPC
 # ligadas à mesa (`linked_npc_character_ids`).
+#
+# ⚠️ O mapa era COPIADO aqui — cópia profunda a cada sessão criada. Isto nasceu
+# em abr/2026, quando não havia outro jeito de a mesa retomar de onde parou; a
+# VERTENTE (`MapBranch` + `ScheduleBattleMap`, ago/2026) passou a resolver o
+# mesmo problema sem duplicar nada, e a cópia ficou para trás sem ninguém a
+# remover. Os dois mecanismos conviveram, o antigo ganhou, e a página de mapas
+# encheu de duplicatas — oito "Novo Mapa (Copia)" idênticos em produção, uma por
+# sessão criada. Agora o vínculo REFERENCIA o mapa e semeia a camada.
 class ScheduleContinuity
   def self.copy_from_prior_session!(schedule, current_user:)
     return if schedule.group_id.blank?
@@ -12,7 +20,7 @@ class ScheduleContinuity
     source = prior_session_for(schedule)
     return if source.nil?
 
-    copy_battle_map(source, schedule, current_user)
+    link_battle_map(source, schedule, current_user)
     copy_linked_npc_sheet_ids(source, schedule)
     copy_combat_entities(source, schedule)
     schedule.reload
@@ -41,15 +49,26 @@ class ScheduleContinuity
       .first
   end
 
-  def self.copy_battle_map(source, target, current_user)
+  # O MESMO mapa da sessão anterior, mais a camada desta sessão.
+  #
+  # O tabuleiro (fundo, paredes, terreno, cenário) é compartilhado de propósito:
+  # editar no Map Builder vale para todas as mesas. O que é DAQUELA mesa —
+  # tokens, névoa, medições, desenhos, áreas e projéteis — vive na camada, e
+  # `MapBranch.ensure!` a semeia herdando a da sessão anterior.
+  #
+  # ⚠️ `previous_layer` casa por (grupo, MAPA). Enquanto cada sessão ganhava a
+  # própria cópia, essa busca nunca achava nada e a herança vinha de carona no
+  # conteúdo duplicado; apontando para o mesmo mapa, ela passa a funcionar como
+  # foi desenhada.
+  def self.link_battle_map(source, target, current_user)
     return if target.battle_map_id.present?
     return if source.battle_map_id.blank?
 
     map = BattleMap.find_by(id: source.battle_map_id)
     return unless map&.readable_by?(current_user)
 
-    copy = BattleMap.duplicate_for_user(map, current_user, name: map.name)
-    target.update!(battle_map_id: copy.id)
+    target.update!(battle_map_id: map.id)
+    MapBranch.ensure!(schedule: target, map: map)
   end
 
   def self.copy_linked_npc_sheet_ids(source, target)

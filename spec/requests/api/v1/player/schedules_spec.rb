@@ -84,7 +84,10 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(response).to have_http_status(:forbidden)
     end
 
-    it 'copia mapa, NPCs de combate, estado de combate e linked_npc_character_ids da sessao anterior do grupo' do
+    # ⚠️ O mapa era COPIADO aqui (cópia profunda por sessão criada) — foi assim
+    # até a vertente existir, e a página de mapas encheu de duplicatas. Agora a
+    # sessão nova REFERENCIA o mesmo mapa e o que é da mesa vive na camada.
+    it 'RETOMA mapa (por referência), NPCs de combate, estado de combate e linked_npc_character_ids da sessao anterior do grupo' do
       day_prev = Date.current + 45
       day_next = day_prev + 1
       dim_prev = DateDimension.find_or_create_by!(date: day_prev) do |d|
@@ -159,19 +162,23 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
         },
       }
 
+      mapas_antes = BattleMap.count
       expect do
         post '/api/v1/player/schedules', params: payload, headers: headers, as: :json
       end.to change(Schedule, :count).by(1)
-        .and change(BattleMap, :count).by(1)
         .and change(CombatNpc, :count).by(1)
         .and change(CombatState, :count).by(1)
         .and change(CombatCombatant, :count).by(2)
+      # ⚠️ o coração desta mudança: nenhum mapa novo nasce ao criar a sessão
+      expect(BattleMap.count).to eq(mapas_antes)
 
       expect(response).to have_http_status(:created)
       body = response.parsed_body['schedule']
       new_sched = Schedule.find(body['id'])
-      expect(new_sched.battle_map_id).not_to eq(prior_map.id)
+      # o MESMO mapa, e a camada desta sessão semeada pela anterior
+      expect(new_sched.battle_map_id).to eq(prior_map.id)
       expect(new_sched.battle_map.tokens.size).to eq(prior_map.tokens.size)
+      expect(ScheduleBattleMap.find_by(schedule_id: new_sched.id, battle_map_id: prior_map.id)).to be_present
       expect(new_sched.linked_npc_character_ids).to eq([char_a.id])
       expect(body['linked_npc_character_ids']).to eq([char_a.id])
       if Schedule.supports_dm_temp_npc_character_ids?
