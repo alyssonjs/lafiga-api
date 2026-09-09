@@ -20,7 +20,14 @@ class Api::V1::Public::FeatsController < ApplicationController
   def public_feats_payload
     db_feats = Feat.all.index_by(&:api_index)
     feat_rules = FeatRules.all
-    all_feat_ids = (db_feats.keys + feat_rules.keys).uniq
+    # ⚠️ A união banco + FeatRules mostrava talentos DEPRECIADOS como se fossem
+    # novos: "Durável" ao lado de "Resistente" (o mesmo talento sob duas chaves)
+    # e "Especialista em Armadura" ao lado de "Proteção Pesada". Eles existem
+    # para fichas legadas resolverem, não para o mestre escolher — quem é só do
+    # FeatRules e tem `deprecated_for` fica de fora da vitrine.
+    so_do_ruby = feat_rules.keys - db_feats.keys
+    vivos_do_ruby = so_do_ruby.reject { |k| feat_rules[k][:deprecated_for].present? }
+    all_feat_ids = (db_feats.keys + vivos_do_ruby).uniq
 
     all_feat_ids.map do |feat_id|
       if db_feats[feat_id]
