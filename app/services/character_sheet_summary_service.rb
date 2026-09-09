@@ -470,10 +470,13 @@ class CharacterSheetSummaryService
         # marca a ficha por aqui (a MARCA é para todos; a edição, só para o
         # mestre) e usa `computed` para não assar a sobrescrita na base quando o
         # personagem volta ao wizard de edição.
-        dm_overrides: dm_overrides.each_with_object({}) do |(k, v), acc|
-          next unless v.is_a?(Hash)
-          acc[k] = v.merge('computed' => computed_snapshot[k] || v['computed'])
-        end,
+        # ⚠️ `computed` sai COMO FOI GRAVADO — é o retrato de quando o mestre
+        # cravou. Sobrescrevê-lo pelo valor de agora destruía a única informação
+        # que torna o aviso de defasagem possível: comparar o cravado com o
+        # calculado de hoje acusa diferença SEMPRE (é a definição de sobrescrita),
+        # e um aviso que nunca apaga não avisa nada. O que interessa é o
+        # calculado ter MUDADO desde o ajuste — `dm_overridable` é o de agora.
+        dm_overrides: dm_overrides.select { |_k, v| v.is_a?(Hash) },
         # O que o motor daria em CADA chave sobrescrevível, sem sobrescrita
         # nenhuma. O editor do mestre mostra isto como "calculado" antes de
         # haver ajuste, e é a única fonte confiável do `computed` na hora de

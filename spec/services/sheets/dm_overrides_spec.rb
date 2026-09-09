@@ -75,14 +75,27 @@ end
 RSpec.describe 'sobrescrita do Mestre no summary', type: :model do
   let(:sheet) { create(:sheet, str: 11, hp_max: 73) }
 
-  it 'chega no payload e vem com o calculado ao lado' do
+  it 'chega no payload, com o calculado de AGORA em `dm_overridable`' do
     sheet.update!(dm_overrides: { 'str' => { 'value' => 24 }, 'hp_max' => { 'value' => 80 } })
     r = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false).result
 
     expect(r[:abilities][:scores][:str]).to eq(24)
     expect(r.dig(:sheet, :hp_max)).to eq(80)
-    expect(r[:dm_overrides]['str']['computed']).to eq(11)
+    # o que o motor daria hoje, para CADA chave — alimenta o "calculado" do editor
+    expect(r[:dm_overridable]['str']).to eq(11)
     expect(r[:dm_overridable]['hp_max']).to eq(73)
+  end
+
+  # ⚠️ O aviso de defasagem depende disto. Se o payload devolvesse o calculado de
+  # AGORA no lugar do gravado, a comparação viraria "cravado ≠ calculado", que é
+  # verdade sempre — e um aviso que nunca apaga não avisa nada.
+  it 'preserva o `computed` do MOMENTO do ajuste, mesmo com a ficha já mudada' do
+    sheet.update!(dm_overrides: { 'hp_max' => { 'value' => 80, 'computed' => 73 } })
+    sheet.update!(hp_max: 92)   # subiu de nível depois do ajuste
+
+    r = CharacterSheetSummaryService.call(sheet_id: sheet.id, sync: false).result
+    expect(r[:dm_overrides]['hp_max']['computed']).to eq(73)
+    expect(r[:dm_overridable]['hp_max']).to eq(92)
   end
 
   # ⚠️ O TESTE QUE JUSTIFICA A CAMADA. `sync_ability_columns_from_metadata!`
