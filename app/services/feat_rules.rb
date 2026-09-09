@@ -16,7 +16,7 @@ class FeatRules
     'observador' => {
       id: 'observador',
       name: 'Observador',
-      description: 'Rápido em perceber os detalhes do ambiente, você ganha os seguintes benefícios: Aumente seu valor de Inteligência ou Sabedoria em 1, até o máximo de 20. Se você puder ver a boca de uma criatura enquanto ela fala um idioma que você compreende, você pode interpretar o que ela está dizendo ao ler os seus lábios. Você tem +5 de bônus nos seus valores passivos de Sabedoria (Percepção) e Inteligência (Investigação).',
+      description: %q(<p>Rápido em perceber os detalhes do ambiente, você ganha os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Inteligência ou Sabedoria em 1, até o máximo de 20.</p></li><li><p>Se você puder ver a boca de uma criatura enquanto ela fala um idioma que você compreende, você pode interpretar o que ela está dizendo ao ler os seus lábios. Você tem +5 de bônus nos seus valores passivos de Sabedoria (Percepção) e Inteligência (Investigação).</p></li></ul>),
       prerequisites: { ability_score: { wis: 13 } },
       ability_bonuses: { wis: 1, int: 1 },
       proficiency_bonuses: { skills: ['Percepção'] },
@@ -89,7 +89,7 @@ class FeatRules
     'atleta' => {
       id: 'atleta',
       name: 'Atleta',
-      description: 'Você passou por extenso treinamento físico para ganhar os seguintes benefícios: Aumente seu valor de Força ou Destreza em 1, até o máximo de 20. Quando você estiver caído, se levantar requer apenas 1,5 metro do seu deslocamento. Escalar não custa movimento adicional a você. Você pode realizar um salto em distância correndo ou um salto em altura correndo se movendo apenas um passo de ajuste de 1,5 metro, ao invés de 3 metros.',
+      description: %q(<p>Você passou por extenso treinamento físico para ganhar os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Força ou Destreza em 1, até o máximo de 20.</p></li><li><p>Quando você estiver caído, se levantar requer apenas 1,5 metro do seu deslocamento.</p></li><li><p>Escalar não custa movimento adicional a você.</p></li><li><p>Você pode realizar um salto em distância correndo ou um salto em altura correndo se movendo apenas um passo de ajuste de 1,5 metro, ao invés de 3 metros.</p></li></ul>),
       prerequisites: { ability_score: { str: 13 } },
       ability_bonuses: { choose: { amount: 1, options: ['str', 'dex'] } },
       proficiency_bonuses: { skills: ['Atletismo'] },
@@ -101,7 +101,7 @@ class FeatRules
     'especialista_em_armas' => {
       id: 'especialista_em_armas',
       name: 'Mestre de Armas',
-      description: 'Você tem praticado extensamente com uma variedade de armas, ganhando os seguintes benefícios: Aumente o valor de Força ou Destreza em 1, até o máximo de 20. Você ganha proficiência com quatro armas simples ou marciais, à sua escolha.',
+      description: %q(<p>Você tem praticado extensamente com uma variedade de armas, ganhando os seguintes benefícios:</p><ul><li><p>Aumente o valor de Força ou Destreza em 1, até o máximo de 20.</p></li><li><p>Você ganha proficiência com quatro armas simples ou marciais, à sua escolha.</p></li></ul>),
       prerequisites: { ability_score: { str: 13 } },
       ability_bonuses: { choose: { amount: 1, options: ['str', 'dex'] } },
       proficiency_bonuses: { weapons: { choose: { amount: 4, options: ['arma_simples', 'arma_marcial'] } } },
@@ -163,12 +163,12 @@ class FeatRules
     # Verificação de DB anterior confirmou 0 uso em SheetFeat / metadata.feats.
     'mestre_de_armas_duplas' => {
       id: 'mestre_de_armas_duplas',
-      name: 'Ambidextro',
+      name: 'Ambidestro',
       # Apelido coloquial usado em fichas de jogadores ("Ambidestro" e a
       # tradução vernacular comum de Dual Wielder). NAO confundir com
       # o estilo de luta "Combate com Duas Armas" (que e diferente).
       aliases: ['Ambidestro', 'Dual Wielder', 'Two-Weapon Fighting Feat'],
-      description: 'Você dominou o estilo de luta com duas armas, ganhando os seguintes benefícios: Você ganha +1 de bônus na CA enquanto estiver empunhando uma arma corpo-a-corpo em cada mão. Você pode usar combater com duas armas mesmo que a arma de uma mão que você está empunhando não seja leve. Você pode sacar ou guardar duas armas de uma mão quando você, normalmente, seria capaz de sacar ou guardar apenas uma.',
+      description: %q(<p>Você dominou o estilo de luta com duas armas, ganhando os seguintes benefícios:</p><ul><li><p>Você ganha +1 de bônus na CA enquanto estiver empunhando uma arma corpo-a-corpo em cada mão.</p></li><li><p>Você pode usar combater com duas armas mesmo que a arma de uma mão que você está empunhando não seja leve.</p></li><li><p>Você pode sacar ou guardar duas armas de uma mão quando você, normalmente, seria capaz de sacar ou guardar apenas uma.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -196,7 +196,7 @@ class FeatRules
     'mobilidade' => {
       id: 'mobilidade',
       name: 'Mobilidade',
-      description: 'Você é excepcionalmente rápido e ágil. Você ganha os seguintes benefícios: Seu deslocamento aumenta em 3 metros. Quando você usa a ação de Disparada, mover-se através de terreno difícil não lhe custa qualquer movimento adicional neste turno. Quando você realiza um ataque corpo-a-corpo contra uma criatura, você não provoca ataques de oportunidade para essa criatura pelo resto do turno, independentemente de ter atingido ou não.',
+      description: %q(<p>Você é excepcionalmente rápido e ágil. Você ganha os seguintes benefícios:</p><ul><li><p>Seu deslocamento aumenta em 3 metros.</p></li><li><p>Quando você usa a ação de Disparada, mover-se através de terreno difícil não lhe custa qualquer movimento adicional neste turno.</p></li><li><p>Quando você realiza um ataque corpo-a-corpo contra uma criatura, você não provoca ataques de oportunidade para essa criatura pelo resto do turno, independentemente de ter atingido ou não.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -226,7 +226,7 @@ class FeatRules
     'atirador_eximio' => {
       id: 'atirador_eximio',
       name: 'Atirador Aguçado',
-      description: 'Você dominou o uso de armas à distância e pode realizar tiros que seriam impossíveis para outros. Você ganha os seguintes benefícios: Atacar um alvo além da distância normal não impõem desvantagem nas suas jogadas de ataque com armas à distância. Seus ataques com armas à distância ignoram meia-cobertura e três-quartos de cobertura. Antes de realizar um ataque com uma arma à distância na qual você seja proficiente, você pode escolher sofrer –5 de penalidade na jogada de ataque. Se o ataque atingir, você adiciona +10 no dano do ataque.',
+      description: %q(<p>Você dominou o uso de armas à distância e pode realizar tiros que seriam impossíveis para outros. Você ganha os seguintes benefícios:</p><ul><li><p>Atacar um alvo além da distância normal não impõem desvantagem nas suas jogadas de ataque com armas à distância.</p></li><li><p>Seus ataques com armas à distância ignoram meia-cobertura e três-quartos de cobertura.</p></li><li><p>Antes de realizar um ataque com uma arma à distância na qual você seja proficiente, você pode escolher sofrer –5 de penalidade na jogada de ataque. Se o ataque atingir, você adiciona +10 no dano do ataque.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -257,7 +257,7 @@ class FeatRules
       # Sigla "M.A.G." e abreviacao usada em planilhas de campanha
       # para Great Weapon Master.
       aliases: ['M.A.G.', 'MAG', 'Great Weapon Master'],
-      description: 'Você aprendeu a usar o peso em sua vantagem, deixando o balanço potencializar seus golpes. Você recebe os seguintes benefícios: No seu turno, quando você atingir um acerto crítico com uma arma corpo-a-corpo ou reduzir os pontos de vida de uma criatura a 0, você pode realizar um ataque corpo-a-corpo com arma, com uma ação bônus. Antes de você realizar um ataque corpo-a-corpo com uma arma pesada na qual você seja proficiente, você pode escolher sofrer –5 de penalidade em sua jogada de ataque. Se o ataque atingir, você adiciona +10 ao dano do ataque.',
+      description: %q(<p>Você aprendeu a usar o peso em sua vantagem, deixando o balanço potencializar seus golpes. Você recebe os seguintes benefícios:</p><ul><li><p>No seu turno, quando você atingir um acerto crítico com uma arma corpo-a-corpo ou reduzir os pontos de vida de uma criatura a 0, você pode realizar um ataque corpo-a-corpo com arma, com uma ação bônus.</p></li><li><p>Antes de você realizar um ataque corpo-a-corpo com uma arma pesada na qual você seja proficiente, você pode escolher sofrer –5 de penalidade em sua jogada de ataque. Se o ataque atingir, você adiciona +10 ao dano do ataque.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -324,7 +324,7 @@ class FeatRules
       # PT alternativo / EN: jogadores frequentemente registram como
       # "Conjurador de Guerra" ou "War Caster" (PHB).
       aliases: ['Conjurador de Guerra', 'War Caster'],
-      description: 'Você praticou a conjuração de magias no meio do combate, aprendendo técnicas que lhe concedem os seguintes benefícios: Você tem vantagem em testes de resistência de Constituição para manter sua concentração em uma magia quando você sofrer dano. Você pode realizar os componentes somáticos de uma magia mesmo quando está com armas ou um escudo em uma ou ambas as mãos. Quando o movimento de uma criatura hostil provocar um ataque de oportunidade para você, você pode usar sua reação para conjurar uma magia na criatura, ao invés de realizar o ataque de oportunidade. A magia deve ter um tempo de conjuração de 1 ação e deve ter apenas uma criatura como alvo.',
+      description: %q(<p>Você praticou a conjuração de magias no meio do combate, aprendendo técnicas que lhe concedem os seguintes benefícios:</p><ul><li><p>Você tem vantagem em testes de resistência de Constituição para manter sua concentração em uma magia quando você sofrer dano.</p></li><li><p>Você pode realizar os componentes somáticos de uma magia mesmo quando está com armas ou um escudo em uma ou ambas as mãos.</p></li><li><p>Quando o movimento de uma criatura hostil provocar um ataque de oportunidade para você, você pode usar sua reação para conjurar uma magia na criatura, ao invés de realizar o ataque de oportunidade. A magia deve ter um tempo de conjuração de 1 ação e deve ter apenas uma criatura como alvo.</p></li></ul>),
       prerequisites: { spellcasting: true },
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -348,7 +348,7 @@ class FeatRules
     'especialista_em_besta' => {
       id: 'especialista_em_besta',
       name: 'Especialista em Besta',
-      description: 'Graças a sua pratica extensiva com bestas, você ganha os seguintes benefícios: Você ignora a qualidade de recarga de bestas nas quais você é proficiente. Estar a 1,5 metro de uma criatura hostil não impõem desvantagem nas suas jogadas de ataque à distância. Quando você usa a ação de Ataque e ataca com uma arma de uma mão, você pode usar sua ação bônus para atacar com uma besta de mão carregada que você esteja empunhando.',
+      description: %q(<p>Graças a sua pratica extensiva com bestas, você ganha os seguintes benefícios:</p><ul><li><p>Você ignora a qualidade de recarga de bestas nas quais você é proficiente.</p></li><li><p>Estar a 1,5 metro de uma criatura hostil não impõem desvantagem nas suas jogadas de ataque à distância.</p></li><li><p>Quando você usa a ação de Ataque e ataca com uma arma de uma mão, você pode usar sua ação bônus para atacar com uma besta de mão carregada que você esteja empunhando.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -378,7 +378,7 @@ class FeatRules
     'mestre_do_escudo' => {
       id: 'mestre_do_escudo',
       name: 'Mestre de Escudo',
-      description: 'Você não usa escudos apenas para proteção, mas também de forma ofensiva. Você ganha os seguintes benefícios enquanto estiver empunhando um escudo: Se você realizar a ação de Ataque no seu turno, você pode usar uma ação bônus para tentar empurrar uma criatura, a até 1,5 metro de você, com seu escudo. Se você não estiver incapacitado, você pode adicionar seu bônus de CA do escudo a qualquer teste de resistência de Destreza que você fizer contra uma magia ou outro efeito nocivo que tenha você como alvo. Se você for alvo de um efeito que permita realizar um teste de resistência de Destreza para sofrer apenas metade do dano, você pode usar sua reação para não sofrer dano se passar no teste de resistência, interpondo seu escudo entre você e a fonte do efeito.',
+      description: %q(<p>Você não usa escudos apenas para proteção, mas também de forma ofensiva. Você ganha os seguintes benefícios enquanto estiver empunhando um escudo:</p><ul><li><p>Se você realizar a ação de Ataque no seu turno, você pode usar uma ação bônus para tentar empurrar uma criatura, a até 1,5 metro de você, com seu escudo.</p></li><li><p>Se você não estiver incapacitado, você pode adicionar seu bônus de CA do escudo a qualquer teste de resistência de Destreza que você fizer contra uma magia ou outro efeito nocivo que tenha você como alvo.</p></li><li><p>Se você for alvo de um efeito que permita realizar um teste de resistência de Destreza para sofrer apenas metade do dano, você pode usar sua reação para não sofrer dano se passar no teste de resistência, interpondo seu escudo entre você e a fonte do efeito.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -426,7 +426,7 @@ class FeatRules
     'mestre_arma_de_haste' => {
       id: 'mestre_arma_de_haste',
       name: 'Maestria em Arma de Haste',
-      description: 'Você consegue manter seus inimigos afastados utilizando armas de haste. Você ganha os seguintes benefícios: Quando você realiza a ação de Ataque e ataca com uma glaive, alabarda ou bordão, você pode usar uma ação bônus para realizar um ataque corpo-a-corpo com a outra extremidade da arma. Esse ataque usa o mesmo modificador de habilidade do ataque primário. O dado de dano da arma para esse ataque é um d4 e o ataque causa dano de concussão. Enquanto você estiver empunhando uma glaive, alabarda, lança longa ou bastão, as outras criaturas provocam um ataque de oportunidade a você quando entrarem no seu alcance.',
+      description: %q(<p>Você consegue manter seus inimigos afastados utilizando armas de haste. Você ganha os seguintes benefícios:</p><ul><li><p>Quando você realiza a ação de Ataque e ataca com uma glaive, alabarda ou bordão, você pode usar uma ação bônus para realizar um ataque corpo-a-corpo com a outra extremidade da arma. Esse ataque usa o mesmo modificador de habilidade do ataque primário. O dado de dano da arma para esse ataque é um d4 e o ataque causa dano de concussão.</p></li><li><p>Enquanto você estiver empunhando uma glaive, alabarda, lança longa ou bastão, as outras criaturas provocam um ataque de oportunidade a você quando entrarem no seu alcance.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -534,7 +534,7 @@ class FeatRules
       id: 'maestria_em_armadura_pesada',
       name: 'Maestria em Armadura Pesada',
       aliases: ['Heavy Armor Master'],
-      description: 'Você pode usar sua armadura para defletir ataques potencialmente fatais a outros. Você ganha os seguintes benefícios: Aumente seu valor de Força em 1, até o máximo de 20. Quando você estiver vestindo uma armadura pesada, dano de concussão, cortante e perfurante que você recebe de ataques não-mágicos será reduzido em 3.',
+      description: %q(<p>Você pode usar sua armadura para defletir ataques potencialmente fatais a outros. Você ganha os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Força em 1, até o máximo de 20.</p></li><li><p>Quando você estiver vestindo uma armadura pesada, dano de concussão, cortante e perfurante que você recebe de ataques não-mágicos será reduzido em 3.</p></li></ul>),
       prerequisites: { proficiencies: { armors: ['pesada'] } },
       ability_bonuses: { str: 1 },
       proficiency_bonuses: {},
@@ -554,7 +554,7 @@ class FeatRules
     'duelista_montado' => {
       id: 'duelista_montado',
       name: 'Combatente Montado',
-      description: 'Você é um oponente perigoso de se enfrentar quando está montado. Enquanto estiver montado e não estiver incapacitado, você ganha os seguintes benefícios: Você tem vantagem nas jogadas de ataque corpo-a-corpo contra qualquer criatura desmontada que seja menor que a sua montaria. Você pode forçar que um ataque direcionado a sua montaria seja direcionado a você, em seu lugar. Se sua montaria for alvo de um efeito que permita a ela realizar um teste de resistência de Destreza para reduzir o dano à metade, ao invés disso, ela não sofre qualquer dano se for bem sucedida no teste de resistência, e apenas metade se falhar.',
+      description: %q(<p>Você é um oponente perigoso de se enfrentar quando está montado. Enquanto estiver montado e não estiver incapacitado, você ganha os seguintes benefícios:</p><ul><li><p>Você tem vantagem nas jogadas de ataque corpo-a-corpo contra qualquer criatura desmontada que seja menor que a sua montaria.</p></li><li><p>Você pode forçar que um ataque direcionado a sua montaria seja direcionado a você, em seu lugar.</p></li><li><p>Se sua montaria for alvo de um efeito que permita a ela realizar um teste de resistência de Destreza para reduzir o dano à metade, ao invés disso, ela não sofre qualquer dano se for bem sucedida no teste de resistência, e apenas metade se falhar.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -660,7 +660,7 @@ class FeatRules
     'explorador_de_cavernas' => {
       id: 'explorador_de_cavernas',
       name: 'Explorador de Cavernas',
-      description: 'Alerta às armadilhas escondidas e portas secretas encontradas em muitas masmorras, você ganha os seguintes benefícios: Você tem vantagem em testes de Sabedoria (Percepção) e de Inteligência (Investigação) feitos para detectar a presença de portas secretas. Você tem vantagem em testes de resistência feitos para evitar ou resistir a armadilhas. Você tem resistência ao dano causado por armadilhas. Você pode procurar armadilhas enquanto viaja a um ritmo normal, ao invés de metade do ritmo.',
+      description: %q(<p>Alerta às armadilhas escondidas e portas secretas encontradas em muitas masmorras, você ganha os seguintes benefícios:</p><ul><li><p>Você tem vantagem em testes de Sabedoria (Percepção) e de Inteligência (Investigação) feitos para detectar a presença de portas secretas.</p></li><li><p>Você tem vantagem em testes de resistência feitos para evitar ou resistir a armadilhas.</p></li><li><p>Você tem resistência ao dano causado por armadilhas.</p></li><li><p>Você pode procurar armadilhas enquanto viaja a um ritmo normal, ao invés de metade do ritmo.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -696,7 +696,7 @@ class FeatRules
     'curandeiro' => {
       id: 'curandeiro',
       name: 'Curandeiro',
-      description: 'Você é um cirurgião capacitado, permitindo que você trate de ferimentos rapidamente, trazendo seus aliados de volta à luta. Você adquire os seguintes benefícios: Quando você usar um kit de primeiros-socorros para estabilizar uma criatura morrendo, a criatura recupera 1 ponto de vida, ao invés disso. Com uma ação, você pode gastar um uso do kit de primeiros-socorros para tratar de uma criatura e restaurar 1d6 + 4 pontos de vida mais uma quantidade de pontos de vida adicionais igual ao número total de Dados de Vida da criatura. A criatura não pode recuperar pontos de vida através desse talento novamente até ter terminado um descanso curto ou longo.',
+      description: %q(<p>Você é um cirurgião capacitado, permitindo que você trate de ferimentos rapidamente, trazendo seus aliados de volta à luta. Você adquire os seguintes benefícios:</p><ul><li><p>Quando você usar um kit de primeiros-socorros para estabilizar uma criatura morrendo, a criatura recupera 1 ponto de vida, ao invés disso.</p></li><li><p>Com uma ação, você pode gastar um uso do kit de primeiros-socorros para tratar de uma criatura e restaurar 1d6 + 4 pontos de vida mais uma quantidade de pontos de vida adicionais igual ao número total de Dados de Vida da criatura. A criatura não pode recuperar pontos de vida através desse talento novamente até ter terminado um descanso curto ou longo.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -728,7 +728,7 @@ class FeatRules
     'imobilizador' => {
       id: 'imobilizador',
       name: 'Imobilizador',
-      description: 'Você desenvolveu a perícia necessária para se prender a alguém em um combate engajado. Você recebe os seguintes benefícios: Você tem vantagem nas jogadas de ataque contra uma criatura agarrada. Você pode usar sua ação para tentar imobilizar uma criatura agarrada por você. Para tanto, realize outro teste de agarrar. Se você for bem sucedido, você é a criatura estará o ambos impedidos até o agarrar terminar.',
+      description: %q(<p>Você desenvolveu a perícia necessária para se prender a alguém em um combate engajado. Você recebe os seguintes benefícios:</p><ul><li><p>Você tem vantagem nas jogadas de ataque contra uma criatura agarrada.</p></li><li><p>Você pode usar sua ação para tentar imobilizar uma criatura agarrada por você. Para tanto, realize outro teste de agarrar. Se você for bem sucedido, você é a criatura estará o ambos impedidos até o agarrar terminar.</p></li></ul>),
       prerequisites: { ability_score: { str: 13 } },
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -786,7 +786,7 @@ class FeatRules
     'sniper_magico' => {
       id: 'sniper_magico',
       name: 'Atirador de Magia',
-      description: 'Você aprende técnicas para aprimorar seus ataques com certos tipos de magia, ganhando os seguintes benefícios: Quando você conjura uma magia que requer que você realize uma jogada de ataque, o alcance da magia é dobrada. Seus ataques à distância com magia ignoram meia-cobertura ou três-quartos de cobertura. Você aprende um truque que requer uma jogada de ataque. Escolha o truque da lista de magias do bardo, bruxo, clérigo, druida, feiticeiro ou mago. Sua habilidade de conjuração para esse truque depende da lista de magia a qual você escolheu o truque: Carisma para bardo, bruxo ou feiticeiro; Sabedoria para clérigo ou druida; ou Inteligência para mago.',
+      description: %q(<p>Você aprende técnicas para aprimorar seus ataques com certos tipos de magia, ganhando os seguintes benefícios:</p><ul><li><p>Quando você conjura uma magia que requer que você realize uma jogada de ataque, o alcance da magia é dobrada.</p></li><li><p>Seus ataques à distância com magia ignoram meia-cobertura ou três-quartos de cobertura.</p></li><li><p>Você aprende um truque que requer uma jogada de ataque. Escolha o truque da lista de magias do bardo, bruxo, clérigo, druida, feiticeiro ou mago. Sua habilidade de conjuração para esse truque depende da lista de magia a qual você escolheu o truque: Carisma para bardo, bruxo ou feiticeiro; Sabedoria para clérigo ou druida; ou Inteligência para mago.</p></li></ul>),
       prerequisites: { spellcasting: true },
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -828,7 +828,7 @@ class FeatRules
       id: 'alerta',
       name: 'Alerta',
       aliases: ['Alert'],
-      description: 'Sempre a espera de perigo, você ganha os seguintes benefícios: Você recebe +5 de bônus em iniciativa. Você não pode ser surpreso enquanto estiver consciente. Outras criaturas não ganham vantagem nas jogadas de ataque contra você por estarem escondidas de você.',
+      description: %q(<p>Sempre a espera de perigo, você ganha os seguintes benefícios:</p><ul><li><p>Você recebe +5 de bônus em iniciativa.</p></li><li><p>Você não pode ser surpreso enquanto estiver consciente.</p></li><li><p>Outras criaturas não ganham vantagem nas jogadas de ataque contra você por estarem escondidas de você.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -859,7 +859,7 @@ class FeatRules
       id: 'mente_agucada',
       name: 'Mente Afiada',
       aliases: ['Keen Mind'],
-      description: 'Você tem uma mente que pode cronometrar o tempo e memorizar direção e detalhes com precisão absurda. Você ganha os seguintes benefícios: Aumente seu valor de Inteligência em 1, até o máximo de 20. Você sempre sabe qual a direção do norte. Você sempre sabe o número de horas restantes para o próximo nascer ou pôr do sol. Você pode relembrar, com precisão, qualquer coisa que você tenha visto ou ouvido no último mês.',
+      description: %q(<p>Você tem uma mente que pode cronometrar o tempo e memorizar direção e detalhes com precisão absurda. Você ganha os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Inteligência em 1, até o máximo de 20.</p></li><li><p>Você sempre sabe qual a direção do norte.</p></li><li><p>Você sempre sabe o número de horas restantes para o próximo nascer ou pôr do sol.</p></li><li><p>Você pode relembrar, com precisão, qualquer coisa que você tenha visto ou ouvido no último mês.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: { int: 1 },
       proficiency_bonuses: {},
@@ -890,7 +890,7 @@ class FeatRules
       id: 'ator',
       name: 'Ator',
       aliases: ['Actor'],
-      description: 'Mímica e dramaturgia aprimoradas.',
+      description: %q(<p>Perito em mímica e dramaturgia, você recebe os seguintes benefícios:</p><ul><li><p>Aumente seu valor de Carisma em 1, até o máximo de 20.</p></li><li><p>Você tem vantagem em testes de Carisma (Atuação) e Carisma (Enganação) quando você estiver tentando se passar por uma pessoa diferente.</p></li><li><p>Você pode imitar a articulação de outra pessoa ou os sons feitos por outras criaturas. Você deve ter ouvido a pessoa falando ou ouvido a criatura fazendo o som por, pelo menos, 1 minuto. Um sucesso num teste de Sabedoria (Intuição) resistido pelo seu teste de Carisma (Enganação) permite que um ouvinte determine que o efeito é falso.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: { cha: 1 },
       proficiency_bonuses: {},
@@ -971,7 +971,7 @@ class FeatRules
       id: 'matador_de_conjuradores',
       name: 'Matador de Conjuradores',
       aliases: ['Mage Slayer'],
-      description: 'Você praticou técnicas úteis em combate corpo-a-corpo contra conjuradores, ganhando os seguintes benefícios: Quando uma criatura a até 1,5 metro de você conjurar uma magia, você pode usar sua reação para realizar um ataque corpo-a-corpo contra ela. Quando você causa dano em uma criatura que está se concentrando em uma magia, a criatura terá desvantagem no teste de resistência que ela fizer para manter a concentração. Você tem vantagem em testes de resistência contra magias conjuradas por criaturas a até 1,5 metro de você.',
+      description: %q(<p>Você praticou técnicas úteis em combate corpo-a-corpo contra conjuradores, ganhando os seguintes benefícios:</p><ul><li><p>Quando uma criatura a até 1,5 metro de você conjurar uma magia, você pode usar sua reação para realizar um ataque corpo-a-corpo contra ela.</p></li><li><p>Quando você causa dano em uma criatura que está se concentrando em uma magia, a criatura terá desvantagem no teste de resistência que ela fizer para manter a concentração.</p></li><li><p>Você tem vantagem em testes de resistência contra magias conjuradas por criaturas a até 1,5 metro de você.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -1002,7 +1002,7 @@ class FeatRules
       id: 'adepto_marcial',
       name: 'Adepto Marcial',
       aliases: ['Martial Adept'],
-      description: 'Você tem treinamento marcial que permite a você realizar manobras de combate especiais. Você aprende duas manobras, à sua escolha, das que estão disponíveis ao arquétipo Mestre de Batalha na classe guerreiro. Se a manobra que você usar obrigará um alvo a realizar um teste de resistência, a CD do teste de resistência será igual a 8 + seu bônus de proficiência + seu modificador de Força ou Destreza (à sua escolha). Se você já tiver dados de superioridade, você ganha um adicional; do contrário, você terá um dado de superioridade, que é um d6. Esse dado é usado para abastecer suas manobras. Um dado de superioridade é gasto quando você o usa. Você recupera seus dados de superioridade gastos quando termina um descanso curto ou longo.',
+      description: %q(<p>Você tem treinamento marcial que permite a você realizar manobras de combate especiais. Você ganha os seguintes benefícios:</p><ul><li><p>Você aprende duas manobras, à sua escolha, das que estão disponíveis ao arquétipo Mestre de Batalha na classe guerreiro. Se a manobra que você usar obrigará um alvo a realizar um teste de resistência, a CD do teste de resistência será igual a 8 + seu bônus de proficiência + seu modificador de Força ou Destreza (à sua escolha).</p></li><li><p>Se você já tiver dados de superioridade, você ganha um adicional; do contrário, você terá um dado de superioridade, que é um d6. Esse dado é usado para abastecer suas manobras. Um dado de superioridade é gasto quando você o usa. Você recupera seus dados de superioridade gastos quando termina um descanso curto ou longo.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -1040,7 +1040,7 @@ class FeatRules
       id: 'maestria_em_armadura_media',
       name: 'Maestria em Armadura Média',
       aliases: ['Medium Armor Master'],
-      description: 'Você praticou seus movimentos usando armaduras pesadas para ganhar os seguintes benefícios: Vestir uma armadura média não lhe impõe desvantagem em testes de Destreza (Furtividade). Quando você estiver vestindo uma armadura média, você pode adicionar 3, ao invés de 2, à sua CA, se você tiver Destreza 16 ou maior.',
+      description: %q(<p>Você praticou seus movimentos usando armaduras pesadas para ganhar os seguintes benefícios:</p><ul><li><p>Vestir uma armadura média não lhe impõe desvantagem em testes de Destreza (Furtividade).</p></li><li><p>Quando você estiver vestindo uma armadura média, você pode adicionar 3, ao invés de 2, à sua CA, se você tiver Destreza 16 ou maior.</p></li></ul>),
       prerequisites: { proficiencies: { armors: ['média'] } },
       ability_bonuses: {},
       proficiency_bonuses: {},
@@ -1067,7 +1067,7 @@ class FeatRules
       id: 'especialista_em_briga',
       name: 'Especialista em Briga',
       aliases: ['Tavern Brawler', 'Brigão de Taverna'],
-      description: 'Acostumado a brigas de bar usando qualquer coisa como armas, e na falta, os punhos, você ganha os seguintes benefícios: Aumente o valor de Força ou Constituição em 1, até o máximo de 20. Seus ataques desarmados causam 1d4 de dano. Quando você atinge uma criatura com um ataque desarmado ou com uma arma improvisada, no seu turno, você pode usar uma ação bônus para tentar agarrar o alvo.',
+      description: %q(<p>Acostumado a brigas de bar usando qualquer coisa como armas, e na falta, os punhos, você ganha os seguintes benefícios:</p><ul><li><p>Aumente o valor de Força ou Constituição em 1, até o máximo de 20.</p></li><li><p>Seus ataques desarmados causam 1d4 de dano.</p></li><li><p>Quando você atinge uma criatura com um ataque desarmado ou com uma arma improvisada, no seu turno, você pode usar uma ação bônus para tentar agarrar o alvo.</p></li></ul>),
       prerequisites: {},
       ability_bonuses: { choose: { amount: 1, options: %w[str con] } },
       proficiency_bonuses: { weapons: ['armas improvisadas'] },

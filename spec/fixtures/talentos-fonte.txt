@@ -4,13 +4,13 @@ DESCRIÇÃO: Quando você ganha esse talento, escolha um dos tipos de dano a seg
 
 NOME: Adepto Marcial
 PRÉ-REQUISITO: Nenhum
-DESCRIÇÃO: Você tem treinamento marcial que permite a você realizar manobras de combate especiais. Você aprende duas manobras, à sua escolha, das que estão disponíveis ao arquétipo Mestre de Batalha na classe guerreiro. Se a manobra que você usar obrigará um alvo a realizar um teste de resistência, a CD do teste de resistência será igual a 8 + seu bônus de proficiência + seu modificador de Força ou Destreza (à sua escolha). Se você já tiver dados de superioridade, você ganha um adicional; do contrário, você terá um dado de superioridade, que é um d6. Esse dado é usado para abastecer suas manobras. Um dado de superioridade é gasto quando você o usa. Você recupera seus dados de superioridade gastos quando termina um descanso curto ou longo.
+DESCRIÇÃO: Você tem treinamento marcial que permite a você realizar manobras de combate especiais. Você ganha os seguintes benefícios: Você aprende duas manobras, à sua escolha, das que estão disponíveis ao arquétipo Mestre de Batalha na classe guerreiro. Se a manobra que você usar obrigará um alvo a realizar um teste de resistência, a CD do teste de resistência será igual a 8 + seu bônus de proficiência + seu modificador de Força ou Destreza (à sua escolha). Se você já tiver dados de superioridade, você ganha um adicional; do contrário, você terá um dado de superioridade, que é um d6. Esse dado é usado para abastecer suas manobras. Um dado de superioridade é gasto quando você o usa. Você recupera seus dados de superioridade gastos quando termina um descanso curto ou longo.
 
 NOME: Alerta
 PRÉ-REQUISITO: Nenhum
 DESCRIÇÃO: Sempre a espera de perigo, você ganha os seguintes benefícios: Você recebe +5 de bônus em iniciativa. Você não pode ser surpreso enquanto estiver consciente. Outras criaturas não ganham vantagem nas jogadas de ataque contra você por estarem escondidas de você.
 
-NOME: Ambidextro
+NOME: Ambidestro
 PRÉ-REQUISITO: Nenhum
 DESCRIÇÃO: Você dominou o estilo de luta com duas armas, ganhando os seguintes benefícios: Você ganha +1 de bônus na CA enquanto estiver empunhando uma arma corpo-a-corpo em cada mão. Você pode usar combater com duas armas mesmo que a arma de uma mão que você está empunhando não seja leve. Você pode sacar ou guardar duas armas de uma mão quando você, normalmente, seria capaz de sacar ou guardar apenas uma.
 
@@ -29,6 +29,10 @@ DESCRIÇÃO: Você aprende técnicas para aprimorar seus ataques com certos tipo
 NOME: Atleta
 PRÉ-REQUISITO: Nenhum
 DESCRIÇÃO: Você passou por extenso treinamento físico para ganhar os seguintes benefícios: Aumente seu valor de Força ou Destreza em 1, até o máximo de 20. Quando você estiver caído, se levantar requer apenas 1,5 metro do seu deslocamento. Escalar não custa movimento adicional a você. Você pode realizar um salto em distância correndo ou um salto em altura correndo se movendo apenas um passo de ajuste de 1,5 metro, ao invés de 3 metros.
+
+NOME: Ator
+PRÉ-REQUISITO: Nenhum
+DESCRIÇÃO: Perito em mímica e dramaturgia, você recebe os seguintes benefícios: Aumente seu valor de Carisma em 1, até o máximo de 20. Você tem vantagem em testes de Carisma (Atuação) e Carisma (Enganação) quando você estiver tentando se passar por uma pessoa diferente. Você pode imitar a articulação de outra pessoa ou os sons feitos por outras criaturas. Você deve ter ouvido a pessoa falando ou ouvido a criatura fazendo o som por, pelo menos, 1 minuto. Um sucesso num teste de Sabedoria (Intuição) resistido pelo seu teste de Carisma (Enganação) permite que um ouvinte determine que o efeito é falso.
 
 NOME: Combatente Montado
 PRÉ-REQUISITO: Nenhum
@@ -161,4 +165,3 @@ DESCRIÇÃO: Você é especialista em espreitar através das sombras. Você ganh
 NOME: Sortudo
 PRÉ-REQUISITO: Nenhum
 DESCRIÇÃO: Você tem uma sorte inexplicável que parece surgir nos momentos exatos. Você tem 3 pontos de sorte. A qualquer momento que você realizar uma jogada de ataque, teste de habilidade ou teste de resistência, você pode gastar um ponto de sorte para rolar um d20 adicional. Você pode escolher gastar um dos seus pontos de sorte depois de rolar o dado, mas antes de saber o resultado da jogada. Você escolhe qual dos d20s irá usar para a jogada de ataque, teste de habilidade ou teste de resistência. Você também pode gastar um ponto de sorte quando uma jogada de ataque for feita contra você. Role um d20, e então escolha se o ataque irá usar a jogada do atacante ou a sua. Se mais de uma criatura gastar um ponto de sorte para influenciar uma mesma jogada, os pontos se cancelam mutuamente; nenhum dado adicional é rolado. Você recupera seus pontos de sorte gastos após terminar um descanso longo.
-

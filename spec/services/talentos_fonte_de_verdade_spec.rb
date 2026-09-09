@@ -26,8 +26,15 @@ RSpec.describe 'Talentos × documento' do
   let(:feats) { YAML.load_file(YML)['feats'] }
   let(:por_nome) { feats.values.index_by { |f| f['name'] } }
 
-  it 'a fonte tem 41 talentos' do
-    expect(doc.size).to eq(41)
+  # ⚠️ Descrição pode ser HTML (as bolinhas do livro). Comparar por TEXTO PURO,
+  # trocando cada tag por ESPAÇO — remover a tag sem deixar nada colaria a última
+  # palavra da frase-guia na primeira da bolinha, e a comparação passaria a mentir.
+  def sem_tags(v)
+    v.to_s.gsub(/<[^>]+>/, ' ').gsub(/\s+/, ' ').strip
+  end
+
+  it 'a fonte tem 42 talentos — 41 do .docx mais o Ator, que só o livro tinha' do
+    expect(doc.size).to eq(42)
   end
 
   it '⚠️ todo talento do documento está no catálogo, com o NOME do documento' do
@@ -36,13 +43,14 @@ RSpec.describe 'Talentos × documento' do
 
   it '⚠️ a descrição é a REGRA, não um resumo de uma linha' do
     doc.each do |d|
-      expect(por_nome[d[:nome]]['description']).to eq(d[:desc]), "descrição divergente: #{d[:nome]}"
+      expect(sem_tags(por_nome[d[:nome]]['description'])).to eq(d[:desc]), "descrição divergente: #{d[:nome]}"
     end
   end
 
   it 'o que sobra fora do documento é deliberado — tem fichas usando' do
     nomes = doc.map { |d| d[:nome] }
-    expect((por_nome.keys - nomes).sort).to eq(['Ator', 'Especialista em Escudo'])
+    # "Ator" saiu daqui: o livro (p.166) o tem, a omissão era do .docx
+    expect((por_nome.keys - nomes).sort).to eq(['Especialista em Escudo'])
   end
 
   it 'nenhuma chave do YAML perdeu o `api_index` (é o que SheetFeat referencia)' do
