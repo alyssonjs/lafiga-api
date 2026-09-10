@@ -55,6 +55,28 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     SheetItem.transaction do
       pj = params[:props_json].is_a?(ActionController::Parameters) ? params[:props_json].to_unsafe_h : params[:props_json]
       merged = (@item.props_json || {}).merge(pj || {})
+
+      # ⚠️ O que vai à mão SAI da bolsa. Sem isto a linha continuava com o
+      # ponteiro do recipiente e a tela mostrava o item DENTRO da mochila e na
+      # mão ao mesmo tempo — o peso contava certo, mas a bolsa mentia.
+      #
+      # ⚠️ CONSUMÍVEL é a exceção: sacar uma poção de um maço de cinco tira UMA,
+      # e as outras quatro ficam guardadas. Por isso a pilha se divide em vez de
+      # sair inteira.
+      if @item.quantity.to_i > 1 && @item.consumable_like?
+        restante = @item
+        nova = @item.dup
+        nova.quantity = 1
+        nova.equipped = false
+        nova.slot = nil
+        nova.position = SheetItem.next_position_for(@item.sheet_id)
+        nova.save!
+        restante.update!(quantity: restante.quantity.to_i - 1)
+        @item = nova
+        merged = (@item.props_json || {}).merge(pj || {})
+      end
+      merged = merged.except(SheetItem::BAG_CONTAINER_PROP)
+
       @item.update!(equipped: true, slot: slot, props_json: merged)
     end
     broadcast_inventory_changed(@item)

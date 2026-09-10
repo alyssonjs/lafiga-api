@@ -369,6 +369,19 @@ class SheetItem < ApplicationRecord
     sheet.sheet_items.find { |si| si.equipped? && si.slot.to_s == 'back' && si.bag? }
   end
 
+  # ⚠️ CONSUMÍVEL para efeito de SACAR: pegar uma poção de um maço de cinco tira
+  # UMA, e as outras quatro ficam guardadas. Uma espada não se divide.
+  #
+  # Lê o catálogo pelo `item_index` primeiro — a mesma leitura índice-primeiro
+  # do resto do modelo, porque a linha renomeada não pode perder o `kind`.
+  def consumable_like?
+    registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
+    registro ||= item
+    registro&.kind.to_s == 'consumable'
+  rescue StandardError
+    false
+  end
+
   # Bolsa (SheetItem id) onde esta linha está guardada; nil = solta.
   def stored_in_bag_id
     (props_json || {})[BAG_CONTAINER_PROP]
@@ -776,11 +789,23 @@ class SheetItem < ApplicationRecord
         SheetItem.where(sheet_id: sheet_id, equipped: true, slot: 'shield').update_all(equipped: false, slot: nil)
       end
 
-      # Se arma de 2 mãos na principal, remove off_hand e escudo
-      if slot.to_s == 'main_hand' && EquipmentRules.is_weapon?(self)
-        props = EquipmentRules.weapon_props(self) || {}
+      # Duas mãos na principal → não sobra mão para off_hand nem escudo.
+      #
+      # ⚠️ A condição NÃO é mais "é arma". Segurar é capacidade de qualquer
+      # item: o mestre pode mandar carregar um baú, um corpo ou um totem com as
+      # duas mãos, e a mão secundária tem de cair na mesma. Com o gate em
+      # `is_weapon?`, `using_two_hands: true` num item comum era gravado e
+      # ignorado — o personagem ficava a segurar um baú e um escudo.
+      if slot.to_s == 'main_hand'
         using_two = (props_json || {})['using_two_hands'] ? true : false
-        is_two_handed = (props[:hands].to_i == 2) || (props[:versatile] && using_two)
+        is_two_handed =
+          if EquipmentRules.is_weapon?(self)
+            props = EquipmentRules.weapon_props(self) || {}
+            (props[:hands].to_i == 2) || (props[:versatile] && using_two)
+          else
+            # Item comum: quem manda é a declaração de quem equipou.
+            using_two
+          end
         if is_two_handed
           SheetItem.where(sheet_id: sheet_id, equipped: true, slot: ['off_hand','shield']).update_all(equipped: false, slot: nil)
         end
