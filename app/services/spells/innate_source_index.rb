@@ -50,14 +50,24 @@ module Spells
 
     # Só as atrelagens que pertencem a ESTA ficha. Uma consulta por tipo, com o
     # id da própria ficha — não varre o catálogo inteiro.
+    #
+    # ⚠️ Raça e sub-raça entram INTEIRAS (são 11 linhas, todas inatas). Já a
+    # subclasse entra FILTRADA a quem não gasta espaço: são 228 atrelagens de
+    # subclasse, e 224 delas são lista de magia normal. Anotar todas engordaria
+    # o summary de todo conjurador para dizer o que a coluna de classe já diz.
     def fontes_da_ficha
-      pares = []
-      pares << ['Race', @sheet.race_id] if @sheet.race_id.present?
-      pares << ['SubRace', @sheet.sub_race_id] if @sheet.sub_race_id.present?
-      return [] if pares.empty?
+      escopos = []
+      escopos << SpellSource.where(source_type: 'Race', source_id: @sheet.race_id) if @sheet.race_id.present?
+      escopos << SpellSource.where(source_type: 'SubRace', source_id: @sheet.sub_race_id) if @sheet.sub_race_id.present?
 
-      escopo = pares.map { |t, i| SpellSource.where(source_type: t, source_id: i) }.reduce(:or)
-      escopo.includes(:spell).to_a
+      subclasses = SheetKlass.where(sheet_id: @sheet.id).pluck(:sub_klass_id).compact.uniq
+      if subclasses.any?
+        escopos << SpellSource.where(source_type: 'SubKlass', source_id: subclasses)
+                              .where.not(casting_mode: 'with_slot')
+      end
+      return [] if escopos.empty?
+
+      escopos.reduce(:or).includes(:spell).to_a
     rescue StandardError => e
       # Catálogo ausente ou esquema defasado não pode derrubar a ficha.
       Rails.logger.warn("[InnateSourceIndex] fonte indisponível: #{e.message}")
@@ -75,19 +85,29 @@ module Spells
         casting_mode: ss.casting_mode,
         cost_label: custo,
         min_character_level: ss.min_character_level,
+        min_class_level: ss.min_class_level,
+        # O que a hotbar precisa para debitar: qual recurso e quanto.
+        resource_key: ss.resource_key,
+        resource_cost: ss.resource_cost,
         uses_spell_slot: !MODOS_SEM_ESPACO.include?(ss.casting_mode.to_s),
         label: monta_rotulo(origem, traco, custo, ss.min_character_level, ss.spell&.name)
       }.compact
     end
 
     def nome_da_fonte(ss)
-      alvo = ss.source_type == 'Race' ? Race.find_by(id: ss.source_id) : SubRace.find_by(id: ss.source_id)
-      alvo&.name
+      SpellSource::SOURCE_TYPES.include?(ss.source_type) ? ss.source_record&.name : nil
+    rescue StandardError
+      nil
     end
 
     # `notes` guarda `"trait: abyssal_legacy"`; o catálogo de definições traduz
     # a chave para "Legado Abissal", que é o nome que a mesa usa.
     def nome_do_traco(ss)
+      # Subclasse guarda `"feature: Artes Sombrias"` — o nome já vem legível e é
+      # o que o jogador procura na ficha.
+      feature = ss.notes.to_s[/feature:\s*(.+)\z/, 1]
+      return feature.strip.presence if feature.present?
+
       chave = ss.notes.to_s[/trait:\s*(\S+)/, 1]
       return nil if chave.blank?
 

@@ -131,6 +131,44 @@ RSpec.describe 'F1 — origem, limite e modo da magia inata', type: :service do
     end
   end
 
+  describe 'FASE 4 — conjuração por RECURSO (subclasse)' do
+    let(:sub_klass) { SubKlass.create!(name: 'Caminho da Sombra F4', api_index: 'sombra-f4', klass: klass) }
+    let!(:escuridao) { create(:spell, name: 'Escuridão F4', level: 2) }
+
+    before do
+      sheet_klass.update!(sub_klass_id: sub_klass.id)
+      conhece!(escuridao, source: 'class')
+    end
+
+    it 'diz qual recurso e quanto custa', :aggregate_failures do
+      SpellSource.create!(source_type: 'SubKlass', source_id: sub_klass.id, spell: escuridao,
+                          origin: 'derived', casting_mode: 'resource',
+                          resource_key: 'ki', resource_cost: 2, min_class_level: 3,
+                          notes: 'feature: Artes Sombrias')
+
+      dados = linha(escuridao)[:innate_source]
+      expect(dados[:resource_key]).to eq('ki')
+      expect(dados[:resource_cost]).to eq(2)
+      expect(dados[:uses_spell_slot]).to be(false)
+      expect(dados[:label]).to eq('Caminho da Sombra F4 · Artes Sombrias, 2 ki')
+    end
+
+    it '⚠️ as 224 magias de LISTA da subclasse NÃO são anotadas' do
+      # São atrelagens `with_slot` — anotá-las engordaria o summary de todo
+      # conjurador para dizer o que a coluna de classe já diz.
+      SpellSource.create!(source_type: 'SubKlass', source_id: sub_klass.id, spell: escuridao,
+                          origin: 'derived', casting_mode: 'with_slot')
+      expect(linha(escuridao)).not_to have_key(:innate_source)
+    end
+
+    it 'subclasse de OUTRA ficha não contamina' do
+      outra = SubKlass.create!(name: 'Outra F4', api_index: 'outra-f4', klass: klass)
+      SpellSource.create!(source_type: 'SubKlass', source_id: outra.id, spell: escuridao,
+                          origin: 'derived', casting_mode: 'resource', resource_key: 'ki', resource_cost: 2)
+      expect(linha(escuridao)).not_to have_key(:innate_source)
+    end
+  end
+
   describe 'degrada sem derrubar a ficha' do
     it 'catálogo indisponível devolve índice vazio, não exceção' do
       allow(SpellSource).to receive(:where).and_raise(ActiveRecord::StatementInvalid, 'tabela ausente')
