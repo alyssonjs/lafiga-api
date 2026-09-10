@@ -26,6 +26,12 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
         trainable: linhas.count { |l| l[:trainable] },
         source_types: ProficiencySource::TYPES,
         source_type_labels: ProficiencySource::TYPE_LABELS,
+        # ⚠️ Vocabulário de categoria e sub-categoria vem do MODELO, que é quem
+        # valida. Deixar o front com a própria lista faria a tela oferecer uma
+        # sub-categoria que o servidor recusa — e a mensagem de erro chegaria
+        # depois de o mestre já ter preenchido tudo.
+        categories_available: Proficiency::CATEGORIES,
+        sub_categories: Proficiency::SUB_CATEGORIES,
       },
     }, status: :ok
   end
@@ -77,6 +83,36 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
       orphaned_sheets: afetadas,
       warning: afetadas.positive? ? 'sheets_orphaned' : nil,
     }.compact, status: :ok
+  end
+
+  # GET /api/v1/admin/proficiencies/source_options
+  #
+  # As fontes que EXISTEM, para o seletor não aceitar string digitada. Sub-raça
+  # e subclasse vêm ANINHADAS na sua raça/classe: é o encadeamento que faz
+  # escolher "Falcônicos" exigir escolher "Aarakocra" antes, em vez de procurar
+  # numa lista de 123 subclasses soltas.
+  #
+  # ⚠️ A chave é o `api_index` da TABELA, e não um slug inventado. Conferido:
+  # as 48 chaves já derivadas batem 100% com as tabelas, então o seletor não
+  # introduz uma segunda grafia para a mesma fonte — que é exatamente como
+  # "Veículos terrestres" acabou com quatro.
+  def source_options
+    render json: {
+      race: Race.order(:name).map { |r|
+        { key: r.api_index, name: r.name,
+          children: SubRace.where(race_id: r.id).order(:name).map { |sr|
+            { key: sr.api_index, name: sr.name }
+          } }
+      },
+      klass: Klass.order(:name).map { |k|
+        { key: k.api_index, name: k.name,
+          children: SubKlass.where(klass_id: k.id).order(:name).map { |sk|
+            { key: sk.api_index, name: sk.name }
+          } }
+      },
+      background: Background.order(:name).map { |b| { key: b.api_index, name: b.name } },
+      feat: Feat.order(:name).map { |f| { key: f.api_index, name: f.name } },
+    }, status: :ok
   end
 
   # POST /api/v1/admin/proficiencies/:id/sources

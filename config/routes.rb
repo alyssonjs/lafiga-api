@@ -32,6 +32,10 @@ Rails.application.routes.draw do
         # bloquear: ver o comentário no controller.
 
         resources :proficiencies, only: %i[index show create update destroy] do
+          collection do
+            # As fontes que EXISTEM, para o seletor encadeado.
+            get :source_options
+          end
           member do
             post   'sources',            to: 'proficiencies#add_source'
             delete 'sources/:source_id', to: 'proficiencies#remove_source'
