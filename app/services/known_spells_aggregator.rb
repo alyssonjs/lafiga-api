@@ -32,6 +32,7 @@ class KnownSpellsAggregator
       row[:sheet_known_spell_id] = ks.id
       row[:known_source] = src if src
       apply_usage_columns!(row, ks) # D6 — uses_per_rest / uses_remaining (magias raciais 1/LDesc)
+      apply_innate_source!(row, sp.id) # F1 — origem, limite e modo
       by_level[sp.level.to_i] << row
       catalog[sp.id] ||= { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
     end
@@ -70,6 +71,7 @@ class KnownSpellsAggregator
                   row[:sheet_known_spell_id] = ks_row.id if ks_row
                   row[:known_source] = chip if chip
                   apply_usage_columns!(row, ks_row) if ks_row # D6
+                  apply_innate_source!(row, sp.id) # F1
                   new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
                 end
@@ -114,6 +116,7 @@ class KnownSpellsAggregator
                   row[:sheet_known_spell_id] = ks.id
                   row[:known_source] = chip if chip
                   apply_usage_columns!(row, ks) # D6
+                  apply_innate_source!(row, sp.id) # F1
                   new_by_level[lvl] << row
                   new_catalog[sp.id] = { id: sp.id, name: sp.name, level: sp.level, desc: sp.desc, higher_level: sp.higher_level }
                 end
@@ -499,6 +502,30 @@ class KnownSpellsAggregator
     row[:uses_per_rest] = ks.uses_per_rest if ks.uses_per_rest.present?
     row[:uses_remaining] = ks.uses_remaining unless ks.uses_remaining.nil?
     row
+  end
+
+  # FASE 1 — diz de ONDE vem a magia inata, com que limite e em que modo.
+  #
+  # O `known_source` acima já dizia "race"; isto diz "Legado Abissal,
+  # 1/descanso longo, nível 3+". Complementa, não substitui — o chip continua a
+  # sair igual para quem já o lia.
+  #
+  # ⚠️ Só anota o que o índice conhece. Magia sem atrelagem no catálogo sai
+  # exatamente como saía: é o que garante que nenhuma ficha muda por causa
+  # desta fase.
+  def apply_innate_source!(row, spell_id)
+    dados = innate_index[spell_id]
+    return row if dados.blank?
+
+    row[:innate_source] = dados
+    row
+  end
+
+  def innate_index
+    @innate_index ||= Spells::InnateSourceIndex.new(@sheet).call
+  rescue StandardError => e
+    Rails.logger.warn("[KnownSpellsAggregator] índice de inatas indisponível: #{e.message}")
+    @innate_index = {}
   end
 
   # Arcano místico do bruxo vive em metadata (mystic_arcanum_6…), muitas vezes só como spell_id

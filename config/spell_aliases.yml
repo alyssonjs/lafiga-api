@@ -150,3 +150,13 @@
 
 # === Adicionar mais conforme aparecerem em logs do LevelUpService:
 # > grep "spell nao resolvida" log/development.log
+
+# === Vida Falsa (pt-vida-falsa) ===
+# ⚠️ Não é typo: é slug INGLÊS do `race_rules.yml` para uma magia cujo
+# `api_index` é português. O legado Ctônico do Tiefling concede
+# `false-life` no 3º nível, e o catálogo guarda a magia como
+# `pt-vida-falsa` — os irmãos do mesmo legado (`ray-of-enfeeblement`,
+# `hellish-rebuke`) têm slug inglês e resolvem, este não resolvia.
+# Medido: a ficha 152 (Ctônico, nv10) tinha o Raio do Enfraquecimento do
+# 5º e NÃO tinha a Vida Falsa do 3º.
+"false-life": pt-vida-falsa

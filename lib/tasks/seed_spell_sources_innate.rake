@@ -29,6 +29,9 @@ namespace :dnd do
     pools_abertos = []
 
     yaml = YAML.load_file(Rails.root.join('config', 'race_rules.yml'))
+    # O catálogo de definições — é AQUI que os grants de magia vivem.
+    defs = RaceRules.trait_definitions || {}
+    resolvedor = SpellResolver.new
 
     anda = lambda do |no, tipo, chave|
       next unless no.is_a?(Hash)
@@ -39,37 +42,60 @@ namespace :dnd do
       Array(no['traits']).each do |t|
         next unless t.is_a?(Hash)
 
+        chave_trait = (t['key'] || t[:key]).to_s
+        definicao = defs[chave_trait.to_sym] || defs[chave_trait] || {}
+
         # ── POOL: `options.spell_list` é lista inteira, não magia específica ──
-        opts = t['options']
-        if opts.is_a?(Hash) && opts['spell_list'].present?
-          pools_abertos << "#{nome} (#{t['key']}): escolhe #{opts['choose']} de #{opts['spell_list']}"
+        opts = t['options'] || definicao[:options] || definicao['options']
+        if opts.is_a?(Hash) && (opts['spell_list'] || opts[:spell_list]).present?
+          pools_abertos << "#{nome} (#{chave_trait}): escolhe #{opts['choose'] || opts[:choose]} de #{opts['spell_list'] || opts[:spell_list]}"
           next
         end
 
-        g = t['grants']
+        # ⚠️ Os grants vivem no CATÁLOGO de trait_definitions, não no trait
+        # inline da raça. O trait da raça é só uma REFERÊNCIA por chave
+        # (`- { key: abyssal_legacy }`).
+        #
+        # A minha primeira versão lia só o inline e achou 2 concessões — o que
+        # me fez escrever no plano que os legados do Tiefling eram "só
+        # comentário". Estavam estruturados o tempo todo, com nível e limite:
+        # `abyssal_legacy` → Raio Adoecente (nv3, 1/LR) e Enfeitiçar Pessoa
+        # (nv5, 1/LR). São 11 concessões, não 2.
+        g = t['grants'] || definicao[:grants] || definicao['grants']
         next unless g.is_a?(Hash)
 
-        Array(g['spells']).each do |entrada|
+        Array(g[:spells] || g['spells']).each do |entrada|
           next unless entrada.is_a?(Hash)
 
-          slug = entrada['spell'].to_s
-          spell = Spell.find_by(api_index: slug)
+          slug = (entrada[:spell] || entrada['spell']).to_s
+          # ⚠️ Usa o resolvedor CANÔNICO, não `find_by(api_index:)`. Os slugs do
+          # YAML são ingleses (`false-life`) e o catálogo é em português
+          # (`pt-vida-falsa`); o `find_by` cru dava "magia não existe" para a
+          # Vida Falsa do legado Ctônico, que existe. É também o resolvedor que
+          # `RacialSpellsService` usa — resolver diferente daqui seria
+          # divergência garantida com o que a ficha mostra.
+          spell = resolvedor.resolve(slug)
           if spell.nil?
             sem_magia << "#{nome} (#{t['key']}): #{slug.inspect}"
             next
           end
 
-          # `usage` do YAML → `casting_mode` do catálogo.
-          modo = case entrada['usage'].to_s
-                 when 'at_will', 'atwill' then 'at_will'
-                 when '' then 'with_slot'
-                 else 'uses_per_rest'
-                 end
+          # `usage` do YAML → `casting_mode` do catálogo. Espelha a conversão de
+          # `RaceRules.extract_innate_spells_from_traits`, que é quem manda hoje.
+          uso = (entrada[:usage] || entrada['usage']).to_s
+          modo, por_descanso = case uso.downcase
+                               when 'at_will', 'atwill' then ['at_will', nil]
+                               when /long.*rest|^lr$|longo/ then ['uses_per_rest', 'LR']
+                               when /short.*rest|^sr$|curto/ then ['uses_per_rest', 'SR']
+                               when '' then ['with_slot', nil]
+                               else ['uses_per_rest', 'LR']
+                               end
 
           achados << {
-            tipo: tipo, chave: id, nome: nome, spell: spell, trait: t['key'].to_s,
-            modo: modo, ability: entrada['ability'].to_s.presence,
-            nivel_magia: entrada['level']
+            tipo: tipo, chave: id, nome: nome, spell: spell, trait: chave_trait,
+            modo: modo, descanso: por_descanso,
+            ability: (entrada[:ability] || entrada['ability']).to_s.presence,
+            nivel_min: (entrada[:minimum_level] || entrada['minimum_level'] || 1).to_i
           }
         end
       end
@@ -87,8 +113,10 @@ namespace :dnd do
       puts "[DRY RUN] #{achados.size} atrelagens inatas derivadas:"
       achados.each do |a|
         alvo = resolve_fonte.call(a[:tipo], a[:chave])
-        puts format('  %-8s %-22s %-24s %s%s', a[:tipo], a[:nome], a[:spell].name, a[:modo],
-                    alvo ? '' : '  ⚠️ FONTE NÃO ENCONTRADA NA TABELA')
+        limite = a[:descanso] ? " 1/#{a[:descanso]}" : ''
+        nivel = a[:nivel_min].to_i > 1 ? " nv#{a[:nivel_min]}+" : ''
+        puts format('  %-8s %-20s %-24s %s%s%s%s', a[:tipo], a[:nome], a[:spell].name, a[:modo],
+                    limite, nivel, alvo ? '' : '  ⚠️ FONTE NÃO ENCONTRADA')
       end
       puts "\npools ABERTOS (deliberadamente fora): #{pools_abertos.size}"
       pools_abertos.each { |p| puts "  #{p}" }
@@ -118,6 +146,11 @@ namespace :dnd do
         linha.casting_mode = a[:modo]
         linha.always_prepared = true
         linha.ability_override = a[:ability]
+        # O nível de personagem em que a magia desbloqueia — o "3º: Raio
+        # Adoecente" do legado.
+        linha.min_character_level = a[:nivel_min] if a[:nivel_min].to_i > 1
+        linha.uses_per_long_rest = 1 if a[:descanso] == 'LR'
+        linha.uses_per_short_rest = 1 if a[:descanso] == 'SR'
         linha.notes = "trait: #{a[:trait]}"
         linha.save!
       end

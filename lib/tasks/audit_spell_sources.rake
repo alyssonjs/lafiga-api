@@ -62,30 +62,65 @@ namespace :dnd do
     # ── LACUNA: relatada, não derruba ─────────────────────────────────────
     puts "\n== lacunas (trabalho por fazer, não defeito)"
 
-    # 1. Magias raciais que vivem só em COMENTÁRIO no YAML.
-    #    O `abyssal_legacy` do Tiefling diz, em comentário, "3º: Raio
-    #    Adoecente; 5º: Cativar, 1/LDesc cada" — e nenhum código o lê.
+    # 1. Traits cuja chave promete magia mas que não têm dado estruturado.
+    #
+    # ⚠️ A primeira versão desta checagem olhava `t['grants']` no trait INLINE
+    # da raça e reportava 7 lacunas — todas falsas. O trait inline é só uma
+    # REFERÊNCIA por chave (`- { key: abyssal_legacy }`); os grants vivem em
+    # `RaceRules.trait_definitions`. Os legados do Tiefling estão estruturados
+    # lá, com nível e limite. Medir no lugar errado dá um número convincente e
+    # errado — e este relatório chegou a ser citado como prova de que os
+    # legados eram "só comentário".
     require 'yaml'
     yaml = YAML.load_file(Rails.root.join('config', 'race_rules.yml'))
+    defs = RaceRules.trait_definitions || {}
     so_comentario = []
+
+    tem_magia = lambda do |chave|
+      d = defs[chave.to_s.to_sym] || defs[chave.to_s] || {}
+      g = d[:grants] || d['grants']
+      o = d[:options] || d['options']
+      (g.is_a?(Hash) && (g[:spells] || g['spells']).present?) ||
+        (o.is_a?(Hash) && (o[:spell_list] || o['spell_list']).present?)
+    end
+
     varre = lambda do |no, nome_pai|
       next unless no.is_a?(Hash)
 
       nome = no['name'] || nome_pai
-      linhas_traits = Array(no['traits'])
-      linhas_traits.each do |t|
+      Array(no['traits']).each do |t|
         next unless t.is_a?(Hash)
-        # trait SEM grants nem options, cuja chave sugere magia
-        next if t['grants'].present? || t['options'].present?
-        next unless t['key'].to_s =~ /legacy|spell|magic|cantrip|conjur/i
 
-        so_comentario << "#{nome}: #{t['key']}"
+        chave = (t['key'] || t[:key]).to_s
+        next unless chave =~ /legacy|spell|magic|cantrip|conjur/i
+        # `legacy_resistance_fire` casa por conter "legacy" e é resistência a
+        # dano, não magia — ruído que faria a lacuna mentir para cima.
+        next if chave =~ /resistance|resist/i
+        # estruturado no trait OU no catálogo de definições
+        next if t['grants'].present? || t['options'].present? || tem_magia.call(chave)
+
+        so_comentario << "#{nome}: #{chave}"
       end
       (no['subraces'] || {}).each_value { |sr| varre.call(sr, nome) } if no['subraces'].is_a?(Hash)
     end
     yaml.each_value { |r| varre.call(r, nil) } if yaml.is_a?(Hash)
-    puts "   · traits de magia SEM dado estruturado (só comentário): #{so_comentario.size}"
+    puts "   · traits de magia SEM dado estruturado (nem inline, nem no catálogo): #{so_comentario.size}"
     so_comentario.first(8).each { |t| puts "       #{t}" }
+
+    # 1b. Definições de trait com magia que NENHUMA raça referencia — dado vivo
+    #     que não chega a ninguém (hoje: `infernal_legacy`, substituído pelo par
+    #     `thaumaturgy_cantrip` + `infernal_legacy_variant`).
+    referenciadas = []
+    colhe = lambda do |no|
+      next unless no.is_a?(Hash)
+
+      Array(no['traits']).each { |t| referenciadas << (t['key'] || t[:key]).to_s if t.is_a?(Hash) }
+      (no['subraces'] || {}).each_value { |sr| colhe.call(sr) } if no['subraces'].is_a?(Hash)
+    end
+    yaml.each_value { |r| colhe.call(r) } if yaml.is_a?(Hash)
+    orfas = defs.keys.map(&:to_s).select { |k| tem_magia.call(k) } - referenciadas.uniq
+    puts "   · definições de trait COM magia que ninguém referencia: #{orfas.size}"
+    orfas.first(8).each { |k| puts "       #{k}" }
 
     # 2. Cobertura de FEATURE — o que o pedido chama de "atrelar a features".
     por_feature = SpellSource.where(source_type: 'Feature').count
