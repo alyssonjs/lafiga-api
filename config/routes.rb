@@ -86,7 +86,16 @@ Rails.application.routes.draw do
           end
         end
         resources :feats, only: [:index, :show, :create, :update, :destroy]
-        resources :spells, only: [:index, :show, :create, :update, :destroy]
+        resources :spells, only: [:index, :show, :create, :update, :destroy] do
+          collection do
+            # As fontes que EXISTEM, para o seletor encadeado (fase 2 das magias).
+            get :source_options
+          end
+          member do
+            post   'sources',            to: 'spells#add_source'
+            delete 'sources/:source_id', to: 'spells#remove_source'
+          end
+        end
         resources :sheet_items, only: [:index, :create, :update, :destroy] do
           member do
             post :equip
