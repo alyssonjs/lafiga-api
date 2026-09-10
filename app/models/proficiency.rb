@@ -21,10 +21,22 @@ class Proficiency < ApplicationRecord
     'weapon'   => %w[simple_melee simple_ranged martial_melee martial_ranged],
   }.freeze
 
+  # ===== TREINAMENTO EM HORAS (10/09/2026) =====
+  #
+  # No sistema da mesa, aprender proficiência custa HORAS. Nem toda
+  # proficiência é treinável: idioma secreto de classe e "Armas Simples" vêm com
+  # a classe, não com treino.
+  #
+  # Mora no `metadata` de propósito: é exatamente o que essa coluna existe para
+  # guardar — o que é específico sem alargar o schema a cada ideia nova.
+  #
+  #   metadata: { 'trainable' => true, 'training_hours' => 120 }
+  #
   validates :api_index, :name, :category, presence: true
   validates :api_index, uniqueness: true
   validates :category, inclusion: { in: CATEGORIES }
   validate :sub_category_belongs_to_category
+  validate :training_block_is_coherent
 
   scope :published, -> { where(published: true) }
   scope :of, ->(cat) { where(category: cat) }
@@ -75,7 +87,45 @@ class Proficiency < ApplicationRecord
     proficiency_aliases.create!(alias_key: key, raw: raw.to_s)
   end
 
+  # Treinável? Ausente conta como NÃO — uma proficiência antiga, semeada antes
+  # de isto existir, não pode virar treinável por omissão.
+  def trainable?
+    metadata.is_a?(Hash) && metadata['trainable'] == true
+  end
+
+  # Horas de treino necessárias, ou `nil` quando não é treinável / não definidas.
+  def training_hours
+    return nil unless trainable?
+
+    horas = metadata['training_hours'].to_i
+    horas.positive? ? horas : nil
+  end
+
+  # O personagem já treinou o suficiente?
+  def trained?(horas_acumuladas)
+    necessarias = training_hours
+    return false if necessarias.nil?
+
+    horas_acumuladas.to_i >= necessarias
+  end
+
   private
+
+  # ⚠️ Zero ou negativo não é "de graça", é engano: uma proficiência marcada
+  # treinável com 0 horas seria aprendida sem treino nenhum, e o erro só
+  # apareceria na mesa. `nil`/vazio é diferente — significa "ainda por definir".
+  def training_block_is_coherent
+    return unless metadata.is_a?(Hash)
+
+    bruto = metadata['training_hours']
+    return if bruto.nil? || bruto.to_s.strip.empty?
+
+    if bruto.is_a?(Hash) || bruto.is_a?(Array)
+      errors.add(:metadata, 'training_hours precisa ser um número de horas')
+      return
+    end
+    errors.add(:metadata, 'horas de treino precisam ser positivas') unless bruto.to_i.positive?
+  end
 
   def sub_category_belongs_to_category
     permitidas = SUB_CATEGORIES[category]

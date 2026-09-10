@@ -26,6 +26,12 @@ Rails.application.routes.draw do
       patch 'me/ui_preferences', to: 'me#update_ui_preferences'
 
       namespace :admin do
+
+        # Catálogo de proficiências — SÓ MESTRE. O `destroy` AVISA em vez de
+
+        # bloquear: ver o comentário no controller.
+
+        resources :proficiencies, only: %i[index show create update destroy]
         get 'dm_user_picker', to: 'dm_user_picker#index'
         resources :dm_users, only: %i[index show create update] do
           member do

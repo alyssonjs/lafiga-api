@@ -28,6 +28,9 @@ class Api::V1::Public::ProficienciesController < ApplicationController
         # As grafias aceitas viajam junto: sem elas o consumidor teria de
         # reimplementar a resolução, que é como as quatro grafias nasceram.
         aliases: p.proficiency_aliases.map(&:alias_key).sort,
+        # Treinamento: horas necessárias para aprender, quando treinável.
+        trainable: p.trainable?,
+        training_hours: p.training_hours,
       }
     end
 

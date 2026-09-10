@@ -83,3 +83,88 @@ RSpec.describe Proficiency do
     end
   end
 end
+
+# ===== TREINAMENTO EM HORAS (10/09/2026) =====
+#
+# Aprender proficiência custa HORAS. Nem toda proficiência é treinável: idioma
+# secreto de classe e "Armas Simples" vêm com a classe, não com treino.
+RSpec.describe 'Proficiency — treinamento' do
+  def cria(meta)
+    Proficiency.new(api_index: 'tool-x', name: 'X', category: 'tool', sub_category: 'artisan', metadata: meta)
+  end
+
+  describe '#trainable?' do
+    it '⚠️ ausente conta como NÃO' do
+      # As 142 linhas semeadas antes disto existir não podem virar treináveis
+      # por omissão — seria dar ao jogador um caminho que ninguém definiu.
+      expect(cria({}).trainable?).to be(false)
+      expect(cria(nil).trainable?).to be(false)
+      expect(cria('trainable' => true).trainable?).to be(true)
+    end
+  end
+
+  describe '#training_hours' do
+    it 'devolve as horas quando treinável' do
+      expect(cria('trainable' => true, 'training_hours' => 120).training_hours).to eq(120)
+    end
+
+    it 'devolve nil quando NÃO é treinável, mesmo com horas gravadas' do
+      # Desmarcar "treinável" tem de bastar; não pode depender de alguém
+      # lembrar de limpar as horas também.
+      expect(cria('trainable' => false, 'training_hours' => 120).training_hours).to be_nil
+    end
+
+    it 'devolve nil quando as horas ainda não foram definidas' do
+      expect(cria('trainable' => true).training_hours).to be_nil
+    end
+  end
+
+  describe '#trained?' do
+    let(:p) { cria('trainable' => true, 'training_hours' => 120) }
+
+    it 'a hora exata JÁ conta' do
+      expect(p.trained?(119)).to be(false)
+      expect(p.trained?(120)).to be(true)
+      expect(p.trained?(500)).to be(true)
+    end
+
+    it 'sem horas definidas, ninguém está treinado' do
+      # ⚠️ `nil` é "por definir", e por definir não pode virar "já sabe".
+      expect(cria('trainable' => true).trained?(9_999)).to be(false)
+    end
+
+    it 'não treinável nunca está "treinado" — vem por outro caminho' do
+      expect(cria('trainable' => false).trained?(9_999)).to be(false)
+    end
+  end
+
+  describe 'validação das horas' do
+    it '⚠️ zero não é "de graça", é engano' do
+      # Treinável com 0 horas seria aprendida sem treino nenhum, e o erro só
+      # apareceria na mesa.
+      p = cria('trainable' => true, 'training_hours' => 0)
+      expect(p).not_to be_valid
+      expect(p.errors[:metadata].join).to match(/positivas/)
+    end
+
+    it 'negativo também não' do
+      expect(cria('trainable' => true, 'training_hours' => -5)).not_to be_valid
+    end
+
+    it '⚠️ mas VAZIO é diferente de zero: significa "ainda por definir"' do
+      expect(cria('trainable' => true)).to be_valid
+      expect(cria('trainable' => true, 'training_hours' => nil)).to be_valid
+    end
+
+    it 'recusa o formato antigo de escada' do
+      # Sobrou de quando havia degraus (aprendiz/intermediário/mestre/perito).
+      p = cria('trainable' => true, 'training_hours' => { 'aprendiz' => 50 })
+      expect(p).not_to be_valid
+      expect(p.errors[:metadata].join).to match(/número de horas/)
+    end
+
+    it 'aceita as horas bem formadas' do
+      expect(cria('trainable' => true, 'training_hours' => 120)).to be_valid
+    end
+  end
+end
