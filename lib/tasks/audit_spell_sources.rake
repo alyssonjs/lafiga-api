@@ -107,9 +107,18 @@ namespace :dnd do
     puts "   · traits de magia SEM dado estruturado (nem inline, nem no catálogo): #{so_comentario.size}"
     so_comentario.first(8).each { |t| puts "       #{t}" }
 
-    # 1b. Definições de trait com magia que NENHUMA raça referencia — dado vivo
-    #     que não chega a ninguém (hoje: `infernal_legacy`, substituído pelo par
-    #     `thaumaturgy_cantrip` + `infernal_legacy_variant`).
+    # 1b. Definições de trait com magia que NENHUMA raça referencia.
+    #
+    # ⚠️ Nem toda órfã é defeito. `infernal_legacy` é o Legado Infernal do LIVRO
+    # — traço de RAÇA que trazia os três (Taumaturgia + Repreensão + Escuridão)
+    # de uma vez. A casa PARTIU-O: a Taumaturgia subiu para a raça
+    # (`thaumaturgy_cantrip`) e o par de legado desceu para cada sub-raça
+    # (`infernal_legacy_variant`, mesmo nome de exibição). O original ficou no
+    # catálogo, sem referência — substituído, não esquecido.
+    #
+    # A primeira versão desta checagem juntava os dois casos e mandava "decidir
+    # se apaga ou religa" para algo que está exactamente como devia. Separar é o
+    # que impede o relatório de fabricar trabalho.
     referenciadas = []
     colhe = lambda do |no|
       next unless no.is_a?(Hash)
@@ -118,9 +127,38 @@ namespace :dnd do
       (no['subraces'] || {}).each_value { |sr| colhe.call(sr) } if no['subraces'].is_a?(Hash)
     end
     yaml.each_value { |r| colhe.call(r) } if yaml.is_a?(Hash)
-    orfas = defs.keys.map(&:to_s).select { |k| tem_magia.call(k) } - referenciadas.uniq
-    puts "   · definições de trait COM magia que ninguém referencia: #{orfas.size}"
-    orfas.first(8).each { |k| puts "       #{k}" }
+    em_uso = referenciadas.uniq
+
+    nome_de = lambda do |chave|
+      d = defs[chave.to_s.to_sym] || defs[chave.to_s] || {}
+      (d[:name] || d['name']).to_s
+    end
+    magias_de = lambda do |chave|
+      d = defs[chave.to_s.to_sym] || defs[chave.to_s] || {}
+      g = d[:grants] || d['grants'] || {}
+      Array(g[:spells] || g['spells']).map { |e| (e[:spell] || e['spell']).to_s }.sort
+    end
+
+    orfas = defs.keys.map(&:to_s).select { |k| tem_magia.call(k) } - em_uso
+    # SUBSTITUÍDA: existe em uso um traço com o MESMO nome de exibição cujas
+    # magias são um subconjunto das dela — a marca de uma partição deliberada.
+    substituidas, perdidas = orfas.partition do |k|
+      minhas = magias_de.call(k)
+      em_uso.any? do |u|
+        next false unless tem_magia.call(u)
+        next false unless nome_de.call(u) == nome_de.call(k)
+
+        (magias_de.call(u) - minhas).empty?
+      end
+    end
+
+    puts "   · definições SUBSTITUÍDAS (partidas em traços menores, esperado): #{substituidas.size}"
+    substituidas.first(8).each do |k|
+      herdeiros = em_uso.uniq.select { |u| tem_magia.call(u) && nome_de.call(u) == nome_de.call(k) }
+      puts "       #{k} → #{herdeiros.join(', ')}"
+    end
+    puts "   · definições com magia PERDIDAS (ninguém referencia, sem herdeiro): #{perdidas.size}"
+    perdidas.first(8).each { |k| puts "       ⚠️ #{k}" }
 
     # 2. Cobertura de FEATURE — o que o pedido chama de "atrelar a features".
     por_feature = SpellSource.where(source_type: 'Feature').count
