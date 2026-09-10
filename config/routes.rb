@@ -390,6 +390,9 @@ Rails.application.routes.draw do
         resources :spells, only: [:index, :show]
         resources :race_rules, only: [:index, :show]
         resources :traits, only: [:index]
+        # Catálogo de proficiências (fase 1: só idioma semeado). O front deve
+        # consumir daqui em vez de manter lista própria — eram TRÊS rivais.
+        resources :proficiencies, only: [:index]
         post 'race_rules/apply', to: 'race_rules#apply'
         resources :class_rules, only: [:index, :show]
         post 'class_rules/apply', to: 'class_rules#apply'

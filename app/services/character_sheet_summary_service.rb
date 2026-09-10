@@ -1112,7 +1112,14 @@ class CharacterSheetSummaryService
       armor: armor,
       weapons: weapons,
       tools: tools.uniq,
-      languages: languages.uniq,
+      # FASE 1 do catálogo de proficiências: a leitura resolve pelo catálogo, e
+      # não pela grafia exata. `.uniq` deixava "Élfico" e "elfico" como duas
+      # linhas; a canonicalização colapsa por identidade.
+      #
+      # ⚠️ TOLERANTE de propósito — idioma não catalogado passa intacto. Com o
+      # catálogo vazio (janela entre o deploy e o rake), o resultado é idêntico
+      # ao de antes. Nada aqui muda o que é GRAVADO.
+      languages: Proficiencies::LanguageReader.canonicalize(languages),
       skills: {
         class: class_cs_skills,
         background: to_arr.call(bg['skills']),
