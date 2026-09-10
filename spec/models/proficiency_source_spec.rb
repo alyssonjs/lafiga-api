@@ -40,6 +40,48 @@ RSpec.describe ProficiencySource do
     src = described_class.create!(proficiency: lira, source_type: 'race', source_key: 'anao')
     expect(src.label).to eq('Raça: anao')
   end
+
+  describe '⚠️ FIXA vs ESCOLHA' do
+    # Sem esta distinção o índice mente por omissão: "Raça: Anão" em Ferramentas
+    # de ferreiro lê como se todo anão a tivesse, quando o anão escolhe UMA
+    # entre três. Medido: 237 de escolha contra 192 fixas.
+    it 'fixa não anuncia escolha' do
+      src = described_class.create!(proficiency: lira, source_type: 'background',
+                                    source_key: 'soldier', source_name: 'Soldado')
+      expect(src.label).to eq('Antecedente: Soldado')
+    end
+
+    it 'de escolha diz QUANTAS se escolhem' do
+      src = described_class.create!(proficiency: lira, source_type: 'race', source_key: 'anao',
+                                    source_name: 'Anão', grant_mode: 'choice', choose_count: 1)
+      expect(src.label).to eq('Raça: Anão (escolhe 1)')
+    end
+
+    it '⚠️ pool sem contagem diz "escolha", não inventa um número' do
+      # O N do pool não vive nesta linha, e inventá-lo seria pior do que omitir.
+      src = described_class.create!(proficiency: lira, source_type: 'klass', source_key: 'bard',
+                                    source_name: 'Bardo', grant_mode: 'choice')
+      expect(src.label).to eq('Classe: Bardo (escolha)')
+    end
+
+    it 'recusa modo fora do vocabulário' do
+      expect(described_class.new(proficiency: lira, source_type: 'race', source_key: 'x',
+                                 grant_mode: 'talvez')).not_to be_valid
+    end
+
+    it '⚠️ recusa "quantas" numa fonte FIXA — a combinação não faz sentido' do
+      src = described_class.new(proficiency: lira, source_type: 'race', source_key: 'x',
+                                grant_mode: 'fixed', choose_count: 2)
+      expect(src).not_to be_valid
+      expect(src.errors[:choose_count].join).to match(/escolha/)
+    end
+
+    it 'o default é FIXA' do
+      # Mais seguro: marcar fixa por engano mostra uma coisa a mais; marcar
+      # escolha por engano ESCONDE que a fonte sempre concede.
+      expect(described_class.new.grant_mode).to eq('fixed')
+    end
+  end
 end
 
 RSpec.describe 'derivação das fontes (rake)' do

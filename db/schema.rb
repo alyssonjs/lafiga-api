@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_10_200000) do
+ActiveRecord::Schema.define(version: 2026_09_10_210000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -637,6 +637,8 @@ ActiveRecord::Schema.define(version: 2026_09_10_200000) do
     t.string "origin", default: "derived", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "grant_mode", default: "fixed", null: false
+    t.integer "choose_count"
     t.index ["proficiency_id", "source_type", "source_key"], name: "idx_prof_sources_unicidade", unique: true
     t.index ["proficiency_id"], name: "index_proficiency_sources_on_proficiency_id"
     t.index ["source_type", "source_key"], name: "index_proficiency_sources_on_source_type_and_source_key"

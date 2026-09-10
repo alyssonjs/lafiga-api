@@ -34,7 +34,8 @@ class Api::V1::Public::ProficienciesController < ApplicationController
         # Quem concede — registro, não autoridade.
         sources: p.proficiency_sources.map { |s|
           { source_type: s.source_type, source_key: s.source_key,
-            source_name: s.source_name, label: s.label }
+            source_name: s.source_name, label: s.label,
+            grant_mode: s.grant_mode, choose_count: s.choose_count }
         },
       }
     end

@@ -25,6 +25,7 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
         in_use: linhas.count { |l| l[:usage_count].positive? },
         trainable: linhas.count { |l| l[:trainable] },
         source_types: ProficiencySource::TYPES,
+        grant_modes: ProficiencySource::GRANT_MODES,
         source_type_labels: ProficiencySource::TYPE_LABELS,
         # ⚠️ Vocabulário de categoria e sub-categoria vem do MODELO, que é quem
         # valida. Deixar o front com a própria lista faria a tela oferecer uma
@@ -121,11 +122,13 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
   # ⚠️ Entra sempre como `manual`: o `derived` é território do rake, e um
   # re-semear apagaria o que fosse marcado assim por engano.
   def add_source
-    attrs = params.require(:source).permit(:source_type, :source_key, :source_name)
+    attrs = params.require(:source).permit(:source_type, :source_key, :source_name,
+                                           :grant_mode, :choose_count)
     src = @proficiency.proficiency_sources.new(attrs.merge(origin: 'manual'))
     if src.save
       render json: { source: { id: src.id, source_type: src.source_type, source_key: src.source_key,
-                               source_name: src.source_name, origin: src.origin, label: src.label } },
+                               source_name: src.source_name, origin: src.origin, label: src.label,
+                               grant_mode: src.grant_mode, choose_count: src.choose_count } },
              status: :created
     else
       render json: { errors: src.errors.full_messages }, status: :unprocessable_entity
@@ -234,7 +237,8 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
       # companhia. `origin` separa o derivado do que o mestre associou à mão.
       sources: prof.proficiency_sources.map { |src|
         { id: src.id, source_type: src.source_type, source_key: src.source_key,
-          source_name: src.source_name, origin: src.origin, label: src.label }
+          source_name: src.source_name, origin: src.origin, label: src.label,
+          grant_mode: src.grant_mode, choose_count: src.choose_count }
       },
       usage_count: uso[prof.id].to_i,
       warnings: @avisos,
