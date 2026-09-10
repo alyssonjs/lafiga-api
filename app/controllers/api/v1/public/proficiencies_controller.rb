@@ -14,7 +14,7 @@ class Api::V1::Public::ProficienciesController < ApplicationController
   #                         metadata, source, aliases: [...] }],
   #     "meta": { total, categories: {...} } }
   def index
-    escopo = Proficiency.published.includes(:proficiency_aliases).order(:category, :sub_category, :name)
+    escopo = Proficiency.published.includes(:proficiency_aliases, :proficiency_sources).order(:category, :sub_category, :name)
     escopo = escopo.of(params[:category]) if params[:category].present?
 
     linhas = escopo.map do |p|
@@ -31,6 +31,11 @@ class Api::V1::Public::ProficienciesController < ApplicationController
         # Treinamento: horas necessárias para aprender, quando treinável.
         trainable: p.trainable?,
         training_hours: p.training_hours,
+        # Quem concede — registro, não autoridade.
+        sources: p.proficiency_sources.map { |s|
+          { source_type: s.source_type, source_key: s.source_key,
+            source_name: s.source_name, label: s.label }
+        },
       }
     end
 

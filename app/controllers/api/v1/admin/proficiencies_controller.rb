@@ -1,7 +1,7 @@
 class Api::V1::Admin::ProficienciesController < ApplicationController
   # Gestão do catálogo de proficiências. SÓ MESTRE, como os outros compêndios.
   before_action :authorize_site_wide_dm
-  before_action :set_proficiency, only: %i[show update destroy]
+  before_action :set_proficiency, only: %i[show update destroy add_source remove_source]
 
   # GET /api/v1/admin/proficiencies?category=tool&q=ferrament
   #
@@ -9,7 +9,7 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
   # eu apagar isto". Ver `Proficiencies::UsageCounter` para por que ele não sai
   # de uma chave estrangeira.
   def index
-    escopo = Proficiency.includes(:proficiency_aliases)
+    escopo = Proficiency.includes(:proficiency_aliases, :proficiency_sources)
     escopo = escopo.where(category: params[:category]) if params[:category].present?
     escopo = escopo.where(sub_category: params[:sub_category]) if params[:sub_category].present?
     escopo = busca(escopo, params[:q])
@@ -24,6 +24,8 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
         categories: Proficiency.group(:category).count,
         in_use: linhas.count { |l| l[:usage_count].positive? },
         trainable: linhas.count { |l| l[:trainable] },
+        source_types: ProficiencySource::TYPES,
+        source_type_labels: ProficiencySource::TYPE_LABELS,
       },
     }, status: :ok
   end
@@ -74,6 +76,41 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
       deleted: dados,
       orphaned_sheets: afetadas,
       warning: afetadas.positive? ? 'sheets_orphaned' : nil,
+    }.compact, status: :ok
+  end
+
+  # POST /api/v1/admin/proficiencies/:id/sources
+  # body: { source: { source_type: 'race', source_key: 'anao', source_name: 'Anão' } }
+  #
+  # ⚠️ Entra sempre como `manual`: o `derived` é território do rake, e um
+  # re-semear apagaria o que fosse marcado assim por engano.
+  def add_source
+    attrs = params.require(:source).permit(:source_type, :source_key, :source_name)
+    src = @proficiency.proficiency_sources.new(attrs.merge(origin: 'manual'))
+    if src.save
+      render json: { source: { id: src.id, source_type: src.source_type, source_key: src.source_key,
+                               source_name: src.source_name, origin: src.origin, label: src.label } },
+             status: :created
+    else
+      render json: { errors: src.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /api/v1/admin/proficiencies/:id/sources/:source_id
+  #
+  # ⚠️ Apagar uma DERIVADA é inútil sozinho: o próximo `dnd:seed_proficiency_sources`
+  # a traz de volta, porque ela reflete o que a fonte real declara. Quem quer
+  # que ela suma tem de mexer no `race_rules.yml`/`class_rules.rb`. A resposta
+  # diz isso em vez de deixar o mestre a achar que resolveu.
+  def remove_source
+    src = @proficiency.proficiency_sources.find_by(id: params[:source_id])
+    return render(json: { errors: 'source not found' }, status: :not_found) unless src
+
+    derivada = src.origin == 'derived'
+    src.destroy
+    render json: {
+      removed: true,
+      warning: derivada ? 'derived_will_return' : nil
     }.compact, status: :ok
   end
 
@@ -156,6 +193,13 @@ class Api::V1::Admin::ProficienciesController < ApplicationController
       # Treinamento: horas necessárias, ou `nil` quando não treinável / por definir.
       trainable: prof.trainable?,
       training_hours: prof.training_hours,
+      # ⚠️ Quem CONCEDE — registro, não autoridade. Marcar aqui não faz ninguém
+      # ganhar a proficiência; quem concede continua a ser o `race_rules.yml` e
+      # companhia. `origin` separa o derivado do que o mestre associou à mão.
+      sources: prof.proficiency_sources.map { |src|
+        { id: src.id, source_type: src.source_type, source_key: src.source_key,
+          source_name: src.source_name, origin: src.origin, label: src.label }
+      },
       usage_count: uso[prof.id].to_i,
       warnings: @avisos,
     }.compact

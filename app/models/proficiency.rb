@@ -7,6 +7,10 @@
 # `.cursor/dnd-rules/proficiencias-levantamento.md`) — semear é que é por fase.
 class Proficiency < ApplicationRecord
   has_many :proficiency_aliases, dependent: :destroy
+  # Quem concede esta proficiência. ⚠️ REGISTRO, não autoridade: marcar uma
+  # fonte aqui não faz ninguém ganhar a proficiência — quem concede continua a
+  # ser o `race_rules.yml` e companhia.
+  has_many :proficiency_sources, dependent: :destroy
 
   CATEGORIES = %w[
     skill saving_throw weapon_category weapon armor tool vehicle language

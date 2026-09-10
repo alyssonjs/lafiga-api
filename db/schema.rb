@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_10_190000) do
+ActiveRecord::Schema.define(version: 2026_09_10_200000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -629,6 +629,19 @@ ActiveRecord::Schema.define(version: 2026_09_10_190000) do
     t.index ["proficiency_id"], name: "index_proficiency_aliases_on_proficiency_id"
   end
 
+  create_table "proficiency_sources", force: :cascade do |t|
+    t.bigint "proficiency_id", null: false
+    t.string "source_type", null: false
+    t.string "source_key", null: false
+    t.string "source_name"
+    t.string "origin", default: "derived", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["proficiency_id", "source_type", "source_key"], name: "idx_prof_sources_unicidade", unique: true
+    t.index ["proficiency_id"], name: "index_proficiency_sources_on_proficiency_id"
+    t.index ["source_type", "source_key"], name: "index_proficiency_sources_on_source_type_and_source_key"
+  end
+
   create_table "push_subscriptions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.text "endpoint", null: false
@@ -1075,6 +1088,7 @@ ActiveRecord::Schema.define(version: 2026_09_10_190000) do
   add_foreign_key "messages", "channels"
   add_foreign_key "messages", "users"
   add_foreign_key "proficiency_aliases", "proficiencies"
+  add_foreign_key "proficiency_sources", "proficiencies"
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "race_traits", "races"
   add_foreign_key "race_traits", "sub_races"

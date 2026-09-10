@@ -31,7 +31,12 @@ Rails.application.routes.draw do
 
         # bloquear: ver o comentário no controller.
 
-        resources :proficiencies, only: %i[index show create update destroy]
+        resources :proficiencies, only: %i[index show create update destroy] do
+          member do
+            post   'sources',            to: 'proficiencies#add_source'
+            delete 'sources/:source_id', to: 'proficiencies#remove_source'
+          end
+        end
         get 'dm_user_picker', to: 'dm_user_picker#index'
         resources :dm_users, only: %i[index show create update] do
           member do
