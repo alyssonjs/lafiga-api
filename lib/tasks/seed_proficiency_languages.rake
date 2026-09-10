@@ -62,6 +62,8 @@ namespace :dnd do
   ].freeze
 
   DIALETOS_PRIMORDIAIS = %w[Aquan Auran Ignan Terran].freeze
+  # Sub-categorias que entram numa escolha livre de idioma.
+  SELECIONAVEIS = %w[standard exotic primordial_dialect monster].freeze
 
   desc 'FASE 0 — semeia o catálogo de proficiências de IDIOMA (DRY_RUN=1 relata)'
   task seed_proficiency_languages: :environment do
@@ -73,6 +75,17 @@ namespace :dnd do
         idx = "lang-#{Proficiency.normalize(nome).tr(' ', '-')}"
         meta = {}
         meta['grantable'] = false if sub == 'class_secret'
+        # ⚠️ `selectable` = aparece numa escolha LIVRE de idioma. É eixo próprio,
+        # separado de `grantable`:
+        #   - `racial` (Aarakocra, Minotauro) É concedido — pela RAÇA —, mas um
+        #     humano não o escolhe numa lista aberta;
+        #   - `class_secret` vem da classe no nível 1;
+        #   - "Anão das Profundezas" fica de fora enquanto a decisão de produto
+        #     não sai (ver abaixo). Os 6 antecedentes que o oferecem continuam a
+        #     oferecê-lo pela lista DELES — são coisas diferentes.
+        # O resultado é 22, exatamente o que `languageCatalog.ts` já mostrava.
+        # A política vive AQUI para o front não voltar a ser dono dela.
+        meta['selectable'] = SELECIONAVEIS.include?(sub) && (fonte.nil?)
         meta['dialect_of'] = 'lang-primordial' if sub == 'primordial_dialect'
         meta['dialects'] = DIALETOS_PRIMORDIAIS.map { |d| "lang-#{Proficiency.normalize(d)}" } if nome == 'Primordial'
 
