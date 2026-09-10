@@ -736,26 +736,36 @@ class CharacterSheetSummaryService
   end
 
   # Lista de habilidades com proficiência em salvaguarda (chaves em inglês: str, dex, …) para o cliente.
+  # ⚠️ A saída continua sendo a CHAVE de atributo (`str`, `dex`…): é ela que o
+  # front usa para montar a linha de teste de resistência.
+  #
+  # O que saiu daqui foi o `abbrev_to_key` cravado — o QUARTO mapa de tradução
+  # do projeto, que existia só porque a ficha guarda "DES" e
+  # `Klass.saving_throws` guarda "Destreza". Agora as duas grafias resolvem
+  # pelo catálogo, que é onde essa correspondência passa a viver.
+  #
+  # ⚠️ Com o catálogo vazio (deploy antes do rake) o leitor devolve `[]`, e a
+  # ficha ficaria sem TR proficiente. Por isso o fallback ao mapa antigo
+  # continua aqui: é a mesma garantia de "degrada para identidade" dos irmãos,
+  # só que numa categoria em que a identidade não serve.
+  ABBREV_TO_ABILITY_FALLBACK = {
+    'FOR' => 'str', 'STR' => 'str', 'DES' => 'dex', 'DEX' => 'dex',
+    'CON' => 'con', 'INT' => 'int', 'SAB' => 'wis', 'WIS' => 'wis',
+    'CAR' => 'cha', 'CHA' => 'cha'
+  }.freeze
+
   def build_saving_throws(sheet)
-    keys = Set.new
-    abbrev_to_key = {
-      'FOR' => 'str', 'STR' => 'str',
-      'DES' => 'dex', 'DEX' => 'dex',
-      'CON' => 'con',
-      'INT' => 'int',
-      'SAB' => 'wis', 'WIS' => 'wis',
-      'CAR' => 'cha', 'CHA' => 'cha'
-    }
-    sheet.sheet_klasses.each do |sk|
-      next unless sk.klass
+    brutos = sheet.sheet_klasses.flat_map do |sk|
+      next [] unless sk.klass
+
       rule = ClassRules.find(sk.klass.api_index) || {}
-      Array(rule[:saving_throws]).each do |st|
-        raw = st.to_s.upcase.strip
-        key = abbrev_to_key[raw]
-        keys << key if key.present?
-      end
+      Array(rule[:saving_throws]).map(&:to_s)
     end
-    keys.to_a.sort
+
+    pelo_catalogo = Proficiencies::SavingThrowReader.ability_keys(brutos)
+    return pelo_catalogo if pelo_catalogo.present?
+
+    brutos.filter_map { |st| ABBREV_TO_ABILITY_FALLBACK[st.upcase.strip] }.uniq.sort
   rescue
     []
   end
@@ -1109,8 +1119,13 @@ class CharacterSheetSummaryService
     race_choice_skills = cap_race_choice_skills(race_choice_skills, race_skill_choice_allowance(sheet))
 
     {
-      armor: armor,
-      weapons: weapons,
+      # FASE 1, armadura e arma. ⚠️ Mudar o valor emitido é seguro porque o
+      # front já passava tudo por `prettifyProficiencyList`, que converte
+      # "light" para exatamente o mesmo "Armaduras Leves" e "longsword" para
+      # "Espada Longa". A saída final não muda; o que muda é o front deixar de
+      # precisar do tradutor.
+      armor: Proficiencies::ArmorReader.canonicalize(armor),
+      weapons: Proficiencies::WeaponReader.canonicalize(weapons),
       # FASE 1 do catálogo, ferramenta: mesma história do idioma. `.uniq` via
       # "Gaita de Foles" e "Gaita de foles" como duas linhas; a canonicalização
       # colapsa por identidade.
@@ -1128,12 +1143,14 @@ class CharacterSheetSummaryService
       # catálogo vazio (janela entre o deploy e o rake), o resultado é idêntico
       # ao de antes. Nada aqui muda o que é GRAVADO.
       languages: Proficiencies::LanguageReader.canonicalize(languages),
+      # FASE 1, perícia. O tipo mais limpo: as quatro fontes já concordavam
+      # nas mesmas 18, então isto é sobretudo tolerância a acento e caixa.
       skills: {
-        class: class_cs_skills,
-        background: to_arr.call(bg['skills']),
-        race: (race_skills + to_arr.call(vh_skill) + race_choice_skills).uniq,
-        feat: feat_skills.uniq,
-        subclass: subclass_skills.uniq,
+        class: Proficiencies::SkillReader.canonicalize(class_cs_skills),
+        background: Proficiencies::SkillReader.canonicalize(to_arr.call(bg['skills'])),
+        race: Proficiencies::SkillReader.canonicalize(race_skills + to_arr.call(vh_skill) + race_choice_skills),
+        feat: Proficiencies::SkillReader.canonicalize(feat_skills),
+        subclass: Proficiencies::SkillReader.canonicalize(subclass_skills),
         # Expertise concedida por subclasse (raro; reservado p/ paridade futura).
         expertise: subclass_expertise.uniq
       }
