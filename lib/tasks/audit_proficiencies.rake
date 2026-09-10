@@ -27,13 +27,33 @@ namespace :dnd do
         balde = Array((s.metadata || {})['background_proficiencies'])
         [diretas, balde]
       },
+      # ⚠️ Ferramenta e veículo são categorias DIFERENTES no catálogo, mas a
+      # ficha guarda as duas no MESMO array (`class_summary.tools`) — o veículo
+      # nunca teve casa própria.
+      'tool' => lambda { |s|
+        diretas = Array((s.class_summary || {})['tools'])
+        balde = Array((s.metadata || {})['background_proficiencies'])
+        [diretas, balde]
+      },
     }
+
+    # Que categorias do catálogo contam como resolução VÁLIDA para cada fonte.
+    #
+    # ⚠️ Não dá para resolver sem restringir: o apelido é único globalmente, e a
+    # primeira versão disto contava "Gnômico" e "Goblin" como ferramentas
+    # escondidas no balde do antecedente, porque a busca sem categoria achava a
+    # linha de IDIOMA. Um relatório que mistura os tipos é pior que nenhum,
+    # justamente num catálogo cuja razão de existir é separar tipos.
+    ACEITAS = {
+      'language' => %w[language],
+      'tool' => %w[tool vehicle],
+    }.freeze
 
     total_erros = 0
     fontes.each do |categoria, extrator|
       next if so && so != categoria
 
-      catalogadas = Proficiency.of(categoria).count
+      catalogadas = Proficiency.where(category: ACEITAS.fetch(categoria, [categoria])).count
       if catalogadas.zero?
         puts "\n== #{categoria}: catálogo VAZIO — nada a auditar (rode o seed antes)"
         next
@@ -43,13 +63,14 @@ namespace :dnd do
       moles = Hash.new(0)                     # do balde misto: só informativo
       Sheet.find_each do |s|
         diretas, balde = extrator.call(s)
-        diretas.each do |v|
-          duras[v.to_s] << s.id if Proficiency.resolve(v, category: categoria).nil?
-        end
-        balde.each { |v| moles[v.to_s] += 1 if Proficiency.resolve(v, category: categoria) }
+        aceitas = ACEITAS.fetch(categoria, [categoria])
+        casa = ->(v) { (p = Proficiency.resolve(v)) && aceitas.include?(p.category) }
+        diretas.each { |v| duras[v.to_s] << s.id unless casa.call(v) }
+        balde.each   { |v| moles[v.to_s] += 1 if casa.call(v) }
       end
 
-      puts "\n== #{categoria} — #{catalogadas} no catálogo, #{Proficiency.of(categoria).joins(:proficiency_aliases).count} apelidos"
+      escopo = Proficiency.where(category: ACEITAS.fetch(categoria, [categoria]))
+      puts "\n== #{categoria} — #{catalogadas} no catálogo, #{escopo.joins(:proficiency_aliases).count} apelidos"
       if duras.empty?
         puts '   ✓ 0 ORFAS nas fontes diretas'
       else
