@@ -169,6 +169,8 @@ Rails.application.routes.draw do
             # classe/raça e SEM fingir que veio de lá.
             patch  :dm_proficiencies, to: 'sheet_dm_proficiencies#update'
             delete :dm_proficiencies, to: 'sheet_dm_proficiencies#destroy'
+            # Reposição da perícia que a subclasse concedeu em duplicado.
+            patch  :skill_replacements, to: 'sheet_skill_replacements#update'
           end
           resources :coin_pouches, only: [:create, :update, :destroy]
         end

@@ -443,6 +443,8 @@ class CharacterSheetSummaryService
       # Concessão avulsa do Mestre — fonte PRÓPRIA, para a ficha não dizer que
       # veio da classe.
       aplicar_concessoes_do_mestre!(proficiencias)
+      # Reposição por sobreposição: a perícia desperdiçada dá lugar à escolhida.
+      Sheets::SkillOverlaps.apply!(@sheet, proficiencias)
       hp_max_efetivo = @sheet.hp_max
       computed_snapshot = Sheets::DmOverrides.snapshot_computed(
         abilities: abilities, movement: movement, hp_max: @sheet.hp_max
@@ -507,6 +509,9 @@ class CharacterSheetSummaryService
         learning: Sheets::Training.learning_list(@sheet.training),
         # O que o Mestre concedeu avulso, para a ficha listar e ele poder tirar.
         dm_proficiencies: Sheets::DmProficiencies.list(@sheet.dm_proficiencies),
+        # ⚠️ Perícia que a subclasse concede e o personagem já tinha escolhido:
+        # pela regra, ele escolhe outra. Sem isto a escolha some em silêncio.
+        skill_overlaps: Sheets::SkillOverlaps.detect(@sheet),
         senses: senses,
         natural_weapons: build_natural_weapons(@sheet, abilities: abilities),
         prof_bonus: prof,
