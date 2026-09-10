@@ -762,7 +762,7 @@ class CharacterSheetSummaryService
       linha = Proficiency.resolve(bruto.to_s)
       next if linha.nil? || vistos.key?(linha.id)
 
-      bloco = Sheets::TrainingOverrides.describe(@sheet.training_overrides, linha)
+      bloco = Sheets::Training.describe(@sheet.training, linha)
       vistos[linha.id] = bloco if bloco
     end
     vistos.values

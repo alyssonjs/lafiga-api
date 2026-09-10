@@ -145,8 +145,8 @@ Rails.application.routes.draw do
             delete :dm_overrides, to: 'sheet_dm_overrides#destroy'
             # Horas de treino caso a caso: o catálogo diz o padrão, isto é a
             # exceção deste personagem.
-            patch  :training_overrides, to: 'sheet_training_overrides#update'
-            delete :training_overrides, to: 'sheet_training_overrides#destroy'
+            patch  :training, to: 'sheet_training#update'
+            delete :training, to: 'sheet_training#destroy'
           end
           resources :coin_pouches, only: [:create, :update, :destroy]
         end
