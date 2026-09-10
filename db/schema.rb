@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_10_210000) do
+ActiveRecord::Schema.define(version: 2026_09_10_220000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -924,7 +924,15 @@ ActiveRecord::Schema.define(version: 2026_09_10_210000) do
     t.text "notes"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "casting_mode", default: "with_slot", null: false
+    t.string "resource_key"
+    t.integer "resource_cost"
+    t.string "grant_mode", default: "fixed", null: false
+    t.integer "choose_count"
+    t.string "origin", default: "derived", null: false
+    t.index ["casting_mode"], name: "index_spell_sources_on_casting_mode"
     t.index ["source_type", "source_id", "spell_id"], name: "idx_spell_sources_unique", unique: true
+    t.index ["source_type", "source_id"], name: "index_spell_sources_on_source_type_and_source_id"
   end
 
   create_table "spellcastings", force: :cascade do |t|
