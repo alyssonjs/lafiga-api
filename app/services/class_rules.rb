@@ -1578,6 +1578,22 @@ class ClassRules
     }
   }.with_indifferent_access.freeze
 
+  # ⚠️ O ÚLTIMO tradutor de proficiência ainda vivo (fase 3, 10/09/2026).
+  #
+  # Eram QUATRO mapas rivais para a mesma coisa. Dois eram código MORTO e saíram
+  # — `app/services/class_proficiency_adapter.rb` (22 pares) e
+  # `class_rules_helper.rb` (49), provados sem chamador pela suíte inteira. O do
+  # front (`proficiencyLabels.ts`) virou rede de segurança da janela de deploy.
+  #
+  # Este continua porque é de ESCRITA: converte o pt-BR do `RULES` em slug ao
+  # montar o `class_summary`. Do lado da LEITURA ele já é redundante — o
+  # `Proficiencies::WeaponReader` resolve "rapieiras" e "rapier" igualmente pelo
+  # catálogo. Aposentá-lo muda o que fica GRAVADO na ficha, e isso é a fase 2,
+  # não esta.
+  #
+  # ⚠️ Note que há um homônimo de topo — havia. Eram módulos DIFERENTES, e o que
+  # `ClassRules` usava era sempre este, o aninhado. Foi só ao medir (não ao ler)
+  # que ficou claro qual dos dois estava vivo.
   module ClassProficiencyAdapter
     module_function
 
