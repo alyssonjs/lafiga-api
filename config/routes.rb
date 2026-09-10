@@ -165,6 +165,10 @@ Rails.application.routes.draw do
             # exceção deste personagem.
             patch  :training, to: 'sheet_training#update'
             delete :training, to: 'sheet_training#destroy'
+            # Proficiência concedida pelo Mestre, avulsa — fora da regra de
+            # classe/raça e SEM fingir que veio de lá.
+            patch  :dm_proficiencies, to: 'sheet_dm_proficiencies#update'
+            delete :dm_proficiencies, to: 'sheet_dm_proficiencies#destroy'
           end
           resources :coin_pouches, only: [:create, :update, :destroy]
         end

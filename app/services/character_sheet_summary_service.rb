@@ -440,6 +440,9 @@ class CharacterSheetSummaryService
       # APRENDIZADO concluído entra na lista de proficiências do personagem —
       # é o "ao concluir, a perícia deve ser incluída na lista" do pedido.
       aplicar_aprendizado_concluido!(proficiencias)
+      # Concessão avulsa do Mestre — fonte PRÓPRIA, para a ficha não dizer que
+      # veio da classe.
+      aplicar_concessoes_do_mestre!(proficiencias)
       hp_max_efetivo = @sheet.hp_max
       computed_snapshot = Sheets::DmOverrides.snapshot_computed(
         abilities: abilities, movement: movement, hp_max: @sheet.hp_max
@@ -502,6 +505,8 @@ class CharacterSheetSummaryService
         # Inclui as CONCLUÍDAS (com `complete: true`) — elas continuam na lista
         # com a etiqueta, além de entrarem na lista de proficiências.
         learning: Sheets::Training.learning_list(@sheet.training),
+        # O que o Mestre concedeu avulso, para a ficha listar e ele poder tirar.
+        dm_proficiencies: Sheets::DmProficiencies.list(@sheet.dm_proficiencies),
         senses: senses,
         natural_weapons: build_natural_weapons(@sheet, abilities: abilities),
         prof_bonus: prof,
@@ -903,6 +908,60 @@ class CharacterSheetSummaryService
     end
     proficiencias
   rescue StandardError
+    proficiencias
+  end
+
+  # As concessões avulsas do Mestre entram na MESMA lista, em fonte própria.
+  #
+  # ⚠️ Perícia entra como fonte `dm`, ao lado de `class`, `race`, `training` — e
+  # não misturada numa delas. Era exatamente isto que o passo de Perícias do
+  # wizard fazia de errado: gravava em `per_level['1'].skills` e a perícia
+  # passava a constar como vinda da CLASSE.
+  def aplicar_concessoes_do_mestre!(proficiencias)
+    dadas = Sheets::DmProficiencies.by_category(@sheet.dm_proficiencies)
+    # ⚠️ SEM `return` antecipado aqui. A primeira versão saía quando não havia
+    # concessões — e retirar sem conceder deixava de fazer nada, em silêncio.
+    # Conceder e retirar são caminhos independentes.
+    if dadas['skill'].present? && proficiencias[:skills].is_a?(Hash)
+      proficiencias[:skills][:dm] = dadas['skill'].uniq
+    end
+    {
+      'tool' => :tools, 'vehicle' => :tools, 'language' => :languages,
+      'weapon' => :weapons, 'weapon_category' => :weapons, 'armor' => :armor
+    }.each do |categoria, chave|
+      nomes = dadas[categoria]
+      next if nomes.blank? || !proficiencias[chave].is_a?(Array)
+
+      proficiencias[chave] = (proficiencias[chave] + nomes).uniq
+    end
+    remover_revogadas!(proficiencias)
+    proficiencias
+  rescue StandardError
+    proficiencias
+  end
+
+  # ⚠️ RETIRAR é o espelho de conceder, e tira de QUALQUER fonte — classe, raça,
+  # antecedente, treino. É o ponto: o mestre está a passar por cima da regra, e
+  # uma revogação que só apagasse da fonte `dm` não faria nada.
+  #
+  # Compara pelo nome NORMALIZADO porque as listas são strings e a mesma
+  # proficiência já apareceu em quatro grafias nesta base.
+  def remover_revogadas!(proficiencias)
+    revogadas = Sheets::DmProficiencies.revoked_keys(@sheet.dm_proficiencies)
+    return proficiencias if revogadas.empty?
+
+    fora = ->(nome) { revogadas.include?(Proficiency.normalize(nome.to_s)) }
+
+    if proficiencias[:skills].is_a?(Hash)
+      proficiencias[:skills] = proficiencias[:skills].transform_values do |v|
+        v.is_a?(Array) ? v.reject { |n| fora.call(n) } : v
+      end
+    end
+    %i[tools languages weapons armor].each do |chave|
+      next unless proficiencias[chave].is_a?(Array)
+
+      proficiencias[chave] = proficiencias[chave].reject { |n| fora.call(n) }
+    end
     proficiencias
   end
 
