@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_09_120000) do
+ActiveRecord::Schema.define(version: 2026_09_09_230000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -605,6 +605,30 @@ ActiveRecord::Schema.define(version: 2026_09_09_120000) do
     t.index ["token_map_asset_id"], name: "index_monsters_on_token_map_asset_id"
   end
 
+  create_table "proficiencies", force: :cascade do |t|
+    t.string "api_index", null: false
+    t.string "name", null: false
+    t.string "category", null: false
+    t.string "sub_category"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "source", default: "PHB", null: false
+    t.boolean "published", default: true, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["api_index"], name: "index_proficiencies_on_api_index", unique: true
+    t.index ["category", "sub_category"], name: "index_proficiencies_on_category_and_sub_category"
+  end
+
+  create_table "proficiency_aliases", force: :cascade do |t|
+    t.bigint "proficiency_id", null: false
+    t.string "alias_key", null: false
+    t.string "raw"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["alias_key"], name: "index_proficiency_aliases_on_alias_key", unique: true
+    t.index ["proficiency_id"], name: "index_proficiency_aliases_on_proficiency_id"
+  end
+
   create_table "push_subscriptions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.text "endpoint", null: false
@@ -1049,6 +1073,7 @@ ActiveRecord::Schema.define(version: 2026_09_09_120000) do
   add_foreign_key "map_assets", "users"
   add_foreign_key "messages", "channels"
   add_foreign_key "messages", "users"
+  add_foreign_key "proficiency_aliases", "proficiencies"
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "race_traits", "races"
   add_foreign_key "race_traits", "sub_races"
