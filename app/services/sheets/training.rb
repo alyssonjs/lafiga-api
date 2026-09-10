@@ -29,6 +29,17 @@ module Sheets
     MAX_HOURS = 100_000
     CAMPOS = %w[hours_required hours_trained].freeze
 
+    # ⚠️ `learning: true` marca a linha como APRENDIZADO — proficiência que o
+    # personagem ainda NÃO tem e está a treinar, acrescentada pelo mestre no
+    # card "Aprendizado".
+    #
+    # Podia-se derivar isto ("está a aprender o que ainda não tem"), mas a
+    # marca explícita é o que deixa a linha CONTINUAR na lista depois de
+    # concluída, com a etiqueta. Derivada, ela sumiria do card no instante em
+    # que entrasse na lista de perícias — e o jogador não veria que a
+    # concluiu.
+    MARCA_APRENDIZADO = 'learning'
+
     module_function
 
     # Normaliza o que veio do controller. Devolve `[hash_limpo, erros]`.
@@ -83,6 +94,17 @@ module Sheets
         # O padrão do catálogo NO MOMENTO em que o mestre mexeu. É o que deixa a
         # ficha dizer "o catálogo pede 120, o Mestre pôs 80" mesmo que o
         # catálogo mude depois.
+        # A marca de aprendizado é booleana e ausente = não mexe.
+        if h.key?(MARCA_APRENDIZADO)
+          bruto = h[MARCA_APRENDIZADO]
+          if bruto.nil? || bruto.to_s.strip.empty?
+            linha.delete(MARCA_APRENDIZADO)
+          else
+            ligado = ActiveModel::Type::Boolean.new.cast(bruto)
+            ligado ? linha[MARCA_APRENDIZADO] = true : linha.delete(MARCA_APRENDIZADO)
+          end
+        end
+
         linha['default'] = prof.training_hours || anterior['default']
         linha['note'] = h['note'].presence&.to_s&.slice(0, 240) if h.key?('note')
         linha['by_user_id'] = actor_id || anterior['by_user_id']
@@ -122,6 +144,63 @@ module Sheets
       return 0 if proficiency.nil?
 
       (training || {}).dig(proficiency.api_index, 'hours_trained').to_i
+    end
+
+    # ── APRENDIZADO ───────────────────────────────────────────────────────
+    #
+    # As linhas que o mestre marcou como aprendizado, com o progresso. É o que
+    # alimenta o card "Aprendizado" no hub e na ficha.
+    #
+    # ⚠️ NÃO exige `proficiency.trainable?`. Medido: o catálogo tem 142 linhas e
+    # ZERO marcadas como treináveis — exigir a marca faria o card nascer morto.
+    # O gesto do mestre de acrescentar ao aprendizado É a declaração de que
+    # aquilo se treina, que foi o que ele pediu desde o início ("o mestre define
+    # a quantidade de horas caso a caso").
+    def learning_list(training)
+      linhas = (training || {}).filter_map do |chave, linha|
+        next unless linha.is_a?(Hash) && linha[MARCA_APRENDIZADO]
+
+        prof = Proficiency.find_by(api_index: chave.to_s)
+        next if prof.nil?
+
+        descreve_aprendizado(chave.to_s, linha, prof)
+      end
+      # Em curso primeiro (é o que o mestre vai mexer), depois por nome.
+      linhas.sort_by { |l| [l['complete'] ? 1 : 0, l['name'].to_s] }
+    rescue StandardError
+      # Catálogo ausente não pode derrubar a ficha inteira.
+      []
+    end
+
+    # As CONCLUÍDAS, agrupadas por categoria — é o que entra na lista de
+    # proficiências do personagem, marcada como aprendida.
+    def completed_by_category(training)
+      learning_list(training).each_with_object(Hash.new { |h, k| h[k] = [] }) do |linha, acc|
+        next unless linha['complete']
+
+        acc[linha['category'].to_s] << linha['name']
+      end
+    end
+
+    def descreve_aprendizado(chave, linha, prof)
+      necessarias = linha['hours_required']&.to_i || prof.training_hours
+      feitas = linha['hours_trained'].to_i
+
+      {
+        'api_index' => chave,
+        'name' => prof.name,
+        'category' => prof.category,
+        'hours_required' => necessarias,
+        'hours_trained' => feitas,
+        # ⚠️ Sem horas definidas NÃO é completa. "Por definir" não pode virar
+        # "já aprendeu" por omissão — seria dar a proficiência de graça.
+        'complete' => necessarias.to_i.positive? && feitas >= necessarias.to_i,
+        'remaining' => necessarias.to_i.positive? ? [necessarias.to_i - feitas, 0].max : nil,
+        # A barra do card. Sem horas definidas não há barra que faça sentido.
+        'percent' => necessarias.to_i.positive? ? [(feitas * 100.0 / necessarias).round, 100].min : nil,
+        'note' => linha['note'],
+        'at' => linha['at']
+      }.compact
     end
 
     # O bloco que a ficha mostra, por proficiência treinável.

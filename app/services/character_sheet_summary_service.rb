@@ -437,6 +437,9 @@ class CharacterSheetSummaryService
       # o que derrubava o summary INTEIRO, para toda ficha. De quebra, deixa de
       # o calcular duas vezes.
       proficiencias = build_proficiencies(@sheet)
+      # APRENDIZADO concluído entra na lista de proficiências do personagem —
+      # é o "ao concluir, a perícia deve ser incluída na lista" do pedido.
+      aplicar_aprendizado_concluido!(proficiencias)
       hp_max_efetivo = @sheet.hp_max
       computed_snapshot = Sheets::DmOverrides.snapshot_computed(
         abilities: abilities, movement: movement, hp_max: @sheet.hp_max
@@ -495,6 +498,10 @@ class CharacterSheetSummaryService
         # ⚠️ Só as que o personagem TEM. Listar as 142 do catálogo entulharia a
         # ficha com dezenas de linhas que não lhe dizem respeito.
         training: build_training(proficiencias),
+        # Card "Aprendizado": o que o personagem está a treinar, com progresso.
+        # Inclui as CONCLUÍDAS (com `complete: true`) — elas continuam na lista
+        # com a etiqueta, além de entrarem na lista de proficiências.
+        learning: Sheets::Training.learning_list(@sheet.training),
         senses: senses,
         natural_weapons: build_natural_weapons(@sheet, abilities: abilities),
         prof_bonus: prof,
@@ -868,6 +875,35 @@ class CharacterSheetSummaryService
         end
     end
     out
+  end
+
+  # Junta o aprendizado CONCLUÍDO à lista de proficiências, na fonte própria.
+  #
+  # ⚠️ Perícia entra como fonte `training` no hash por-fonte (ao lado de
+  # `class`, `race`, `background`), não misturada numa delas: a ficha mostra de
+  # onde cada perícia veio, e dizer que a treinada veio da classe seria mentira.
+  # As outras categorias são arrays planos e recebem o nome no fim.
+  #
+  # ⚠️ Não derruba a ficha se o catálogo faltar — mesma garantia dos irmãos.
+  def aplicar_aprendizado_concluido!(proficiencias)
+    concluidas = Sheets::Training.completed_by_category(@sheet.training)
+    return proficiencias if concluidas.empty?
+
+    if concluidas['skill'].present? && proficiencias[:skills].is_a?(Hash)
+      proficiencias[:skills][:training] = concluidas['skill'].uniq
+    end
+    {
+      'tool' => :tools, 'vehicle' => :tools, 'language' => :languages,
+      'weapon' => :weapons, 'weapon_category' => :weapons, 'armor' => :armor
+    }.each do |categoria, chave|
+      nomes = concluidas[categoria]
+      next if nomes.blank? || !proficiencias[chave].is_a?(Array)
+
+      proficiencias[chave] = (proficiencias[chave] + nomes).uniq
+    end
+    proficiencias
+  rescue StandardError
+    proficiencias
   end
 
   def build_proficiencies(sheet)
