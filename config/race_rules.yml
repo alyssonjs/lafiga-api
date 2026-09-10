@@ -919,8 +919,8 @@ trait_definitions:
 
   abyssal_legacy:
     name: "Legado Abissal"
-    description: "3º: Raio Adoecente 1/LDesc; 5º: Cativar 1/LDesc (CAR para CD/ataque de magia)."
-    sheet_impact: "Adicionar magias inatas: ‘Raio Adoecente’ (3º), ‘Cativar’ (5º), 1/LDesc, conjuração por CAR."
+    description: "3º: Raio Adoecente 1/LDesc; 5º: Enfeitiçar Pessoa 1/LDesc (CAR para CD/ataque de magia)."
+    sheet_impact: "Adicionar magias inatas: ‘Raio Adoecente’ (3º), ‘Enfeitiçar Pessoa’ (5º), 1/LDesc, conjuração por CAR."
     grants:
       spells:
         - spell: ray-of-sickness
@@ -936,8 +936,8 @@ trait_definitions:
 
   chthonic_legacy:
     name: "Legado Ctônico"
-    description: "3º: Vitalidade Falsa 1/LDesc; 5º: Raio do Enfraquecimento 1/LDesc (CAR)."
-    sheet_impact: "Adicionar magias inatas: ‘Vitalidade Falsa’ (3º), ‘Raio do Enfraquecimento’ (5º), 1/LDesc, CAR."
+    description: "3º: Vida Falsa 1/LDesc; 5º: Raio do Enfraquecimento 1/LDesc (CAR)."
+    sheet_impact: "Adicionar magias inatas: ‘Vida Falsa’ (3º), ‘Raio do Enfraquecimento’ (5º), 1/LDesc, CAR."
     grants:
       spells:
         - spell: false-life
