@@ -35,7 +35,26 @@ namespace :dnd do
         balde = Array((s.metadata || {})['background_proficiencies'])
         [diretas, balde]
       },
+      'skill' => lambda { |s|
+        [Array((s.class_summary || {})['skills']),
+         Array((s.metadata || {})['background_proficiencies'])]
+      },
+      'saving_throw' => ->(s) { [Array((s.class_summary || {})['saving_throws']), []] },
+      'armor' => ->(s) { [Array((s.class_summary || {})['armor_proficiencies']), []] },
+      'weapon' => ->(s) { [Array((s.class_summary || {})['weapon_proficiencies']), []] },
     }
+
+    # ⚠️ LIXO CONHECIDO — não é proficiência e não vai virar linha do catálogo.
+    #
+    # Catalogá-lo seria mentir; deixá-lo como órfã deixaria o portão vermelho
+    # para sempre e o portão perderia o sentido. Fica listado, com o motivo, e
+    # contado à parte. Sair daqui é limpeza de DADO, que é outra fase.
+    LIXO = {
+      'armas' => 'fragmento de "armas simples": 3 fichas de Bruxo têm ' \
+                 '["armas", "simple"] e o Bruxo só tem armas simples — ' \
+                 'o valor é redundante, e adivinhar o que ele queria dizer ' \
+                 'daria proficiência errada a um Guerreiro com o mesmo defeito',
+    }.freeze
 
     # Que categorias do catálogo contam como resolução VÁLIDA para cada fonte.
     #
@@ -47,6 +66,12 @@ namespace :dnd do
     ACEITAS = {
       'language' => %w[language],
       'tool' => %w[tool vehicle],
+      'skill' => %w[skill],
+      'saving_throw' => %w[saving_throw],
+      'armor' => %w[armor],
+      # A ficha mistura categoria de arma ("simple") e arma ("longsword") no
+      # MESMO array — nunca houve separação.
+      'weapon' => %w[weapon weapon_category],
     }.freeze
 
     total_erros = 0
@@ -61,11 +86,17 @@ namespace :dnd do
 
       duras = Hash.new { |h, k| h[k] = [] }   # tem de resolver
       moles = Hash.new(0)                     # do balde misto: só informativo
+      lixo_visto = Hash.new(0)                # conhecido, aguardando limpeza
       Sheet.find_each do |s|
         diretas, balde = extrator.call(s)
         aceitas = ACEITAS.fetch(categoria, [categoria])
         casa = ->(v) { (p = Proficiency.resolve(v)) && aceitas.include?(p.category) }
-        diretas.each { |v| duras[v.to_s] << s.id unless casa.call(v) }
+        diretas.each do |v|
+          next if LIXO.key?(v.to_s)
+
+          duras[v.to_s] << s.id unless casa.call(v)
+        end
+        diretas.each { |v| lixo_visto[v.to_s] += 1 if LIXO.key?(v.to_s) }
         balde.each   { |v| moles[v.to_s] += 1 if casa.call(v) }
       end
 
@@ -78,6 +109,12 @@ namespace :dnd do
         puts "   ✗ #{duras.size} ORFAS:"
         duras.sort_by { |_, v| -v.size }.each do |valor, fichas|
           puts format('       %-32s %d ficha(s): %s', valor.inspect, fichas.size, fichas.first(6).join(','))
+        end
+      end
+      unless lixo_visto.empty?
+        puts "   ! lixo conhecido (não é proficiência, aguarda limpeza de dado):"
+        lixo_visto.sort_by { |_, v| -v }.each do |v, n|
+          puts format('       %-22s %d ocorrência(s) — %s', v.inspect, n, LIXO[v])
         end
       end
       unless moles.empty?
