@@ -30,11 +30,23 @@ namespace :dnd do
       # ⚠️ Ferramenta e veículo são categorias DIFERENTES no catálogo, mas a
       # ficha guarda as duas no MESMO array (`class_summary.tools`) — o veículo
       # nunca teve casa própria.
-      'tool' => lambda { |s|
-        diretas = Array((s.class_summary || {})['tools'])
-        balde = Array((s.metadata || {})['background_proficiencies'])
-        [diretas, balde]
-      },
+      # ⚠️ Ferramenta lê o que a ficha EMITE, não a coluna crua.
+      #
+      # A primeira versão media `class_summary.tools` e anunciava "0 órfãs" —
+      # medindo 12 de 40 valores. O que chega à ficha é a FUSÃO de classe,
+      # antecedente, raça, subclasse e talento, e é lá que estavam os 10
+      # órfãos de verdade. Medir meia trilha dá resposta convincente e errada;
+      # já custou isto duas vezes neste projeto.
+      'tool' => lambda do |s|
+        begin
+          cmd = CharacterSheetSummaryService.call(sheet_id: s.id)
+          payload = cmd.respond_to?(:result) ? cmd.result : cmd
+          emitidas = Array(payload.dig(:proficiencies, :tools) || payload.dig('proficiencies', 'tools'))
+        rescue StandardError
+          emitidas = []
+        end
+        [emitidas, Array((s.metadata || {})['background_proficiencies'])]
+      end,
       'skill' => lambda { |s|
         [Array((s.class_summary || {})['skills']),
          Array((s.metadata || {})['background_proficiencies'])]
@@ -49,12 +61,35 @@ namespace :dnd do
     # Catalogá-lo seria mentir; deixá-lo como órfã deixaria o portão vermelho
     # para sempre e o portão perderia o sentido. Fica listado, com o motivo, e
     # contado à parte. Sair daqui é limpeza de DADO, que é outra fase.
+    # ⚠️ `background_rules.rb:326` monta `'Jogo de ' + label` e a fila de
+    # escolhas (`tool_queue.shift`) entrega valor do slot ERRADO — daí
+    # "Jogo de Veículos Terrestres" e o duplamente quebrado "Jogo de Jogo de
+    # Escolher". É bug PRÉ-EXISTENTE, e o catálogo é que o tornou visível.
+    # Catalogá-los seria catalogar um defeito.
+    # ⚠️ Só os TRÊS em que o miolo NÃO é conjunto de jogo — a fila entregou o
+    # slot errado e não dá para saber o que o jogador escolheu. Os outros cinco
+    # ("Jogo de Dados", "Jogo de Cartas"…) SÃO recuperáveis e viraram apelido no
+    # seed: o jogador tem mesmo aquela proficiência, só prefixada, e
+    # quarentená-los tiraria dele o que o antecedente concedeu.
+    LIXO_JOGO_DE = [
+      'Jogo de Ferramentas de Ladrão',
+      'Jogo de Veículos Terrestres',
+      'Jogo de Jogo de Escolher',
+    ].freeze
+
     LIXO = {
       'armas' => 'fragmento de "armas simples": 3 fichas de Bruxo têm ' \
                  '["armas", "simple"] e o Bruxo só tem armas simples — ' \
                  'o valor é redundante, e adivinhar o que ele queria dizer ' \
                  'daria proficiência errada a um Guerreiro com o mesmo defeito',
-    }.freeze
+      # Placeholders de escolha PENDENTE, não proficiências.
+      'Instrumento musical (escolher)' => 'placeholder de escolha ainda não feita',
+    }.merge(
+      LIXO_JOGO_DE.index_with do |v|
+        "prefixo 'Jogo de ' + valor do slot errado (background_rules.rb:326, " \
+        "bug pré-existente): #{v.sub('Jogo de ', '').inspect} não é conjunto de jogo"
+      end,
+    ).freeze
 
     # Que categorias do catálogo contam como resolução VÁLIDA para cada fonte.
     #

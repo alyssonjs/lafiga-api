@@ -83,16 +83,22 @@ namespace :dnd do
     ['Voz (instrumento)', 'instrument', ['Voz'], 'homebrew'],
 
     # ── Conjuntos de jogo ─────────────────────────────────────────────────
-    ['Conjunto de dados',              'gaming', ['Dados']],
-    ['Baralho de cartas',              'gaming', ['Cartas']],
-    ['Xadrez de dragão',               'gaming'],
+    # ⚠️ Os apelidos com prefixo "Jogo de " vêm de `background_rules.rb:326`,
+    # que monta `'Jogo de ' + label`. Quando o miolo É um conjunto de jogo, o
+    # jogador TEM mesmo essa proficiência — só prefixada. Descartá-los tiraria
+    # dele o que o antecedente concedeu. (Quando o miolo NÃO é conjunto de jogo,
+    # a fila entregou o slot errado; esses ficam em quarentena na auditoria, não
+    # aqui, porque adivinhar o que o jogador escolheu seria inventar.)
+    ['Conjunto de dados',              'gaming', ['Dados', 'Jogo de Dados', 'Jogo de Conjunto de dados']],
+    ['Baralho de cartas',              'gaming', ['Cartas', 'Jogo de Cartas', 'Jogo de Baralho de cartas']],
+    ['Xadrez de dragão',               'gaming', ['Jogo de Xadrez de dragão']],
     ['Conjunto de Três-Dragões Ante',  'gaming', ['Jogo dos três dragões', 'Três-Dragões Ante']],
 
     # ── Kits ──────────────────────────────────────────────────────────────
     ['Kit de disfarce',      'kit', ['Kit disfarce']],
     ['Kit de falsificação',  'kit', ['Ferramentas de falsificação']],
     ['Kit de herbalismo',    'kit', ['Kit Herbalismo']],
-    ['Kit de envenenador',   'kit', ['Kit de veneno']],
+    ['Kit de envenenador',   'kit', ['Kit de veneno', 'Kit de Venenos']],
 
     # ── Outras ────────────────────────────────────────────────────────────
     ['Ferramentas de ladrão',    'other'],

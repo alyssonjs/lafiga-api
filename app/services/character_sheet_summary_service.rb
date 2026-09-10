@@ -1111,7 +1111,15 @@ class CharacterSheetSummaryService
     {
       armor: armor,
       weapons: weapons,
-      tools: tools.uniq,
+      # FASE 1 do catálogo, ferramenta: mesma história do idioma. `.uniq` via
+      # "Gaita de Foles" e "Gaita de foles" como duas linhas; a canonicalização
+      # colapsa por identidade.
+      #
+      # ⚠️ O leitor aceita `tool` E `vehicle`. No catálogo veículo é tipo
+      # próprio, mas a ficha sempre guardou os dois neste mesmo array — e é aqui
+      # que mora "Veículos Terrestres", a proficiência que já existiu em quatro
+      # grafias e custou 14 órfãs.
+      tools: Proficiencies::ToolReader.canonicalize(tools),
       # FASE 1 do catálogo de proficiências: a leitura resolve pelo catálogo, e
       # não pela grafia exata. `.uniq` deixava "Élfico" e "elfico" como duas
       # linhas; a canonicalização colapsa por identidade.
