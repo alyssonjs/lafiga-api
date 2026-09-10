@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_09_230000) do
+ActiveRecord::Schema.define(version: 2026_09_10_180000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -877,6 +877,7 @@ ActiveRecord::Schema.define(version: 2026_09_09_230000) do
     t.jsonb "coin_pouches", default: [], null: false
     t.jsonb "companions", default: [], null: false
     t.jsonb "dm_overrides", default: {}, null: false
+    t.jsonb "training_overrides", default: {}, null: false
     t.index ["alignment_id"], name: "index_sheets_on_alignment_id"
     t.index ["background_id"], name: "index_sheets_on_background_id"
     t.index ["background_key"], name: "index_sheets_on_background_key"

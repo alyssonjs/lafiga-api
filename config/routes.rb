@@ -143,6 +143,10 @@ Rails.application.routes.draw do
             # namespace admin: a MARCA na ficha é para todos, a escrita é dele.
             patch  :dm_overrides, to: 'sheet_dm_overrides#update'
             delete :dm_overrides, to: 'sheet_dm_overrides#destroy'
+            # Horas de treino caso a caso: o catálogo diz o padrão, isto é a
+            # exceção deste personagem.
+            patch  :training_overrides, to: 'sheet_training_overrides#update'
+            delete :training_overrides, to: 'sheet_training_overrides#destroy'
           end
           resources :coin_pouches, only: [:create, :update, :destroy]
         end

@@ -432,6 +432,11 @@ class CharacterSheetSummaryService
       # maldição. `computed` é tirado ANTES de aplicar — é o número que a ficha
       # mostra ao lado para avisar quando o calculado passa o cravado.
       dm_overrides = (@sheet.dm_overrides.presence || {})
+      # ⚠️ Içado para um local: `training:` também precisa dele, e antes disto
+      # eu referenciava um `proficiencies` que não existia no escopo do hash —
+      # o que derrubava o summary INTEIRO, para toda ficha. De quebra, deixa de
+      # o calcular duas vezes.
+      proficiencias = build_proficiencies(@sheet)
       hp_max_efetivo = @sheet.hp_max
       computed_snapshot = Sheets::DmOverrides.snapshot_computed(
         abilities: abilities, movement: movement, hp_max: @sheet.hp_max
@@ -483,11 +488,18 @@ class CharacterSheetSummaryService
         # gravar — recalcular do lado do controller exigiria rodar o summary
         # duas vezes.
         dm_overridable: computed_snapshot,
+        # Treino: uma linha por proficiência TREINÁVEL que este personagem tem,
+        # com as horas que valem para ELE (sobrescrita do mestre, ou o padrão
+        # do catálogo) e a marca de que foi cravado.
+        #
+        # ⚠️ Só as que o personagem TEM. Listar as 142 do catálogo entulharia a
+        # ficha com dezenas de linhas que não lhe dizem respeito.
+        training: build_training(proficiencias),
         senses: senses,
         natural_weapons: build_natural_weapons(@sheet, abilities: abilities),
         prof_bonus: prof,
         klasses: klasses,
-        proficiencies: build_proficiencies(@sheet),
+        proficiencies: proficiencias,
         traits: build_traits(@sheet),
         background: build_background(@sheet),
         feats: build_feats(@sheet),
@@ -736,6 +748,29 @@ class CharacterSheetSummaryService
   end
 
   # Lista de habilidades com proficiência em salvaguarda (chaves em inglês: str, dex, …) para o cliente.
+  # As proficiências TREINÁVEIS que este personagem tem, com as horas que valem
+  # para ele.
+  #
+  # A resolução passa pelo catálogo (e portanto pelos apelidos), porque a ficha
+  # guarda a proficiência como STRING: é assim que "Veículos Terrestres" na
+  # ficha encontra a linha "Veículos (terrestres)" no catálogo.
+  def build_training(proficiencies)
+    brutos = Array(proficiencies[:tools]) + Array(proficiencies[:weapons]) +
+             Array(proficiencies[:armor]) + Array(proficiencies[:languages])
+    vistos = {}
+    brutos.each do |bruto|
+      linha = Proficiency.resolve(bruto.to_s)
+      next if linha.nil? || vistos.key?(linha.id)
+
+      bloco = Sheets::TrainingOverrides.describe(@sheet.training_overrides, linha)
+      vistos[linha.id] = bloco if bloco
+    end
+    vistos.values
+  rescue StandardError
+    # Catálogo ausente (deploy antes do rake) não pode derrubar a ficha inteira.
+    []
+  end
+
   # ⚠️ A saída continua sendo a CHAVE de atributo (`str`, `dex`…): é ela que o
   # front usa para montar a linha de teste de resistência.
   #
