@@ -37,10 +37,13 @@ namespace :dnd do
   }.freeze
 
   # rótulo EXIBIDO (canônico), sub-categoria, apelidos
+  # ⚠️ O SINGULAR ("armadura leve") entra porque é assim que os grants de
+  # subclasse grafam — `teurgia-mistica` nv2 concede "armadura leve". Sem ele,
+  # a associação ficava órfã em silêncio.
   ARMADURAS = [
-    ['Armaduras Leves',   'light',  %w[light light-armor leve leves]],
-    ['Armaduras Médias',  'medium', ['medium', 'medium-armor', 'media', 'média', 'medias', 'médias']],
-    ['Armaduras Pesadas', 'heavy',  %w[heavy heavy-armor pesada pesadas]],
+    ['Armaduras Leves',   'light',  ['light', 'light-armor', 'leve', 'leves', 'armadura leve']],
+    ['Armaduras Médias',  'medium', ['medium', 'medium-armor', 'media', 'média', 'medias', 'médias', 'armadura média']],
+    ['Armaduras Pesadas', 'heavy',  ['heavy', 'heavy-armor', 'pesada', 'pesadas', 'armadura pesada']],
     ['Escudos',           'shield', %w[shield shields escudo]],
   ].freeze
 

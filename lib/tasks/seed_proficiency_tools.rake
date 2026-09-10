@@ -49,7 +49,7 @@ namespace :dnd do
     # costureiro" onde o inglês tem weaver's tools.
     ['Kit de costura',              'artisan', ['Ferramentas de costureiro', 'Ferramentas de Tecelão']],
     ['Utensílios de cozinheiro',    'artisan', ['Ferramentas de Cozinha', 'Ferramentas de Artesão (Cozinheiro)']],
-    ['Suprimentos de alquimista',   'artisan', ['Ferramentas de Alquimista']],
+    ['Suprimentos de alquimista',   'artisan', ['Ferramentas de Alquimista', 'Kit de Alquimista']],
     # ⚠️ FORA DO LIVRO: o PHB pt-BR só tem "Ferramentas de ferreiro". Ferreiro
     # de armaduras é ofício DIFERENTE, não grafia diferente — por isso linha
     # própria, e não apelido de ferreiro. Chegou por `background_rules.rb`.

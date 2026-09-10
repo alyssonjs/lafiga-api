@@ -75,7 +75,8 @@ namespace :dnd do
 
   CATEGORIAS_ARMA = [
     ['Armas Simples',  ['simple', 'simple-weapons', 'simple_weapons', 'armas simples']],
-    ['Armas Marciais', ['martial', 'martial-weapons', 'martial_weapons', 'armas marciais']],
+    # 'marciais' sozinho aparece truncado nos grants de subclasse.
+    ['Armas Marciais', ['martial', 'martial-weapons', 'martial_weapons', 'armas marciais', 'marciais']],
   ].freeze
 
   desc 'FASE 0 — semeia CATEGORIA DE ARMA e ARMA (DRY_RUN=1 relata)'

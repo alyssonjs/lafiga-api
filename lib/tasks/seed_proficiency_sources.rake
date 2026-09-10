@@ -110,6 +110,80 @@ namespace :dnd do
       end
     end
 
+    # ── SUBCLASSE ──────────────────────────────────────────────────────────
+    #
+    # ⚠️ Os grants vivem em `SubKlass#levels_json`, uma coluna JSON como STRING
+    # — não numa associação. A minha primeira sonda usou `sk.levels` e devolveu
+    # ZERO, o que me fez declarar que subclasse não era derivável. Era, e são 40
+    # subclasses.
+    #
+    # E ficam em DOIS lugares: no topo da level-row (17) e ANINHADOS em cada
+    # feature da row (24) — a maioria está no segundo. Ler só `row['grants']`
+    # perderia 60% deles.
+    #
+    # Cinco formas de valor convivem, e todas precisam de leitura:
+    #   Array · {fixed} · {add} · {add_or_replace} · {choose, options}
+    # E DUAS grafias para a mesma chave: `armors` (8) e `armor` (2).
+    CHAVE_TIPO = { 'skills' => nil, 'tools' => nil, 'instruments' => nil,
+                   'weapons' => nil, 'armors' => nil, 'armor' => nil }.freeze
+
+    # ⚠️ Pools ABERTOS ficam de fora, pela mesma regra do `options: :any` da
+    # classe: "escolha uma ferramenta de artesão qualquer" não é associação com
+    # uma proficiência específica, e criar 17 linhas ali diria que a subclasse
+    # concede cada uma delas.
+    POOL_ABERTO = [
+      ':selected_from_class_skills', 'Ferramentas de artesão',
+      'Ferramentas de jogo', 'Instrumento musical'
+    ].freeze
+
+    SubKlass.find_each do |sk|
+      next if sk.levels_json.blank?
+
+      rows = begin
+        JSON.parse(sk.levels_json)
+      rescue JSON::ParserError
+        []
+      end
+      nome_sk = sk.name
+
+      Array(rows).each do |row|
+        next unless row.is_a?(Hash)
+
+        blocos = []
+        blocos << row['grants'] if row['grants'].is_a?(Hash)
+        Array(row['features']).each do |f|
+          blocos << f['grants'] if f.is_a?(Hash) && f['grants'].is_a?(Hash)
+        end
+
+        blocos.each do |g|
+          pr = g['proficiencies']
+          next unless pr.is_a?(Hash)
+
+          pr.each do |chave, val|
+            next unless CHAVE_TIPO.key?(chave.to_s)
+
+            if val.is_a?(Array)
+              val.each { |v| registra.call(v, 'sub_klass', sk.api_index, nome_sk) }
+            elsif val.is_a?(Hash)
+              # `fixed`, `add` e `add_or_replace` são todos "a subclasse concede".
+              (Array(val['fixed']) + Array(val['add']) + Array(val['add_or_replace'])).each do |v|
+                registra.call(v, 'sub_klass', sk.api_index, nome_sk)
+              end
+              opcoes = val['options']
+              next unless opcoes.is_a?(Array)
+
+              quantas = val['choose']
+              opcoes.each do |v|
+                next if POOL_ABERTO.include?(v.to_s)
+
+                registra.call(v, 'sub_klass', sk.api_index, nome_sk, 'choice', quantas)
+              end
+            end
+          end
+        end
+      end
+    end
+
     # ── ANTECEDENTE ────────────────────────────────────────────────────────
     BackgroundRules::RULES.each do |chave, bg|
       nome = bg[:name] || chave
