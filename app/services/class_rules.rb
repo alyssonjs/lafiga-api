@@ -162,13 +162,38 @@ class ClassRules
     }
   end
 
-  # Regras por `api_index`: DB (`klasses.rules`) tem prioridade sobre o hash em código
-  # (`CLASS_RULES`). Isto permite migrar gradualmente sem remover o legado de uma vez.
+  # Regras por `api_index`: o que o mestre gravou em `klasses.rules` SOBREPÕE o
+  # hash em código (`CLASS_RULES`), chave de topo a chave de topo.
+  #
+  # 🐞 Antes isto era REPLACE-ALL — `return from_db if from_db`. Como o
+  # controller admitia `rules: {}` no `permit` sem sanitizador nenhum, um PATCH
+  # que gravasse meia classe apagava a outra metade: `hit_die`, proficiências,
+  # `features_level1`, `subclass` e `feature_rules` sumiam para todos os
+  # personagens dela, sem erro em lado nenhum. Era latente só porque nenhuma
+  # das 13 tinha `rules` preenchido; deixaria de ser no primeiro save do editor.
+  #
+  # ⚠️ Sobreposição por CHAVE DE TOPO, não `deep_merge`. Aquele concatena
+  # arrays: o mestre que TIRASSE uma proficiência veria a lista antiga somar-se
+  # de volta, sem nada na tela a explicar porquê.
   def self.find(id)
-    from_db = KlassClassRulesProvider.call(id)
-    return from_db if from_db
+    base = find_from_rules_constant(id)
+    overlay = KlassClassRulesProvider.call(id)
+    return base if overlay.blank?
 
-    find_from_rules_constant(id)
+    # Classe que só existe no banco (homebrew): não há base, o overlay é tudo.
+    return overlay if base.blank?
+
+    sobrepoe(base, overlay)
+  end
+
+  # ⚠️ Devolve o `base` INTACTO quando não há overlay — é o que garante a
+  # paridade: sem nada gravado, esta camada é a identidade e `find` responde
+  # exatamente o que respondia antes.
+  def self.sobrepoe(base, overlay)
+    limpo = (overlay || {}).reject { |_k, v| v.nil? }
+    return base if limpo.empty?
+
+    base.deep_dup.merge(limpo)
   end
 
   # Apenas o hash `ClassRules.rules` + tradução de saving_throws (comportamento pré-DB).

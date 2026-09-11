@@ -12,7 +12,11 @@ class Api::V1::Admin::KlassesController < ApplicationController
   end
 
   def create
+    regras, erros_regras = regras_do_pedido
+    return render(json: { errors: erros_regras }, status: :unprocessable_entity) if erros_regras.any?
+
     @klass = Klass.new(klass_params)
+    @klass.rules = regras unless regras == :ausente
 
     if @klass.save
       # Envelopa em `{ klass: ... }` para o front consumir o mesmo shape
@@ -28,8 +32,14 @@ class Api::V1::Admin::KlassesController < ApplicationController
   end
 
   def update
-    if @klass.update(klass_params)
-      render json: {klass: @klass}, status: 200 
+    regras, erros_regras = regras_do_pedido
+    return render(json: { errors: erros_regras }, status: :unprocessable_entity) if erros_regras.any?
+
+    atributos = klass_params.to_h
+    atributos[:rules] = regras unless regras == :ausente
+
+    if @klass.update(atributos)
+      render json: { klass: @klass }, status: 200
     else
       render json: { errors: @klass.errors.full_messages }, status: :unprocessable_entity
     end
@@ -112,9 +122,30 @@ class Api::V1::Admin::KlassesController < ApplicationController
       :progression_table,
       :subclass_level,
       :playable,
-      rules: {},
       saving_throws: [],
     )
+  end
+
+  # ⚠️ `rules` NÃO entra no `permit`.
+  #
+  # 🐞 Entrava como `rules: {}` — forma livre, sem validação nenhuma. E
+  # `KlassDbRulesContract`, que existe e define as chaves obrigatórias, tinha
+  # ZERO chamadas no caminho de escrita: só uma rake manual e o próprio spec.
+  # Somado ao replace-all que `ClassRules.find` fazia, um PATCH com meia classe
+  # apagava a outra metade para todos os personagens dela, em silêncio.
+  #
+  # Agora passa pelo sanitizador, que é a fronteira: forma errada aqui não
+  # quebra "a classe do mestre", quebra a CRIAÇÃO DE PERSONAGEM, porque
+  # `ClassRules.find` é lido em runtime por 33 pontos.
+  #
+  # Devolve `[hash, erros]`; `:ausente` quando o pedido não fala de regras, que
+  # é diferente de mandar `{}` (soltar tudo e voltar à regra em código).
+  def regras_do_pedido
+    return [:ausente, []] unless params.require(:klass).key?(:rules)
+
+    Klasses::RulesOverlay.sanitize(params.require(:klass)[:rules])
+  rescue ActionController::ParameterMissing
+    [:ausente, []]
   end
 
   def level_feature_params
