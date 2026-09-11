@@ -83,12 +83,51 @@ RSpec.describe RaceRules, 'overlay de regras no banco', type: :service do
       } } }
     end
 
-    it 'sobe para o catálogo GLOBAL de definições', :aggregate_failures do
+    it 'sobe para o catálogo GLOBAL de definições, PREFIXADA pelo dono', :aggregate_failures do
       antes = described_class.trait_definitions.size
       raca.update!(rules_json: proprio)
 
       expect(described_class.trait_definitions.size).to eq(antes + 1)
-      expect(described_class.trait_definitions[:traco_do_mestre][:name]).to eq('Traço do Mestre')
+      expect(described_class.trait_definitions[:tiefling__traco_do_mestre][:name]).to eq('Traço do Mestre')
+    end
+
+    # 🐞 sem o prefixo, `trait_definitions` é um catálogo GLOBAL e a chave é
+    # escolhida DENTRO de uma raça: o editor sugere `traco_1` para qualquer
+    # raça nova, e a segunda apagava a primeira em silêncio — a ficha mostrava
+    # o traço da raça errada, sem erro em lado nenhum.
+    it '⚠️ duas raças com a MESMA chave própria não colidem', :aggregate_failures do
+      outra = Race.find_by(api_index: 'dwarf') || Race.create!(name: 'Anão', api_index: 'dwarf')
+      mesma = ->(nome) { { 'custom_traits' => { 'traco_1' => { 'name' => nome } } } }
+
+      raca.update!(rules_json: mesma.call('Da Tiefling'))
+      outra.update!(rules_json: mesma.call('Do Anão'))
+
+      defs = described_class.trait_definitions
+      expect(defs[:tiefling__traco_1][:name]).to eq('Da Tiefling')
+      expect(defs[:dwarf__traco_1][:name]).to eq('Do Anão')
+    ensure
+      outra&.update_columns(rules_json: {})
+      described_class.reload!
+    end
+
+    # Se a referência não for reescrita junto, a definição existe com o nome
+    # novo e a raça continua a apontar para o antigo: traço órfão, invisível.
+    it '⚠️ a referência DENTRO da raça é reescrita para a chave prefixada' do
+      raca.update!(rules_json: proprio.merge('traits' => [{ 'key' => 'traco_do_mestre' }]))
+
+      chaves = Array(described_class.find('tiefling')[:traits]).map { |t| t[:key] }
+      expect(chaves).to eq(['tiefling__traco_do_mestre'])
+      expect(described_class.trait_definitions).to have_key(:tiefling__traco_do_mestre)
+    end
+
+    # 🐞 e o passo de reescrita não pode INVENTAR a chave: uma raça que só
+    # declara `custom_traits` ganharia `traits: []` no overlay, e esse array
+    # vazio sobrepõe — apagando os traços que o YAML dava.
+    it '⚠️ raça sem `traits` própria mantém os traços do livro' do
+      antes = Array(described_class.find('tiefling')[:traits]).size
+      raca.update!(rules_json: proprio)
+
+      expect(Array(described_class.find('tiefling')[:traits]).size).to eq(antes)
     end
 
     it '⚠️ e NÃO vaza como chave do nó da raça' do

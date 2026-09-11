@@ -12,8 +12,12 @@ class Api::V1::Admin::SubRacesController < ApplicationController
   end
 
   def create
+    regras, erros_regras = regras_do_pedido
+    return render(json: { errors: erros_regras }, status: :unprocessable_entity) if erros_regras.any?
+
     @sub_race = SubRace.new(sub_race_params)
-    
+    @sub_race.rules_json = regras unless regras == :ausente
+
     if @sub_race.save
       render json: @sub_race, status: :created
     else
@@ -24,7 +28,13 @@ class Api::V1::Admin::SubRacesController < ApplicationController
   end
 
   def update
-    if @sub_race.update(sub_race_params)
+    regras, erros_regras = regras_do_pedido
+    return render(json: { errors: erros_regras }, status: :unprocessable_entity) if erros_regras.any?
+
+    atributos = sub_race_params.to_h
+    atributos[:rules_json] = regras unless regras == :ausente
+
+    if @sub_race.update(atributos)
       render json: {sub_race: @sub_race}, status: 200
     else
       render json: { errors: @sub_race.errors.full_messages }, status: :unprocessable_entity
@@ -50,5 +60,21 @@ class Api::V1::Admin::SubRacesController < ApplicationController
 
   def sub_race_params
     params.require(:sub_race).permit(:name, :race_id, :api_index, :playable)
+  end
+
+  # ⚠️ `rules_json` NÃO entra no `permit`: é jsonb de forma livre, e o
+  # `permit` deixaria passar qualquer coisa. Passa pelo sanitizador, que é a
+  # fronteira — forma errada aqui não quebra "a raça do mestre", quebra a
+  # CRIAÇÃO DE PERSONAGEM, porque `RaceRules.apply` é lido em runtime.
+  #
+  # Devolve `[hash, erros]`; `:ausente` quando o pedido não fala de regras, que
+  # é diferente de mandar `{}` (soltar tudo e voltar ao YAML).
+  def regras_do_pedido
+    bruto = params.require(:sub_race)[:rules_json]
+    return [:ausente, []] unless params.require(:sub_race).key?(:rules_json)
+
+    Races::RulesOverlay.sanitize(bruto)
+  rescue ActionController::ParameterMissing
+    [:ausente, []]
   end
 end

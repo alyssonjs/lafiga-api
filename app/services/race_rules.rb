@@ -476,9 +476,9 @@ class RaceRules
     # As definições próprias saem de dentro de cada raça e sobem para o
     # catálogo — é lá que `trait_definitions` as procura.
     defs = {}
-    racas.each_value do |regras|
-      proprias = regras.delete(:custom_traits)
-      defs.merge!(proprias.deep_symbolize_keys) if proprias.is_a?(Hash)
+    racas.each { |slug, regras| extrai_proprios!(regras, slug, defs) }
+    subs.each do |slug_raca, por_sub|
+      por_sub.each { |slug_sub, regras| extrai_proprios!(regras, :"#{slug_raca}__#{slug_sub}", defs) }
     end
 
     # ⚠️ Reconstrói o hash para largar o proc default do `Hash.new`: o cache do
@@ -492,6 +492,35 @@ class RaceRules
     # o YAML, que é exatamente o comportamento de antes desta camada.
     Rails.logger.warn("RaceRules: overlay indisponível: #{e.message}") if defined?(Rails.logger)
     {}
+  end
+
+  # ⚠️ A chave de um traço PRÓPRIO é escolhida dentro de uma raça (o editor
+  # sugere `traco_1`), mas `trait_definitions` é um catálogo GLOBAL: duas raças
+  # caseiras com um `traco_1` cada colidiam, e a última lida apagava a outra em
+  # silêncio — a ficha passava a mostrar o traço da raça errada. Por isso a
+  # definição sobe PREFIXADA pelo dono, e a referência dentro da raça é
+  # reescrita no mesmo passo.
+  def self.extrai_proprios!(regras, prefixo, defs)
+    proprias = regras.delete(:custom_traits)
+    return unless proprias.is_a?(Hash) && proprias.any?
+
+    mapa = {}
+    proprias.each do |chave, definicao|
+      nova = :"#{prefixo}__#{chave}"
+      mapa[chave.to_s] = nova.to_s
+      defs[nova] = definicao.deep_symbolize_keys if definicao.is_a?(Hash)
+    end
+
+    # ⚠️ Só reescreve se a raça JÁ declara `traits`. Criar a chave aqui faria o
+    # overlay sobrepor `traits: []` sobre o YAML e apagar os traços do livro.
+    return unless regras.key?(:traits)
+
+    regras[:traits] = Array(regras[:traits]).map do |t|
+      next t unless t.is_a?(Hash)
+
+      alvo = mapa[t[:key].to_s]
+      alvo ? t.merge(key: alvo) : t
+    end
   end
 
   def self.load_rules
