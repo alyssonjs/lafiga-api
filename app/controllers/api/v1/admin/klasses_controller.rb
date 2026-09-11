@@ -4,11 +4,26 @@ class Api::V1::Admin::KlassesController < ApplicationController
 
   def index
     klasses = Klass.all
-    render json: {klasses: klasses}, status: 200
+    render json: { klasses: klasses }, status: 200
   end
-  
+
   def show
-    render json: {klass: @klass}, status: 200
+    render json: { klass: serializa(@klass) }, status: 200
+  end
+
+  # ⚠️ `rules_base` é a regra em CÓDIGO (`ClassRules::CLASS_RULES`), sem o
+  # overlay. É contra ISTO que o editor decide o que o mestre TOCOU.
+  #
+  # A lição veio do editor de raças, onde custou quatro bugs mudos: sem a base,
+  # o formulário compara contra `{}`, vê divergência em TODO campo e o primeiro
+  # Guardar congela a classe numa cópia que deixa de acompanhar o catálogo. E
+  # mandar a base JÁ SOBREPOSTA é pior: o que o mestre gravou pareceria igual à
+  # base, não seria reemitido, e sumia no save seguinte.
+  def serializa(k)
+    k.as_json.merge(
+      'rules' => (k.read_attribute(:rules) || {}),
+      'rules_base' => (ClassRules.find_from_rules_constant(k.api_index) || {})
+    )
   end
 
   def create
