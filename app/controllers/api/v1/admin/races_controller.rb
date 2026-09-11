@@ -33,7 +33,10 @@ class Api::V1::Admin::RacesController < ApplicationController
     @race.rules_json = regras unless regras == :ausente
 
     if @race.save
-      render json: @race, status: :created
+      # 🐞 antes devolvia o objeto CRU: o cliente lia `data.race` e recebia
+      # `undefined` — quem cria raça E sub-raça no mesmo gesto não tinha o
+      # `race_id` para pendurar as sub-raças.
+      render json: { race: serializa(@race) }, status: :created
     else
       render json: { errors: @race.errors.full_messages }, status: :unprocessable_entity
     end
@@ -92,10 +95,13 @@ class Api::V1::Admin::RacesController < ApplicationController
     [:ausente, []]
   end
 
+  # ⚠️ A sub-raça leva a base CRUA do SEU nó, igual à raça. Sem ela o editor
+  # abriria a sub-raça vazia e o primeiro Guardar gravaria um overlay que apaga
+  # o que o livro dizia — e a sub-raça é onde mora quase toda a mecânica que
+  # distingue um Anão da Colina de um das Montanhas.
   def carrega_sub_racas
     @sub_races_json = SubRace.where(race_id: @race.id).order(:name).map do |sr|
-      sr.as_json(only: %i[id name api_index playable race_id])
-        .merge('rules_json' => (sr.rules_json || {}))
+      Api::V1::Admin::SubRacesController.serializa(sr, @race.api_index)
     end
   end
 

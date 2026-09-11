@@ -8,7 +8,19 @@ class Api::V1::Admin::SubRacesController < ApplicationController
   end
 
   def show
-    render json: {sub_race: @sub_race}, status: 200
+    render json: { sub_race: self.class.serializa(@sub_race) }, status: 200
+  end
+
+  # ⚠️ `rules_json` E `rules_base` na leitura. O primeiro é o que o mestre
+  # gravou; o segundo é o nó CRU do YAML, contra o qual o editor decide o que
+  # DIVERGE. Sem o segundo, `serializar` vê divergência em todo campo e congela
+  # a sub-raça numa cópia que deixa de acompanhar o catálogo.
+  def self.serializa(sr, api_index_da_raca = nil)
+    slug = api_index_da_raca || sr.race&.api_index
+    sr.as_json(only: %i[id name api_index playable race_id]).merge(
+      'rules_json' => (sr.rules_json || {}),
+      'rules_base' => (RaceRules.base_do_yaml(slug, sr.api_index) || {})
+    )
   end
 
   def create
@@ -19,7 +31,7 @@ class Api::V1::Admin::SubRacesController < ApplicationController
     @sub_race.rules_json = regras unless regras == :ausente
 
     if @sub_race.save
-      render json: @sub_race, status: :created
+      render json: { sub_race: self.class.serializa(@sub_race) }, status: :created
     else
       render json: { errors: @sub_race.errors.full_messages }, status: :unprocessable_entity
     end
@@ -35,7 +47,7 @@ class Api::V1::Admin::SubRacesController < ApplicationController
     atributos[:rules_json] = regras unless regras == :ausente
 
     if @sub_race.update(atributos)
-      render json: {sub_race: @sub_race}, status: 200
+      render json: { sub_race: self.class.serializa(@sub_race) }, status: 200
     else
       render json: { errors: @sub_race.errors.full_messages }, status: :unprocessable_entity
     end
@@ -43,9 +55,21 @@ class Api::V1::Admin::SubRacesController < ApplicationController
       render json: { error: e.message }, status: :unprocessable_entity   
   end
 
+  # ⚠️ Há FK de `sheets` para `sub_races`: apagar uma sub-raça em uso levantava
+  # `InvalidForeignKey` e o `rescue` devolvia a mensagem crua do Postgres com
+  # 404 — o mestre lia "não encontrado" para algo que existe e está em uso.
+  # Agora recusa antes, dizendo quantas fichas dependem dela.
   def destroy
+    em_uso = Sheet.where(sub_race_id: @sub_race.id).count
+    if em_uso.positive?
+      return render(
+        json: { errors: ["#{@sub_race.name} está em uso por #{em_uso} ficha(s) e não pode ser removida."] },
+        status: :unprocessable_entity
+      )
+    end
+
     @sub_race.destroy
-    render json: {message: "Deletado com sucesso"}, status: 200
+    render json: { message: 'Deletado com sucesso' }, status: 200
   rescue StandardError => e
     render json: { error: e.message }, status: :not_found
   end

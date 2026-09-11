@@ -76,6 +76,15 @@ RSpec.describe 'Api::V1::Admin::Races — rules_json', type: :request do
       expect(RaceRules.trait_definitions[chaves.first.to_sym]).to be_present
     end
 
+    it 'a resposta do create vem no envelope `race`, com id', :aggregate_failures do
+      # 🐞 antes devolvia o objeto CRU: quem cria raça E sub-raça no mesmo
+      # gesto lia `data.race` e recebia `undefined` — ficava sem o `race_id`.
+      cria({ name: 'Golem de Argila', api_index: 'golem-argila', rules_json: regras_validas })
+      expect(corpo['race']).to be_present
+      expect(corpo.dig('race', 'id')).to be_present
+      expect(corpo.dig('race', 'rules_json', 'speed')).to eq(25)
+    end
+
     it 'a leitura devolve o `rules_json` — senão o editor abre vazio' do
       cria({ name: 'Golem de Argila', api_index: 'golem-argila', rules_json: regras_validas })
       r = Race.find_by(api_index: 'golem-argila')
