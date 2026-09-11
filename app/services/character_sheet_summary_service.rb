@@ -1486,13 +1486,42 @@ class CharacterSheetSummaryService
     main_hand_weapon && off_hand_weapon
   end
 
+  # A lista branca existe para um snapshot velho não mostrar traço de uma raça
+  # que o personagem já não é.
+  #
+  # ⚠️ Só as linhas `race_traits` não bastam: um traço PRÓPRIO criado no editor
+  # de raças vive em `rules_json` e não tem linha nenhuma na tabela. A ficha
+  # passava a ter a resistência dele em combate (o `RaceProducer` lê a regra ao
+  # vivo) e a lista de traços não mencionava porquê — a ficha contradizia-se.
+  # Por isso a lista branca é a UNIÃO: as linhas mais o que a regra canônica
+  # concede.
   def allowed_trait_names_for_sheet(sheet)
     allowed = Set.new
     (sheet.race&.base_traits&.to_a || []).each { |tr| allowed.add(tr.name.to_s.downcase.strip) }
     if sheet.sub_race_id.present?
       (sheet.sub_race&.traits&.to_a || []).each { |tr| allowed.add(tr.name.to_s.downcase.strip) }
     end
+    allowed.merge(rule_trait_names_for_sheet(sheet))
     allowed
+  end
+
+  # Nomes dos traços que `RaceRules.apply` concede a esta raça/sub-raça.
+  # Silencioso por desenho: sem regra (raça só no banco, YAML indisponível) a
+  # lista branca volta a ser só a das linhas, que é o comportamento de antes.
+  def rule_trait_names_for_sheet(sheet)
+    slug = sheet.race&.api_index
+    return [] if slug.blank?
+
+    regra = RaceRules.apply(race_id: slug, subrace_id: sheet.sub_race&.api_index, choices: {})
+    defs = RaceRules.trait_definitions || {}
+    Array(regra[:traits]).filter_map do |ref|
+      chave = (ref.is_a?(Hash) ? ref[:key] : ref).to_s
+      d = defs[chave.to_sym] || defs[chave]
+      (d && (d[:name] || d['name']).to_s.downcase.strip).presence
+    end
+  rescue StandardError => e
+    Rails.logger.warn("allowed_trait_names_for_sheet: #{e.class}: #{e.message}") if defined?(Rails.logger)
+    []
   end
 
   def build_traits(sheet)

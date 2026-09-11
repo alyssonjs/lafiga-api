@@ -52,7 +52,10 @@ class Api::V1::Admin::RacesController < ApplicationController
     atributos[:rules_json] = regras unless regras == :ausente
 
     if @race.update(atributos)
-      render json: {race: @race}, status: 200 
+      # ⚠️ `serializa` e não o registo cru: sem `rules_json`/`rules_base` na
+      # resposta, o editor recarregaria com a base errada.
+      repostas = @race.saved_change_to_rules_json? ? repoe_fichas(@race.id) : nil
+      render json: { race: serializa(@race), sheets_resynced: repostas }, status: 200
     else
       render json: { errors: @race.errors.full_messages }, status: :unprocessable_entity
     end
@@ -118,5 +121,19 @@ class Api::V1::Admin::RacesController < ApplicationController
       Api::V1::Admin::SubRacesController.serializa(sr, @race.api_index)
     end
   end
-
+  # ⚠️ FASE 4 — a mecânica propaga ao vivo (`RaceProducer` lê `RaceRules.apply`
+  # a cada summary), mas a VITRINE fica presa no `race_summary` materializado
+  # no provisionamento. Sem isto o personagem passa a resistir a contundente e
+  # a lista de traços da ficha não menciona porquê: a ficha contradiz-se.
+  #
+  # Inline de propósito — é a ficha do jogador a refletir o que o mestre acabou
+  # de gravar, e o escopo é pequeno (as fichas de UMA raça). Falhar aqui NÃO
+  # derruba o save: a raça já está gravada. Mas a contagem vai na RESPOSTA em
+  # vez de o erro ser engolido, e `dnd:resync_race_summaries` repõe à mão.
+  def repoe_fichas(race_id)
+    Races::ResyncSummaries.call(race_id: race_id).mudadas
+  rescue StandardError => e
+    Rails.logger.warn("resync de race_summary falhou: #{e.class}: #{e.message}")
+    nil
+  end
 end
