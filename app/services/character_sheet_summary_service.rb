@@ -1817,21 +1817,10 @@ class CharacterSheetSummaryService
     end
 
     # Rage (Bárbaro) — PHB pg. 49
-    if api_idx.include?('barbar')
-      total = case
-              when level >= 20 then 999 # ilimitada
-              when level >= 17 then 6
-              when level >= 12 then 5
-              when level >= 6  then 4
-              when level >= 3  then 3
-              else 2
-              end
-      damage = case
-               when level >= 16 then 4
-               when level >= 9  then 3
-               else 2
-               end
-      out[:rage] = { total: total, used: [used_for.call('rage'), total].min, damage_bonus: damage }
+    if (escada = ClassRules.escada_de_recurso(klass.api_index, :rage, level))
+      total = escada[:total]
+      out[:rage] = { total: total, used: [used_for.call('rage'), total].min,
+                     damage_bonus: escada[:damage_bonus] }
     end
 
     # Ki (Monge) — PHB pg. 78: 0@1, começa no nv 2 (total = nível de monge)
@@ -1841,31 +1830,24 @@ class CharacterSheetSummaryService
     end
 
     # Wild Shape (Druida) — usos por descanso curto: 2 (3 desde nv 20)
-    if api_idx.include?('druid')
-      total = level >= 20 ? 999 : 2
+    if (escada = ClassRules.escada_de_recurso(klass.api_index, :wild_shape, level))
+      total = escada[:total]
       out[:wild_shape] = { total: total, used: [used_for.call('wild_shape'), total].min }
     end
 
     # Channel Divinity (Clérigo/Paladino)
-    if api_idx.include?('cleric') || api_idx == 'clerigo' || api_idx.include?('paladin')
-      total = case
-              when level >= 18 then 3
-              when level >= 6  then 2
-              else 1
-              end
+    if (escada = ClassRules.escada_de_recurso(klass.api_index, :channel_divinity, level))
+      total = escada[:total]
       out[:channel_divinity] = { total: total, used: [used_for.call('channel_divinity'), total].min }
     end
 
     # Action Surge + Second Wind + Indomitable (Guerreiro)
-    if api_idx.include?('fighter') || api_idx == 'guerreiro'
-      total = level >= 17 ? 2 : 1
-      out[:action_surge] = { total: total, used: [used_for.call('action_surge'), total].min }
-      out[:second_wind]  = { total: 1, used: [used_for.call('second_wind'), 1].min }
+    %i[action_surge second_wind indomitable].each do |chave|
+      escada = ClassRules.escada_de_recurso(klass.api_index, chave, level)
+      next if escada.nil?
 
-      if level >= 9
-        ind_total = level >= 17 ? 3 : (level >= 13 ? 2 : 1)
-        out[:indomitable] = { total: ind_total, used: [used_for.call('indomitable'), ind_total].min }
-      end
+      total = escada[:total]
+      out[chave] = { total: total, used: [used_for.call(chave.to_s), total].min }
     end
 
     # Divine Sense + Lay on Hands (Paladino)
