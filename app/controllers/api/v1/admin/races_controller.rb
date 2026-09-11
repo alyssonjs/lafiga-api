@@ -16,7 +16,13 @@ class Api::V1::Admin::RacesController < ApplicationController
   # ⚠️ `rules_json` TEM de sair na leitura: sem ele o editor abre vazio e o
   # primeiro Guardar apaga o que o mestre já tinha configurado.
   def serializa(r)
-    r.as_json(only: %i[id name api_index playable]).merge('rules_json' => (r.rules_json || {}))
+    r.as_json(only: %i[id name api_index playable]).merge(
+      'rules_json' => (r.rules_json || {}),
+      # ⚠️ A base CRUA do YAML vai junto: é o que o editor compara para saber o
+      # que o mestre TOCOU. Sem ela o formulário abriria vazio para as 13 do
+      # livro e o primeiro save gravaria um overlay que apaga o catálogo.
+      'rules_base' => (RaceRules.base_do_yaml(r.api_index) || {})
+    )
   end
 
   def create

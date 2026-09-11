@@ -15,6 +15,21 @@ class RaceRules
     bundle[:trait_definitions]
   end
 
+  # ⚠️ O nó do YAML SEM o overlay. É contra ISTO que o editor decide o que
+  # DIVERGE: se a base já viesse sobreposta, o que o mestre gravou pareceria
+  # igual à base, `serializar` não o emitiria e o overlay DESAPARECIA no save
+  # seguinte — ele mudava a descrição e perdia o deslocamento que tinha posto.
+  def self.base_do_yaml(api_index, sub_index = nil)
+    return nil if api_index.blank?
+
+    racas = Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_TTL) { load_rules }[:races]
+    raca = racas[api_index.to_s.to_sym] || racas[api_index.to_s]
+    return raca if sub_index.blank? || raca.nil?
+
+    subs = raca[:subraces] || {}
+    subs[sub_index.to_s.to_sym] || subs[sub_index.to_s]
+  end
+
   def self.reload!
     Rails.cache.delete(CACHE_KEY)
     Rails.cache.delete(OVERLAY_CACHE_KEY)

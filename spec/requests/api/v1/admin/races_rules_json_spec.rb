@@ -20,8 +20,9 @@ RSpec.describe 'Api::V1::Admin::Races — rules_json', type: :request do
   let(:regras_validas) do
     {
       'size' => 'Médio',
-      'speed' => '9m',
-      'darkvision' => 18,
+      # Formas MEDIDAS no YAML: `speed` inteiro em pés, `darkvision` `{range:}`.
+      'speed' => 25,
+      'darkvision' => { 'range' => 60 },
       'ability' => { 'type' => 'fixed', 'increases' => [{ 'ability' => 'FOR', 'amount' => 2 }] },
       'languages' => { 'always' => ['Comum'], 'choiceCount' => 1 },
       'traits' => [{ 'key' => 'garra_de_pedra' }],
@@ -41,7 +42,7 @@ RSpec.describe 'Api::V1::Admin::Races — rules_json', type: :request do
 
       expect(response).to have_http_status(:created)
       r = Race.find_by(api_index: 'golem-argila')
-      expect(r.rules_json['speed']).to eq('9m')
+      expect(r.rules_json['speed']).to eq(25)
       expect(r.rules_json.dig('ability', 'increases', 0, 'ability')).to eq('FOR')
     end
 
@@ -54,7 +55,7 @@ RSpec.describe 'Api::V1::Admin::Races — rules_json', type: :request do
       expect {
         resultado = RaceRules.apply(race_id: 'golem-argila', subrace_id: nil, choices: {})
       }.not_to raise_error
-      expect(resultado[:speed]).to eq('9m')
+      expect(resultado[:speed]).to eq(25)
     end
 
     it '⚠️ o traço PRÓPRIO entra no catálogo e o ref RESOLVE', :aggregate_failures do
@@ -80,7 +81,118 @@ RSpec.describe 'Api::V1::Admin::Races — rules_json', type: :request do
       r = Race.find_by(api_index: 'golem-argila')
 
       get "/api/v1/admin/races/#{r.id}", headers: headers
-      expect(corpo.dig('race', 'rules_json', 'speed')).to eq('9m')
+      expect(corpo.dig('race', 'rules_json', 'speed')).to eq(25)
+    end
+  end
+
+  # 🐞 `proficiencies` tem TRÊS formas no YAML e a primeira versão do
+  # sanitizador só conhecia uma: coagia todo Hash para `{choiceCount, choices}`
+  # e atirava fora o `fixed`. O Elfo perderia Percepção no primeiro save que
+  # tocasse em proficiências — sem erro, porque o sanitizador "limpava" em vez
+  # de recusar. E `fixed` é o que o provisioning lê e reescreve ao resolver a
+  # escolha de ferramentas do Anão.
+  describe '⚠️ `proficiencies`: as três formas do YAML sobrevivem' do
+    def grava(profs)
+      cria({ name: 'Golem', api_index: 'golem-prof', rules_json: { 'proficiencies' => profs } })
+      Race.find_by(api_index: 'golem-prof')&.rules_json&.dig('proficiencies')
+    end
+
+    it 'lista simples (weapons/armor)' do
+      expect(grava({ 'weapons' => ['machadinha', ' martelo leve '] }))
+        .to eq({ 'weapons' => ['machadinha', 'martelo leve'] })
+    end
+
+    it '⚠️ `fixed` (a forma DOMINANTE — 6 de 7 em skills)' do
+      expect(grava({ 'skills' => { 'fixed' => ['Percepção'] } }))
+        .to eq({ 'skills' => { 'fixed' => ['Percepção'] } })
+    end
+
+    it 'escolha (`choiceCount` + `choices`)' do
+      expect(grava({ 'tools' => { 'choiceCount' => 1, 'choices' => ['Ferramentas de ferreiro'] } }))
+        .to eq({ 'tools' => { 'choiceCount' => 1, 'choices' => ['Ferramentas de ferreiro'] } })
+    end
+
+    it 'fixo E escolha convivem', :aggregate_failures do
+      out = grava({ 'tools' => { 'fixed' => ['Kit de herbalismo'], 'choiceCount' => 1, 'choices' => ['Ferramentas de ferreiro'] } })
+      expect(out.dig('tools', 'fixed')).to eq(['Kit de herbalismo'])
+      expect(out.dig('tools', 'choiceCount')).to eq(1)
+    end
+
+    it 'categoria desconhecida é RECUSADA, não engolida', :aggregate_failures do
+      cria({ name: 'Golem', api_index: 'golem-prof2', rules_json: { 'proficiencies' => { 'pericias' => ['x'] } } })
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(corpo['errors'].join(' ')).to include('pericias')
+    end
+  end
+
+  # 🐞 O editor precisa da base CRUA do YAML para saber o que o mestre TOCOU.
+  # Duas maneiras de errar, as duas silenciosas:
+  #   · não mandar base → `serializar` vê divergência em TODO campo e congela a
+  #     raça numa cópia que deixa de acompanhar o catálogo;
+  #   · mandar a base JÁ SOBREPOSTA → o que o mestre gravou parece igual à base,
+  #     não é reemitido, e DESAPARECE no save seguinte.
+  describe '⚠️ `rules_base`: a base crua do YAML viaja com a raça' do
+    let(:anao) { Race.find_by(api_index: 'dwarf') || Race.create!(name: 'Anão', api_index: 'dwarf') }
+
+    it 'vem preenchida para uma raça do livro', :aggregate_failures do
+      get "/api/v1/admin/races/#{anao.id}", headers: headers
+
+      base = corpo.dig('race', 'rules_base')
+      expect(base).to be_present
+      expect(base['speed']).to eq(25)
+      expect(base.dig('darkvision', 'range')).to eq(60)
+    end
+
+    it '⚠️ NÃO traz o overlay — é a base, não o resultado', :aggregate_failures do
+      anao.update!(rules_json: { 'speed' => 40 })
+      RaceRules.reload!
+
+      get "/api/v1/admin/races/#{anao.id}", headers: headers
+      expect(corpo.dig('race', 'rules_base', 'speed')).to eq(25)
+      expect(corpo.dig('race', 'rules_json', 'speed')).to eq(40)
+    ensure
+      anao.update_columns(rules_json: {})
+      RaceRules.reload!
+    end
+
+    it 'raça sem nó no YAML devolve base vazia, não erro' do
+      cria({ name: 'Golem', api_index: 'golem-sem-yaml', rules_json: { 'speed' => 30 } })
+      r = Race.find_by(api_index: 'golem-sem-yaml')
+
+      get "/api/v1/admin/races/#{r.id}", headers: headers
+      expect(corpo.dig('race', 'rules_base')).to eq({})
+    end
+  end
+
+  # ⚠️ As formas foram MEDIDAS no YAML: `speed` é inteiro em pés (14/14),
+  # `darkvision` é `{range: N}` (8/8), `requires` é lista. Gravar outra forma
+  # não levanta erro — faz a ficha ler errado, em silêncio.
+  describe '⚠️ as formas do YAML são respeitadas ao gravar' do
+    def grava(regras)
+      cria({ name: 'Golem', api_index: 'golem-forma', rules_json: regras })
+      Race.find_by(api_index: 'golem-forma')&.rules_json
+    end
+
+    it '`speed` grava INTEIRO em pés' do
+      expect(grava({ 'speed' => '30' })['speed']).to eq(30)
+    end
+
+    it '`speed` com unidade é RECUSADO, não convertido à toa', :aggregate_failures do
+      cria({ name: 'Golem', api_index: 'golem-forma2', rules_json: { 'speed' => '9m' } })
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(corpo['errors'].join(' ')).to include('pés')
+    end
+
+    it '`darkvision` grava `{range: N}` mesmo recebendo número solto' do
+      expect(grava({ 'darkvision' => 60 })['darkvision']).to eq({ 'range' => 60 })
+    end
+
+    it '`darkvision` aceita a forma do YAML de volta' do
+      expect(grava({ 'darkvision' => { 'range' => 120 } })['darkvision']).to eq({ 'range' => 120 })
+    end
+
+    it '`requires` grava LISTA — antes virava a string do array' do
+      expect(grava({ 'requires' => ['dwarfTool'] })['requires']).to eq(['dwarfTool'])
     end
   end
 

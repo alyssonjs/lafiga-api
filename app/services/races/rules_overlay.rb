@@ -25,6 +25,10 @@ module Races
       defenses advantages movement spells natural_weapon uses dc hp_per_level
     ].freeze
 
+    # Medido no YAML: só estas quatro existem. `languages` entra porque o
+    # summary lê `proficiencies[:languages]` ao montar a ficha.
+    CATEGORIAS_DE_PROFICIENCIA = %w[skills tools weapons armor languages].freeze
+
     TIPOS_DE_ABILITY = %w[fixed halfElf variantHuman].freeze
     ATRIBUTOS = %w[FOR DES CON INT SAB CAR STR DEX WIS CHA].freeze
 
@@ -58,11 +62,26 @@ module Races
 
     def limpa_chave(chave, valor)
       case chave
-      when 'name', 'description', 'size', 'speed', 'requires'
+      when 'name', 'description', 'size'
         [valor.to_s.strip.presence, []]
-      when 'darkvision'
+      # ⚠️ MEDIDO no YAML: `speed` é INTEIRO em PÉS nas 14 ocorrências, nenhuma
+      # string. Gravar "9m" onde o resto do sistema lê um número não levanta
+      # erro — só faz o deslocamento sair errado na ficha, em silêncio.
+      when 'speed'
         n = valor.to_s.strip
-        n.empty? ? [nil, []] : [n.to_i, (n.to_i.negative? ? ["darkvision inválida: #{valor}"] : [])]
+        return [nil, []] if n.empty?
+        return [nil, ["speed tem de ser um número em pés: #{valor}"]] unless n.match?(/\A\d+\z/)
+
+        [n.to_i, []]
+      # ⚠️ MEDIDO: `darkvision` é `{range: N}` nas 8 ocorrências, nunca um int
+      # solto. Aceita número na entrada (é o que o formulário manda), mas GRAVA
+      # a forma do YAML.
+      when 'darkvision'
+        limpa_darkvision(valor)
+      # ⚠️ MEDIDO: `requires` é uma LISTA (`["dwarfTool"]`). A versão anterior
+      # gravava a string "[\"dwarfTool\"]".
+      when 'requires'
+        [lista_de_textos(valor.is_a?(Array) ? valor : [valor]), []]
       when 'ability'      then limpa_ability(valor)
       when 'languages'    then limpa_languages(valor)
       when 'proficiencies' then limpa_proficiencies(valor)
@@ -70,6 +89,15 @@ module Races
       when 'custom_traits' then limpa_custom_traits(valor)
       else [nil, []]
       end
+    end
+
+    def limpa_darkvision(valor)
+      bruto = valor.is_a?(Hash) ? (valor.stringify_keys['range']) : valor
+      n = bruto.to_s.strip
+      return [nil, []] if n.empty?
+      return [nil, ["darkvision tem de ser um número em pés: #{valor}"]] unless n.match?(/\A\d+\z/)
+
+      [{ 'range' => n.to_i }, []]
     end
 
     def limpa_ability(valor)
@@ -116,22 +144,44 @@ module Races
       [out, []]
     end
 
+    # Formas MEDIDAS no YAML (13 raças + sub-raças):
+    #   `weapons` / `armor` → lista simples
+    #   `skills` / `tools`  → `{fixed: [...]}` OU `{choiceCount: N, choices: [...]}`
+    #
+    # 🐞 A primeira versão coagia TODO Hash para `{choiceCount, choices}` e
+    # atirava fora o `fixed` — que é a forma dominante (6 de 7 em `skills`) e
+    # é o que o provisioning lê e reescreve ao resolver a escolha de
+    # ferramentas do Anão. O Elfo perderia Percepção no primeiro save que
+    # tocasse em proficiências, sem erro nenhum.
     def limpa_proficiencies(valor)
       return [nil, ['proficiencies tem de ser um objeto']] unless valor.is_a?(Hash)
 
+      bruto = valor.stringify_keys
+      fora = bruto.keys - CATEGORIAS_DE_PROFICIENCIA
+      return [nil, ["categorias de proficiência desconhecidas: #{fora.join(', ')}"]] if fora.any?
+
       out = {}
-      valor.stringify_keys.each do |tipo, corpo|
-        out[tipo] = if corpo.is_a?(Hash)
-                      c = corpo.stringify_keys
-                      {
-                        'choiceCount' => c['choiceCount'].to_i,
-                        'choices' => Array(c['choices']).map { |v| v.to_s.strip }.reject(&:empty?)
-                      }
-                    else
-                      Array(corpo).map { |v| v.to_s.strip }.reject(&:empty?)
-                    end
+      bruto.each do |tipo, corpo|
+        out[tipo] = corpo.is_a?(Hash) ? limpa_bloco_de_proficiencia(corpo) : lista_de_textos(corpo)
       end
       [out, []]
+    end
+
+    # ⚠️ `fixed` e a escolha CONVIVEM: o Anão tem ferramentas por escolha, o
+    # Elfo tem perícia fixa, e nada impede uma raça caseira de ter as duas.
+    def limpa_bloco_de_proficiencia(corpo)
+      c = corpo.stringify_keys
+      bloco = {}
+      bloco['fixed'] = lista_de_textos(c['fixed']) if c.key?('fixed')
+      if c.key?('choiceCount') || c.key?('choices')
+        bloco['choiceCount'] = c['choiceCount'].to_i
+        bloco['choices'] = lista_de_textos(c['choices'])
+      end
+      bloco
+    end
+
+    def lista_de_textos(valor)
+      Array(valor).map { |v| v.to_s.strip }.reject(&:empty?)
     end
 
     # ⚠️ Trait é REFERÊNCIA por chave, mais campos extras que o traço usa para
