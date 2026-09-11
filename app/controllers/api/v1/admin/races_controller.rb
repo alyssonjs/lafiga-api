@@ -60,10 +60,24 @@ class Api::V1::Admin::RacesController < ApplicationController
       render json: { error: e.message }, status: :unprocessable_entity   
   end
 
+  # ⚠️ Há FK de `sheets` para `races` E para `sub_races`, e `Race` tem
+  # `has_many :sub_races, dependent: :destroy` — apagar uma raça CASCATEIA para
+  # as sub-raças dela, e a cascata rebentava a meio numa ficha que apontava
+  # para uma delas. O `rescue` devolvia a mensagem crua do Postgres com 404: o
+  # mestre lia "não encontrado" para algo que existe E está em uso.
   def destroy
+    fichas = Sheet.where(race_id: @race.id).count +
+             Sheet.where(sub_race_id: SubRace.where(race_id: @race.id).select(:id)).count
+    if fichas.positive?
+      return render(
+        json: { errors: ["#{@race.name} está em uso por #{fichas} ficha(s) e não pode ser removida."] },
+        status: :unprocessable_entity
+      )
+    end
+
     @race.destroy
-    render json: {message: "Deletado com sucesso"}, status: 200
-  rescue StandardError=> e
+    render json: { message: 'Deletado com sucesso' }, status: 200
+  rescue StandardError => e
     render json: { error: e.message }, status: :not_found
   end
 

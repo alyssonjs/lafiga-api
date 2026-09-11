@@ -267,4 +267,49 @@ RSpec.describe 'Api::V1::Admin::Races — rules_json', type: :request do
       expect(response).to have_http_status(:forbidden)
     end
   end
+
+  # 🐞 A listagem tinha um botão "Remover Raça" que só fazia `setState`: a raça
+  # sumia da tela e voltava no F5. Ao passar a chamar a API de verdade, a
+  # cascata (`has_many :sub_races, dependent: :destroy`) rebentava numa ficha
+  # que apontasse para uma sub-raça — e o `rescue` devolvia 404 com a mensagem
+  # crua do Postgres.
+  describe '⚠️ apagar raça em uso' do
+    let!(:raca) { Race.create!(name: 'Descartável', api_index: 'descartavel') }
+
+    it 'é RECUSADO quando uma ficha aponta para a RAÇA', :aggregate_failures do
+      Sheet.create!(character: create(:character), race_id: raca.id)
+
+      delete "/api/v1/admin/races/#{raca.id}", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(corpo['errors'].join(' ')).to include('em uso por 1 ficha')
+      expect(Race.exists?(raca.id)).to be(true)
+    end
+
+    # ⚠️ `sheets.race_id` é NOT NULL e o model valida que a sub-raça pertence à
+    # raça — pelo caminho normal, quem usa a sub usa a raça, e a primeira
+    # contagem já bastaria. A segunda existe para a linha ESCRITA À VOLTA do
+    # model (migração antiga, `update_columns`, SQL direto), que é como este
+    # par incoerente chega a existir de facto. A cascata
+    # (`dependent: :destroy`) apagaria a sub-raça e rebentava aí, com a
+    # transação já a meio.
+    it '⚠️ e também quando só uma linha legada aponta para a SUB-raça', :aggregate_failures do
+      outra = Race.create!(name: 'Outra', api_index: 'outra-raca')
+      sub = SubRace.create!(name: 'Sub', api_index: 'sub-desc', race_id: raca.id)
+      ficha = Sheet.create!(character: create(:character), race_id: outra.id)
+      ficha.update_columns(sub_race_id: sub.id)
+
+      delete "/api/v1/admin/races/#{raca.id}", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(corpo['errors'].join(' ')).to include('em uso por 1 ficha')
+      expect(SubRace.exists?(sub.id)).to be(true)
+    end
+
+    it 'passa quando ninguém depende dela', :aggregate_failures do
+      delete "/api/v1/admin/races/#{raca.id}", headers: headers
+      expect(response).to have_http_status(:ok)
+      expect(Race.exists?(raca.id)).to be(false)
+    end
+  end
 end
