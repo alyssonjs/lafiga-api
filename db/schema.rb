@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_11_100000) do
+ActiveRecord::Schema.define(version: 2026_09_11_140000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -676,6 +676,7 @@ ActiveRecord::Schema.define(version: 2026_09_11_100000) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "api_index"
     t.boolean "playable", default: true, null: false
+    t.jsonb "rules_json", default: {}, null: false
     t.index ["api_index"], name: "index_races_on_api_index", unique: true
     t.index ["playable"], name: "index_races_on_playable"
   end
@@ -1001,6 +1002,7 @@ ActiveRecord::Schema.define(version: 2026_09_11_100000) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "api_index"
     t.boolean "playable", default: true, null: false
+    t.jsonb "rules_json", default: {}, null: false
     t.index ["playable"], name: "index_sub_races_on_playable"
     t.index ["race_id", "api_index"], name: "index_sub_races_on_race_id_and_api_index", unique: true
     t.index ["race_id"], name: "index_sub_races_on_race_id"
