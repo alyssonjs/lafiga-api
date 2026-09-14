@@ -325,13 +325,16 @@ class EquipmentRules
 
       if shield_item
         shield_bonus = 2
-        if shield_item.respond_to?(:item) && shield_item.item&.shield?
-          shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(shield_item.item)
-        elsif defined?(Item)
-          sk = normalize_index(shield_item)
-          si = Item.find_by(api_index: sk)
-          shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(si) if si&.shield?
-        end
+        db_shield = if shield_item.respond_to?(:item) && shield_item.item&.shield?
+                      shield_item.item
+                    elsif defined?(Item)
+                      cand = Item.find_by(api_index: normalize_index(shield_item))
+                      cand if cand&.shield?
+                    end
+        shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(db_shield) if db_shield
+        # Escudo também pode impor desvantagem em Furtividade (o "Escudo Grande"
+        # da mesa, 14/09). Soma com a da armadura: basta um dos dois.
+        stealth_disadvantage ||= ItemArmorPropsMapper.shield_stealth_dis_from_item(db_shield) if db_shield
         ac += shield_bonus
         source = "#{source} + Escudo"
       end

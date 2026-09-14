@@ -45,6 +45,14 @@ class ItemArmorPropsMapper
       b.present? ? b.to_i : 2
     end
 
+    # Escudo com desvantagem em Furtividade declarada pelo mestre (14/09): o
+    # "Escudo Grande" da mesa. O escudo do PHB não tem — ausente = false.
+    def shield_stealth_dis_from_item(db_item)
+      return false unless db_item.respond_to?(:shield?) && db_item.shield?
+
+      truthy?((db_item.props || {}).stringify_keys['stealth_dis'])
+    end
+
     private
 
     def truthy?(v)
