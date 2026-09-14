@@ -65,7 +65,12 @@ module GroupCarts
   # era falso: `items.weight_kg` guarda kg do PHB pt-BR.)
   def item_weight_lb(sheet_item)
     bruto = (sheet_item.props_json || {})['weight_lb']
-    return bruto.to_f unless bruto.nil?
+    # ⚠️ O CONTEÚDO de um recipiente de líquido pesa junto (1 kg/L). Sem somar
+    # aqui, o barril com 100 L entrava na carroça com os 35 kg dele vazio — a
+    # prop gravada é o peso do barril, não da água (achado no teste local, 14/09).
+    unless bruto.nil?
+      return bruto.to_f + (EquipmentRules.liquid_weight_kg(sheet_item) * EquipmentRules::LB_PER_KG)
+    end
 
     EquipmentRules.item_weight_lb(sheet_item).to_f
   rescue NameError

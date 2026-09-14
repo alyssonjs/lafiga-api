@@ -94,6 +94,14 @@ RSpec.describe SheetItem, 'recipiente de líquido' do
       expect(EquipmentProfileService.new(sheet.reload).call[:carry][:total_kg]).to eq((antes + 40.0).round(2))
     end
 
+    it '⚠️ e na CARROÇA, que lê o peso gravado na linha' do
+      b = barril!
+      b.update!(props_json: { 'weight_lb' => 70 })
+      b.transfer_liquid!(40)
+
+      expect(GroupCarts.item_weight_lb(b.reload)).to eq(70.0 + (40 * EquipmentRules::LB_PER_KG))
+    end
+
     it 'o item do catálogo não ganha peso de conteúdo' do
       expect(EquipmentRules.liquid_weight_kg(Item.find_by(api_index: 'barril'))).to eq(0.0)
     end
