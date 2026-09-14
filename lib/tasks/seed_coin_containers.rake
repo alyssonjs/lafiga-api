@@ -27,7 +27,8 @@ namespace :dnd do
 
       if item.nil?
         Item.create!(
-          api_index: idx, name: nome, kind: 'gear', category: 'equipment',
+          # Subcategoria própria (14/09) — ver `dnd:classify_adventuring_gear`.
+          api_index: idx, name: nome, kind: 'gear', category: 'coin-pouch',
           props: { 'coin_capacity' => capacidade, 'cost_cp' => custo },
           weight_kg: peso,
         )
