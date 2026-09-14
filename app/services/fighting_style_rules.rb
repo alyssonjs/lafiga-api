@@ -57,18 +57,21 @@ class FightingStyleRules
     ohp = oh ? EquipmentRules.weapon_props(oh) : nil
     off_is_weapon = EquipmentRules.is_weapon?(oh)
 
+    # ⚠️ O MESMO estilo pode vir gravado duas vezes com nomes diferentes — ficha
+    # real (14/09): "Defesa" no nível 1 e "fs-defense" no 2 somavam +2 de CA.
+    # Cada estilo vale uma vez: os ramos conferem `active_styles` antes de somar.
     style_names.uniq.each do |style_name|
       case style_name.downcase
       when /defesa|defense/
         # +1 AC when wearing any armor
-        if armor
+        if armor && !result[:active_styles].include?('Defesa')
           result[:ac_bonus] = (result[:ac_bonus].to_i + 1)
           result[:active_styles] << 'Defesa'
         end
       when /arquearia|arqueria|archery|tiro\s+com\s+arco|fs[-_]archery/
         # +2 to attack rolls with ranged weapons (main hand)
         # Wizard PT grava "Tiro com Arco" / fs-archery; antes só casava "Arquearia".
-        if mhp && mhp[:type] == 'ranged'
+        if mhp && mhp[:type] == 'ranged' && !result[:active_styles].include?('Arquearia')
           cur = result[:weapon_mods][:main_hand]
           result[:weapon_mods][:main_hand] = cur.merge(attack: (cur[:attack] || 0) + 2)
           result[:active_styles] << 'Arquearia'
@@ -77,14 +80,14 @@ class FightingStyleRules
         # +2 damage with a one‑handed weapon and no other weapon (shield allowed)
         one_handed = mhp && (mhp[:hands].to_i == 1 || mhp[:versatile])
         no_other_weapon = !off_is_weapon
-        if one_handed && no_other_weapon
+        if one_handed && no_other_weapon && !result[:active_styles].include?('Duelos')
           cur = result[:weapon_mods][:main_hand]
           result[:weapon_mods][:main_hand] = cur.merge(damage: (cur[:damage] || 0) + 2)
           result[:active_styles] << 'Duelos'
         end
       when /duas\s*armas|two[- ]weapon/
         # Add ability modifier to off‑hand damage when two‑weapon fighting
-        if off_is_weapon
+        if off_is_weapon && !result[:active_styles].include?('Combate com Duas Armas')
           cur = result[:weapon_mods][:off_hand]
           result[:weapon_mods][:off_hand] = cur.merge(offhand_add_ability: true)
           result[:active_styles] << 'Combate com Duas Armas'
@@ -92,13 +95,13 @@ class FightingStyleRules
       when /grande\s*arma|great\s*weapon/
         # Informational note: re‑roll 1s and 2s on damage dice with two‑handed/versatile used two‑handed
         two_handed = mhp && (mhp[:hands].to_i == 2 || mhp[:versatile])
-        if two_handed
+        if two_handed && !result[:active_styles].include?('Grande Arma')
           result[:notes] << 'Grande Arma: re‑role 1 e 2 no dado de dano.'
           result[:active_styles] << 'Grande Arma'
         end
       when /prote(c|ç)ão|protecao|protection/
         # Protection imposes disadvantage to attacker (requires shield) — informational only
-        if @equipment.dig(:equipped, :shield)
+        if @equipment.dig(:equipped, :shield) && !result[:active_styles].include?('Proteção')
           result[:notes] << 'Proteção: pode impor desvantagem a ataque adjacente (requer escudo).'
           result[:active_styles] << 'Proteção'
         end

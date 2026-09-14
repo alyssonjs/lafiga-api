@@ -30,4 +30,12 @@ RSpec.describe 'Api::V1::Public::Equipment — escudo', type: :request do
     expect(response).to have_http_status(:ok)
     expect(JSON.parse(response.body)['stealth_disadvantage']).to be(false)
   end
+
+  it 'o bônus do escudo sai do mesmo leitor da ficha (editor ou seed)' do
+    escudo!('spec-escudo-seed', 'ac_bonus' => 3)
+
+    get '/api/v1/public/equipment/spec-escudo-seed'
+
+    expect(JSON.parse(response.body).dig('armor_class', 'base')).to eq(3)
+  end
 end

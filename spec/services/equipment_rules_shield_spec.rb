@@ -46,4 +46,31 @@ RSpec.describe 'EquipmentRules.ac_for — escudo do catálogo', :aggregate_failu
       expect(out[:stealth_disadvantage]).to be(true)
     end
   end
+
+  describe 'bônus de CA do escudo' do
+    # Ficha com DES 14 (+2) e sem armadura: 10 + 2 = 12 antes do escudo.
+    def ca_com(idx, props)
+      EquipmentRules.ac_for(sheet: sheet, armor_item: nil, shield_item: na_mao(escudo(idx, props)))[:ac]
+    end
+
+    it '⚠️ o bônus que o EDITOR grava (`ac_base`) vale — o "Escudo Grande" +3' do
+      expect(ca_com('spec-escudo-editor', 'ac_base' => 3)).to eq(15)
+    end
+
+    it 'o do seed do PHB (`ac_bonus`) continua valendo' do
+      expect(ca_com('spec-escudo-seed', 'ac_bonus' => 2)).to eq(14)
+    end
+
+    it 'com as duas chaves, vale a do editor (o mestre digitou por último)' do
+      expect(ca_com('spec-escudo-editado', 'ac_bonus' => 2, 'ac_base' => 3)).to eq(15)
+    end
+
+    it 'sem nenhuma, é o +2 do livro' do
+      expect(ca_com('spec-escudo-cru', {})).to eq(14)
+    end
+
+    it 'a linha da bolsa leva o bônus para a ficha do front' do
+      expect(na_mao(escudo('spec-escudo-linha', 'ac_base' => 3)).as_inventory_json[:shield_ac_bonus]).to eq(3)
+    end
+  end
 end

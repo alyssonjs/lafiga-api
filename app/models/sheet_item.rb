@@ -276,6 +276,9 @@ class SheetItem < ApplicationRecord
       # (`liquid`: nome e litros) já viaja dentro de `props` e pesa no
       # `weight_lb` acima.
       liquid_capacity_l: (liquid_capacity_l if liquid_capacity_l.positive?),
+      # Bônus de CA do ESCUDO do catálogo (+2 no PHB, +3 no "Escudo Grande"). O
+      # front somava +2 fixo; o leitor é o mesmo da conta do servidor.
+      shield_ac_bonus: (ItemArmorPropsMapper.shield_bonus_from_item(item) if item&.shield?),
       # Slots do CINTO (contagem, do catálogo). O ponteiro (`belt_sheet_item_id`)
       # também já viaja dentro de `props`.
       belt_slot_props: belt_slot_props,
