@@ -151,7 +151,24 @@ class EquipmentRules
       kg.nil? ? nil : (kg.to_f * LB_PER_KG).round(2)
     end
 
+    # Peso de UMA unidade. O líquido guardado pesa junto (14/09, decisão do
+    # mestre: 1 kg por litro) — o Barril de 160 L de água vai de 35 kg a 195.
     def item_weight_kg(item)
+      empty_item_weight_kg(item) + liquid_weight_kg(item)
+    end
+
+    # Litros guardados × 1 kg. Só a LINHA da ficha tem conteúdo; o item do
+    # catálogo pesa zero aqui.
+    def liquid_weight_kg(item)
+      return 0.0 unless item.respond_to?(:props_json)
+
+      h = (item.props_json || {})[SheetItem::LIQUID_PROP]
+      h.is_a?(Hash) ? [h['amount_l'].to_f, 0.0].max * SheetItem::LIQUID_KG_PER_L : 0.0
+    rescue StandardError
+      0.0
+    end
+
+    def empty_item_weight_kg(item)
       # Preferir coluna do banco quando existir
       if item.respond_to?(:weight_kg) && !item.weight_kg.nil?
         return item.weight_kg.to_f

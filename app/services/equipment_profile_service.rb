@@ -193,7 +193,12 @@ class EquipmentProfileService
     lb.to_f / EquipmentRules::LB_PER_KG
   end
 
+  # O líquido guardado pesa junto (1 kg/L) — a mesma conta de EquipmentRules.
   def weight_kg(it)
+    base_weight_kg(it) + EquipmentRules.liquid_weight_kg(it)
+  end
+
+  def base_weight_kg(it)
     p = (it.props_json || {})
     return p['weight_kg'].to_f if p.key?('weight_kg')
     if p.key?('weight_lb')

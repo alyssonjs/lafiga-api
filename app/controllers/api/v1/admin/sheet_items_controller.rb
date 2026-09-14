@@ -3,7 +3,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
   # literal e dava 401 em prod para contas "Mestre" da plataforma.
   before_action :authorize_site_wide_dm
-  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book]
+  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book, :transfer_liquid]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID
   def index
@@ -104,6 +104,20 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   #
   # Mesma regra do jogador (exclusividade, ficha travada). O mestre corrigir o
   # vinculo na mesa e caso real — a mesma razao do attune do DM existir.
+  # POST /api/v1/admin/sheet_items/:id/transfer_liquid  { amount_l, name? }
+  #
+  # Guarda (amount_l > 0) ou tira (< 0) LÍQUIDO de um recipiente — o Barril que
+  # a mesa usa para a água da viagem. Espelho do endpoint do jogador — o Mestre
+  # ajusta o barril da ficha que estiver a editar. Teto, saldo e "um líquido por
+  # recipiente" são do servidor (`SheetItem#transfer_liquid!`).
+  def transfer_liquid
+    @item.transfer_liquid!(params[:amount_l], name: params[:name])
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
+  rescue ArgumentError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
   # POST /api/v1/admin/sheet_items/:id/write_book  { content }
   # Espelho do endpoint do jogador — o Mestre escreve no livro da ficha que
   # estiver a editar. `merge`, nunca substituição do `props_json`.
