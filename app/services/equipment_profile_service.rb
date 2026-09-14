@@ -152,7 +152,7 @@ class EquipmentProfileService
   private
 
   def as_json(it)
-    {
+    linha = {
       id: it.id,
       index: it.item_index,
       name: it.item_name,
@@ -164,6 +164,14 @@ class EquipmentProfileService
       props: it.props_json,
       weapon_props: EquipmentRules.weapon_props(it)
     }
+    # Bônus do ESCUDO do catálogo (+2 no PHB, +4 no "Escudo do mal" do editor).
+    # A CA da FICHA sai deste inventário (`computeAC` no front): sem a chave ela
+    # somava +2 fixo com o servidor já certo — achado no teste local de 14/09.
+    # Linha antiga sem `item_id` cai no índice, só no slot de escudo.
+    escudo = it.item if it.item&.shield?
+    escudo ||= Item.find_by(api_index: it.item_index) if it.slot.to_s == 'shield' && it.item_index.present?
+    linha[:shield_ac_bonus] = ItemArmorPropsMapper.shield_bonus_from_item(escudo) if escudo&.shield?
+    linha
   end
 
   def weight_lb(it)

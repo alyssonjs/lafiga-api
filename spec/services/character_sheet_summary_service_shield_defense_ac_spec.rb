@@ -77,6 +77,19 @@ RSpec.describe CharacterSheetSummaryService, type: :service do
     expect(ac[:source].to_s).to include('Estilo de Luta')
   end
 
+  it '⚠️ o INVENTÁRIO do summary leva o bônus do escudo — é dele que a CA da ficha sai' do
+    sheet = ficha
+    equipar!(sheet, 'Escudo Grande', 'escudo-grande', 'shield')
+    equipar!(sheet, 'Cota de Malha', 'chain-mail', 'armor')
+
+    cmd = described_class.call(sheet_id: sheet.id, sync: false)
+    summary = cmd.respond_to?(:result) ? cmd.result : cmd
+    linhas = Array(summary.dig(:equipment, :inventory))
+
+    expect(linhas.find { |r| r[:name] == 'Escudo Grande' }[:shield_ac_bonus]).to eq(3)
+    expect(linhas.find { |r| r[:name] == 'Cota de Malha' }).not_to have_key(:shield_ac_bonus)
+  end
+
   it 'sem estilo de luta, o Escudo Grande sozinho: 16 + 3 = 19' do
     sheet = ficha
     equipar!(sheet, 'Cota de Malha', 'chain-mail', 'armor')
