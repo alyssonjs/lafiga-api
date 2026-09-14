@@ -55,7 +55,7 @@ class Sheet < ApplicationRecord
 
   def coin_pouches_for_api
     normalized_coin_pouches_array.map do |p|
-      {
+      row = {
         id: p['id'],
         name: p['name'].to_s,
         cp: p['cp'].to_i,
@@ -64,6 +64,9 @@ class Sheet < ApplicationRecord
         gp: p['gp'].to_i,
         pp: p['pp'].to_i
       }
+      # Algibeira de um ITEM do inventário: é por aqui que o front a casa com o item.
+      row[:sheet_item_id] = p['sheet_item_id'] if p['sheet_item_id'].present?
+      row
     end
   end
 
@@ -178,6 +181,66 @@ class Sheet < ApplicationRecord
     raise ArgumentError, 'Informe ao menos uma moeda com valor positivo' unless moved
 
     assign_pouches_and_save!(list)
+  end
+
+  # ─── Algibeira do INVENTÁRIO ───────────────────────────────────────────
+  # Um item cujo catálogo declara `coin_capacity` (a Algibeira) guarda moedas
+  # numa algibeira PRÓPRIA desta lista, ligada a ele por `sheet_item_id`. É
+  # assim que o jogador esconde dinheiro numa algibeira dentro da mochila — e o
+  # total da ficha continua a somar tudo, porque é a mesma lista.
+  #
+  # A algibeira do item nasce no primeiro movimento: item que nunca guardou
+  # moeda não enche a carteira de linhas vazias, e ninguém precisa de a criar.
+  def coin_pouch_id_for_item!(sheet_item_id)
+    item = sheet_items.find_by(id: sheet_item_id)
+    raise ActiveRecord::RecordNotFound, 'Item não encontrado nesta ficha' unless item
+    raise ArgumentError, "#{item.item_name} não guarda moedas" unless item.coin_container?
+
+    list = dup_pouches
+    existing = list.find { |p| p['sheet_item_id'].to_s == item.id.to_s }
+    return existing['id'] if existing
+
+    pouch = {
+      'id' => SecureRandom.uuid,
+      'name' => unique_pouch_name(list, item.item_name),
+      'sheet_item_id' => item.id
+    }.merge(COIN_DEFAULTS.stringify_keys)
+    list << pouch
+    assign_pouches_and_save!(list)
+    pouch['id']
+  end
+
+  # `transfer_pouch_coins!` cujas pontas podem ser uma algibeira da lista
+  # (`*_pouch_id`) ou um item que guarda moedas (`*_sheet_item_id`). Numa
+  # transação: se o movimento falhar (saldo, teto), a algibeira recém-criada do
+  # item não fica para trás.
+  def transfer_coins!(amounts_hash, from_pouch_id: nil, to_pouch_id: nil,
+                      from_sheet_item_id: nil, to_sheet_item_id: nil)
+    transaction do
+      from_id = from_sheet_item_id.present? ? coin_pouch_id_for_item!(from_sheet_item_id) : from_pouch_id
+      to_id = to_sheet_item_id.present? ? coin_pouch_id_for_item!(to_sheet_item_id) : to_pouch_id
+      transfer_pouch_coins!(from_id, to_id, amounts_hash)
+    end
+  end
+
+  # O item saiu da ficha: as moedas dele voltam para a Carteira e a algibeira
+  # deixa de existir — apagar o recipiente nunca apaga o conteúdo (mesma regra
+  # da aljava e da bolsa). Sem algibeira ligada, não grava nada.
+  def release_item_coin_pouch!(sheet_item_id)
+    return false if sheet_item_id.blank?
+
+    list = dup_pouches
+    idx = list.index do |p|
+      p['id'] != PRIMARY_POUCH_ID && p['sheet_item_id'].present? &&
+        p['sheet_item_id'].to_s == sheet_item_id.to_s
+    end
+    return false unless idx
+
+    pouch = list.delete_at(idx)
+    primary = list[primary_pouch_index(list)]
+    COIN_KEYS.each { |k| primary[k] = primary[k].to_i + pouch[k].to_i }
+    assign_pouches_and_save!(list)
+    true
   end
 
   # ─── Experience Points (DM-only writes) ────────────────────────────────
@@ -330,9 +393,51 @@ class Sheet < ApplicationRecord
   end
 
   def assign_pouches_and_save!(list)
+    guard_item_pouch_capacity!(dup_pouches, list)
     self.coin_pouches = list
     self.coins = aggregate_wallet_from_pouches(list)
     save!
+  end
+
+  # Teto da algibeira do INVENTÁRIO (`coin_capacity` do catálogo, em peças).
+  # Barra só o que AUMENTA a contagem além do teto: tirar é sempre possível,
+  # mesmo de uma algibeira que ficou acima porque o mestre baixou o teto.
+  #
+  # ⚠️ Não é validação do modelo, de propósito: a ficha grava por mil motivos
+  # (PV, XP, condições) e não pode passar a falhar porque o catálogo mudou.
+  # Por estar aqui vale para TODA escrita de moeda — transferir, delta ou o
+  # valor digitado direto na algibeira.
+  def guard_item_pouch_capacity!(before_list, after_list)
+    after_list.each do |p|
+      next if p['sheet_item_id'].blank?
+
+      count = pouch_coin_count(p)
+      next if count.zero?
+
+      previous = before_list.find { |b| b['id'].to_s == p['id'].to_s }
+      next if previous && count <= pouch_coin_count(previous)
+
+      capacity = (sheet_items.find_by(id: p['sheet_item_id'])&.coin_capacity).to_i
+      next unless capacity.positive? && count > capacity
+
+      raise ArgumentError, "#{p['name']} comporta até #{capacity} moedas (ficaria com #{count})"
+    end
+  end
+
+  def pouch_coin_count(pouch)
+    COIN_KEYS.sum { |k| pouch[k].to_i }
+  end
+
+  # Duas algibeiras do inventário com o mesmo nome seriam indistinguíveis na
+  # carteira: a segunda vira "Algibeira 2".
+  def unique_pouch_name(list, base)
+    name = base.to_s.strip.presence || 'Algibeira'
+    taken = list.map { |p| p['name'].to_s }
+    return name[0, 80] unless taken.include?(name)
+
+    n = 2
+    n += 1 while taken.include?("#{name} #{n}")
+    "#{name} #{n}"[0, 80]
   end
 
   def pouch_empty?(p)
