@@ -704,6 +704,69 @@ RSpec.describe 'Api::V1::Player::Combat::CombatCombatantsController', type: :req
         expect(response).to have_http_status(:forbidden)
       end
     end
+
+    # Sessão 90 (14/09): o cliente PREVÊ +1 de `turn_state_rev` a cada PATCH que leva
+    # turn_state (combatSessionReducer). Se o servidor não contasse a escrita IGUAL à
+    # gravada, o cliente ficava adiantado e descartava o eco da virada que zera
+    # `actions_used` — ação e bônus apareciam gastos no turno novo.
+    context 'revisão do turn_state conta TODA escrita do cliente' do
+      let(:url) { "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}" }
+
+      it 'PATCH com turn_state IGUAL ao gravado ainda sobe a revisão' do
+        combatant.update!(turn_state: { 'rageRoundsRemaining' => 10 })
+        rev = combatant.reload.turn_state_rev
+
+        patch url, params: { combatant: { turn_state: { 'rageRoundsRemaining' => 10 } } },
+                   headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(combatant.reload.turn_state_rev).to eq(rev + 1)
+      end
+
+      it 'PATCH sem turn_state não mexe na revisão' do
+        rev = combatant.reload.turn_state_rev
+
+        patch url, params: { combatant: { actions_used: { action: true, bonus_action: false, movement: false, reaction: false } } },
+                   headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(combatant.reload.turn_state_rev).to eq(rev)
+      end
+    end
+
+    # Sessão 90 (14/09): a Fúria com a Forma de Urso do JOGADOR manda a CA da forma no
+    # MESMO patch da ação bônus e do contador da Fúria — o pacote inteiro dava 403.
+    context 'Fúria com Forma de Urso do jogador (CA do próprio combatente)' do
+      let!(:npc) { create(:combat_npc, schedule: schedule) }
+      let!(:npc_combatant) { create(:combat_combatant, :npc, combat_state: cs, combatable: npc, position: 1, ac: 17) }
+
+      before { cs.update_column(:current_turn_index, combatant.position) } # turno do jogador
+
+      it 'aceita ac + actions_used + turn_state no PRÓPRIO combatente' do
+        payload = { combatant: {
+          ac: 16,
+          actions_used: { action: false, bonus_action: true, movement: false, reaction: false },
+          turn_state: { 'rageRoundsRemaining' => 10, 'bearFormActive' => true },
+        } }
+
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{combatant.id}",
+              params: payload, headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:ok)
+        combatant.reload
+        expect(combatant.ac).to eq(16)
+        expect(combatant.actions_used['bonus_action']).to be(true)
+        expect(combatant.turn_state).to include('rageRoundsRemaining' => 10, 'bearFormActive' => true)
+      end
+
+      it '403 ao gravar a CA de OUTRO combatente, mesmo no próprio turno' do
+        patch "/api/v1/player/schedules/#{schedule.id}/combat_combatants/#{npc_combatant.id}",
+              params: { combatant: { ac: 5 } }, headers: player_headers, as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(npc_combatant.reload.ac).to eq(17)
+      end
+    end
   end
 
   describe 'DELETE destroy' do

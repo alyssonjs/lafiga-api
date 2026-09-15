@@ -96,7 +96,15 @@ module Api::V1::Player::Combat
       updated = false
       @combatant.with_lock do
         @combatant.reload
+        # O cliente PREVÊ +1 em `turn_state_rev` a cada PATCH que leva `turn_state`
+        # (combatSessionReducer), mas o `bump_turn_state_rev` só conta quando o hash
+        # MUDA. Uma escrita igual à gravada deixava o cliente adiantado, e o eco
+        # seguinte — o da virada, que zera `actions_used` — era descartado como velho
+        # (sessão 90, 14/09: ação e bônus apareciam gastos no turno novo). Lido ANTES
+        # da trava de reação, que materializa o turn_state sem o cliente ter mandado.
+        client_sent_turn_state = attrs.key?('turn_state')
         apply_reaction_round_lock!(attrs)
+        @combatant.turn_state_will_change! if client_sent_turn_state
         updated = @combatant.update(attrs)
       end
       if updated
@@ -680,6 +688,12 @@ module Api::V1::Player::Combat
     # (current_turn_belongs_to_user?), com o DM sempre autoritativo por cima.
     COMBAT_EFFECT_ON_TURN_FIELDS = (COMBAT_EFFECT_FIELDS + %w[turn_state]).freeze
 
+    # Campos que o dono muda SÓ no PRÓPRIO combatente — nunca no alheio, nem no
+    # próprio turno. A CA de uma forma conduzida pelo cliente dele: a Fúria com a
+    # Forma de Urso grava a CA nova no MESMO patch da ação bônus e do contador da
+    # Fúria, e sem esta liberação o pacote inteiro dava 403 (sessão 90, 14/09).
+    OWN_COMBATANT_ONLY_FIELDS = %w[ac].freeze
+
     # Autz do turn_state granular: MESMA politica do `update`, so que o endpoint
     # escreve EXCLUSIVAMENTE `turn_state` (nunca hp/condicoes/iniciativa), entao o
     # escopo e estritamente mais estreito que o do PATCH que ele substitui.
@@ -896,7 +910,7 @@ module Api::V1::Player::Combat
     # (limpa o pending), o que não cabia em `player_updating_own_turn_state?` (só
     # turn_state) nem em `player_applying_combat_effect_on_own_turn?` (exige o turno
     # ser dele). Escopo SEGURO: só o próprio combatente (`player_owns_combatant?`) e
-    # só campos de combate/turn_state (allowlist) — nunca outro combatente. Auditável
+    # só campos de combate/turn_state/CA (allowlist) — nunca outro combatente. Auditável
     # pelo log de combate. Sem esta regra, rolar o próprio TR fora do turno dava 403 e
     # o pending nunca resolvia (reload destravava; conjurador preso).
     def player_updating_own_combatant?
@@ -905,7 +919,7 @@ module Api::V1::Player::Combat
       keys = combatant_update_params.to_h.keys.map(&:to_s)
       return false if keys.empty?
 
-      (keys - (COMBAT_EFFECT_FIELDS + PLAYER_TURN_STATE_FIELDS)).empty?
+      (keys - (COMBAT_EFFECT_FIELDS + PLAYER_TURN_STATE_FIELDS + OWN_COMBATANT_ONLY_FIELDS)).empty?
     end
 
     # O combatente pertence ao usuário autenticado: ou é o PC dele, ou é um
