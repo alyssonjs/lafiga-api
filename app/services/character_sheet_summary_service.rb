@@ -197,7 +197,13 @@ class CharacterSheetSummaryService
         # somado em `equipment[:ac][:ac]`, então repomos o bônus dele por cima.
         if mi[:set_ac_base].to_i.positive? && (equipment.dig(:ac, :armor_category).to_s == 'none')
           dex_mod = begin (abilities[:mods] || {})[:dex].to_i rescue 0 end
-          escudo = equipment.dig(:equipped, :shield) ? 2 : 0
+          # Bônus do escudo do CATÁLOGO (o "Escudo Grande" é +3), não +2 fixo.
+          escudo_eq = equipment.dig(:equipped, :shield)
+          escudo = if escudo_eq
+                     ItemArmorPropsMapper.shield_bonus_from_item(Item.find_by(api_index: escudo_eq[:index].to_s)) || 2
+                   else
+                     0
+                   end
           alt = mi[:set_ac_base].to_i + dex_mod + escudo
           if alt > equipment.dig(:ac, :ac).to_i
             equipment[:ac] = (equipment[:ac] || {})

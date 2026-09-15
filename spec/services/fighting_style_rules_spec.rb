@@ -36,4 +36,24 @@ RSpec.describe FightingStyleRules do
       expect(out[:active_styles]).to include('Arquearia')
     end
   end
+
+  context '⚠️ o mesmo estilo gravado duas vezes, com nomes diferentes' do
+    # Ficha real (14/09): "Defesa" no nível 1 e "fs-defense" no nível 2.
+    let(:metadata) do
+      {
+        'class_choices' => {
+          'per_level' => {
+            '1' => { 'fighting_style' => ['Defesa'] },
+            '2' => { 'fighting_style' => ['fs-defense'] }
+          }
+        }
+      }
+    end
+
+    it 'a Defesa vale +1 de CA, uma vez só' do
+      out = described_class.new(sheet, equipment: equipment).call
+      expect(out[:ac_bonus]).to eq(1)
+      expect(out[:active_styles]).to eq(['Defesa'])
+    end
+  end
 end

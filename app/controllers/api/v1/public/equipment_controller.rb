@@ -523,8 +523,11 @@ class Api::V1::Public::EquipmentController < ApplicationController
         equipment_category: { index: 'armor', name: 'Armor' },
         armor_category: 'Shield',
         # Escudo do PHB é +2, mas o mestre pode criar um com bônus próprio.
-        armor_class: { base: sp['ac_base'].presence || 2, dex_bonus: false },
-        stealth_disadvantage: false,
+        # Mesmo leitor da conta da ficha (`ac_base` do editor ou `ac_bonus` do seed).
+        armor_class: { base: ItemArmorPropsMapper.shield_bonus_from_item(it) || 2, dex_bonus: false },
+        # O PHB não tem escudo com desvantagem, mas o mestre pode declarar uma
+        # (o "Escudo Grande" da mesa, 14/09). Antes vinha `false` fixo.
+        stealth_disadvantage: !!sp['stealth_dis'],
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,
         weight: weight_lb,
         card_icon_id: sp['card_icon_id'].presence,

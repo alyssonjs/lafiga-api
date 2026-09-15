@@ -64,6 +64,7 @@ class SheetItem < ApplicationRecord
   before_destroy :release_bag_contents, if: :bag?
   before_destroy :release_belt_contents, if: :belt?
   before_destroy :release_bag_slot_contents, if: :bag_with_slots?
+  before_destroy :release_coin_pouch
   before_save :sanitize_slot
   after_save  :enforce_slot_exclusivity_and_conflicts
 
@@ -76,6 +77,11 @@ class SheetItem < ApplicationRecord
   # instância. Sem ela na lista, duas espadas longas idênticas empilhariam e a
   # arma de pacto viraria "2 espadas, uma delas de pacto" — sem dizer qual.
   PER_INSTANCE_PROP_KEYS = %w[charges attuned uses uses_remaining uses_left pact_weapon].freeze
+  # O que um RECIPIENTE DE LÍQUIDO guarda (o Barril): { 'name', 'amount_l' },
+  # por linha — cada barril tem o seu. Pesa junto, `LIQUID_KG_PER_L` por litro
+  # (decisão do mestre em 14/09/2026).
+  LIQUID_PROP = 'liquid'.freeze
+  LIQUID_KG_PER_L = 1.0
   AMMUNITION_CONTAINER_PROP = 'quiver_sheet_item_id'.freeze
   # Item guardado DENTRO de uma bolsa da mesma ficha. Mesmo desenho da aljava,
   # da montaria e da carroça: o item nunca sai da ficha — a localização é um
@@ -183,11 +189,11 @@ class SheetItem < ApplicationRecord
   # que não pode ser compartilhado numa pilha.
   # RECIPIENTE por INSTÂNCIA: guarda um conteúdo próprio, então duas unidades
   # nunca são a mesma linha. Aljava pelo leitor tolerante (o conceito é antigo
-  # e muita ficha só tem o nome); bolsa SÓ pela capacidade declarada — ver a
-  # nota em `stackable_match_for` sobre a "bolsa PO".
+  # e muita ficha só tem o nome); bolsa e algibeira SÓ pela capacidade
+  # declarada — ver a nota em `stackable_match_for` sobre a "bolsa PO".
   def self.container_instance?(item)
     return false unless item
-    item.quiver? || item.bag_capacity_kg.to_f.positive?
+    item.quiver? || item.bag_capacity_kg.to_f.positive? || item.coin_container? || item.liquid_container?
   rescue NameError
     false
   end
@@ -261,6 +267,18 @@ class SheetItem < ApplicationRecord
       # Capacidade da BOLSA (kg, canônico do banco). O ponteiro de conteúdo
       # (`bag_sheet_item_id`) já viaja dentro de `props`.
       bag_capacity_kg: (bag_capacity_kg if bag_capacity_kg.positive?),
+      # Quantas MOEDAS a algibeira leva (catálogo). As moedas guardadas NÃO
+      # viajam aqui: vivem na lista de algibeiras da ficha, ligadas por
+      # `sheet_item_id` — a mesma que a carteira lê. Duas cópias divergiriam
+      # no primeiro movimento.
+      coin_capacity: (coin_capacity if coin_capacity.positive?),
+      # Quantos LITROS o recipiente leva (catálogo). O conteúdo desta linha
+      # (`liquid`: nome e litros) já viaja dentro de `props` e pesa no
+      # `weight_lb` acima.
+      liquid_capacity_l: (liquid_capacity_l if liquid_capacity_l.positive?),
+      # Bônus de CA do ESCUDO do catálogo (+2 no PHB, +3 no "Escudo Grande"). O
+      # front somava +2 fixo; o leitor é o mesmo da conta do servidor.
+      shield_ac_bonus: (ItemArmorPropsMapper.shield_bonus_from_item(item) if item&.shield?),
       # Slots do CINTO (contagem, do catálogo). O ponteiro (`belt_sheet_item_id`)
       # também já viaja dentro de `props`.
       belt_slot_props: belt_slot_props,
@@ -361,6 +379,90 @@ class SheetItem < ApplicationRecord
     rescue StandardError
       0.0
     end
+  end
+
+  # ALGIBEIRA: recipiente de MOEDAS, contado em PEÇAS. PHB cap. 5: a algibeira
+  # leva 6 lb, e 50 moedas pesam 1 lb — as 300 do catálogo. 0 = não guarda.
+  #
+  # ⚠️ SÓ pela capacidade declarada, nunca pelo nome: "bolsa PO ×120" é dinheiro
+  # solto e a "Bolsa de componentes" é foco. Leitura índice-primeiro, como a da
+  # bolsa — a linha renomeada não perde o teto.
+  def coin_capacity
+    @coin_capacity ||= begin
+      registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
+      registro ||= item
+      ((registro&.props || {})['coin_capacity']).to_i
+    rescue StandardError
+      0
+    end
+  end
+
+  def coin_container?
+    coin_capacity.positive?
+  end
+
+  # Quantos LITROS o recipiente leva (catálogo, `liquid_capacity_l`) — o Barril
+  # do livro leva 160. Leitura índice-primeiro, como a da algibeira.
+  def liquid_capacity_l
+    @liquid_capacity_l ||= begin
+      registro = (Item.find_by(api_index: item_index) if item_index.present? && defined?(Item))
+      registro ||= item
+      ((registro&.props || {})['liquid_capacity_l']).to_f
+    rescue StandardError
+      0.0
+    end
+  end
+
+  def liquid_container?
+    liquid_capacity_l.positive?
+  end
+
+  # O conteúdo desta linha (`{ 'name', 'amount_l' }`), ou nil quando vazio.
+  def liquid_contents
+    h = (props_json || {})[LIQUID_PROP]
+    h.is_a?(Hash) && h['amount_l'].to_f.positive? ? h : nil
+  end
+
+  # Guarda (litros > 0) ou tira (< 0) LÍQUIDO deste recipiente.
+  #
+  # Teto e saldo são do SERVIDOR: duas abas abertas não enchem o mesmo barril
+  # duas vezes. ⚠️ Um líquido por recipiente — pôr Vinho num barril com Água é
+  # recusado, senão a ficha diria "Vinho 160 L" de um barril quase todo de água.
+  def transfer_liquid!(litros, name: nil)
+    raise ArgumentError, "#{item_name} não guarda líquido" unless liquid_container?
+
+    delta = litros.to_f.round(2)
+    raise ArgumentError, 'Informe quantos litros' if delta.zero?
+
+    with_lock do
+      atual = liquid_contents
+      tem = atual ? atual['amount_l'].to_f : 0.0
+      nome_atual = atual && atual['name'].to_s.strip.presence
+      nome_novo = name.to_s.strip.presence
+      novo = (tem + delta).round(2)
+      teto = liquid_capacity_l
+      fmt = ->(v) { self.class.formatar_litros(v) }
+
+      raise ArgumentError, "#{item_name} só tem #{fmt.(tem)} L" if novo.negative?
+      raise ArgumentError, "#{item_name} comporta até #{fmt.(teto)} L (ficaria com #{fmt.(novo)})" if novo > teto
+      if delta.positive? && nome_atual && nome_novo && !nome_novo.casecmp?(nome_atual)
+        raise ArgumentError, "#{item_name} tem #{nome_atual}: esvazie antes de guardar #{nome_novo}"
+      end
+
+      props = (props_json || {}).dup
+      if novo.zero?
+        props.delete(LIQUID_PROP)
+      else
+        props[LIQUID_PROP] = { 'name' => nome_atual || nome_novo || 'Água', 'amount_l' => novo }
+      end
+      update!(props_json: props)
+    end
+    self
+  end
+
+  # 160.0 → "160"; 0.12 → "0,12" (litros como a mesa escreve).
+  def self.formatar_litros(valor)
+    format('%g', valor.to_f.round(2)).tr('.', ',')
   end
 
   # A BOLSA que o personagem traz às costas, se for uma bolsa que lá está.
@@ -655,6 +757,19 @@ class SheetItem < ApplicationRecord
       props.delete(BELT_CONTAINER_PROP)
       preso.update!(props_json: props)
     end
+  end
+
+  # Apagar a ALGIBEIRA não apaga o dinheiro: as moedas voltam para a Carteira.
+  #
+  # ⚠️ Sem `if: :coin_container?`, de propósito: o mestre pode tirar a
+  # capacidade do catálogo com moedas lá dentro, e a algibeira da lista ficaria
+  # órfã com o dinheiro. Item sem algibeira ligada não grava nada.
+  # A ficha inteira a ser apagada não tem para onde devolver — e gravá-la a
+  # meio da própria remoção só arriscaria abortar a remoção.
+  def release_coin_pouch
+    return if destroyed_by_association
+
+    sheet&.release_item_coin_pouch!(id)
   end
 
   # Garante que todo SheetItem aponte para um Item canonico no catalogo.

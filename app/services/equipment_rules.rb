@@ -151,7 +151,24 @@ class EquipmentRules
       kg.nil? ? nil : (kg.to_f * LB_PER_KG).round(2)
     end
 
+    # Peso de UMA unidade. O líquido guardado pesa junto (14/09, decisão do
+    # mestre: 1 kg por litro) — o Barril de 160 L de água vai de 35 kg a 195.
     def item_weight_kg(item)
+      empty_item_weight_kg(item) + liquid_weight_kg(item)
+    end
+
+    # Litros guardados × 1 kg. Só a LINHA da ficha tem conteúdo; o item do
+    # catálogo pesa zero aqui.
+    def liquid_weight_kg(item)
+      return 0.0 unless item.respond_to?(:props_json)
+
+      h = (item.props_json || {})[SheetItem::LIQUID_PROP]
+      h.is_a?(Hash) ? [h['amount_l'].to_f, 0.0].max * SheetItem::LIQUID_KG_PER_L : 0.0
+    rescue StandardError
+      0.0
+    end
+
+    def empty_item_weight_kg(item)
       # Preferir coluna do banco quando existir
       if item.respond_to?(:weight_kg) && !item.weight_kg.nil?
         return item.weight_kg.to_f
@@ -325,13 +342,16 @@ class EquipmentRules
 
       if shield_item
         shield_bonus = 2
-        if shield_item.respond_to?(:item) && shield_item.item&.shield?
-          shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(shield_item.item)
-        elsif defined?(Item)
-          sk = normalize_index(shield_item)
-          si = Item.find_by(api_index: sk)
-          shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(si) if si&.shield?
-        end
+        db_shield = if shield_item.respond_to?(:item) && shield_item.item&.shield?
+                      shield_item.item
+                    elsif defined?(Item)
+                      cand = Item.find_by(api_index: normalize_index(shield_item))
+                      cand if cand&.shield?
+                    end
+        shield_bonus = ItemArmorPropsMapper.shield_bonus_from_item(db_shield) if db_shield
+        # Escudo também pode impor desvantagem em Furtividade (o "Escudo Grande"
+        # da mesa, 14/09). Soma com a da armadura: basta um dos dois.
+        stealth_disadvantage ||= ItemArmorPropsMapper.shield_stealth_dis_from_item(db_shield) if db_shield
         ac += shield_bonus
         source = "#{source} + Escudo"
       end

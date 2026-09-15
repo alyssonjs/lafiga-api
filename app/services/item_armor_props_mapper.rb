@@ -41,8 +41,20 @@ class ItemArmorPropsMapper
       return nil unless db_item.respond_to?(:shield?) && db_item.shield?
 
       p = (db_item.props || {}).stringify_keys
-      b = p['ac_bonus']
+      # ⚠️ O editor do mestre grava o bônus do escudo em `ac_base` (o "Escudo
+      # Grande" +3, 14/09); o seed do PHB, em `ac_bonus`. Ler só o segundo fazia
+      # todo escudo criado no editor valer +2. O do editor vence: é o que o mestre
+      # digitou por último.
+      b = p['ac_base'].presence || p['ac_bonus'].presence
       b.present? ? b.to_i : 2
+    end
+
+    # Escudo com desvantagem em Furtividade declarada pelo mestre (14/09): o
+    # "Escudo Grande" da mesa. O escudo do PHB não tem — ausente = false.
+    def shield_stealth_dis_from_item(db_item)
+      return false unless db_item.respond_to?(:shield?) && db_item.shield?
+
+      truthy?((db_item.props || {}).stringify_keys['stealth_dis'])
     end
 
     private

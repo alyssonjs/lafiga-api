@@ -26,7 +26,10 @@ namespace :dnd do
 
       if item.nil?
         Item.create!(
-          api_index: idx, name: nome, kind: 'gear',
+          # Sem categoria o item NÃO aparecia no catálogo: o balde de
+          # equipamento usa `NOT IN`, que descarta NULL. Subcategoria própria
+          # desde 14/09 — ver `dnd:classify_adventuring_gear`.
+          api_index: idx, name: nome, kind: 'gear', category: 'ammo-container',
           props: {
             'equipment_slot' => 'quiver',
             'ammunition_types' => aceita,

@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book, :transfer_liquid]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -132,6 +132,19 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   rescue SheetItems::SpendUseService::InvalidUse => e
     render json: { error: e.message }, status: :unprocessable_entity
   rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/sheet_items/:id/transfer_liquid  { amount_l, name? }
+  #
+  # Guarda (amount_l > 0) ou tira (< 0) LÍQUIDO de um recipiente — o Barril que
+  # a mesa usa para a água da viagem. Teto, saldo e "um líquido por
+  # recipiente" são do servidor (`SheetItem#transfer_liquid!`).
+  def transfer_liquid
+    @item.transfer_liquid!(params[:amount_l], name: params[:name])
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.reload.as_inventory_json }, status: :ok
+  rescue ArgumentError => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
 

@@ -16,12 +16,18 @@ class Api::V1::Player::WalletsController < ApplicationController
   #   { wallet: {...}, pouch_id: "uuid" }             → substitui essa algibeira
   #   { delta:  {...}, pouch_id: "uuid" } (opcional)   → delta na algibeira (default: primary)
   #   { coin_transfer: { from_pouch_id:, to_pouch_id:, wallet: { cp:, ... } } } → debita origem, credita destino
+  #   … `from_sheet_item_id:` / `to_sheet_item_id:` no lugar de uma das pontas → Algibeira do
+  #     INVENTÁRIO (a algibeira dela nasce no 1º depósito; teto e posse do item são do servidor)
   def update
     pouch_id = params[:pouch_id].presence
 
     if params[:coin_transfer].present?
       ct = coin_transfer_params
-      @sheet.transfer_pouch_coins!(ct[:from_pouch_id], ct[:to_pouch_id], ct[:wallet] || {})
+      @sheet.transfer_coins!(
+        ct[:wallet],
+        from_pouch_id: ct[:from_pouch_id], to_pouch_id: ct[:to_pouch_id],
+        from_sheet_item_id: ct[:from_sheet_item_id], to_sheet_item_id: ct[:to_sheet_item_id]
+      )
     elsif params[:delta].present?
       delta = params[:delta].is_a?(ActionController::Parameters) ? params[:delta].to_unsafe_h : params[:delta]
       if pouch_id
@@ -52,10 +58,14 @@ class Api::V1::Player::WalletsController < ApplicationController
   private
 
   def coin_transfer_params
-    p = params.require(:coin_transfer).permit(:from_pouch_id, :to_pouch_id, wallet: Sheet::COIN_KEYS)
+    p = params.require(:coin_transfer).permit(
+      :from_pouch_id, :to_pouch_id, :from_sheet_item_id, :to_sheet_item_id, wallet: Sheet::COIN_KEYS
+    )
     {
       from_pouch_id: p[:from_pouch_id].to_s,
       to_pouch_id: p[:to_pouch_id].to_s,
+      from_sheet_item_id: p[:from_sheet_item_id].presence,
+      to_sheet_item_id: p[:to_sheet_item_id].presence,
       wallet: (p[:wallet].presence || {}).to_h
     }
   end
