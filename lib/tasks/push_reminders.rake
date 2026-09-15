@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 
-# Lembretes de sessão via Web Push. Rodar de tempos em tempos (cron do host, ~15min):
-#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production \
-#     exec -T web bin/rails push:session_reminders
-#
-# Dois lembretes por sessão/dia (idempotentes via schedules.reminders_sent):
-#   - "day"  : de manhã (>= 8h), uma vez — "Você tem sessão hoje".
-#   - "hour" : quando faltam <= ~60min p/ o scheduled_time — "Começa em breve".
-# Destinatários: participantes (characters -> user) + Mestre (created_by_user). Só quem
-# tem opt-in (notify_session_reminders) E ao menos uma assinatura.
+# Lembretes de sessão via Web Push. Agendado pelo cron do servidor a cada 15 min —
+# a linha mora VERSIONADA em deploy/crontab (instalada pelo server-deploy.sh).
+# A regra (janelas, idempotência, destinatários) está em Push::SessionReminders.
 namespace :push do
   desc 'Envia lembretes Web Push das sessões de hoje (participantes + Mestre).'
   task session_reminders: :environment do
@@ -17,81 +11,9 @@ namespace :push do
       next
     end
 
-    now      = Time.zone.now
-    today    = now.to_date
-    today_s  = today.iso8601
-    morning  = now.hour >= 8            # não notificar "do dia" de madrugada
-    counts   = Hash.new(0)
-
-    schedules = Schedule
-                .where(status: %i[reserved waiting], sandbox: false)
-                .joins(:date_dimension)
-                .where(date_dimensions: { date: today })
-                .includes(:group, :created_by_user, characters: :user)
-
-    schedules.find_each do |sched|
-      sent = sched.reminders_sent.is_a?(Hash) ? sched.reminders_sent.dup : {}
-
-      # Nome do PERSONAGEM por usuário (1º PC dele nesta sessão). O Mestre (sem PC)
-      # não entra na lista → cai só em grupo + hora. Grupo e hora vão no corpo.
-      char_by_user = {}
-      sched.characters.each { |c| char_by_user[c.user_id] ||= c.name if c.user_id.present? }
-      group_name = sched.group&.name.presence
-      time_part  = sched.scheduled_time.present? ? "às #{sched.scheduled_time}" : nil
-
-      jobs = [] # [tipo, title] — o corpo é montado por usuário (personagem + hora).
-
-      # (a) lembrete "do dia"
-      if morning && sent['day'] != today_s
-        jobs << ['day', "Sessão hoje: #{sched.title}"]
-      end
-
-      # (b) lembrete "começa em breve" (<= ~60min, ainda no futuro)
-      start_at = parse_start(today, sched.scheduled_time)
-      if start_at && sent['hour'] != today_s && start_at > now && (start_at - now) <= 60.minutes
-        jobs << ['hour', "Começa em breve: #{sched.title}"]
-      end
-
-      next if jobs.empty?
-
-      user_ids = recipients_for(sched)
-      next if user_ids.empty?
-
-      users = User.where(id: user_ids, notify_session_reminders: true)
-                  .where(id: PushSubscription.select(:user_id))
-
-      jobs.each do |type, title|
-        delivered = 0
-        users.find_each do |u|
-          who   = char_by_user[u.id].presence # personagem do jogador; nil p/ o Mestre
-          # jogador: "Aberama Gold · Batutinhas · às 19:00" | mestre: "Batutinhas · às 19:00"
-          body = [who, group_name, time_part].compact.join(' · ')
-          delivered += Push::Sender.call(user: u, title: title, body: body, url: "/sessions/api-#{sched.id}", tag: "session-#{sched.id}-#{type}")
-        end
-        sent[type] = today_s
-        counts[type] += 1
-        puts "[#{type}] schedule ##{sched.id} '#{sched.title}' → #{users.count} user(s), #{delivered} device(s)"
-      end
-
-      sched.update_column(:reminders_sent, sent)
-    end
-
-    puts "== push:session_reminders == #{counts.sort.to_h.inspect} (#{schedules.count} sessão(ões) hoje)"
+    result = Push::SessionReminders.call
+    result.lines.each { |line| puts line }
+    puts "== push:session_reminders #{Time.zone.now.strftime('%d/%m %H:%M')} == " \
+         "#{result.counts.sort.to_h.inspect} (#{result.sessions} sessão(ões) hoje)"
   end
-end
-
-# Monta o horário de início no fuso do app a partir de scheduled_time ("21:00").
-def parse_start(date, scheduled_time)
-  return nil if scheduled_time.to_s.strip.empty?
-
-  Time.zone.parse("#{date.iso8601} #{scheduled_time}")
-rescue ArgumentError
-  nil
-end
-
-# user_ids = participantes (characters -> user) + Mestre (created_by_user), dedup.
-def recipients_for(sched)
-  ids = sched.characters.map(&:user_id)
-  ids << sched.created_by_user_id
-  ids.compact.uniq
 end
