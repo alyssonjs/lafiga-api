@@ -55,7 +55,7 @@ RSpec.describe 'Criação de Personagem Draconato (BDD PHB)', type: :service do
     'white'  => { name: 'Branco (Frio)',         damage: 'Frio',      form: 'cone'  }
   }.freeze
 
-  before(:all) do
+  semeia_uma_vez do
     @subraces = {}
     dragonborn = Race.find_or_create_by!(api_index: 'dragonborn') { |r| r.name = 'Draconato' }
     ANCESTRIES.each do |key, info|

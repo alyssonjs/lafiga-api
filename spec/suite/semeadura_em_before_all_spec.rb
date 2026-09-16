@@ -15,12 +15,39 @@ require 'rails_helper'
 # Nada no projeto barra o próximo `before(:all)` com semeadura — esta catraca
 # barra. Ela lê o TEXTO dos specs de propósito: é a única forma de pegar o
 # padrão antes de ele custar a próxima investigação.
+#
+# ⚠️ MAS ler texto é necessário e NÃO é suficiente, e isso foi medido: a lista de
+# semeadores nasceu com três nomes e deixou passar um `before(:all)` que criava
+# Race/SubRace. Ele não apareceu em varredura nenhuma — apareceu ao CONTAR o
+# banco depois da suíte inteira, onde sobrou 1 Race e 10 SubRace. Uma varredura
+# de texto acha o padrão que ela já conhece; a contagem acha o que ninguém
+# listou.
+#
+# O complemento, quando desconfiar de falha de ORDEM (um spec que passa sozinho
+# e falha na suíte, ou o contrário):
+#
+#   docker exec -e RAILS_ENV=test lafiga_api bundle exec rails db:test:prepare
+#   docker exec -e RAILS_ENV=test lafiga_api bundle exec rspec
+#   docker exec -i -e RAILS_ENV=test -e DISABLE_SPRING=1 lafiga_api \
+#     bundle exec rails runner 'puts "Klass=#{Klass.count} SubKlass=#{SubKlass.count} \
+#     Feat=#{Feat.count} Race=#{Race.count} SubRace=#{SubRace.count} Spell=#{Spell.count}"'
+#
+# Tudo tem de dar ZERO. O que não der, alguém semeou fora da transação — e o
+# nome do modelo diz onde procurar.
 RSpec.describe 'semeadura de catálogo em `before(:all)`' do
-  # Os três semeadores que MEDIDAMENTE vazaram. Lista curta e específica em vez
-  # de "qualquer create! num before(:all)": catraca barulhenta é catraca que
-  # alguém desliga.
+  # Os semeadores que MEDIDAMENTE vazaram. Lista curta e específica em vez de
+  # "qualquer create! num before(:all)": catraca barulhenta é catraca que alguém
+  # desliga.
+  #
+  # ⚠️ Race/SubRace entraram DEPOIS: a lista original tinha três nomes e deixou
+  # passar `race_creation_dragonborn_bdd_spec`, que largava 1 Race + 10 SubRace.
+  # Só apareceu ao contar o banco DEPOIS da suíte inteira — a varredura de texto
+  # acha o padrão que ela conhece, a contagem acha o que ninguém listou.
   def semeadores
-    ['ImportedSheetsSeeder.seed_all!', 'ImportedSheetsSpellSeeder.seed_all!', 'Feat.find_or_create_by!']
+    [
+      'ImportedSheetsSeeder.seed_all!', 'ImportedSheetsSpellSeeder.seed_all!',
+      'Feat.find_or_create_by!', 'Race.find_or_create_by!', 'SubRace.find_or_create_by!'
+    ]
   end
 
   def arquivos_de_spec
