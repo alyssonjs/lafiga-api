@@ -29,7 +29,7 @@ require Rails.root.join('spec/support/imported_sheets_spell_seeder')
 RSpec.describe 'Player::Characters caster spell roundtrip — Phase 6', type: :request do
   include AuthHelpers
 
-  before(:all) { ImportedSheetsSpellSeeder.seed_all! }
+  semeia_uma_vez { ImportedSheetsSpellSeeder.seed_all! }
 
   let(:user)  { create(:user) }
   let(:headers) { bearer_headers_for(user) }

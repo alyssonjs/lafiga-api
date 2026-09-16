@@ -27,7 +27,7 @@ RSpec.describe FeatAssignmentService, 'todos os 41 talentos do catalogo' do
     # da rake task (atribuir Hash em coluna text), para o spec exercitar o
     # caminho corrompido. Quando a rake for corrigida, este `before(:all)` deve
     # ser atualizado em uma operacao identica.
-    before(:all) do
+    semeia_uma_vez do
       catalog.each do |api_index, data|
         Feat.find_or_create_by!(api_index: api_index) do |f|
           f.name = data['name']

@@ -20,7 +20,7 @@ require_relative '../../../../support/imported_sheets_spell_seeder'
 RSpec.describe 'Imported sheets — HTTP roundtrip (Phase 7)', type: :request do
   include AuthHelpers
 
-  before(:all) do
+  semeia_uma_vez do
     ImportedSheetsSeeder.seed_all!
     ImportedSheetsSpellSeeder.seed_all!
   end
