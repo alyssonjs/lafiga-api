@@ -73,7 +73,17 @@ RSpec.describe 'dnd:audit_class_sources', type: :model do
 
   # ⚠️ Casar por NOME é o que distingue "a sub-classe não existe" de "existe
   # com o slug do SRD". Sem isso a auditoria acusa 11 órfãos que não são.
+  # ⚠️ Este exemplo dependia de o catálogo JÁ estar no banco: passava na suíte
+  # inteira (o seeder de `imported_sheets_http_e2e_spec` vaza as 144 subs num
+  # `before(:all)`) e falhava sozinho num banco limpo. O defeito que ele injeta
+  # agora é semeado AQUI, dentro da transação do próprio exemplo.
   it 'chama de DUPLICADO o que existe no banco com outro slug', :aggregate_failures do
+    barbaro = Klass.find_by(api_index: 'barbarian') ||
+              Klass.create!(name: 'Bárbaro', api_index: 'barbarian', hit_die: 12)
+    SubKlass.find_by(api_index: 'berserker') ||
+      SubKlass.create!(name: 'Caminho do Furioso', api_index: 'berserker', klass: barbaro,
+                       levels_json: [{ 'level' => 3, 'features' => [{ 'name' => 'Frenesi' }] }])
+
     saida = roda
     expect(saida).to include('duplicado_por_slug')
     expect(saida).to include('berserker')
