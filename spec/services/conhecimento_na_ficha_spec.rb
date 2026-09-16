@@ -21,7 +21,10 @@ RSpec.describe 'Conhecimento na ficha', type: :model do
   end
 
   def proficiencias_da_ficha
-    CharacterSheetSummaryService.new(sheet.reload).call[:proficiencies]
+    # `SimpleCommand` faz `call` devolver o COMANDO; o hash vem em `result`. E
+    # `sync: false` como nos outros specs do serviço: com sync o `call` grava HP e
+    # concede features, efeito colateral que nada tem a ver com proficiência.
+    CharacterSheetSummaryService.new(sheet_id: sheet.id, sync: false).call.result[:proficiencies]
   end
 
   describe 'o catálogo aceita a categoria' do
