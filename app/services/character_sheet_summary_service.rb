@@ -901,6 +901,21 @@ class CharacterSheetSummaryService
   # As outras categorias são arrays planos e recebem o nome no fim.
   #
   # ⚠️ Não derruba a ficha se o catálogo faltar — mesma garantia dos irmãos.
+  # ⚠️ Para onde vai, na ficha, a proficiência ganha FORA da regra — por treino
+  # concluído ou por concessão do Mestre. Era a MESMA tabela escrita duas vezes,
+  # a 28 linhas de distância: acrescentar uma categoria numa e esquecer a outra
+  # faria a proficiência aparecer para quem treinou e sumir para quem o Mestre
+  # concedeu, sem erro em lado nenhum. Uma cópia só.
+  #
+  # `skill` não está aqui: ela é um Hash POR FONTE (`class`, `race`, `training`,
+  # `dm`), porque a ficha precisa dizer de onde cada perícia veio — e dizer que
+  # a treinada veio da classe seria mentira.
+  DESTINO_NA_FICHA = {
+    'tool' => :tools, 'vehicle' => :tools, 'language' => :languages,
+    'weapon' => :weapons, 'weapon_category' => :weapons, 'armor' => :armor,
+    'knowledge' => :knowledge
+  }.freeze
+
   def aplicar_aprendizado_concluido!(proficiencias)
     concluidas = Sheets::Training.completed_by_category(@sheet.training)
     return proficiencias if concluidas.empty?
@@ -908,10 +923,7 @@ class CharacterSheetSummaryService
     if concluidas['skill'].present? && proficiencias[:skills].is_a?(Hash)
       proficiencias[:skills][:training] = concluidas['skill'].uniq
     end
-    {
-      'tool' => :tools, 'vehicle' => :tools, 'language' => :languages,
-      'weapon' => :weapons, 'weapon_category' => :weapons, 'armor' => :armor
-    }.each do |categoria, chave|
+    DESTINO_NA_FICHA.each do |categoria, chave|
       nomes = concluidas[categoria]
       next if nomes.blank? || !proficiencias[chave].is_a?(Array)
 
@@ -936,10 +948,7 @@ class CharacterSheetSummaryService
     if dadas['skill'].present? && proficiencias[:skills].is_a?(Hash)
       proficiencias[:skills][:dm] = dadas['skill'].uniq
     end
-    {
-      'tool' => :tools, 'vehicle' => :tools, 'language' => :languages,
-      'weapon' => :weapons, 'weapon_category' => :weapons, 'armor' => :armor
-    }.each do |categoria, chave|
+    DESTINO_NA_FICHA.each do |categoria, chave|
       nomes = dadas[categoria]
       next if nomes.blank? || !proficiencias[chave].is_a?(Array)
 
@@ -1284,6 +1293,13 @@ class CharacterSheetSummaryService
       # catálogo vazio (janela entre o deploy e o rake), o resultado é idêntico
       # ao de antes. Nada aqui muda o que é GRAVADO.
       languages: Proficiencies::LanguageReader.canonicalize(languages),
+      # ⚠️ Conhecimento começa VAZIO de propósito: não vem de classe, raça nem
+      # antecedente — só de treino concluído ou concessão do Mestre, que o
+      # preenchem logo a seguir. Mas tem de EXISTIR como array: os dois
+      # `aplicar_*` pulam a categoria cujo destino não seja Array
+      # (`!proficiencias[chave].is_a?(Array)`), e o conhecimento sumiria da
+      # ficha sem erro nenhum — o modo de falha que este serviço inteiro evita.
+      knowledge: [],
       # FASE 1, perícia. O tipo mais limpo: as quatro fontes já concordavam
       # nas mesmas 18, então isto é sobretudo tolerância a acento e caixa.
       skills: {

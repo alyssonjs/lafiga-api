@@ -12,8 +12,18 @@ class Proficiency < ApplicationRecord
   # ser o `race_rules.yml` e companhia.
   has_many :proficiency_sources, dependent: :destroy
 
+  # ⚠️ `knowledge` é HOUSERULE desta mesa, não do PHB: estudo que o personagem
+  # adquire e que não é perícia, ferramenta nem idioma — o capacete de conexão
+  # com o mecha que o Valac está a estudar.
+  #
+  # Entrou como categoria PRÓPRIA e não como sub-categoria de `tool` pelo
+  # critério que criou esta taxonomia (`proficiencias-levantamento.md`):
+  # categoria existe para VOCABULÁRIO que várias fontes escrevem diferente —
+  # "Veículos terrestres" tinha quatro grafias e custou 14 órfãs. Conhecimento é
+  # único por definição, não disputa nome com catálogo nenhum, e chamá-lo de
+  # ferramenta envenenaria justamente a categoria que mais custou a arrumar.
   CATEGORIES = %w[
-    skill saving_throw weapon_category weapon armor tool vehicle language
+    skill saving_throw weapon_category weapon armor tool vehicle language knowledge
   ].freeze
 
   # Sub-categorias válidas por categoria. `nil` = a categoria não subdivide.
