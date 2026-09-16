@@ -25,7 +25,7 @@ require Rails.root.join('spec/support/imported_sheets_seeder')
 # Quando alguém adicionar um novo alias errado, este spec falha imediatamente
 # com mensagem explícita.
 RSpec.describe 'SubklassSlugResolver — alias audit (Phase 4)' do
-  before(:all) { ImportedSheetsSeeder.seed_all! }
+  semeia_uma_vez { ImportedSheetsSeeder.seed_all! }
 
   let(:canonical_subklass_indexes) do
     canonical = JSON.parse(Rails.root.join('docs/canonical_indexes.json').read)

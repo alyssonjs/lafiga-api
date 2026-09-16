@@ -26,7 +26,7 @@ RSpec.describe 'Imported XLSX sheets — provisioning resilience', type: :servic
   let(:default_bg)    { Background.find_by(api_index: 'soldier') || Background.first }
   let(:default_align) { Alignment.find_by(api_index: 'n')        || Alignment.first  }
 
-  before(:all) do
+  semeia_uma_vez do
     # Seed todo o catálogo PHB+alternativas conhecidas pelo projeto antes da
     # primeira ficha. Find_or_create_by garante idempotência.
     ImportedSheetsSeeder.seed_all!

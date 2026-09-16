@@ -17,8 +17,24 @@ RSpec.describe SpellRules, '.gate_for' do
   end
   let(:race) { Race.find_by(api_index: 'human') || Race.create!(name: 'Humano', api_index: 'human') }
 
+  # ⚠️ Este spec fazia `Klass.find_by!` e NUNCA criava a classe: passava só
+  # porque um spec seeder tinha vazado o catálogo no banco de teste antes dele
+  # (`before(:all)` roda fora da transação do exemplo). Fechado o vazamento, ele
+  # quebrou — e a quebra É o diagnóstico: o verde dependia de sobra alheia.
+  #
+  # ⚠️ Classe NUA de propósito: a premissa do spec é "DB sem `spell_slots` e sem
+  # `pact_slot_level`", que é o que exercita os fallbacks do `gate_for`. Encher a
+  # classe aqui desligaria justamente o caminho medido.
+  #
+  # `LafigaTestCatalog` não serve: só é incluído em `type: :request`, e nem tem
+  # `warlock`/`ranger`.
+  def klass_para(api_index)
+    Klass.find_by(api_index: api_index) ||
+      Klass.create!(api_index: api_index, name: api_index.capitalize, hit_die: 8)
+  end
+
   def sheet_with(klass_api:, klass_level:)
-    klass = Klass.find_by!(api_index: klass_api)
+    klass = klass_para(klass_api)
     character = Character.create!(user: user, name: "Gate #{SecureRandom.hex(2)}", background: 'Test')
     sheet = Sheet.create!(
       character: character,
@@ -32,19 +48,19 @@ RSpec.describe SpellRules, '.gate_for' do
 
   it 'bruxo L6 usa nível de slot de pacto PHB (3) quando pact_slot_level está nil no DB' do
     sheet = sheet_with(klass_api: 'warlock', klass_level: 6)
-    klass = Klass.find_by!(api_index: 'warlock')
+    klass = klass_para('warlock')
     expect(described_class.gate_for(sheet, klass)).to eq(3)
   end
 
   it 'ranger L2 usa floor(nível/2) quando spell_slots está vazio no DB' do
     sheet = sheet_with(klass_api: 'ranger', klass_level: 2)
-    klass = Klass.find_by!(api_index: 'ranger')
+    klass = klass_para('ranger')
     expect(described_class.gate_for(sheet, klass)).to eq(1)
   end
 
   it 'mago L5 usa teto integral (3) quando spell_slots está vazio no DB' do
     sheet = sheet_with(klass_api: 'wizard', klass_level: 5)
-    klass = Klass.find_by!(api_index: 'wizard')
+    klass = klass_para('wizard')
     expect(described_class.gate_for(sheet, klass)).to eq(3)
   end
 end

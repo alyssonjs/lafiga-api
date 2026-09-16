@@ -57,7 +57,7 @@ RSpec.describe 'ASI feat no level-up e edit (Camada A.2)' do
   # Apos os fixes da Camada A1, parse_jsonish tambem aceita a string corrompida
   # — mas aqui usamos o caminho feliz para isolar bugs do level-up/edit dos bugs
   # de serializacao ja cobertos pelo feat_rules_all_feats_shape_spec.
-  before(:all) do
+  semeia_uma_vez do
     yaml = YAML.load_file(Rails.root.join('config', 'feats_improved.yml')).fetch('feats')
     obs = yaml.fetch('observador')
     Feat.find_or_create_by!(api_index: 'observador') do |f|

@@ -34,7 +34,7 @@ require Rails.root.join('spec/support/imported_sheets_seeder')
 #
 # Se um bug futuro escapar nesse mapeamento, OU este spec OU o Vitest pegam.
 RSpec.describe 'Front STATIC_CLASS_SUBCLASS_TO_API_INDEX → backend audit (Phase 8)' do
-  before(:all) { ImportedSheetsSeeder.seed_all! }
+  semeia_uma_vez { ImportedSheetsSeeder.seed_all! }
 
   SNAPSHOT_PATH = Rails.root.join('spec/fixtures/front_static_subclass_mapping.json')
 

@@ -22,7 +22,7 @@ require Rails.root.join('spec/support/imported_sheets_payload_builder')
 RSpec.describe 'CharacterSheetSummaryService — front contract (Phase 3.0)' do
   let(:user) { create(:user) }
 
-  before(:all) do
+  semeia_uma_vez do
     ImportedSheetsSeeder.seed_all!
     ImportedSheetsSpellSeeder.seed_all!
   end

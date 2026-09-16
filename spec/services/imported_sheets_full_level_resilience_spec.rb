@@ -31,7 +31,7 @@ RSpec.describe 'Imported XLSX sheets — full-level resilience', type: :service 
   let(:default_bg)    { Background.find_by(api_index: 'soldier') || Background.first }
   let(:default_align) { Alignment.find_by(api_index: 'n')        || Alignment.first  }
 
-  before(:all) do
+  semeia_uma_vez do
     ImportedSheetsSeeder.seed_all!
     ImportedSheetsSpellSeeder.seed_all!
   end

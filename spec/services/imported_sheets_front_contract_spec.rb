@@ -70,7 +70,7 @@ RSpec.describe 'Imported XLSX sheets — front contract (Phase 7)' do
 
   REPORT = []
 
-  before(:all) do
+  semeia_uma_vez do
     ImportedSheetsSeeder.seed_all!
     ImportedSheetsSpellSeeder.seed_all!
     REPORT.clear

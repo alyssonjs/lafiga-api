@@ -88,7 +88,7 @@ RSpec.describe FeatRules, 'shape integrity para todos os talentos do catalogo' d
     # da mesma forma que producao (e nao caindo no fallback `RULES` em memoria do
     # FeatRules). Sem isso, o spec ficaria green falsamente porque RULES tem dados
     # ja em formato Hash nativo.
-    before(:all) do
+    semeia_uma_vez do
       catalog.each do |api_index, data|
         Feat.find_or_create_by!(api_index: api_index) do |f|
           f.name = data['name']
