@@ -415,9 +415,10 @@ class KnownSpellsAggregator
         # - always_prepared_by_terrain (quando chosen_terrain estiver presente)
         begin
           next unless sk.sub_klass && sk.sub_klass.api_index.present?
-          ypath = Rails.root.join('config','subclass_overrides.yml')
-          if File.exist?(ypath)
-            yml = YAML.load_file(ypath) || {}
+          # ⚠️ Era `YAML.load_file` por ficha E por classe da ficha: ~5900 linhas
+          # relidas do disco a cada montagem de magias conhecidas.
+          yml = Subclasses::OverridesYaml.dados
+          if yml.present?
             cls_key = sk.klass.api_index.to_s
             sub_key = sk.sub_klass.api_index.to_s
             ent = yml.dig(cls_key, sub_key)

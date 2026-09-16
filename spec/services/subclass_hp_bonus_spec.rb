@@ -35,8 +35,12 @@ RSpec.describe SubclassHpBonus, type: :service do
   end
 
   describe '.step_bonus_for_klass (delta por level up)' do
-    def klass_double(api, level = nil)
-      sub = instance_double('SubKlass', api_index: api, name: api)
+    # ⚠️ `linhas_de_nivel` entrou no duplo porque o serviço passou a ler o BANCO
+    # primeiro — sem isso o duplo verificador mente sobre a interface real da
+    # `SubKlass`. Vazio significa "esta sub ainda não tem regra gravada", que é o
+    # caso destes exemplos: eles medem a aritmética do delta contra o YAML.
+    def klass_double(api, level = nil, linhas = [])
+      sub = instance_double('SubKlass', api_index: api, name: api, linhas_de_nivel: linhas)
       instance_double('SheetKlass', sub_klass: sub, level: level)
     end
 
@@ -56,6 +60,36 @@ RSpec.describe SubclassHpBonus, type: :service do
     it 'devolve 0 quando não há subclasse' do
       sk = instance_double('SheetKlass', sub_klass: nil, level: 5)
       expect(described_class.step_bonus_for_klass(sk, 5)).to eq(0)
+    end
+  end
+
+  # ⚠️ O BANCO manda. Este serviço lia SÓ o YAML: mexer no bônus de PV pela
+  # página do compêndio não tinha efeito nenhum — a ficha seguia com o número do
+  # livro, sem erro em lugar nenhum.
+  describe 'precedência do `levels_json` sobre o YAML' do
+    let(:klass) do
+      Klass.find_by(api_index: 'cozinheiro') ||
+        Klass.create!(name: 'Cozinheiro', api_index: 'cozinheiro', hit_die: 8)
+    end
+
+    it 'usa o que está GRAVADO, não o que o livro diz' do
+      SubKlass.create!(
+        name: 'Sargento Alimentar', api_index: 'sargento-alimentar', klass: klass,
+        levels_json: [{ 'level' => 3,
+                        'features' => [{ 'name' => 'Nunca Satisfeito',
+                                         'rules' => { 'max_hp_bonus_immediate' => 10,
+                                                      'max_hp_bonus_per_level' => 0 } }] }]
+      )
+
+      # O YAML daria 13 no nível 13 (3 + 1×10); o que o mestre gravou dá 10.
+      expect(described_class.bonus_for('sargento-alimentar', 13)).to eq(10)
+    end
+
+    it 'e cai no YAML enquanto a sub-classe não tiver regra gravada' do
+      SubKlass.create!(name: 'Sargento Alimentar', api_index: 'sargento-alimentar',
+                       klass: klass, levels_json: [])
+
+      expect(described_class.bonus_for('sargento-alimentar', 13)).to eq(13)
     end
   end
 end

@@ -369,9 +369,11 @@ class ClassRules
       # Fallbacks de YAML (subclass_overrides.yml)
       if always_map.blank? || choices_yaml_by_level.blank? || always_by_terrain.blank?
         begin
-          path = Rails.root.join('config','subclass_overrides.yml')
-          if File.exist?(path)
-            yml = YAML.load_file(path) || {}
+          # ⚠️ Era `YAML.load_file` A CADA REQUEST: ~5900 linhas relidas do disco
+          # uma vez por sub-classe da classe, numa leitura que a criação de
+          # personagem faz. Agora vem do leitor memoizado.
+          yml = Subclasses::OverridesYaml.dados
+          if yml.present?
             ent = yml.dig(api_key, key)
             if ent && ent['levels']
               ent['levels'].each do |row|
