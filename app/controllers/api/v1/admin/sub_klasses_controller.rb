@@ -8,14 +8,34 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
   end
 
   def show
-    render json: {sub_klass: @sub_klass}, status: 200
+    render json: { sub_klass: serializa(@sub_klass) }, status: 200
+  end
+
+  # ⚠️ `levels_base` é a regra do LIVRO (o nó do YAML), sem o que o mestre
+  # gravou. É contra ISTO que a página decide o que foi TOCADO, e é daqui que
+  # sai o "restaurar nível do livro". A lição veio do editor de raças, onde
+  # custou quatro bugs mudos: sem base, o formulário compara contra `{}`, vê
+  # divergência em todo campo e o primeiro Guardar congela a sub-classe numa
+  # cópia que deixa de acompanhar o catálogo.
+  def serializa(sub)
+    sub.as_json.merge(
+      'levels_json' => sub.linhas_de_nivel,
+      'levels_base' => Subclasses::YamlBase.linhas(sub.klass&.api_index, sub.api_index)
+    )
   end
 
   def create
     @sub_klass = SubKlass.new(sub_klass_params)
-    
+    niveis, erros = niveis_do_pedido(@sub_klass)
+    return render(json: { errors: erros }, status: :unprocessable_entity) if erros.any?
+
+    unless niveis == :ausente
+      @sub_klass.levels_json = niveis
+      @sub_klass.edited_at = Time.current
+    end
+
     if @sub_klass.save
-      render json: @sub_klass, status: :created
+      render json: { sub_klass: serializa(@sub_klass) }, status: :created
     else
       render json: { errors: @sub_klass.errors.full_messages }, status: :unprocessable_entity
     end
@@ -24,13 +44,19 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
   end
 
   def update
-    if @sub_klass.update(sub_klass_params)
-      render json: {sub_klass: @sub_klass}, status: 200 
+    niveis, erros = niveis_do_pedido(@sub_klass)
+    return render(json: { errors: erros }, status: :unprocessable_entity) if erros.any?
+
+    atributos = sub_klass_params.to_h
+    atributos['levels_json'] = niveis unless niveis == :ausente
+
+    if atualiza!(atributos)
+      render json: { sub_klass: serializa(@sub_klass) }, status: 200
     else
       render json: { errors: @sub_klass.errors.full_messages }, status: :unprocessable_entity
     end
     rescue StandardError => e
-      render json: { error: e.message }, status: :unprocessable_entity   
+      render json: { error: e.message }, status: :unprocessable_entity
   end
 
   def destroy
@@ -103,9 +129,13 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
     render json: { error: e.message }, status: :not_found
   end
 
+  # ⚠️ `levels_json` SAIU do permit de propósito — é a manobra da fase 1, agora
+  # no outro campo de regra. Enquanto esteve aqui, um PATCH com um nível apagava
+  # os outros dezenove, porque `update` grava o documento inteiro. A regra entra
+  # pelo `levels_patch`, que fala em níveis e é sanitizado.
   def sub_klass_params
     params.require(:sub_klass).permit(
-      :name, :klass_id, :api_index, :subclass_flavor, :description, :levels_json, :playable,
+      :name, :klass_id, :api_index, :subclass_flavor, :description, :playable,
       # Override (DM) das Magias do Círculo por Terreno — array de
       # { terrain, spells: [{ level, spellLevel, spells: [] }] }.
       # `nil` mantém o catálogo estático canônico no front.
@@ -120,6 +150,43 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
         { entries: [:level, :spellLevel, { spells: [] }] },
       ],
     )
+  end
+
+  # `[:ausente, []]` quando o pedido não fala de níveis — diferente de mandar um
+  # patch vazio, que é "não mudei nada" e ainda assim carimba `edited_at`.
+  def niveis_do_pedido(sub)
+    pedido = params.require(:sub_klass)
+    return [:ausente, []] unless pedido.key?(:levels_patch)
+
+    Subclasses::LevelsPatch.aplicar(sub.linhas_de_nivel, pedido[:levels_patch])
+  rescue ActionController::ParameterMissing
+    [:ausente, []]
+  end
+
+  # ⚠️ Gravar a regra e projetar o que dela deriva é UM gesto. Se o sync das
+  # features ou a reprojeção das magias falhar, a regra nova não pode ficar
+  # gravada sozinha: era assim que `features` e `SpellSource` ficavam para trás,
+  # com a página mostrando uma coisa e a ficha do jogador outra.
+  def atualiza!(atributos)
+    ok = false
+    ActiveRecord::Base.transaction do
+      @sub_klass.edited_at = Time.current if atributos.key?('levels_json')
+      ok = @sub_klass.update(atributos)
+      raise ActiveRecord::Rollback unless ok
+
+      propaga_regra! if @sub_klass.saved_change_to_levels_json?
+    end
+    ok
+  end
+
+  # ⚠️ `update_descriptions: true` é necessário: com `false` o serviço só
+  # preenche descrição VAZIA, e reescrever o texto de uma feature na página
+  # nunca chegaria à ficha. É também por isso que a rake `absorve_edicoes_dm`
+  # roda ANTES de a página ir ao ar — senão este sync passaria por cima do texto
+  # que o mestre já tinha editado pelo compêndio.
+  def propaga_regra!
+    Subclasses::SyncFeaturesFromLevelsJsonService.new(@sub_klass, update_descriptions: true).call
+    Subclasses::ReprojectSpellSources.call(@sub_klass)
   end
 
   def level_feature_params

@@ -19,10 +19,22 @@ class Api::V1::Admin::KlassesController < ApplicationController
   # Guardar congela a classe numa cópia que deixa de acompanhar o catálogo. E
   # mandar a base JÁ SOBREPOSTA é pior: o que o mestre gravou pareceria igual à
   # base, não seria reemitido, e sumia no save seguinte.
+  # ⚠️ As sub-classes vêm EMBUTIDAS, no espelho do `{race, sub_races}` das
+  # raças: a página edita classe e arquétipos na mesma tela, e sem isto ela
+  # precisaria de uma segunda chamada por sub-classe só para saber que elas
+  # existem. `levels_base` vai junto pelo mesmo motivo do `rules_base`.
   def serializa(k)
     k.as_json.merge(
       'rules' => (k.read_attribute(:rules) || {}),
-      'rules_base' => (ClassRules.find_from_rules_constant(k.api_index) || {})
+      'rules_base' => (ClassRules.find_from_rules_constant(k.api_index) || {}),
+      'sub_klasses' => k.sub_klasses.order(:id).map { |sub| serializa_sub(sub, k.api_index) }
+    )
+  end
+
+  def serializa_sub(sub, klass_idx)
+    sub.as_json.merge(
+      'levels_json' => sub.linhas_de_nivel,
+      'levels_base' => Subclasses::YamlBase.linhas(klass_idx, sub.api_index)
     )
   end
 
@@ -38,7 +50,7 @@ class Api::V1::Admin::KlassesController < ApplicationController
       # de `show`/`update` (`buildWizardClassOptionFromApi` espera o
       # registro raiz). Antes retornava `@klass` solto — exigia `as` ad-hoc
       # no caller.
-      render json: { klass: @klass }, status: :created
+      render json: { klass: serializa(@klass) }, status: :created
     else
       render json: { errors: @klass.errors.full_messages }, status: :unprocessable_entity
     end
@@ -54,7 +66,7 @@ class Api::V1::Admin::KlassesController < ApplicationController
     atributos[:rules] = regras unless regras == :ausente
 
     if @klass.update(atributos)
-      render json: { klass: @klass }, status: 200
+      render json: { klass: serializa(@klass) }, status: 200
     else
       render json: { errors: @klass.errors.full_messages }, status: :unprocessable_entity
     end
