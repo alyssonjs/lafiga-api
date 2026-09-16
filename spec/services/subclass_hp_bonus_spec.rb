@@ -72,22 +72,30 @@ RSpec.describe SubclassHpBonus, type: :service do
         Klass.create!(name: 'Cozinheiro', api_index: 'cozinheiro', hit_die: 8)
     end
 
+    # ⚠️ `find_or_initialize_by`, nunca `create!`: o `api_index` TEM de ser
+    # exatamente este (é a chave que o serviço procura, no banco e no YAML), e
+    # specs vizinhos que materializam o catálogo fora da transação deixam a linha
+    # para trás. Com `create!` o exemplo estoura por unicidade quando roda na
+    # suíte inteira e passa quando roda sozinho — falha do SPEC a fingir-se de
+    # falha do código, que foi exatamente o que aconteceu.
+    def grava_sub(linhas)
+      sub = SubKlass.find_or_initialize_by(api_index: 'sargento-alimentar')
+      sub.update!(name: 'Sargento Alimentar', klass: klass, levels_json: linhas)
+      sub
+    end
+
     it 'usa o que está GRAVADO, não o que o livro diz' do
-      SubKlass.create!(
-        name: 'Sargento Alimentar', api_index: 'sargento-alimentar', klass: klass,
-        levels_json: [{ 'level' => 3,
-                        'features' => [{ 'name' => 'Nunca Satisfeito',
-                                         'rules' => { 'max_hp_bonus_immediate' => 10,
-                                                      'max_hp_bonus_per_level' => 0 } }] }]
-      )
+      grava_sub([{ 'level' => 3,
+                   'features' => [{ 'name' => 'Nunca Satisfeito',
+                                    'rules' => { 'max_hp_bonus_immediate' => 10,
+                                                 'max_hp_bonus_per_level' => 0 } }] }])
 
       # O YAML daria 13 no nível 13 (3 + 1×10); o que o mestre gravou dá 10.
       expect(described_class.bonus_for('sargento-alimentar', 13)).to eq(10)
     end
 
     it 'e cai no YAML enquanto a sub-classe não tiver regra gravada' do
-      SubKlass.create!(name: 'Sargento Alimentar', api_index: 'sargento-alimentar',
-                       klass: klass, levels_json: [])
+      grava_sub([])
 
       expect(described_class.bonus_for('sargento-alimentar', 13)).to eq(13)
     end
