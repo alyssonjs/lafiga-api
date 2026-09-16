@@ -113,6 +113,31 @@ RSpec.describe 'Api::V1::Admin::SubKlasses levels_patch', type: :request do
     end
   end
 
+  # ⚠️ A ficha é um SNAPSHOT: a regra nova vale em combate na hora, mas a lista
+  # que a ficha MOSTRA fica presa no `class_summary` materializado. Sem esta
+  # propagação a ficha contradiz-se depois de toda edição — e sem o número na
+  # resposta o mestre não tem como saber que as fichas já existentes foram
+  # repostas.
+  describe 'propagação para as fichas que já existem' do
+    it 'responde quantas fichas foram repostas' do
+      ficha = create(:sheet, character: create(:character, user: create(:user)))
+      ficha.sheet_klasses.create!(klass: klass, sub_klass: sub, level: 3)
+
+      patch_sub(sub_klass: { levels_patch: { set: [{ level: 3, features: [{ name: 'Nova' }] }] } })
+
+      expect(response).to have_http_status(:ok)
+      expect(corpo).to have_key('sheets_resynced')
+      expect(corpo['sheets_resynced']).to be_a(Integer)
+    end
+
+    it 'não fala de fichas quando o pedido não mexe na regra' do
+      patch_sub(sub_klass: { description: 'só o texto' })
+
+      expect(response).to have_http_status(:ok)
+      expect(corpo).not_to have_key('sheets_resynced')
+    end
+  end
+
   describe 'show' do
     it 'devolve a base do livro ao lado do que está gravado' do
       get "/api/v1/admin/sub_klasses/#{sub.id}", headers: headers

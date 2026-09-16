@@ -51,7 +51,9 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
     atributos['levels_json'] = niveis unless niveis == :ausente
 
     if atualiza!(atributos)
-      render json: { sub_klass: serializa(@sub_klass) }, status: 200
+      corpo = { sub_klass: serializa(@sub_klass) }
+      corpo[:sheets_resynced] = @repostas if @repostas
+      render json: corpo, status: 200
     else
       render json: { errors: @sub_klass.errors.full_messages }, status: :unprocessable_entity
     end
@@ -187,6 +189,20 @@ class Api::V1::Admin::SubKlassesController < ApplicationController
   def propaga_regra!
     Subclasses::SyncFeaturesFromLevelsJsonService.new(@sub_klass, update_descriptions: true).call
     Subclasses::ReprojectSpellSources.call(@sub_klass)
+    @repostas = repoe_fichas!
+  end
+
+  # ⚠️ A ficha é um SNAPSHOT: a regra nova vale em combate na hora, mas a lista
+  # que a ficha MOSTRA fica presa no `class_summary` materializado. Sem isto a
+  # ficha contradiz-se depois de toda edição de sub-classe.
+  #
+  # Com `rescue` porque a regra já está gravada — é o que o mestre pediu — e a
+  # propagação não pode derrubá-la. A rake reconcilia o que ficar para trás.
+  def repoe_fichas!
+    Klasses::ResyncSummaries.call(sub_klass_id: @sub_klass.id).mudadas
+  rescue StandardError => e
+    Rails.logger.warn("repoe_fichas! falhou para sub_klass=#{@sub_klass.id}: #{e.message}")
+    nil
   end
 
   def level_feature_params

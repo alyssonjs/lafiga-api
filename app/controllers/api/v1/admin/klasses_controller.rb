@@ -68,7 +68,10 @@ class Api::V1::Admin::KlassesController < ApplicationController
 
     if @klass.update(atributos)
       projeta_colunas!(@klass)
-      render json: { klass: serializa(@klass) }, status: 200
+      repostas = repoe_fichas!(@klass)
+      corpo = { klass: serializa(@klass) }
+      corpo[:sheets_resynced] = repostas if repostas
+      render json: corpo, status: 200
     else
       render json: { errors: @klass.errors.full_messages }, status: :unprocessable_entity
     end
@@ -128,6 +131,23 @@ class Api::V1::Admin::KlassesController < ApplicationController
     raise ActiveRecord::RecordNotFound, "Klass not found" unless @klass
   rescue StandardError=> e
     render json: { error: e.message }, status: :not_found
+  end
+
+  # ⚠️ A ficha é um SNAPSHOT: a mecânica propaga sozinha (o produtor lê
+  # `ClassRules` a cada summary), a VITRINE não. Sem isto o mestre edita a
+  # classe, o personagem ganha a proficiência nova em combate e a ficha continua
+  # a listar a lista velha — incoerente consigo mesma, sem erro em lugar nenhum.
+  #
+  # Inline e com `rescue`: gravar a regra é o que o mestre pediu e não pode
+  # falhar por causa da propagação. O que ficar para trás é reconciliado pela
+  # rake `dnd:resync_class_summaries`, que é idempotente.
+  def repoe_fichas!(klass)
+    return nil unless klass.saved_change_to_rules?
+
+    Klasses::ResyncSummaries.call(klass_id: klass.id).mudadas
+  rescue StandardError => e
+    Rails.logger.warn("repoe_fichas! falhou para klass=#{klass.id}: #{e.message}")
+    nil
   end
 
   # ⚠️ PROJEÇÃO das colunas derivadas. O nível da sub-classe vive em quatro
