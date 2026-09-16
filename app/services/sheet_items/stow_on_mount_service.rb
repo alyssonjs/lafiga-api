@@ -62,7 +62,7 @@ module SheetItems
       companion = Array(sheet.companions).find { |c| c.is_a?(Hash) && c['id'].to_s == companion_id.to_s }
       raise InvalidStow, 'Montaria não encontrada nesta ficha' unless companion
       raise InvalidStow, 'Este companheiro não é uma montaria' unless MOUNTS.include?(companion['type'].to_s)
-      raise InvalidStow, mensagem_sem_alforje(companion) unless container?(companion)
+      raise InvalidStow, mensagem_sem_alforje(companion) unless container?(companion) || peca_vestida?
 
       companion
     end
@@ -70,6 +70,22 @@ module SheetItems
     # Alforje (ou o que ocupe o slot `bags`) equipado na montaria.
     def container?(companion)
       (companion['equipment'] || {})[CONTAINER_SLOT].present?
+    end
+
+    # ⚠️ Peça VESTIDA na montaria (sela, barda, alforje, freio) NÃO é carga:
+    # ela vai presa no animal. Exigir alforje para ela invertia a ordem do mundo
+    # — o alforje é justamente uma das peças, e nunca poderia entrar primeiro.
+    #
+    # Era o bug real: `CharacterSheet#onEquipMount` manda a peça por ESTE cano ao
+    # equipá-la, levava 422, e ela ficava ao mesmo tempo equipada na montaria e em
+    # "Soltos" na bolsa do dono — pesando nas costas dele.
+    #
+    # O slot vem do CATÁLOGO (`props['mount_slot']`), nunca da instância: mesmo
+    # caminho que `as_inventory_json` usa para alimentar o seletor da montaria.
+    def peca_vestida?
+      EquipmentRules.mount_props(item).present?
+    rescue NameError
+      false
     end
 
     def mensagem_sem_alforje(companion)

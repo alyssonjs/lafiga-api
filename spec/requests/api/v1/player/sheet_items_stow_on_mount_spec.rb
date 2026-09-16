@@ -80,6 +80,21 @@ RSpec.describe 'Api::V1::Player::SheetItemsController stow_on_mount', type: :req
     expect(prop(item)).to eq('mnt-pelado')
   end
 
+  # ⚠️ A sela é PEÇA, não carga: vai presa no animal, e o alforje é uma das
+  # peças — exigi-lo para equipar as outras nunca poderia funcionar. Sem isto o
+  # front levava 422 ao equipar e a peça ficava em "Soltos", pesando no dono.
+  it 'peça VESTIDA (sela) nao exige alforje' do
+    sela = Item.create!(name: 'Spec Sela exotica', api_index: "spec-sela-#{SecureRandom.hex(3)}",
+                        kind: 'gear', category: 'tack', props: { 'mount_slot' => 'saddle' })
+    item = SheetItem.create!(sheet: sheet, item_name: sela.name, item_index: sela.api_index,
+                             category: 'Equipamento', quantity: 1, source: 'test')
+
+    stow(item, companion_id: 'mnt-pelado')
+
+    expect(response).to have_http_status(:ok)
+    expect(prop(item)).to eq('mnt-pelado')
+  end
+
   it 'REGRESSAO: familiar nao carrega carga — so montaria' do
     item = bag!
 
