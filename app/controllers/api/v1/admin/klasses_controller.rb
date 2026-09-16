@@ -46,6 +46,7 @@ class Api::V1::Admin::KlassesController < ApplicationController
     @klass.rules = regras unless regras == :ausente
 
     if @klass.save
+      projeta_colunas!(@klass)
       # Envelopa em `{ klass: ... }` para o front consumir o mesmo shape
       # de `show`/`update` (`buildWizardClassOptionFromApi` espera o
       # registro raiz). Antes retornava `@klass` solto — exigia `as` ad-hoc
@@ -66,6 +67,7 @@ class Api::V1::Admin::KlassesController < ApplicationController
     atributos[:rules] = regras unless regras == :ausente
 
     if @klass.update(atributos)
+      projeta_colunas!(@klass)
       render json: { klass: serializa(@klass) }, status: 200
     else
       render json: { errors: @klass.errors.full_messages }, status: :unprocessable_entity
@@ -126,6 +128,33 @@ class Api::V1::Admin::KlassesController < ApplicationController
     raise ActiveRecord::RecordNotFound, "Klass not found" unless @klass
   rescue StandardError=> e
     render json: { error: e.message }, status: :not_found
+  end
+
+  # ⚠️ PROJEÇÃO das colunas derivadas. O nível da sub-classe vive em quatro
+  # sítios e a coluna estava VAZIA nas 13 — é isso que mantinha sete guardas do
+  # servidor inertes (`k.try(:subclass_level).to_i` → 0 passa sempre). Sem este
+  # escritor, a classe editada pela página voltaria a divergir no primeiro save:
+  # a regra diria 3 e a coluna continuaria nula.
+  #
+  # `saving_throws` entra pela mesma razão e é mais óbvio ainda: a coluna guarda
+  # "Força" e a regra guarda "FOR", sem tradutor entre as duas grafias. Medido:
+  # a coluna não tem leitor (`build_saving_throws` lê a REGRA), então alinhá-la
+  # não muda ficha nenhuma — só para de mentir para quem a ler depois.
+  def projeta_colunas!(klass)
+    regra = ClassRules.find(klass.api_index) || {}
+    colunas = {}
+
+    nivel = (regra.dig(:subclass, :choose_level) || regra.dig('subclass', 'choose_level')).to_i
+    colunas[:subclass_level] = nivel if nivel.positive? && klass.subclass_level.to_i != nivel
+
+    testes = Array(regra[:saving_throws] || regra['saving_throws']).map(&:to_s)
+    colunas[:saving_throws] = testes if testes.any? && Array(klass.saving_throws).map(&:to_s) != testes
+
+    klass.update_columns(colunas) if colunas.any?
+  rescue StandardError => e
+    # A projeção é derivada: falhar nela não pode derrubar a gravação da regra,
+    # que é o que o mestre pediu. A rake `dnd:backfill_subclass_level` reconcilia.
+    Rails.logger.warn("projeta_colunas! falhou para klass=#{klass.id}: #{e.message}")
   end
 
   def klass_params
