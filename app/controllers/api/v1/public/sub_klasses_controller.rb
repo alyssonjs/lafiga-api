@@ -15,7 +15,7 @@ class Api::V1::Public::SubKlassesController < ApplicationController
     levels = @sub_klass.sub_klass_levels.includes(:features).to_a
     # Merge grants/choices from levels_json (compiled by rake) if present
     grants_map = begin
-      parsed = JSON.parse(@sub_klass.levels_json || '[]')
+      parsed = @sub_klass.linhas_de_nivel
       parsed.each_with_object({}) do |row, h|
         lvl = row['level'].to_i
         h[lvl] = {

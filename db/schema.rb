@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_11_140000) do
+ActiveRecord::Schema.define(version: 2026_09_16_120100) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -985,10 +985,13 @@ ActiveRecord::Schema.define(version: 2026_09_11_140000) do
     t.string "api_index"
     t.string "subclass_flavor"
     t.text "description"
-    t.text "levels_json"
+    t.jsonb "levels_json", default: [], null: false
     t.boolean "playable", default: true, null: false
     t.jsonb "terrain_spells"
     t.jsonb "bonus_spells"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "edited_at"
     t.index ["api_index"], name: "index_sub_klasses_on_api_index"
     t.index ["klass_id", "api_index"], name: "idx_sub_klasses_unique_klass_api", unique: true
     t.index ["klass_id"], name: "index_sub_klasses_on_klass_id"

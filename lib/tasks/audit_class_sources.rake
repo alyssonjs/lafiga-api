@@ -11,7 +11,7 @@
 #   3. colunas de `klasses` — mesmo fato, outra grafia
 #   4. `config/class_overrides.yml`
 #   5. `config/subclass_overrides.yml` (5931 linhas)
-#   6. `sub_klasses.levels_json` (TEXT)
+#   6. `sub_klasses.levels_json` (jsonb)
 #
 # Este rake NÃO conserta nada e NÃO derruba deploy. Ele MEDE, para a fase 1
 # saber o que reconciliar. O que está errado aqui é decisão do mestre.

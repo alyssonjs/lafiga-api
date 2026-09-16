@@ -100,10 +100,7 @@ module Modifiers
       private
 
       def parse_levels_json(sub)
-        raw = sub.levels_json.presence
-        return [] if raw.blank?
-        parsed = JSON.parse(raw) rescue []
-        Array(parsed).select { |r| r.is_a?(Hash) && r['level'].to_i.positive? }
+        sub.linhas_de_nivel.select { |r| r['level'].to_i.positive? }
       end
 
       def movement_grants(sub, row_lvl, grants, feature_name: nil)

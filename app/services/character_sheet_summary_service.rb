@@ -1056,7 +1056,7 @@ class CharacterSheetSummaryService
       # ficavam só no JSON e não apareciam em proficiencies.tools na ficha.
       sk = primary_sheet_klass
       if sk&.sub_klass && sk.sub_klass.levels_json.present?
-        rows = JSON.parse(sk.sub_klass.levels_json) rescue []
+        rows = subklass_levels_json(sk.sub_klass)
         lvl = sk.level.to_i
         Array(rows).each do |row|
           rlevel = (row.is_a?(Hash) ? (row['level'] || row[:level]) : 0).to_i

@@ -150,12 +150,7 @@ module DndImportHelpers
       rescue StandardError => e
         puts "    • Aviso: falha ao limpar SpellSource para #{klass.api_index}/#{mapped_idx}: #{e.message}"
       end
-      parsed = begin
-        JSON.parse(sub.levels_json.presence || '[]')
-      rescue StandardError
-        []
-      end
-      parsed = Array(parsed).compact.select { |r| r.is_a?(Hash) }
+      parsed = sub.linhas_de_nivel
       by_level = parsed.each_with_object({}) do |row, h|
         lvl = (row['level'] || row[:level]).to_i rescue 0
         next if lvl < 0

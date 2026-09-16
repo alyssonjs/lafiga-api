@@ -72,7 +72,7 @@ namespace :dnd do
 
       ActiveRecord::Base.transaction do
         SubKlass.includes(:klass, sub_klass_levels: :features).find_each do |sub|
-          canon = (JSON.parse(sub.levels_json.presence || '[]') rescue [])
+          canon = sub.linhas_de_nivel
           next if canon.empty?
           canon_by_lvl = {}
           canon.each do |r|

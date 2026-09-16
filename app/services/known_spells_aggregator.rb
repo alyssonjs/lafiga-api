@@ -378,7 +378,7 @@ class KnownSpellsAggregator
         begin
           sub = sk.sub_klass
           if !terrain_override_applied && sub&.levels_json.present? && chosen_terrain
-            rows = JSON.parse(sub.levels_json) rescue []
+            rows = sub.linhas_de_nivel
             rows = Array(rows).select { |r| r.is_a?(Hash) && (r['level'].to_i <= lvl) }
             names = []
             rows.each do |r|

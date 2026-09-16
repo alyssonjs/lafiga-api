@@ -198,11 +198,7 @@ module Subclasses
     end
 
     def parse_levels_json
-      raw = @sub.levels_json.presence
-      return [] if raw.blank?
-
-      parsed = JSON.parse(raw) rescue []
-      Array(parsed).select { |r| r.is_a?(Hash) && r['level'].to_i.positive? }
+      @sub.linhas_de_nivel.select { |r| r['level'].to_i.positive? }
     end
 
     def upsert_feature(feat)

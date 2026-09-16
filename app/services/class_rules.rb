@@ -267,7 +267,7 @@ class ClassRules
         next if sub_klass.api_index.blank?
         grants_by_level = {}
         begin
-          parsed = JSON.parse(sub_klass.levels_json || '[]')
+          parsed = sub_klass.linhas_de_nivel
           parsed.each do |row|
             lvl = row['level'].to_i
             g = row['grants'] || {}
@@ -303,7 +303,7 @@ class ClassRules
 
         learn_any_map = {}
         begin
-          parsed = JSON.parse(sub_klass.levels_json || '[]')
+          parsed = sub_klass.linhas_de_nivel
           parsed.each do |row|
             lvl = row['level'].to_i
             next if lvl <= 0
