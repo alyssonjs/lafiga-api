@@ -112,16 +112,48 @@ RSpec.describe 'SheetItems — cintos', type: :request do
 
     it 'item sem vocacao nenhuma nao entra' do
       cinto = linha!('Cinto', index: cinto_catalogo!('cinto-b5', livres: 2, consumiveis: 2).api_index)
-      catalogo!('corda-b5', 'Corda', 'gear')
-      corda = linha!('Corda', index: 'corda-b5')
+      # ⚠️ Era uma CORDA até 16/09, quando equipamento passou a caber na vaga
+      # livre. Armadura continua sem vocação nenhuma: veste-se, não se pendura.
+      catalogo!('cota-b5', 'Cota de Malha', 'armor')
+      cota = linha!('Cota de Malha', index: 'cota-b5')
 
-      prender(corda, cinto)
+      prender(cota, cinto)
 
       expect(response).to have_http_status(:unprocessable_entity)
       # A mensagem deixou de enumerar em 31/08: livro, instrumento e vestuário
       # entraram na vaga livre, e a lista antiga virou mentira. O que este
-      # exemplo guarda é a RECUSA — corda genérica continua fora.
+      # exemplo guarda é a RECUSA.
       expect(response.parsed_body['error']).to match(/não vai em cinto/)
+    end
+
+    # Decisão do mestre (16/09/2026): EQUIPAMENTO vai na vaga livre — o Sirius
+    # leva a lanterna num slot do cinto. O limite é o número de vagas.
+    it 'EQUIPAMENTO entra no slot livre — a lanterna' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-b5e', livres: 1).api_index)
+      catalogo!('lanterna-b5e', 'Lanterna Coberta', 'gear')
+      lanterna = linha!('Lanterna Coberta', index: 'lanterna-b5e')
+
+      prender(lanterna, cinto)
+
+      expect(response).to have_http_status(:ok)
+      expect(lanterna.reload.stored_on_belt_id).to eq(cinto.id)
+    end
+
+    # ⚠️ Mas DEPÓSITO não: pendurar um depósito noutro abre a pergunta do ciclo
+    # (cinto-dentro-do-cinto), que nenhum guard responde.
+    it 'DEPOSITO nao entra — mochila e cinto com vagas' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-b5d', livres: 3).api_index)
+      Item.create!(api_index: 'mochila-b5d', name: 'Mochila', kind: 'gear', category: 'bag',
+                   props: { 'capacity_kg' => 15 })
+      mochila = linha!('Mochila', index: 'mochila-b5d')
+      outro = linha!('Cinto', index: cinto_catalogo!('cinto-b5d2', livres: 1).api_index)
+
+      [mochila, outro].each do |deposito|
+        prender(deposito, cinto)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(deposito.reload.stored_on_belt_id).to be_nil
+      end
     end
   end
 

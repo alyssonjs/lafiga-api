@@ -9,7 +9,8 @@ module SheetItems
   #
   #   LIVRE       — arma, ferramenta ou aljava: coisa que se saca. A arma no
   #                 cinto está EQUIPADA no personagem mas fora das mãos; pelo
-  #                 PHB, sacá-la é a interação livre com objeto do turno.
+  #                 PHB, sacá-la é a interação livre com objeto do turno. Desde
+  #                 16/09 também EQUIPAMENTO (lanterna, corda) — ver `equipamento?`.
   #   CONSUMÍVEL  — poção e afins, prontos para beber.
   #
   # A vocação do slot deriva do ITEM (arma não entra em slot de consumível),
@@ -47,6 +48,9 @@ module SheetItems
     # Lista EXPLÍCITA, e não "gear que não é outra coisa": `gear` é o balde
     # genérico do catálogo — 300 linhas, a maioria sem categoria — e varrê-lo
     # inteiro para o cinto transformava a vaga num segundo inventário.
+    # ⚠️ 16/09/2026: a mesa decidiu o contrário para o `gear` mundano — ver
+    # `equipamento?`. A lista segue valendo para o item MÁGICO, cuja peça mora
+    # em `sub_category`.
     #
     # ⚠️ CINTO fora da lista de propósito: cinto veste-se na cintura, não se
     # pendura noutro cinto. Deixá-lo entrar abria a pergunta do cinto-dentro-do-
@@ -82,7 +86,7 @@ module SheetItems
       # Consumível PRIMEIRO: a poção tem vaga própria, e um dia um consumível
       # vai ter nome de vestuário. A vaga certa importa mais que a ordem.
       return 'consumable' if consumivel?
-      return 'free' if arma? || ferramenta? || aljava? || livro? || instrumento? || vestuario?
+      return 'free' if arma? || ferramenta? || aljava? || livro? || instrumento? || vestuario? || equipamento?
 
       raise InvalidStow, 'Este item não vai em cinto.'
     end
@@ -188,6 +192,23 @@ module SheetItems
       return true if catalogo.kind == 'gear' && WARDROBE_PIECES.include?(catalogo.category.to_s)
 
       catalogo.kind == 'magic_item' && WARDROBE_PIECES.include?(catalogo.sub_category.to_s)
+    end
+
+    # EQUIPAMENTO — lanterna, tocha, corda, cantil: o `gear` do catálogo.
+    #
+    # ⚠️ Decisão do mestre em 16/09/2026, e ela VIRA o que o `WARDROBE_PIECES`
+    # defendia: o cinto era estreito de propósito, para a vaga não virar um
+    # segundo inventário. A mesa decidiu que o limite é o NÚMERO de vagas do
+    # cinto, e que o absurdo (sela, barril) o mestre veta na mesa. O pedido veio
+    # do jogo: o Sirius leva a lanterna num slot do cinto.
+    #
+    # Ficam de fora só os DEPÓSITOS — bolsa/mochila (`bag?`) e cinto com vagas
+    # (`belt?`): pendurar um depósito noutro abre a pergunta do ciclo
+    # (cinto-dentro-do-cinto), que nenhum guard responde hoje.
+    def equipamento?
+      return false unless catalogo&.kind == 'gear'
+
+      !(item.bag? || item.belt?)
     end
 
     def nome_normalizado

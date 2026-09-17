@@ -150,24 +150,32 @@ RSpec.describe 'SheetItems — foco arcano e cinto alargado', type: :request do
   end
 
   describe 'o que continua FORA — a lista não virou "tudo cabe"' do
-    it 'GEAR genérico sem peça de vestuário é recusado' do
-      # `gear` é o balde do catálogo (300 linhas, a maioria sem categoria).
-      # Varrê-lo inteiro para o cinto transformava a vaga num 2º inventário.
+    it 'ARMADURA segue fora — equipamento entrou, a lista não virou "tudo cabe"' do
+      # ⚠️ Até 16/09 este exemplo era uma Corda de Cânhamo: `gear` genérico recusado,
+      # porque varrer o balde do catálogo transformava a vaga num 2º inventário.
+      # O mestre decidiu o contrário — equipamento vai na vaga livre, e o limite é
+      # o NÚMERO de vagas (ver 'EQUIPAMENTO entra' em sheet_items_belt_spec). A
+      # guarda contra o "tudo cabe" passou a ser o que não é equipamento: armadura
+      # veste-se, não se pendura.
       cinto = cinto!('cinto-x', livres: 2)
-      catalogo!('corda-de-canhamo', 'Corda de Cânhamo', 'gear', category: 'equipment')
-      corda = linha!('Corda de Cânhamo', index: 'corda-de-canhamo')
+      catalogo!('cota-de-malha-x', 'Cota de Malha', 'armor')
+      cota = linha!('Cota de Malha', index: 'cota-de-malha-x')
 
-      prender(corda, cinto)
+      prender(cota, cinto)
 
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(corda.reload.stored_on_belt_id).to be_nil
+      expect(cota.reload.stored_on_belt_id).to be_nil
     end
 
     it 'nome que só CITA livro não é livro — o leitor é ancorado' do
       # O falso positivo custa caro noutra ponta (no front rouba a casa do
       # manto); aqui abriria a vaga do cinto a qualquer bugiganga temática.
+      #
+      # ⚠️ Era `gear` até 16/09. Com equipamento aceito na vaga livre, o broche
+      # entraria por OUTRA porta e a recusa deixaria de provar o leitor. Item
+      # mágico sem peça de vestuário isola a pergunta que este exemplo faz.
       cinto = cinto!('cinto-falso', livres: 2)
-      catalogo!('broche-do-livro', 'Broche do Livro do Vazio', 'gear', category: 'equipment')
+      catalogo!('broche-do-livro', 'Broche do Livro do Vazio', 'magic_item')
       broche = linha!('Broche do Livro do Vazio', index: 'broche-do-livro')
 
       prender(broche, cinto)
