@@ -418,6 +418,11 @@ class EquipmentRules
       # antes da fusão em `back`, e devolver o slot morto faria o front sugerir
       # uma casa que já não existe. Traduzir aqui evita reescrever o catálogo.
       bruto = (db_item.props || {})['equip_slot'].presence
+      # ROUPA (16/09): o tipo "Roupas" do editor geral grava `category: 'clothes'`,
+      # e a classificação de 14/09 marcou assim as roupas do SRD — sem carimbar
+      # slot, porque a ficha não tinha casa de roupa. Leitor TOLERANTE pela
+      # CATEGORIA (declarada, não nome), o que dispensa um rake em prod.
+      bruto ||= 'clothing' if db_item.kind.to_s == 'gear' && db_item.category.to_s == 'clothes'
       bruto && SheetItem.canonicalize_slot(bruto)
     end
 

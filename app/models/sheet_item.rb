@@ -17,10 +17,14 @@ class SheetItem < ApplicationRecord
   # noutro lugar e com vocação MAIS ESTREITA: só arma pequena e consumível.
   # Slots próprios (e não um segundo item no slot `belt`) porque o personagem
   # usa os três ao mesmo tempo: cinturão na cintura e um coldre em cada perna.
+  # `clothing` (16/09): ROUPA. Vestia-se no slot `armor` ("o torso"), e o Sirius
+  # não conseguia usar a Cota de Malha E a roupa de frio — equipar uma pedia para
+  # tirar a outra. Roupa não dá CA: é casa própria, ao lado da armadura.
   ACCESSORY_SLOTS = %w[
     ring_left ring_right amulet cloak boots helmet gloves belt
     face earrings bracelet_left bracelet_right
     belt_leg_left belt_leg_right
+    clothing
   ].freeze
   # Slots de cinto de PERNA — a vocação estreita olha para cá.
   LEG_BELT_SLOTS = %w[belt_leg_left belt_leg_right].freeze
