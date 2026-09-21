@@ -3,7 +3,8 @@
 # para o modelo da API entrar no MESMO caminho do estatico.
 class Api::V1::Public::CompanionTemplatesController < ApplicationController
   def index
-    scope = CompanionTemplate.all
+    # As duas fontes do token: o PNG próprio e o asset da biblioteca.
+    scope = CompanionTemplate.with_attached_token_image.preload(token_map_asset: :image_attachment)
     scope = scope.do_tipo(params[:companion_type] || params[:type])
     scope = scope.busca(params[:q] || params[:search])
     scope = scope.order(:companion_type, :name).limit(500)

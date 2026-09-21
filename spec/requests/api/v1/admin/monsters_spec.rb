@@ -188,7 +188,8 @@ RSpec.describe 'Token do monstro (biblioteca de objetos)', type: :request do
 
     corpo = response.parsed_body['monster']
     expect(corpo['tokenMapAssetId']).to eq(asset.id)
-    expect(corpo['tokenImageUrl']).to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.id}")
+    # `v=` = id do blob da arte: é o que muda quando o Mestre troca a imagem
+    expect(corpo['tokenImageUrl']).to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.image.blob.id}")
   end
 
   # ⚠️ O token e COLUNA, nao statblock: o re-import do Open5e reescreve o

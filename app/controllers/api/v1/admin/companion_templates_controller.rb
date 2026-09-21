@@ -30,7 +30,7 @@ class Api::V1::Admin::CompanionTemplatesController < ApplicationController
   before_action :set_template, only: [:show, :update, :destroy]
 
   def index
-    scope = CompanionTemplate.with_attached_token_image
+    scope = CompanionTemplate.with_attached_token_image.preload(token_map_asset: :image_attachment)
     scope = scope.do_tipo(params[:companion_type] || params[:type])
     scope = scope.busca(params[:q] || params[:search])
     scope = scope.order(:companion_type, :name).limit(500)

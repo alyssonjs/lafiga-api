@@ -16,6 +16,10 @@ class CompanionTemplate < ApplicationRecord
 
   SIZES = %w[Tiny Small Medium Large Huge].freeze
 
+  # Token escolhido da biblioteca — só para ler o id do blob da arte (o `?v=`).
+  # Sem chave estrangeira: asset apagado vira `nil` e a URL recua.
+  belongs_to :token_map_asset, class_name: 'MapAsset', optional: true
+
   # PNG do TOKEN — o desenho que representa a criatura no mapa. Mesma casa do
   # `MapAsset#image`: ActiveStorage, e o mapa referencia a URL em vez de embutir
   # a imagem (o token avulso guarda um data-URL de 500 KB no JSONB do mapa; um
@@ -107,7 +111,7 @@ class CompanionTemplate < ApplicationRecord
   end
 
   def biblioteca_token_url
-    "/api/v1/admin/map_assets/#{token_map_asset_id}/image?v=#{token_map_asset_id}"
+    MapAssetTokenUrl.for_asset(token_map_asset_id, token_map_asset)
   end
 
   public

@@ -8,7 +8,8 @@ class Api::V1::Admin::MonstersController < ApplicationController
   before_action :set_monster, only: [:show, :update, :destroy]
 
   def index
-    scope = Monster.all
+    # O `?v=` do token é o id do blob da arte: sem isto, 2 consultas por monstro.
+    scope = Monster.preload(token_map_asset: :image_attachment)
     scope = scope.by_type(params[:type] || params[:monster_type])
     scope = scope.by_source(params[:source])
     scope = scope.by_cr_min(params[:cr_min])

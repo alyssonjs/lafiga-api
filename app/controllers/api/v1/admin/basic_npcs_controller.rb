@@ -8,6 +8,7 @@ class Api::V1::Admin::BasicNpcsController < ApplicationController
 
   def index
     scope = BasicNpc.busca(params[:q] || params[:search]).order(:name).limit(500)
+                    .preload(token_map_asset: :image_attachment)
     render json: { basic_npcs: scope.map { |n| linha(n) } }, status: :ok
   end
 
