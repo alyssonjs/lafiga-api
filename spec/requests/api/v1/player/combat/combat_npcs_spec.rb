@@ -85,7 +85,7 @@ RSpec.describe 'Api::V1::Player::Combat::CombatNpcsController', type: :request d
 
         expect(response).to have_http_status(:created)
         expect(response.parsed_body['npc']['token_image_url'])
-          .to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.id}")
+          .to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.image.blob.id}")
       end
 
       # O cliente não dita o `src` que os jogadores vão renderizar.

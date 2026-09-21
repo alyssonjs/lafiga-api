@@ -10,6 +10,10 @@ class BasicNpc < ApplicationRecord
   STAT_KEYS = %w[str dex con int wis cha].freeze
   SPEED_MODES = %w[walk fly swim climb burrow].freeze
 
+  # Só para ler o id do blob da arte (o `?v=` do token). Sem chave estrangeira:
+  # asset apagado vira `nil` e a URL recua (ver `MapAssetTokenUrl`).
+  belongs_to :token_map_asset, class_name: 'MapAsset', optional: true
+
   validates :slug, presence: true, uniqueness: true
   validates :name, presence: true
   validates :hp, :ac, numericality: { greater_than_or_equal_to: 0 }
@@ -51,7 +55,7 @@ class BasicNpc < ApplicationRecord
   # Path relativo, como o do monstro: o endpoint do `map_assets` já serve o blob
   # com cache imutável e sem gate de DM.
   def token_image_url
-    MapAssetTokenUrl.for(token_map_asset_id)
+    MapAssetTokenUrl.for_asset(token_map_asset_id, token_map_asset)
   end
 
   private

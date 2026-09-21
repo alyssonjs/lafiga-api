@@ -9,6 +9,10 @@ class Monster < ApplicationRecord
 
   SOURCES = %w[srd homebrew open5e].freeze
 
+  # Só para ler o id do blob da arte (o `?v=` do token). Sem chave estrangeira:
+  # asset apagado vira `nil` e a URL recua (ver `MapAssetTokenUrl`).
+  belongs_to :token_map_asset, class_name: 'MapAsset', optional: true
+
   before_validation :ensure_slug
   before_validation :sync_columns_from_payload
 
@@ -58,7 +62,7 @@ class Monster < ApplicationRecord
   # do `map_assets` já serve o blob com cache imutável e SEM gate de DM: o token
   # é da mesa inteira.
   def token_image_url
-    MapAssetTokenUrl.for(token_map_asset_id)
+    MapAssetTokenUrl.for_asset(token_map_asset_id, token_map_asset)
   end
 
   def self.cr_to_number(cr_value)

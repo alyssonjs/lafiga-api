@@ -336,7 +336,8 @@ RSpec.describe 'Token da BIBLIOTECA de objetos', type: :request do
 
     get '/api/v1/public/companion_templates'
     linha = response.parsed_body['companion_templates'].find { |t| t['templateId'] == 'lobo-da-biblioteca' }
-    expect(linha['image']).to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.id}")
+    # `v=` = id do blob da arte: é o que muda quando o Mestre troca a imagem
+    expect(linha['image']).to eq("/api/v1/admin/map_assets/#{asset.id}/image?v=#{asset.image.blob.id}")
   end
 
   # ⚠️ Uma fonte por vez: com as duas gravadas, a precedencia decidiria em
