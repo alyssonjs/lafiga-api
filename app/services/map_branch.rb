@@ -30,6 +30,12 @@ class MapBranch
 
       anterior = previous_layer(schedule: schedule, map: map)
       seed = anterior ? FIELDS.index_with { |f| anterior.public_send(f) } : from_original(map)
+      # Camada semeada DEPOIS que os NPCs já foram copiados (outro mapa aberto no
+      # meio da sessão): o token herdado tem de achar a cópia, não o NPC da
+      # sessão anterior.
+      if anterior
+        seed[:tokens] = ScheduleContinuity.remap_npc_tokens(seed[:tokens], ScheduleContinuity.npc_id_map_for(schedule))
+      end
 
       criado = ScheduleBattleMap.create!(
         schedule_id: schedule.id,
@@ -80,19 +86,20 @@ class MapBranch
       from_original(map)
     end
 
-    # A camada mais recente DESTE grupo para ESTE mapa, fora desta sessão.
+    # A camada da sessão ANTERIOR deste grupo que tem ESTE mapa.
     #
-    # Ordena pela sessão (data, depois id): "a anterior" é a última que a mesa
-    # jogou, não a linha que por acaso foi tocada por último.
+    # Ordena pela sessão (data, hora, id): "a anterior" é a última que a mesa
+    # jogou, não a linha que por acaso foi tocada por último. ⚠️ Só as que
+    # vieram ANTES e não foram canceladas — a régua é a mesma dos NPCs
+    # (`ScheduleContinuity.earlier_sessions`). Antes valia a data mais recente
+    # entre TODAS as irmãs: a #104 herdou o mapa vazio de uma sessão futura e
+    # cancelada.
     def previous_layer(schedule:, map:)
-      return nil if schedule.group_id.blank?
-
-      irmas = Schedule.where(group_id: schedule.group_id).where.not(id: schedule.id)
-      ScheduleBattleMap
-        .where(battle_map_id: map.id, schedule_id: irmas.select(:id))
-        .joins(schedule: :date_dimension)
-        .order('date_dimensions.date DESC NULLS LAST, schedules.id DESC')
-        .first
+      anterior = ScheduleContinuity.earlier_sessions(schedule)
+                                   .where(id: ScheduleBattleMap.where(battle_map_id: map.id).select(:schedule_id))
+                                   .order(Arel.sql(ScheduleContinuity::ORDEM_CRONOLOGICA_DESC))
+                                   .first
+      anterior && ScheduleBattleMap.find_by(schedule_id: anterior.id, battle_map_id: map.id)
     end
 
     # Primeira vez desta mesa com este mapa: recebe o estado de fábrica.

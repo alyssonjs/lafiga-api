@@ -124,6 +124,41 @@ RSpec.describe MapBranch do
       expect(nova.drawings.first['id']).to eq('recente')
     end
 
+    # A #104 (21/09) herdou o mapa VAZIO da #98 (23/09, cancelada): "anterior"
+    # era a data mais recente entre TODAS as irmãs, inclusive as do futuro.
+    it '⚠️ sessão FUTURA não é a anterior' do
+      described_class.ensure!(schedule: sessao('2026-08-01'), map: mapa).update!(drawings: [desenho('passado')])
+      described_class.ensure!(schedule: sessao('2026-08-29'), map: mapa).update!(drawings: [desenho('futuro')])
+
+      nova = described_class.ensure!(schedule: sessao('2026-08-15'), map: mapa)
+
+      expect(nova.drawings.first['id']).to eq('passado')
+    end
+
+    it '⚠️ sessão CANCELADA não é a anterior' do
+      described_class.ensure!(schedule: sessao('2026-08-01'), map: mapa).update!(drawings: [desenho('jogada')])
+      cancelada = sessao('2026-08-08')
+      described_class.ensure!(schedule: cancelada, map: mapa).update!(drawings: [])
+      cancelada.update_column(:status, Schedule.statuses[:cancelled])
+
+      nova = described_class.ensure!(schedule: sessao('2026-08-15'), map: mapa)
+
+      expect(nova.drawings.first['id']).to eq('jogada')
+    end
+
+    it 'camada aberta DEPOIS dos NPCs copiados: o token acha a cópia, não o NPC da anterior' do
+      anterior = sessao('2026-08-01')
+      orc = create(:combat_npc, schedule: anterior, name: 'Orc')
+      described_class.ensure!(schedule: anterior, map: mapa)
+                     .update!(tokens: [token_criatura.merge('npcId' => "npc-#{orc.id}")])
+      nova = sessao('2026-08-08')
+      copia = create(:combat_npc, schedule: nova, name: 'Orc', source_npc_id: orc.id)
+
+      camada = described_class.ensure!(schedule: nova, map: mapa)
+
+      expect(camada.tokens.first['npcId']).to eq("npc-#{copia.id}")
+    end
+
     it 'herda os SEIS campos de mesa' do
       s1 = sessao('2026-08-01')
       described_class.ensure!(schedule: s1, map: mapa).update!(

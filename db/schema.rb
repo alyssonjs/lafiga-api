@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_21_230000) do
+ActiveRecord::Schema.define(version: 2026_09_22_003000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -307,10 +307,12 @@ ActiveRecord::Schema.define(version: 2026_09_21_230000) do
     t.jsonb "special_actions", default: []
     t.integer "token_size"
     t.bigint "basic_npc_id"
+    t.bigint "source_npc_id"
     t.index ["basic_npc_id"], name: "index_combat_npcs_on_basic_npc_id"
     t.index ["owner_character_id"], name: "index_combat_npcs_on_owner_character_id"
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id"
     t.index ["schedule_id"], name: "index_combat_npcs_on_schedule_id_alive", where: "(defeated_at IS NULL)"
+    t.index ["source_npc_id"], name: "index_combat_npcs_on_source_npc_id"
   end
 
   create_table "combat_states", force: :cascade do |t|

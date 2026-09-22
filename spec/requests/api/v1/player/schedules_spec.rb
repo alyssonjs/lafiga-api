@@ -87,7 +87,11 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
     # ⚠️ O mapa era COPIADO aqui (cópia profunda por sessão criada) — foi assim
     # até a vertente existir, e a página de mapas encheu de duplicatas. Agora a
     # sessão nova REFERENCIA o mesmo mapa e o que é da mesa vive na camada.
-    it 'RETOMA mapa (por referência), NPCs de combate, estado de combate e linked_npc_character_ids da sessao anterior do grupo' do
+    #
+    # ⚠️ Os NPCs e o combate eram copiados na CRIAÇÃO — e sessão se cria com
+    # antecedência: em 21/09 a sessão foi criada de manhã, o Mestre montou o
+    # exército na anterior à noite, e nada veio. Agora vêm ao INICIAR.
+    it 'RETOMA o mapa (por referência) ao criar e, ao INICIAR, os NPCs de combate e o estado de combate da sessao anterior do grupo' do
       day_prev = Date.current + 45
       day_next = day_prev + 1
       dim_prev = DateDimension.find_or_create_by!(date: day_prev) do |d|
@@ -166,9 +170,8 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect do
         post '/api/v1/player/schedules', params: payload, headers: headers, as: :json
       end.to change(Schedule, :count).by(1)
-        .and change(CombatNpc, :count).by(1)
-        .and change(CombatState, :count).by(1)
-        .and change(CombatCombatant, :count).by(2)
+        .and change(CombatNpc, :count).by(0) # ainda não: a anterior pode nem ter sido jogada
+        .and change(CombatState, :count).by(0)
       # ⚠️ o coração desta mudança: nenhum mapa novo nasce ao criar a sessão
       expect(BattleMap.count).to eq(mapas_antes)
 
@@ -185,8 +188,19 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
         expect(new_sched.reload.dm_temp_npc_character_ids_normalized).to eq([])
       end
 
+      # A sessão COMEÇA: é agora que ela retoma os NPCs e o combate da anterior.
+      group.update!(dm_user: user)
+      expect do
+        post "/api/v1/player/schedules/#{new_sched.id}/start", headers: headers, as: :json
+      end.to change(CombatNpc, :count).by(1)
+        .and change(CombatState, :count).by(1)
+        .and change(CombatCombatant, :count).by(2)
+      expect(response).to have_http_status(:ok)
+      new_sched.reload
+
       expect(new_sched.combat_npcs.count).to eq(1)
       expect(new_sched.combat_npcs.first.name).to eq('Orc Guerreiro')
+      expect(new_sched.combat_npcs.first.source_npc_id).to eq(npc.id)
       expect(new_sched.combat_state).to be_present
       expect(new_sched.combat_state.active).to eq(true)
       expect(new_sched.combat_state.round).to eq(2)
@@ -199,6 +213,32 @@ RSpec.describe 'Api::V1::Player::SchedulesController', type: :request do
       expect(orc_row.hp_current).to eq(3)
       expect(pc_row.combatable_id).to eq(char_b.id)
       expect(pc_row.hp_current).to eq(5)
+    end
+  end
+
+  describe 'POST /api/v1/player/schedules/:id/start' do
+    let(:date_dim) { DateDimension.find_or_create_by!(date: Date.tomorrow) { |d| d.year = Date.tomorrow.year; d.month = Date.tomorrow.month; d.day = Date.tomorrow.day; d.day_of_week = Date.tomorrow.wday; d.day_name = Date.tomorrow.strftime('%A'); d.is_weekend = false; d.available = true } }
+    let(:schedule) { create(:schedule, group: group, date_dimension: date_dim, status: :waiting) }
+
+    before { group.update!(dm_user: user) }
+
+    # A mesa está esperando para jogar: uma falha ao retomar a anterior não
+    # pode deixar a sessão sem começar.
+    it 'falhar a retomada da sessão anterior não impede a sessão de começar' do
+      allow(ScheduleContinuity).to receive(:continue_on_start!).and_raise(StandardError, 'boom')
+
+      post "/api/v1/player/schedules/#{schedule.id}/start", headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(schedule.reload).to be_in_progress
+    end
+
+    it 'só retoma na TRANSIÇÃO — iniciar de novo não roda outra vez' do
+      allow(ScheduleContinuity).to receive(:continue_on_start!)
+
+      2.times { post "/api/v1/player/schedules/#{schedule.id}/start", headers: headers, as: :json }
+
+      expect(ScheduleContinuity).to have_received(:continue_on_start!).once
     end
   end
 

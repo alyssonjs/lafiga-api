@@ -220,8 +220,21 @@ class Api::V1::Player::SchedulesController < ApplicationController
   end
 
   # Marca a sessão como em andamento. Idempotente.
+  #
+  # É AQUI que a mesa retoma a sessão anterior (NPCs, estado de combate e os
+  # tokens deles): a anterior só termina de verdade quando esta começa. Falhar
+  # a retomada não pode impedir a mesa de jogar — loga e segue.
   def start
+    comecou_agora = !@schedule.in_progress?
     @schedule.start!
+    if comecou_agora
+      begin
+        ScheduleContinuity.continue_on_start!(@schedule)
+      rescue StandardError => e
+        Rails.logger.error({ kind: 'schedule_continuity', event: 'start_failed',
+                             schedule_id: @schedule.id, error: e.class.name, message: e.message }.to_json)
+      end
+    end
     render json: { schedule: serialize_schedule_for_current_user(@schedule) }, status: 200
   rescue Schedule::StateError => e
     render json: { error: e.message }, status: :unprocessable_entity
