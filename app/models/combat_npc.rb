@@ -20,6 +20,8 @@ class CombatNpc < ApplicationRecord
 
   validates :name, presence: true
   validates :hp_current, :hp_max, :ac, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  # Células por lado do token (o `TokenSize` do mapa). Nulo = o padrão, 1.
+  validates :token_size, inclusion: { in: 1..4 }, allow_nil: true
 
   STAT_KEYS = %w[str dex con int wis cha].freeze
   validate  :stats_keys_valid
