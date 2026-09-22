@@ -54,7 +54,7 @@ class Api::V1::Admin::BasicNpcsController < ApplicationController
 
   def permitted
     params.require(:basic_npc).permit(
-      :slug, :name, :role, :notes, :hp, :ac, :initiative_bonus, :token_map_asset_id,
+      :slug, :name, :role, :notes, :hp, :ac, :initiative_bonus, :token_map_asset_id, :token_size,
       { stats: {} }, { speed_modes: {} },
       # ⚠️ Array de HASHES: `attacks: []` cru DESCARTA o conteúdo e o NPC nasce
       # sem ataque nenhum — o mesmo defeito do catálogo de companheiros.

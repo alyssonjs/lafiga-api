@@ -17,6 +17,9 @@ class BasicNpc < ApplicationRecord
   validates :slug, presence: true, uniqueness: true
   validates :name, presence: true
   validates :hp, :ac, numericality: { greater_than_or_equal_to: 0 }
+  # Células por lado do token no mapa (o `TokenSize` do front). É o que o NPC
+  # ocupa ao ser posto no mapa — e o que redimensionar lá grava de volta aqui.
+  validates :token_size, inclusion: { in: 1..4 }
 
   before_validation :normalizar_slug
   before_save :normalizar_blocos
@@ -45,6 +48,7 @@ class BasicNpc < ApplicationRecord
       attacks: attacks || [],
       notes: notes,
       tokenImageUrl: token_image_url,
+      tokenSize: token_size,
     }
   end
 

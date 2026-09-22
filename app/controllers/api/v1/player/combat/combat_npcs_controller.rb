@@ -105,6 +105,9 @@ module Api::V1::Player::Combat
         # path derivado aqui é relativo (o absoluto do dev viraria `localhost`
         # depois do deploy).
         :token_map_asset_id,
+        # Tamanho do token e o NPC básico de onde esta cópia saiu — a volta que
+        # deixa redimensionar no mapa gravar o tamanho no catálogo.
+        :token_size, :basic_npc_id,
         # Deslocamento multi-modo (walk/fly/swim/climb/burrow/hover). `speed`
         # continua sendo o modo de ANDAR; os modos são o statblock inteiro.
         stats: {}, saving_throws: {}, skills: {}, equipment: {}, speed_modes: {},

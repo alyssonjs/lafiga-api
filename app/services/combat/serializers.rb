@@ -109,6 +109,10 @@ module Combat
         # PNG do token (companheiro vindo do catálogo). `respond_to?` pelo mesmo
         # motivo dos campos 6E: NPC lido antes da migração não quebra.
         token_image_url: npc.respond_to?(:token_image_url) ? npc.token_image_url : nil,
+        # Tamanho do token (células por lado) e o NPC básico de origem.
+        # `respond_to?` pelo mesmo motivo dos campos 6E.
+        token_size: npc.respond_to?(:token_size) ? npc.token_size : nil,
+        basic_npc_id: npc.respond_to?(:basic_npc_id) ? npc.basic_npc_id : nil,
         # Ações especiais do companheiro invocado (com o bloco `mechanics` do
         # F2a quando a descrição o revelou). `respond_to?` pelo mesmo motivo dos
         # campos 6E: NPC lido antes da migração não quebra.
