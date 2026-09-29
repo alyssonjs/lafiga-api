@@ -359,6 +359,28 @@ RSpec.describe 'Api::V1::Admin::CatalogItems receita', type: :request do
     expect(Item.find_by(api_index: 'alq-teste').crafting_recipe).to be_present
   end
 
+  it '⚠️ o grupo "OU" e a MAGIA sobrevivem a salvar pelo editor', :aggregate_failures do
+    magia = Spell.create!(api_index: 'spell-teste-luz', name: 'Luz')
+    criar(receita_base.merge(ingredients: [
+      { item_index: 'mat-extrato-vegetal', quantity: 30, unit: 'ml', alternative_group: 1 },
+      { item_index: nil, raw_text: 'Musgo', name: 'Musgo', quantity: 5, unit: 'g', alternative_group: 1 },
+      { spell_id: magia.id, name: 'Luz', quantity: 1, unit: 'un' },
+    ]))
+    get '/api/v1/admin/catalog_items/alq-teste', headers: bearer_headers_for(dm)
+    ings = JSON.parse(response.body).dig('item', 'crafting', 'ingredients')
+    expect(ings.map { |i| i['alternative_group'] }).to eq([1, 1, nil])
+    expect(ings.last).to include('spell_id' => magia.id, 'raw_text' => nil)
+  end
+
+  it '⚠️ a FERRAMENTA gravada pela Oficina não some ao salvar pelo compêndio' do
+    criar(receita_base)
+    Item.find_by(api_index: 'alq-teste').crafting_recipe.update!(tool_api_index: 'tool-herbalismo')
+    patch '/api/v1/admin/catalog_items/alq-teste',
+          params: { item: { name: 'Poção Teste', category: 'potion', props: {}, crafting: receita_base } },
+          headers: bearer_headers_for(dm), as: :json
+    expect(Item.find_by(api_index: 'alq-teste').crafting_recipe.tool_api_index).to eq('tool-herbalismo')
+  end
+
   it '`crafting: null` APAGA a receita' do
     criar(receita_base)
     expect {

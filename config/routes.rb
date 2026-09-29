@@ -145,6 +145,11 @@ Rails.application.routes.draw do
           member { get :thumb }
         end
         resources :backgrounds, only: [:index, :show, :create, :update, :destroy]
+        # Receitas de criação (o catálogo que o Mestre escreve) + a busca de
+        # itens do banco para os seletores de produto e de material.
+        resources :crafting_recipes, only: %i[index show create update destroy] do
+          collection { get :items }
+        end
         resources :wiki_sections, only: %i[create update destroy] do
           collection do
             post :reorder
@@ -172,6 +177,14 @@ Rails.application.routes.draw do
             delete :dm_proficiencies, to: 'sheet_dm_proficiencies#destroy'
             # Reposição da perícia que a subclasse concedeu em duplicado.
             patch  :skill_replacements, to: 'sheet_skill_replacements#update'
+            # CRIAÇÕES: receitas que a ficha conhece e o que está sendo criado.
+            # Só o Mestre escreve; o jogador lê em `player/sheets/:id/crafting`.
+            post   'crafting/recipes',                   to: 'sheet_crafting#teach'
+            delete 'crafting/recipes/:recipe_id',        to: 'sheet_crafting#forget'
+            post   'crafting/crafts',                    to: 'sheet_crafting#start'
+            patch  'crafting/crafts/:craft_id',          to: 'sheet_crafting#update_craft'
+            post   'crafting/crafts/:craft_id/complete', to: 'sheet_crafting#complete'
+            delete 'crafting/crafts/:craft_id',          to: 'sheet_crafting#cancel'
           end
           resources :coin_pouches, only: [:create, :update, :destroy]
         end
@@ -317,6 +330,9 @@ Rails.application.routes.draw do
             patch :runtime,            to: 'sheet_runtime_states#update'
             post  'runtime/short_rest', to: 'sheet_runtime_states#short_rest'
             post  'runtime/long_rest',  to: 'sheet_runtime_states#long_rest'
+
+            # Oficina da ficha, só leitura (dono ou Mestre).
+            get :crafting, to: 'sheet_crafting#show'
           end
           collection do
             get :available_feats

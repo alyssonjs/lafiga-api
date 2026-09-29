@@ -29,6 +29,9 @@ class Sheet < ApplicationRecord
   has_many :sheet_feats, dependent: :destroy
   has_many :feats, through: :sheet_feats
   has_many :sheet_items, dependent: :destroy
+  # Criações: as receitas que o personagem conhece e o que ele está criando.
+  has_many :sheet_known_recipes, dependent: :destroy
+  has_many :sheet_crafts, dependent: :destroy
 
   has_one :runtime_state, class_name: 'SheetRuntimeState', dependent: :destroy
 

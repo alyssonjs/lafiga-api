@@ -13,6 +13,10 @@ class CraftingRecipe < ApplicationRecord
   has_many :ingredients, -> { order(:position, :id) },
            class_name: 'CraftingRecipeIngredient', dependent: :destroy
   accepts_nested_attributes_for :ingredients, allow_destroy: true
+  # Quem conhece a receita some com ela; a criação concluída fica no histórico
+  # da ficha pelo nome (a FK vira nula no banco).
+  has_many :sheet_known_recipes, dependent: :destroy
+  has_many :sheet_crafts, dependent: :nullify
 
   validates :craft, presence: true, inclusion: { in: CRAFTS }
   validates :dc, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
