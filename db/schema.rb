@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_22_003000) do
+ActiveRecord::Schema.define(version: 2026_09_29_180000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -390,6 +390,7 @@ ActiveRecord::Schema.define(version: 2026_09_22_003000) do
     t.text "notes"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "tool_api_index"
     t.index ["craft"], name: "index_crafting_recipes_on_craft"
     t.index ["result_item_id"], name: "index_crafting_recipes_on_result_item_id", unique: true
   end
@@ -783,6 +784,26 @@ ActiveRecord::Schema.define(version: 2026_09_22_003000) do
     t.index ["schedule_id"], name: "index_session_logs_on_schedule_id"
   end
 
+  create_table "sheet_crafts", force: :cascade do |t|
+    t.bigint "sheet_id", null: false
+    t.bigint "crafting_recipe_id"
+    t.string "product_name", null: false
+    t.integer "quantity", default: 1, null: false
+    t.decimal "days_required", precision: 8, scale: 2, null: false
+    t.decimal "days_worked", precision: 8, scale: 2, default: "0.0", null: false
+    t.string "status", default: "in_progress", null: false
+    t.jsonb "consumed", default: [], null: false
+    t.bigint "product_sheet_item_id"
+    t.datetime "completed_at"
+    t.bigint "by_user_id"
+    t.text "notes"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["crafting_recipe_id"], name: "index_sheet_crafts_on_crafting_recipe_id"
+    t.index ["sheet_id", "status"], name: "index_sheet_crafts_on_sheet_id_and_status"
+    t.index ["sheet_id"], name: "index_sheet_crafts_on_sheet_id"
+  end
+
   create_table "sheet_feats", force: :cascade do |t|
     t.bigint "sheet_id", null: false
     t.bigint "feat_id", null: false
@@ -826,6 +847,17 @@ ActiveRecord::Schema.define(version: 2026_09_22_003000) do
     t.index ["sheet_id", "klass_id"], name: "idx_sheet_klasses_unique_sheet_klass", unique: true
     t.index ["sheet_id"], name: "index_sheet_klasses_on_sheet_id"
     t.index ["sub_klass_id"], name: "index_sheet_klasses_on_sub_klass_id"
+  end
+
+  create_table "sheet_known_recipes", force: :cascade do |t|
+    t.bigint "sheet_id", null: false
+    t.bigint "crafting_recipe_id", null: false
+    t.bigint "by_user_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["crafting_recipe_id"], name: "index_sheet_known_recipes_on_crafting_recipe_id"
+    t.index ["sheet_id", "crafting_recipe_id"], name: "idx_known_recipes_sheet_recipe", unique: true
+    t.index ["sheet_id"], name: "index_sheet_known_recipes_on_sheet_id"
   end
 
   create_table "sheet_known_spells", force: :cascade do |t|
@@ -1125,6 +1157,8 @@ ActiveRecord::Schema.define(version: 2026_09_22_003000) do
   add_foreign_key "schedules", "users", column: "created_by_user_id"
   add_foreign_key "session_feed_items", "schedules"
   add_foreign_key "session_logs", "schedules"
+  add_foreign_key "sheet_crafts", "crafting_recipes", on_delete: :nullify
+  add_foreign_key "sheet_crafts", "sheets", on_delete: :cascade
   add_foreign_key "sheet_feats", "feats"
   add_foreign_key "sheet_feats", "sheets"
   add_foreign_key "sheet_items", "items"
@@ -1132,6 +1166,8 @@ ActiveRecord::Schema.define(version: 2026_09_22_003000) do
   add_foreign_key "sheet_klasses", "klasses"
   add_foreign_key "sheet_klasses", "sheets"
   add_foreign_key "sheet_klasses", "sub_klasses"
+  add_foreign_key "sheet_known_recipes", "crafting_recipes", on_delete: :cascade
+  add_foreign_key "sheet_known_recipes", "sheets", on_delete: :cascade
   add_foreign_key "sheet_known_spells", "sheet_klasses"
   add_foreign_key "sheet_known_spells", "spells"
   add_foreign_key "sheet_prepared_spells", "sheets"

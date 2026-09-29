@@ -86,38 +86,7 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
       return
     end
 
-    c = raw.respond_to?(:permit!) ? raw.permit!.to_h : raw.to_h.stringify_keys
-    receita = CraftingRecipe.find_or_initialize_by(result_item_id: item.id)
-    receita.assign_attributes(
-      craft: c['craft'].presence || 'alchemy',
-      dc: c['dc'].presence&.to_i,
-      days: c['days'].presence,
-      craft_cost_gp: c['craft_cost_gp'].presence,
-      processes: Array(c['processes']).map(&:to_s).reject(&:blank?),
-    )
-    receita.save!
-
-    # Reescreve a lista inteira: um merge deixaria ingrediente removido no
-    # editor pendurado na receita.
-    receita.ingredients.destroy_all
-    Array(c['ingredients']).each_with_index do |ing, pos|
-      ing = ing.respond_to?(:permit!) ? ing.permit!.to_h : ing.to_h.stringify_keys
-      alvo = ing['item_index'].presence && Item.find_by(api_index: ing['item_index'])
-      attrs = {
-        quantity: ing['quantity'].presence || 1,
-        unit: ing['unit'].presence || 'un',
-        alternative_group: ing['alternative_group'].presence&.to_i,
-        is_choice: ActiveModel::Type::Boolean.new.cast(ing['is_choice']) || false,
-        position: pos,
-      }
-      if alvo
-        attrs[:ingredient_item] = alvo
-      else
-        # Sem item casado vira texto livre — nunca descartar em silêncio.
-        attrs[:raw_text] = ing['raw_text'].presence || ing['name'].presence || 'Ingrediente'
-      end
-      receita.ingredients.create!(attrs)
-    end
+    Crafting::RecipeWriter.call(CraftingRecipe.find_or_initialize_by(result_item_id: item.id), raw)
   end
 
   def permitted_item
@@ -143,8 +112,9 @@ class Api::V1::Admin::CatalogItemsController < ApplicationController
     json['crafting'] = r && {
       'craft' => r.craft, 'dc' => r.dc, 'days' => r.days&.to_f,
       'craft_cost_gp' => r.craft_cost_gp&.to_f, 'processes' => Array(r.processes),
+      'tool_api_index' => r.tool_api_index,
       'ingredients' => r.ingredients.map { |i|
-        { 'item_index' => i.ingredient_item&.api_index, 'raw_text' => i.raw_text,
+        { 'item_index' => i.ingredient_item&.api_index, 'spell_id' => i.spell_id, 'raw_text' => i.raw_text,
           'name' => i.display_name, 'quantity' => i.quantity.to_f, 'unit' => i.unit,
           'alternative_group' => i.alternative_group, 'is_choice' => i.is_choice }
       },
