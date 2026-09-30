@@ -72,6 +72,27 @@ RSpec.describe 'dnd:dividir_pilhas_nos_bolsos' do
     expect(nos_bolsos(maleta)).to eq([4])
   end
 
+  it 'DRY_RUN relata o que a rodada real FAZ — duas pilhas a disputar o último bolso' do
+    maleta = bolsa!(3)
+    pendurada!(maleta, 2)
+    pendurada!(maleta, 2)
+
+    begin
+      ENV['DRY_RUN'] = '1'
+      Rake::Task['dnd:dividir_pilhas_nos_bolsos'].reenable
+      expect { Rake::Task['dnd:dividir_pilhas_nos_bolsos'].invoke }
+        .to output(/1 em bolsos livres, 0 para fora.*0 em bolsos livres, 1 para fora/m).to_stdout
+    ensure
+      ENV.delete('DRY_RUN')
+    end
+
+    rodar
+
+    expect(nos_bolsos(maleta)).to eq([1, 1, 1])
+    fora = sheet.sheet_items.reload.select { |si| si.item_index == 'pocao-rk' && si.stored_on_bag_slot_id.blank? }
+    expect(fora.map(&:quantity)).to eq([1])
+  end
+
   it 'flecha e matéria-prima NÃO se dividem — não são consumível' do
     Item.create!(api_index: 'flecha-rk', name: 'Flecha', kind: 'ammunition')
     maleta = bolsa!(16)
