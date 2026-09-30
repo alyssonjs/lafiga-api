@@ -61,7 +61,7 @@ class SheetItem < ApplicationRecord
   validates :slot, inclusion: { in: ALL_SLOTS, allow_nil: true,
                                 message: "deve ser um destes: #{ALL_SLOTS.join(', ')}" }
   validate  :validate_equipment_proficiency
-  validate  :consumivel_do_cinto_uma_por_slot, if: :quantity_changed?
+  validate  :consumivel_em_vaga_um_por_vez, if: :quantity_changed?
 
   before_validation :canonicalize_legacy_slot
   before_validation :resolve_catalog_item
@@ -522,16 +522,18 @@ class SheetItem < ApplicationRecord
     (props_json || {})[BELT_CONTAINER_PROP]
   end
 
-  # Slot de CONSUMÍVEL do cinto leva UMA unidade — o `StowOnBeltService` divide
-  # a pilha ao prender. Mas o −/+ do detalhe AUMENTAVA a linha já presa, e duas
-  # poções iam para um slot só (a mesa viu "×2", 29/09). Só barra SUBIR: beber
-  # é diminuir, e a pilha antiga (de antes da divisão) tem de poder esvaziar.
-  def consumivel_do_cinto_uma_por_slot
-    return if stored_on_belt_id.blank?
+  # Vaga de CONSUMÍVEL — slot do cinto ou bolso de fora da bolsa — leva UMA
+  # unidade: os serviços dividem a pilha ao prender. Mas o −/+ do detalhe
+  # AUMENTAVA a linha já presa, e duas poções iam para uma vaga só (a mesa viu
+  # "×2" no cinto em 29/09; o bolso ganhou a mesma regra em 30/09). Só barra
+  # SUBIR: beber é diminuir, e a pilha antiga (de antes da divisão) tem de
+  # poder esvaziar.
+  def consumivel_em_vaga_um_por_vez
+    return if stored_on_belt_id.blank? && stored_on_bag_slot_id.blank?
     return unless quantity.to_i > 1 && quantity.to_i > quantity_was.to_i
     return unless SheetItems::StowOnBeltService.slot_kind_for(self) == 'consumable'
 
-    errors.add(:base, 'No cinto é uma poção por slot — some a pilha na bolsa, não no cinto.')
+    errors.add(:base, 'Em cinto e bolso é uma poção por slot — some a pilha dentro da bolsa.')
   end
 
   # Slots EXTERNOS da bolsa: quantos bolsos de fora ela tem. Mesma mecânica de
