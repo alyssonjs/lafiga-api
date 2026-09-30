@@ -433,6 +433,50 @@ RSpec.describe 'SheetItems — cintos', type: :request do
       expect(response.parsed_body['error']).to match(%r{2/2 slots de consumível})
     end
 
+    def quantidade(item, qtd)
+      put "/api/v1/player/sheet_items/#{item.id}",
+          params: { sheet_item: { quantity: qtd } }, headers: headers, as: :json
+    end
+
+    it '⚠️ AUMENTAR a pocao ja presa e recusado — seriam duas num slot (mesa, 29/09)' do
+      # O −/+ do detalhe subia a linha presa para 2: o slot de uma poção só
+      # passava a levar duas, que era exatamente o que o cinto veio impedir.
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c6', livres: 0, consumiveis: 2).api_index)
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      pocoes = linha!('Poção de Cura', index: 'pocao-cura', qty: 3)
+      prender(pocoes, cinto)
+      presa = sheet.sheet_items.reload.find { |si| si.stored_on_belt_id == cinto.id }
+
+      quantidade(presa, 2)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['errors'].join).to include('uma poção por slot')
+      expect(presa.reload.quantity).to eq(1)
+    end
+
+    it 'beber (DIMINUIR) continua valendo — inclusive a pilha antiga, de antes da divisao' do
+      cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c7', livres: 0, consumiveis: 1).api_index)
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      antiga = linha!('Poção de Cura', index: 'pocao-cura', qty: 1)
+      # Linha de antes da regra: três num slot só, gravadas direto.
+      antiga.update_columns(quantity: 3, props_json: { SheetItem::BELT_CONTAINER_PROP => cinto.id })
+
+      quantidade(antiga, 2)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(antiga.reload.quantity).to eq(2)
+    end
+
+    it 'fora do cinto a pilha sobe normalmente' do
+      catalogo!('pocao-cura', 'Poção de Cura', 'consumable')
+      pocoes = linha!('Poção de Cura', index: 'pocao-cura', qty: 2)
+
+      quantidade(pocoes, 3)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(pocoes.reload.quantity).to eq(3)
+    end
+
     it 'ARMA vai INTEIRA — nao empilha, nao se divide' do
       cinto = linha!('Cinto', index: cinto_catalogo!('cinto-c4', livres: 1).api_index)
       catalogo!('adaga', 'Adaga', 'weapon')
