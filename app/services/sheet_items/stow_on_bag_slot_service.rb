@@ -12,6 +12,12 @@ module SheetItems
   # slot externo NÃO tem vocação. O bolso de fora leva o que couber — arma,
   # corda, poção, tocha. Por isso a contagem é um número só, e não um par
   # livre/consumível.
+  #
+  # ⚠️ 30/09/2026 — CONSUMÍVEL vai UM por bolso, a regra do slot de consumível
+  # do cinto. A Maleta de Alquimia (16 bolsos) recebia a pilha inteira num
+  # bolso só — "Poção de Cura ×4" ocupando uma vaga —, e a mesa pediu o que já
+  # valia no cinto: um frasco por vaga, o resto da pilha fica onde estava.
+  # Flecha e matéria-prima não são `consumable` no catálogo e seguem inteiras.
   class StowOnBagSlotService
     class InvalidStow < StandardError; end
 
@@ -88,10 +94,29 @@ module SheetItems
       raise InvalidStow, "Sem vaga: #{presos}/#{total} slots externos ocupados."
     end
 
+    # Soltar FUNDE na pilha gêmea de fora: a poção que sai do bolso volta a ser
+    # "×4" com as outras, e não uma segunda linha "×1" ao lado — a mesma fusão
+    # do cinto. Sem gêmea, só perde o ponteiro e fica solta.
     def soltar!
       props = (item.props_json || {}).deep_dup.stringify_keys
       props.delete(SheetItem::BAG_SLOT_CONTAINER_PROP)
+
+      gemea = pilha_gemea(props)
+      if gemea
+        gemea.update!(quantity: gemea.quantity.to_i + item.quantity.to_i)
+        item.destroy!
+        return
+      end
+
       item.update!(props_json: props)
+    end
+
+    def pilha_gemea(destino)
+      candidato = item.dup
+      candidato.equipped = false
+      candidato.slot = nil
+      candidato.props_json = destino
+      SheetItem.stackable_match_for(candidato)
     end
 
     def prender!(bolsa)
@@ -101,7 +126,28 @@ module SheetItems
       # está dentro de bolsa nenhuma nem no cinto.
       props.delete(SheetItem::BAG_CONTAINER_PROP)
       props.delete(SheetItem::BELT_CONTAINER_PROP)
+
+      # CONSUMÍVEL: o bolso leva UMA unidade — três poções dentro da Maleta
+      # viram uma no bolso e duas lá dentro. Sem isto, um bolso escondia a
+      # pilha inteira.
+      if consumivel? && item.quantity.to_i > 1
+        pendurado = item.dup
+        pendurado.quantity = 1
+        pendurado.equipped = false
+        pendurado.slot = nil
+        pendurado.props_json = props
+        pendurado.save!
+        item.update!(quantity: item.quantity.to_i - 1)
+        return
+      end
+
       item.update!(props_json: props, equipped: false, slot: nil)
+    end
+
+    # O mesmo juiz do slot de consumível do cinto — `kind: consumable` no
+    # catálogo. Um só lugar decide o que é "poção" para as duas vagas.
+    def consumivel?
+      StowOnBeltService.slot_kind_for(item) == 'consumable'
     end
 
     def inventario(sheet)

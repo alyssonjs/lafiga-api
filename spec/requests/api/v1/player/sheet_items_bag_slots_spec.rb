@@ -139,6 +139,73 @@ RSpec.describe 'SheetItems — slots externos da bolsa', type: :request do
     end
   end
 
+  # ⚠️ 30/09/2026: CONSUMÍVEL vai UM por bolso — a regra do slot de consumível
+  # do cinto. A Maleta de Alquimia recebia "Poção de Cura ×4" num bolso só.
+  describe 'consumivel: um por bolso' do
+    let!(:pocao_cat) { Item.find_by(api_index: 'pocao-c1') || Item.create!(api_index: 'pocao-c1', name: 'Poção de Cura', kind: 'consumable') }
+
+    def pilhas(nome)
+      sheet.sheet_items.reload.where(item_name: nome)
+           .map { |si| [si.quantity, si.stored_on_bag_slot_id.to_s] }
+           .sort_by { |qtd, bolso| [qtd, bolso] }
+    end
+
+    it 'pendurar uma pilha de POCOES leva SO UMA — o resto fica onde estava' do
+      maleta = linha!('Maleta', index: bolsa_catalogo!('maleta-c1', slots: 16).api_index)
+      pocoes = linha!('Poção de Cura', index: 'pocao-c1', qty: 4)
+
+      pendurar(pocoes, maleta)
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(pilhas('Poção de Cura')).to eq([[1, maleta.id.to_s], [3, '']])
+    end
+
+    it 'dois bolsos levam DUAS linhas de um — nao uma de dois' do
+      maleta = linha!('Maleta', index: bolsa_catalogo!('maleta-c2', slots: 16).api_index)
+      pocoes = linha!('Poção de Cura', index: 'pocao-c1', qty: 3)
+      pendurar(pocoes, maleta)
+
+      pendurar(pocoes.reload, maleta)
+
+      expect(pilhas('Poção de Cura')).to eq([[1, ''], [1, maleta.id.to_s], [1, maleta.id.to_s]])
+    end
+
+    it 'o que NAO e consumivel vai inteiro (flecha, corda, materia-prima)' do
+      maleta = linha!('Maleta', index: bolsa_catalogo!('maleta-c3', slots: 4).api_index)
+      Item.create!(api_index: 'flecha-c3', name: 'Flecha', kind: 'ammunition')
+      flechas = linha!('Flecha', index: 'flecha-c3', qty: 20)
+
+      pendurar(flechas, maleta)
+
+      expect(pilhas('Flecha')).to eq([[20, maleta.id.to_s]])
+    end
+
+    it 'soltar FUNDE de volta na pilha gemea — nao deixa duas linhas' do
+      maleta = linha!('Maleta', index: bolsa_catalogo!('maleta-c4', slots: 16).api_index)
+      pocoes = linha!('Poção de Cura', index: 'pocao-c1', qty: 3)
+      pendurar(pocoes, maleta)
+      presa = sheet.sheet_items.reload.find { |si| si.stored_on_bag_slot_id.to_s == maleta.id.to_s }
+
+      pendurar(presa, nil)
+
+      expect(pilhas('Poção de Cura')).to eq([[3, '']])
+    end
+
+    it '⚠️ AUMENTAR a pocao pendurada e recusado; diminuir (beber) vale' do
+      maleta = linha!('Maleta', index: bolsa_catalogo!('maleta-c5', slots: 16).api_index)
+      pocoes = linha!('Poção de Cura', index: 'pocao-c1', qty: 2)
+      pendurar(pocoes, maleta)
+      presa = sheet.sheet_items.reload.find { |si| si.stored_on_bag_slot_id.to_s == maleta.id.to_s }
+
+      put "/api/v1/player/sheet_items/#{presa.id}", params: { sheet_item: { quantity: 2 } }, headers: headers, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(presa.reload.quantity).to eq(1)
+
+      put "/api/v1/player/sheet_items/#{presa.id}", params: { sheet_item: { quantity: 0 } }, headers: headers, as: :json
+      expect(response).to have_http_status(:ok), response.body
+    end
+  end
+
   describe 'catálogo e limpeza' do
     it 'a linha da bolsa viaja com a contagem de slots' do
       mochila = linha!('Mochila', index: bolsa_catalogo!('mochila-c1', slots: 3).api_index)
