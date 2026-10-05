@@ -335,6 +335,8 @@ Rails.application.routes.draw do
 
             # Oficina da ficha, só leitura (dono ou Mestre).
             get :crafting, to: 'sheet_crafting#show'
+            # O VISUAL do membro substituído (05/10): material e cor — o resto é do Mestre (admin).
+            patch :membros, to: 'sheet_membros#update'
           end
           collection do
             get :available_feats

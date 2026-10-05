@@ -60,6 +60,32 @@ RSpec.describe 'Api::V1::Admin::SheetMembros', type: :request do
     expect(sheet.reload.avatar_customization).not_to have_key('membros')
   end
 
+  it 'a SUBSTITUIÇÃO (05/10): o tipo, o visual, os efeitos e a arma natural', :aggregate_failures do
+    marca({ mao_direito: { estado: 'substituido', substituto: {
+      tipo: 'lamina', cor: 'gold', efeitos: [{ kind: 'attack_bonus', value: 1 }],
+      arma: { nome: 'Lâmina de Ouro', dano: '1d6', tipoDeDano: 'slashing', propriedades: %w[light finesse] },
+    } } })
+
+    expect(response).to have_http_status(:ok)
+    sub = sheet.reload.avatar_customization.dig('membros', 'mao_direito', 'substituto')
+    expect(sub).to include('tipo' => 'lamina', 'material' => 'metal', 'cor' => 'gold')
+    expect(sub['efeitos']).to eq([{ 'kind' => 'attack_bonus', 'value' => 1 }])
+    expect(sub.dig('arma', 'nome')).to eq('Lâmina de Ouro')
+  end
+
+  it 'quando a mão se vai, o que ela segurava cai (um objeto por vez)', :aggregate_failures do
+    espada = SheetItem.new(sheet: sheet, item_name: 'Espada Curta', quantity: 1, equipped: true, slot: 'main_hand')
+    espada.save!(validate: false)
+    tocha = SheetItem.new(sheet: sheet, item_name: 'Tocha', quantity: 1, equipped: true, slot: 'off_hand')
+    tocha.save!(validate: false)
+
+    marca({ mao_esquerdo: { estado: 'perdido' } })
+
+    expect(corpo['desequipados']).to eq(['Tocha'])
+    expect(espada.reload.equipped).to be(true)
+    expect(tocha.reload.equipped).to be(false)
+  end
+
   it '⚠️ o JOGADOR não marca (nem na própria ficha)' do
     marca({ mao_direito: { estado: 'perdido' } }, como: bearer_headers_for(dono).merge('Content-Type' => 'application/json'))
     expect(response).to have_http_status(:forbidden)

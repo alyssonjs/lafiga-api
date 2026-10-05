@@ -39,6 +39,20 @@ class MagicItemRules
     passive_features: [],
   }.freeze
 
+  # Uma fonte de efeitos que não é item do catálogo (o membro substituído): o que `apply_generic_effects!` lê.
+  FonteDeEfeitos = Struct.new(:slug, :name, :effects)
+
+  # Os efeitos de uma fonte QUALQUER com as regras dos itens mágicos (05/10: o membro substituído,
+  # `Modifiers::Producers::MembrosProducer`) — a CA (somada) e os genéricos: resistência, vantagem, atributo,
+  # deslocamento, passiva. O que é da ARMA (ataque, dano) fica de fora: o membro que é arma leva o próprio bônus.
+  def self.agrega_efeitos(efeitos, fonte:)
+    res = EFFECT_DEFAULTS.deep_dup.merge(sources_by_effect: {})
+    lista = Array(efeitos).select { |e| e.is_a?(Hash) }
+    res[:ac_bonus] = lista.sum { |e| (e['kind'] || e[:kind]).to_s == 'ac_bonus' ? (e['value'] || e[:value]).to_i : 0 }
+    new(nil, equipment: {}).send(:apply_generic_effects!, res, FonteDeEfeitos.new(fonte, fonte, lista))
+    res
+  end
+
   def initialize(sheet, equipment: nil)
     @sheet = sheet
     @equipment = equipment || EquipmentProfileService.new(sheet).call

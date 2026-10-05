@@ -45,7 +45,7 @@ module Modifiers
     :op,            # Symbol — :add | :set | :grant | :advantage | :disadvantage | :resistance | :immunity
     :value,         # Object — Integer, String, Hash, etc., dependendo de op
     :source,        # String — id legível do produtor (ex: "feat:resiliente", "item:39")
-    :source_kind,   # Symbol — :race | :klass | :subklass | :background | :feat | :item | :condition | :spell | :asi
+    :source_kind,   # Symbol — :race | :klass | :subklass | :background | :feat | :item | :membro | :condition | :spell | :asi
     :stacking_type, # String — vide acima (default "untyped")
     :priority,      # Integer — quanto maior, aplica depois (resolve conflitos de :set)
     :predicate,     # Hash, opcional — condições para o mod ativar (ex: { "weapon.category" => "ranged" })
