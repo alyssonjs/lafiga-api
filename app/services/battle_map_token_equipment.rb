@@ -63,6 +63,8 @@ module BattleMapTokenEquipment
       'rarity' => props['rarity'],
       'weaponSubCategory' => props['weapon_sub_category'],
       'lpcPecas' => EquipmentRules.lpc_pecas(item),
+      # as CORES DO EXEMPLAR (05/10): o jogador pinta a armadura dele e a mesa vê no token
+      'lpcCores' => EquipmentRules.sanitize_lpc_cores(props['lpc_cores']),
       # A EMPUNHADURA da arma versátil (03/10): o personagem LPC do mapa ataca com uma ou duas mãos. Três estados,
       # como no front (`versatileGripRuntime`): true, false ou AUSENTE (nunca escolheu) — o `compact` tira o ausente.
       'usingTwoHands' => props.key?('using_two_hands') ? ActiveModel::Type::Boolean.new.cast(props['using_two_hands']) : nil,

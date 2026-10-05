@@ -2,7 +2,7 @@ class Api::V1::Player::SheetItemsController < ApplicationController
   before_action :authorize_request
   before_action :ensure_ownership_by_sheet, only: [:index, :create, :reorder]
   before_action :ensure_ownership_by_item, only: [:update, :destroy]
-  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book, :transfer_liquid]
+  before_action :ensure_ownership_by_item_for_member, only: [:equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book, :transfer_liquid, :lpc_cores]
 
   # GET /api/v1/player/sheet_items?sheet_id=ID
   def index
@@ -161,6 +161,19 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     conteudo = params[:content].to_s
     merged = (@item.props_json || {}).merge('book_content' => conteudo)
     @item.update!(props_json: merged)
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # PATCH /api/v1/player/sheet_items/:id/lpc_cores  { lpc_cores: { "lpc:torso_armour_leather": { cloth: "red" } } | null }
+  #
+  # As CORES DESTE EXEMPLAR (05/10, a mesa: "as cores delas devem ser customizáveis para o player na área de
+  # equipamentos"): o jogador pinta a armadura ou o escudo dele. `merge` no `props_json` (o resto do exemplar fica);
+  # `null`/vazio volta às cores do modelo. A foto do token vai junto (`broadcast_inventory_changed`).
+  def lpc_cores
+    grava_lpc_cores!
     broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e
@@ -386,6 +399,13 @@ class Api::V1::Player::SheetItemsController < ApplicationController
     render json: { error: 'Forbidden' }, status: :forbidden
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Not found' }, status: :not_found
+  end
+
+  def grava_lpc_cores!
+    cores = EquipmentRules.sanitize_lpc_cores(params[:lpc_cores])
+    props = (@item.props_json || {}).dup
+    cores ? props['lpc_cores'] = cores : props.delete('lpc_cores')
+    @item.update!(props_json: props)
   end
 
   def broadcast_inventory_changed(item_or_sheet)
