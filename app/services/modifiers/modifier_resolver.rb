@@ -17,7 +17,7 @@ module Modifiers
   class ModifierResolver
     attr_reader :sheet, :context, :producers
 
-    DEFAULT_PRODUCER_KEYS = %i[klass subklass feat equipped_item race].freeze
+    DEFAULT_PRODUCER_KEYS = %i[klass subklass feat equipped_item race membros].freeze
 
     def initialize(sheet, context: {}, producer_keys: DEFAULT_PRODUCER_KEYS)
       @sheet = sheet
@@ -47,6 +47,8 @@ module Modifiers
       feat:           'Modifiers::Producers::FeatProducer',
       equipped_item:  'Modifiers::Producers::EquippedItemProducer',
       race:           'Modifiers::Producers::RaceProducer',
+      # os efeitos dos membros substituídos (05/10, `Sheets::Membros`)
+      membros:        'Modifiers::Producers::MembrosProducer',
       # placeholders para fases seguintes:
       # background:   'Modifiers::Producers::BackgroundProducer',
       # condition:    'Modifiers::Producers::ConditionProducer',

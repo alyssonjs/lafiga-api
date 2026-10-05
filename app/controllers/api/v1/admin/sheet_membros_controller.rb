@@ -1,17 +1,22 @@
 # frozen_string_literal: true
 
 # MEMBRO PERDIDO (04/10): o Mestre marca o membro que o personagem perdeu — e o desenho dele (o LPC, no mapa, no retrato,
-# no inventário) some com o membro. Ver `Sheets::Membros`.
+# no inventário) some com o membro. As SUBSTITUIÇÕES (05/10): a prótese, o gancho, a lâmina, a perna de pau e o
+# tapa-olho, com os efeitos e a arma natural. Ver `Sheets::Membros`.
 #
-# Só no namespace admin, como as sobrescritas: o jogador VÊ (a aparência é dele), a escrita é do mestre.
+# Só no namespace admin, como as sobrescritas: o jogador VÊ (a aparência é dele) e mexe só no visual da substituição
+# (`Player::SheetMembrosController`); o resto é do mestre.
 class Api::V1::Admin::SheetMembrosController < ApplicationController
   before_action :authorize_site_wide_dm
   before_action :set_sheet
 
   # PATCH /api/v1/admin/sheets/:sheet_id/membros
-  # body: { membros: { mao_direito: { estado: "perdido" }, olho_esquerdo: null } }
+  # body: { membros: { mao_direito: { estado: "perdido" }, olho_esquerdo: null,
+  #                    braco_esquerdo: { estado: "substituido", substituto: { tipo: "protese", material: "metal",
+  #                                      cor: "gold", efeitos: [{ kind: "ability_bonus", ability: "str", value: 2 }] } } } }
   #
-  # Patch PARCIAL: chave ausente fica como está; `null` devolve o membro.
+  # Patch PARCIAL: chave ausente fica como está; `null` devolve o membro. Quando a mão se vai, o que ela segurava cai
+  # (`desequipados`: os nomes, para a mesa saber).
   def update
     return render(json: { errors: 'Informe `membros`' }, status: :unprocessable_entity) unless params.key?(:membros)
 
@@ -27,14 +32,42 @@ class Api::V1::Admin::SheetMembrosController < ApplicationController
     else
       aparencia[Sheets::Membros::CHAVE] = membros
     end
-    @sheet.update!(avatar_customization: aparencia)
+    desequipados = []
+    Sheet.transaction do
+      @sheet.update!(avatar_customization: aparencia)
+      desequipados = solta_o_que_nao_cabe!(membros)
+    end
     sincroniza_tokens!
-    render json: { membros: membros }, status: :ok
+    render json: { membros: membros, desequipados: desequipados }, status: :ok
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   private
+
+  # As mãos que sobram seguram o que cabe: sem nenhuma, nada; com uma, UM objeto — o da mão principal (a versátil passa
+  # a uma mão; a de duas mãos cai), senão o primeiro que houver. Devolve os nomes do que caiu.
+  def solta_o_que_nao_cabe!(membros)
+    livres = Sheets::Membros.maos_livres(membros)
+    return [] if livres >= 2
+
+    nas_maos = @sheet.sheet_items.where(equipped: true, slot: SheetItem::SLOTS_DAS_MAOS).to_a
+    fica = nil
+    if livres == 1
+      fica = nas_maos.find { |i| i.slot == 'main_hand' } || nas_maos.first
+      if fica&.segura_com_duas_maos?
+        props = (fica.props_json || {}).dup
+        if props['using_two_hands']
+          props.delete('using_two_hands')
+          fica.update_columns(props_json: props)
+        end
+        fica = nil if fica.segura_com_duas_maos?
+      end
+    end
+    caem = nas_maos.reject { |i| i == fica }
+    caem.each { |i| i.update_columns(equipped: false, slot: nil) }
+    caem.map(&:item_name)
+  end
 
   # O token do personagem nos mapas leva a aparência (a foto): sem isto, a mesa só veria o membro sumir no próximo
   # carregamento do mapa. Best-effort — o membro já está gravado.

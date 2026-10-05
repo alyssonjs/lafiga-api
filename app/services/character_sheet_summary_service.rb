@@ -393,6 +393,20 @@ class CharacterSheetSummaryService
         end
       end
 
+      # ─── MEMBRO PERDIDO (05/10): a perna (ou o pé) sem a perna de pau ou a prótese anda pela METADE ─────
+      # Depois dos bônus (a metade é do total) e antes da sobrescrita do Mestre (que vence). Só o andar: voo e
+      # natação seguem como estão. Arredonda para baixo (PHB).
+      begin
+        sem_andar = Sheets::Membros.penalidades(Sheets::Membros.da_ficha(@sheet))[:pernas_sem_andar]
+        if sem_andar.positive? && movement[:speed_ft].to_i.positive?
+          movement[:speed_ft] = movement[:speed_ft].to_i / 2
+          movement[:speed_m] = (movement[:speed_ft].to_i * 0.3048).round(1)
+          movement[:membro_perdido] = true
+        end
+      rescue => e
+        Rails.logger.warn("CharacterSheetSummaryService: membros falhou p/ sheet ##{@sheet.id}: #{e.class}: #{e.message}")
+      end
+
       # ─── Apply AC bonuses from feats ───────────────────────────────
       if modifier_bag
         ac_bonus = modifier_bag.sum_for('ac').to_i

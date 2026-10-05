@@ -67,6 +67,7 @@ class SheetItem < ApplicationRecord
                                 message: "deve ser um destes: #{ALL_SLOTS.join(', ')}" }
   validate  :validate_equipment_proficiency
   validate  :consumivel_em_vaga_um_por_vez, if: :quantity_changed?
+  validate  :cabe_nas_maos_que_sobram
 
   before_validation :canonicalize_legacy_slot
   before_validation :resolve_catalog_item
@@ -917,11 +918,65 @@ class SheetItem < ApplicationRecord
     end
   end
 
+  # As casas das MÃOS (o que se segura).
+  SLOTS_DAS_MAOS = %w[main_hand off_hand shield].freeze
+
+  # MEMBRO PERDIDO (05/10, Guia do Mestre — Ferimentos Persistentes): sem uma das mãos (ou com o gancho, a lâmina no
+  # lugar dela) o personagem não segura nada com as duas mãos e segura UM objeto por vez; sem as duas, nada. Ver
+  # `Sheets::Membros`. O "um por vez" é troca, não erro (como o escudo tira a mão secundária): ver
+  # `enforce_slot_exclusivity_and_conflicts`.
+  def cabe_nas_maos_que_sobram
+    return unless equipped && SLOTS_DAS_MAOS.include?(slot.to_s)
+    # só ao EQUIPAR (ou trocar a empunhadura): gastar a adaga arremessada que já estava na mão não é equipar de novo
+    return unless will_save_change_to_equipped? || will_save_change_to_slot? || muda_a_empunhadura?
+
+    livres = maos_livres_da_ficha
+    return if livres >= 2
+
+    if livres <= 0
+      errors.add(:base, 'Sem mãos para segurar (membro perdido)')
+    elsif segura_com_duas_maos?
+      errors.add(:base, 'Com uma mão só, nada de duas mãos (membro perdido)')
+    end
+  end
+
+  def muda_a_empunhadura?
+    will_save_change_to_props_json? &&
+      (attribute_in_database(:props_json) || {})['using_two_hands'].present? != (props_json || {})['using_two_hands'].present?
+  end
+
+  def maos_livres_da_ficha
+    sheet ? Sheets::Membros.maos_livres(Sheets::Membros.da_ficha(sheet)) : 2
+  rescue StandardError
+    2
+  end
+
+  # Este item, na mão, ocupa as DUAS? A arma de duas mãos, a versátil empunhada com as duas e o item comum que quem
+  # equipou declarou segurar com as duas.
+  def segura_com_duas_maos?
+    using_two = (props_json || {})['using_two_hands'] ? true : false
+    if EquipmentRules.is_weapon?(self)
+      props = EquipmentRules.weapon_props(self) || {}
+      (props[:hands].to_i == 2) || (props[:versatile] && using_two) || false
+    else
+      using_two
+    end
+  rescue NameError
+    using_two
+  end
+
+  public :segura_com_duas_maos?
+
   # Garante que apenas um item ocupe cada slot por ficha e resolve conflitos simples
   def enforce_slot_exclusivity_and_conflicts
     return unless equipped && slot.present?
     # Desmarca outros itens no mesmo slot para esta ficha
     SheetItem.where(sheet_id: sheet_id).where.not(id: id).where(slot: slot).update_all(equipped: false, slot: nil)
+
+    # Uma mão só (membro perdido): o que estava na outra casa das mãos sai — um objeto por vez
+    if SLOTS_DAS_MAOS.include?(slot.to_s) && maos_livres_da_ficha == 1
+      SheetItem.where(sheet_id: sheet_id, equipped: true, slot: SLOTS_DAS_MAOS).where.not(id: id).update_all(equipped: false, slot: nil)
+    end
 
     # Regras de conflito básicas entre slots
     begin
