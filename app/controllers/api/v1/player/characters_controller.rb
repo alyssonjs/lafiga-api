@@ -14,7 +14,11 @@ class Api::V1::Player::CharactersController < ApplicationController
       .offset((page - 1) * per_page)
 
     unlock_ids = CharacterDmLevelUnlock.where(character_id: characters.map(&:id)).pluck(:character_id).to_set
-    characters_with_sheet_info = characters.map { |char| player_character_payload(char, slim_sheet: true, unlock_ids: unlock_ids) }
+    # o que cada um VESTE (05/10): o card da home desenha o personagem igual à ficha — sem abrir a ficha antes
+    equipados = BattleMapTokenEquipment.snapshots_by_sheet(characters.map { |char| char.sheet&.id })
+    characters_with_sheet_info = characters.map do |char|
+      player_character_payload(char, slim_sheet: true, unlock_ids: unlock_ids).merge(chibi_equipment: equipados[char.sheet&.id] || [])
+    end
 
     render json: {
       characters: characters_with_sheet_info,

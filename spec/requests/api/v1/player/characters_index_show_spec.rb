@@ -31,6 +31,22 @@ RSpec.describe 'Api::V1::Player::CharactersController index & show', type: :requ
       expect(row['pending_dm_level_up']).to be true
     end
 
+    it 'leva a FOTO DO EQUIPADO de cada um (o card desenha o personagem igual à ficha antes de abri-la)', :aggregate_failures do
+      martelo = SheetItem.create!(sheet: sheet, item_name: 'Martelo de Guerra', item_index: 'warhammer', category: 'Armas',
+                                  quantity: 1, equipped: false, props_json: {})
+      martelo.update_columns(equipped: true, slot: 'main_hand')
+      SheetItem.create!(sheet: sheet, item_name: 'Corda', category: 'Equipamento', quantity: 1, equipped: false, props_json: {})
+      outro = create(:character, user: user, name: 'Sem nada')
+      create(:sheet, character: outro, race: race, sub_race: sub_race)
+
+      get '/api/v1/player/characters', headers: headers
+
+      linha = ->(c) { response.parsed_body['characters'].find { |r| r['id'] == c.id } }
+      expect(linha.call(character)['chibi_equipment'].map { |i| [i['name'], i['slot'], i['equipped']] })
+        .to eq([['Martelo de Guerra', 'main_hand', true]])
+      expect(linha.call(outro)['chibi_equipment']).to eq([])
+    end
+
     it 'returns main_class.name and sheet.race.name for each character' do
       get '/api/v1/player/characters', headers: headers
 

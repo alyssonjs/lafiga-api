@@ -35,6 +35,21 @@ module BattleMapTokenEquipment
     changes
   end
 
+  # A FOTO DO EQUIPADO de várias fichas de uma vez (05/10): a lista de personagens leva o que cada um VESTE, para o card
+  # da home desenhar o personagem igual à ficha antes de a ficha ser aberta. Uma consulta só para a página inteira.
+  #
+  # @return [Hash{Integer => Array<Hash>}] sheet_id → itens, no formato da foto do token
+  def snapshots_by_sheet(sheet_ids)
+    ids = Array(sheet_ids).compact.uniq
+    return {} if ids.empty?
+
+    SheetItem.includes(:item)
+             .where(sheet_id: ids, equipped: true, slot: SNAPSHOT_SLOTS)
+             .order(:position, :id)
+             .group_by(&:sheet_id)
+             .transform_values { |items| items.map { |item| snapshot_item(item) } }
+  end
+
   def snapshot_for(character)
     sheet = character&.sheet
     return [] unless sheet
