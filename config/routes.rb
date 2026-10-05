@@ -115,6 +115,8 @@ Rails.application.routes.draw do
             post :transfer_liquid
             post :merge
             post :split
+            # as cores DESTE exemplar (05/10): o jogador pinta a armadura dele
+            patch :lpc_cores
           end
           collection do
             post :grant
@@ -374,6 +376,8 @@ Rails.application.routes.draw do
             post :transfer_liquid
             post :merge
             post :split
+            # as cores DESTE exemplar (05/10): o jogador pinta a armadura dele
+            patch :lpc_cores
           end
           collection do
             post :reorder

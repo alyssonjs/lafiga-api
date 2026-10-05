@@ -3,7 +3,7 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
   # `Group.user_is_dm?`. `authorize_admin_request` só permitia `role: Admin`
   # literal e dava 401 em prod para contas "Mestre" da plataforma.
   before_action :authorize_site_wide_dm
-  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book, :transfer_liquid]
+  before_action :set_item, only: [:update, :destroy, :equip, :unequip, :attune, :unattune, :bind_pact_weapon, :unbind_pact_weapon, :allocate_ammunition, :stow_on_mount, :stow_in_bag, :stow_on_belt, :draw_from_belt, :stow_on_bag_slot, :merge, :split, :spend_use, :write_book, :transfer_liquid, :lpc_cores]
 
   # GET /api/v1/admin/sheet_items?sheet_id=ID
   def index
@@ -125,6 +125,19 @@ class Api::V1::Admin::SheetItemsController < ApplicationController
     conteudo = params[:content].to_s
     merged = (@item.props_json || {}).merge('book_content' => conteudo)
     @item.update!(props_json: merged)
+    broadcast_inventory_changed(@item)
+    render json: { sheet_item: @item.as_inventory_json }, status: :ok
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # PATCH /api/v1/admin/sheet_items/:id/lpc_cores  { lpc_cores: {...} | null }
+  # Espelho do endpoint do jogador (05/10): o Mestre pinta a armadura da ficha que estiver a editar.
+  def lpc_cores
+    cores = EquipmentRules.sanitize_lpc_cores(params[:lpc_cores])
+    props = (@item.props_json || {}).dup
+    cores ? props['lpc_cores'] = cores : props.delete('lpc_cores')
+    @item.update!(props_json: props)
     broadcast_inventory_changed(@item)
     render json: { sheet_item: @item.as_inventory_json }, status: :ok
   rescue => e

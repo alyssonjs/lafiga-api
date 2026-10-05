@@ -1,0 +1,75 @@
+# O MODELO do personagem LPC de cada ARMADURA e ESCUDO do catálogo (05/10, a mesa: "os designs das armaduras devem
+# estar atrelados às armaduras de fato que vão ser equipadas… não vamos adotar o modelo por nome, é muito vago. Vamos
+# associar os modelos pelo banco de dados").
+#
+# A verdade é o BANCO: `items.props.lpc_pecas` de cada item do catálogo — o Mestre troca no editor do catálogo e o
+# jogador pinta o exemplar dele (`sheet_items.props_json.lpc_cores`). Este arquivo só SEMEIA o banco, pelo
+# `items.api_index` EXATO (nunca pelo nome), onde o Mestre ainda não escolheu:
+#   - `bin/rails lpc:modelos_do_catalogo` (APPLY=1 grava) — as armaduras e os escudos que já estão no banco;
+#   - `bin/rails equipment:import_items` — as do `equipment.yml`, sem tocar no que o Mestre escolheu.
+# O item mágico de armadura herda o modelo da armadura-base (`magic_items.sub_category` = api_index dela), em
+# `EquipmentRules.lpc_pecas`.
+#
+# Peça da biblioteca do LPC = `lpc:<id>` (o `catalogo.json` do front); `escudo` é o heater desenhado à mão. `cor` =
+# material → nome da paleta do LPC (cloth = couro e tecido, metal, wood = madeira).
+armaduras:
+  # LEVES
+  padded:                       # Acolchoada: o gibão acolchoado (o tabardo de pano)
+    - { parte: 'lpc:torso_jacket_tabard', cor: { cloth: tan } }
+  leather:                      # Couro
+    - { parte: 'lpc:torso_armour_leather', cor: { cloth: leather, metal: iron } }
+  studded-leather:              # Couro Reforçado: o couro escuro com tachas de aço e as ombreiras
+    - { parte: 'lpc:torso_armour_leather', cor: { cloth: walnut, metal: steel } }
+    - { parte: 'lpc:shoulders_pauldrons', cor: { cloth: walnut } }
+  # MÉDIAS
+  hide:                         # Gibão de peles: o couro cru e o manto de pele
+    - { parte: 'lpc:torso_armour_leather', cor: { cloth: brown, metal: iron } }
+    - { parte: 'lpc:shoulders_mantal', cor: { cloth: tan } }
+  chain-shirt:                  # Camisa de Malha
+    - { parte: 'lpc:torso_chainmail', cor: { metal: iron } }
+  scale-mail:                   # Cota de Escamas: as lâminas de bronze e o saiote
+    - { parte: 'lpc:torso_armour_legion', cor: { metal: bronze } }
+    - { parte: 'lpc:legs_skirts_legion', cor: { cloth: leather } }
+  breastplate:                  # Peitoral
+    - { parte: 'lpc:torso_armour_plate', cor: { metal: steel } }
+  half-plate:                   # Meia Armadura de Placas: o peitoral, as ombreiras e os braçais
+    - { parte: 'lpc:torso_armour_plate', cor: { metal: steel } }
+    - { parte: 'lpc:shoulders_legion', cor: { metal: steel } }
+    - { parte: 'lpc:arms_armour', cor: { metal: steel } }
+  # PESADAS
+  ring-mail:                    # Malha Anelar: a malha de ferro, as ombreiras e o saiote de couro
+    - { parte: 'lpc:torso_chainmail', cor: { metal: iron } }
+    - { parte: 'lpc:shoulders_pauldrons', cor: { cloth: leather } }
+    - { parte: 'lpc:legs_skirts_legion', cor: { cloth: leather } }
+  chain-mail:                   # Cota de Malha: a malha de aço e o tabardo por cima
+    - { parte: 'lpc:torso_chainmail', cor: { metal: steel } }
+    - { parte: 'lpc:torso_jacket_tabard', cor: { cloth: navy } }
+  splint:                       # Placas Segmentadas: as lâminas, as ombreiras, os braçais e as grevas
+    - { parte: 'lpc:torso_armour_legion', cor: { metal: steel } }
+    - { parte: 'lpc:shoulders_legion', cor: { metal: steel } }
+    - { parte: 'lpc:arms_armour', cor: { metal: steel } }
+    - { parte: 'lpc:legs_armour', cor: { metal: steel } }
+  plate:                        # Placas: o corpo inteiro
+    - { parte: 'lpc:torso_armour_plate', cor: { metal: silver } }
+    - { parte: 'lpc:shoulders_legion', cor: { metal: silver } }
+    - { parte: 'lpc:arms_armour', cor: { metal: silver } }
+    - { parte: 'lpc:arms_gloves', cor: { metal: silver } }
+    - { parte: 'lpc:legs_armour', cor: { metal: silver } }
+    - { parte: 'lpc:feet_armour', cor: { metal: silver } }
+
+escudos:
+  shield:                       # Escudo: o heater (madeira, pintura e aro)
+    - { parte: escudo }
+  escudo-de-madeira:            # Escudo de Madeira: o redondo
+    - { parte: 'lpc:shield_round', cor: { cloth: brown } }
+  escudo-grande:                # Escudo Grande: o scutum (a pintura vem fixa na folha)
+    - { parte: 'lpc:shield_scutum' }
+    - { parte: 'lpc:shield_scutum_trim' }
+
+# Sem modelo pelo índice: o da CATEGORIA do banco (`items.category`) — a armadura nova da mesa, o escudo +1. A
+# armadura SEM categoria fica sem modelo: o Mestre escolhe no catálogo.
+por_categoria:
+  light: leather
+  medium: chain-shirt
+  heavy: plate
+  shield: shield

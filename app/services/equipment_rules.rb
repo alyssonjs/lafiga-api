@@ -14,6 +14,11 @@ class EquipmentRules
   # Materiais da troca de paleta do personagem LPC do mapa (02/10). No CORPO da classe pelo mesmo motivo do
   # LB_PER_KG: no singleton, `EquipmentRules::LPC_MATERIAIS` não resolveria de fora.
   LPC_MATERIAIS = %w[body hair cloth metal eye wood].freeze
+  # as cores que o jogador pinta no EXEMPLAR (`sanitize_lpc_cores`): o corpo, o cabelo e o olho são do personagem
+  LPC_MATERIAIS_DO_EXEMPLAR = %w[cloth metal wood].freeze
+  # As casas que vestem um MODELO de armadura (o peitoral, as peças por parte e o escudo) — onde a armadura mágica
+  # busca o modelo da armadura-base (`lpc_pecas_do_magico`).
+  CASAS_COM_MODELO_LPC = %w[armor shield armor_head armor_shoulders armor_arms armor_hands armor_legs armor_feet].freeze
 
   # Conversão de moedas -> sempre guardar em cp (cobre) para contas
   CURRENCY = {
@@ -461,9 +466,11 @@ class EquipmentRules
 
     # PEÇAS DO PERSONAGEM LPC declaradas no catálogo pelo mestre (02/10): a ligação item → peça do paper doll do
     # mapa ("vamos ligar o catálogo de itens às peças LPC"). Mesmo caminho e mesmo guard de N+1 do `equip_slot`.
-    # Ausente = o front deduz a peça do TIPO do item (armadura pelo banco, arma pelo desenho do chibi).
+    # Ausente = o front deduz a peça do TIPO do item (a arma pelo desenho do chibi; a armadura, a padrão da casa).
+    # 05/10: cada ARMADURA e ESCUDO do catálogo tem o MODELO dele aqui (semeado de `config/lpc_modelos.yml` pelo
+    # api_index — a mesa: "vamos associar os modelos pelo banco de dados"); a armadura mágica, o da base.
     #
-    # @return [Array<Hash>, nil] ex.: [{ 'parte' => 'placas', 'cor' => { 'metal' => 'gold' } }]
+    # @return [Array<Hash>, nil] ex.: [{ 'parte' => 'lpc:torso_armour_plate', 'cor' => { 'metal' => 'gold' } }]
     def lpc_pecas(item)
       return nil unless item
 
@@ -472,9 +479,25 @@ class EquipmentRules
       if !db_item && !already_resolved && defined?(Item)
         db_item = Item.find_by(api_index: normalize_index(item))
       end
-      return nil unless db_item
+      (db_item && sanitize_lpc_pecas((db_item.props || {})['lpc_pecas'])) || lpc_pecas_do_magico(item)
+    end
 
-      sanitize_lpc_pecas((db_item.props || {})['lpc_pecas'])
+    # A ARMADURA MÁGICA (05/10): a linha dela no catálogo é uma casca — o registro é `magic_items` (mesmo slug). O
+    # modelo é o declarado no item mágico ou, sem ele, o da ARMADURA-BASE (`sub_category` = o api_index EXATO dela).
+    # Só a linha mágica VESTIDA numa casa de armadura ou de escudo consulta: o inventário não paga duas buscas por linha.
+    def lpc_pecas_do_magico(item)
+      return nil unless defined?(MagicItem) && item.respond_to?(:props_json) && item.respond_to?(:slot)
+      return nil unless CASAS_COM_MODELO_LPC.include?(item.slot.to_s)
+      return nil unless ActiveModel::Type::Boolean.new.cast((item.props_json || {})['magical'])
+
+      magico = MagicItem.find_by(slug: normalize_index(item))
+      return nil unless magico
+
+      proprias = sanitize_lpc_pecas((magico.properties || {})['lpc_pecas'])
+      return proprias if proprias
+
+      base = magico.sub_category.present? ? Item.find_by(api_index: magico.sub_category.to_s) : nil
+      base && sanitize_lpc_pecas((base.props || {})['lpc_pecas'])
     end
 
     # Só o que o front sabe desenhar: `parte` (identificador) e `cor` (material → nome de paleta), até 8 peças.
@@ -496,6 +519,29 @@ class EquipmentRules
         cor.empty? ? { 'parte' => parte } : { 'parte' => parte, 'cor' => cor }
       end
       pecas.presence
+    end
+
+    # As CORES DO EXEMPLAR (05/10, a mesa: "as cores delas devem ser customizáveis para o player na área de
+    # equipamentos"): `props_json['lpc_cores']` do item na ficha — por peça do modelo, o material → nome de paleta.
+    # `{ "lpc:torso_armour_leather" => { "cloth" => "red", "metal" => "gold" } }`. Até 8 peças; só pano, metal e madeira
+    # (o corpo, o cabelo e o olho são do personagem). O espelho do front é `lpcCoresDoExemplar.ts`.
+    def sanitize_lpc_cores(raw)
+      raw = raw.to_unsafe_h if raw.respond_to?(:to_unsafe_h)
+      return nil unless raw.is_a?(Hash)
+
+      out = raw.first(8).each_with_object({}) do |(parte, cores), acc|
+        parte = parte.to_s
+        next unless parte.match?(/\A(lpc:)?[a-zA-Z0-9_]{1,80}\z/)
+
+        cores = cores.to_unsafe_h if cores.respond_to?(:to_unsafe_h)
+        next unless cores.is_a?(Hash)
+
+        cor = cores.stringify_keys
+                   .select { |m, v| LPC_MATERIAIS_DO_EXEMPLAR.include?(m) && v.to_s.match?(/\A[a-z_]{1,24}\z/) }
+                   .transform_values(&:to_s)
+        acc[parte] = cor if cor.any?
+      end
+      out.presence
     end
 
     # Props de RECIPIENTE de munição, do catálogo.

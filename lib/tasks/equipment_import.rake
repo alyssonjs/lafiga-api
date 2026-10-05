@@ -42,6 +42,11 @@ namespace :equipment do
       props = normalize_props.call(attrs.delete(:props) || attrs.delete(:props_json))
       # Store aliases in props for lookup
       props['aliases'] = aliases if aliases.any?
+      # O MODELO LPC (05/10): o que o Mestre escolheu no catálogo fica (este upsert reescreve o `props` inteiro); sem
+      # escolha, o do `config/lpc_modelos.yml` que a seção passou
+      escolhido = (item.props || {})['lpc_pecas']
+      props['lpc_pecas'] = escolhido if escolhido.present?
+      props.delete('lpc_pecas') if props['lpc_pecas'].blank?
       attrs.delete(:aliases)
       attrs[:props] = props.presence
       attrs[:tags]  = Array(attrs[:tags]).reject(&:blank?).presence
@@ -133,7 +138,8 @@ namespace :equipment do
               'dex_cap' => row['dex_cap'],
               'stealth_dis' => !!row['stealth_dis'],
               'str_req' => row['str_req'],
-              'cost_cp' => row['cost_cp']
+              'cost_cp' => row['cost_cp'],
+              'lpc_pecas' => LpcModelosDoCatalogo.do_indice(slug)
             }
           })
           count[:armor] += 1
@@ -155,7 +161,8 @@ namespace :equipment do
           weight_kg: row['weight_kg'],
           props: {
             'ac_bonus' => row['ac_bonus'] || 2,
-            'cost_cp' => row['cost_cp']
+            'cost_cp' => row['cost_cp'],
+            'lpc_pecas' => LpcModelosDoCatalogo.do_indice(slug)
           }
         })
         count[:shield] += 1
