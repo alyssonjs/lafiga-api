@@ -9,13 +9,16 @@ module Push
     DEAD_CODES = [404, 410].freeze
     DEFAULT_TTL = 24 * 60 * 60 # segundos
 
-    def self.call(user:, title:, body:, url: '/', tag: nil)
-      new(user: user, title: title, body: body, url: url, tag: tag).call
+    # `actions`: os BOTÕES da notificação (05/10) — `[{ action: '/sessions?nova=…', title: 'qui, 09/10' }]`. O `action`
+    # é a URL que o clique abre (o service worker a usa direto). O Chrome desenha 2; o iPhone não desenha nenhum e só
+    # abre a `url` — por isso ela sempre leva ao mesmo lugar da primeira opção.
+    def self.call(user:, title:, body:, url: '/', tag: nil, actions: nil)
+      new(user: user, title: title, body: body, url: url, tag: tag, actions: actions).call
     end
 
-    def initialize(user:, title:, body:, url:, tag:)
+    def initialize(user:, title:, body:, url:, tag:, actions: nil)
       @user = user
-      @payload = { title: title, body: body, url: url, tag: tag }.compact.to_json
+      @payload = { title: title, body: body, url: url, tag: tag, actions: actions.presence }.compact.to_json
     end
 
     # Retorna quantas assinaturas receberam com sucesso.
