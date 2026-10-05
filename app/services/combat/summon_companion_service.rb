@@ -108,7 +108,16 @@ module Combat
         # ele morria aqui: o familiar entrava no combate como quadrado cinza,
         # igual a todos os outros.
         token_image_url: c['image'].presence,
+        # O tamanho do LIVRO (03/10, a mesa: "nascer com o tamanho certo"): a montaria Grande entra 2×2 no mapa. Sem
+        # o porte na ficha, `nil` — o front cai no de sempre (1 célula).
+        token_size: celulas_do_porte(c['size']),
       }
+    end
+
+    CELULAS_DO_PORTE = { 'tiny' => 1, 'small' => 1, 'medium' => 1, 'large' => 2, 'huge' => 3, 'gargantuan' => 4 }.freeze
+
+    def celulas_do_porte(porte)
+      CELULAS_DO_PORTE[porte.to_s.strip.downcase]
     end
 
     def positivo(v)

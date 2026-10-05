@@ -83,7 +83,8 @@ class BattleMap < ApplicationRecord
   def self.creature_token?(token)
     return false unless token.is_a?(Hash)
 
-    %w[characterId character_id npcId npc_id].any? { |k| token[k].to_s.strip.present? }
+    # o COMPANHEIRO do personagem (04/10, `companheiroDe`) também é da mesa
+    %w[characterId character_id npcId npc_id companheiroDe].any? { |k| token[k].to_s.strip.present? }
   end
 
   def self.scenery_token?(token)

@@ -5,7 +5,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # o viewer autorizado recebeu no payload :full. Ver #background / #valid_background_sig?.
   # Fundo e silhueta de terra: <img> não manda JWT — a autz é por `sig` (por blob).
   skip_before_action :authorize_request, only: %i[background land_mask], raise: false
-  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :force_move_token, :mutate_tokens, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions, :variants, :promote_variant, :reset_variant]
+  before_action :set_map, only: [:show, :update, :destroy, :duplicate, :thumbnail, :move_token, :force_move_token, :mutate_tokens, :companion_token, :mount_token, :launch_projectile, :resolve_projectile, :pick_up_projectile, :regions, :variants, :promote_variant, :reset_variant]
 
   # Teto p/ a miniatura inline (webp ~400px). Protege o payload :slim da lista de
   # inflar caso alguém mande algo grande demais como "thumbnail".
@@ -185,42 +185,73 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   def mutate_tokens
     return forbidden unless @map.writable_by?(@current_user)
 
-    result = BattleMapTokenMutations.call(
-      map: @map,
-      mutation: params[:token_mutation] || {},
-      session_layer: map_session_layer,
-    )
-    unless result.mutation.values.all?(&:empty?)
-      MapRealtime::Broadcaster.tokens_patched(
-        @map,
-        result.mutation,
-        version: result.version,
-        actor: @current_user,
-      )
-    end
-
-    render json: {
-      # COM a camada da sessão: a escrita foi para ela, e responder os tokens do
-      # ORIGINAL fazia o front reconciliar para a posição velha — o token
-      # "voltava sozinho" para quem mexeu, e o reload mostrava o lugar certo.
-      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens, session_layer: session_layer_param),
-      token_mutation: {
-        additions: result.mutation[:additions],
-        patches: result.mutation[:patches].map do |patch|
-          {
-            tokenId: patch[:token_id],
-            changes: patch[:changes],
-            unset: patch[:unset],
-          }
-        end,
-        deleteIds: result.mutation[:delete_ids],
-        version: result.version,
-      },
-    }, status: :ok
+    aplica_e_responde(params[:token_mutation] || {})
   rescue BattleMapTokenMutations::Invalid => e
     render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
     render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/battle_maps/:id/companion_token
+  # O COMPANHEIRO NO MAPA (04/10): põe em (`x`, `y`) — ou tira, com `remover` — o token do companheiro de um personagem
+  # que o usuário controla (o Mestre, ou o jogador dono). Só numa sessão: o token é da mesa. Ver `MapCompanionTokens`.
+  def companion_token
+    return forbidden unless @map.readable_by?(@current_user)
+    return render(json: { error: 'O companheiro vai no mapa de uma sessão.' }, status: :unprocessable_entity) unless authorized_schedule_id
+
+    character = MapCompanionTokens.personagem!(@current_user, params[:character_id])
+    companion = MapCompanionTokens.companheiro!(character, params[:companion_id])
+    mutation =
+      if ActiveModel::Type::Boolean.new.cast(params[:remover])
+        { delete_ids: [MapCompanionTokens.token_id(companion['id'])] }
+      else
+        token = MapCompanionTokens.token(character, companion, x: params[:x], y: params[:y], especie: params[:especie])
+        return posicao_fora_do_mapa unless cabe_no_mapa?(token['x'], token['y'], token['size'])
+
+        # pôr de novo (o token já no mapa) não o move: só atualiza o nome e a espécie (a troca no painel de Montarias)
+        renomeia = { token_id: token['id'], changes: token.slice('name', 'especie'), unset: token.key?('especie') ? [] : ['especie'] }
+        { additions: [token], patches: [renomeia] }
+      end
+    aplica_e_responde(mutation)
+  rescue MapCompanionTokens::Proibido => e
+    render json: { error: e.message }, status: :forbidden
+  rescue MapCompanionTokens::Invalido, BattleMapTokenMutations::Invalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # POST /api/v1/player/battle_maps/:id/mount_token
+  # MONTAR e DESMONTAR (04/10): no token do PRÓPRIO personagem, só os campos da montaria (`montaria`, `tamanhoAPe`,
+  # `size`, `x`, `y`, `montariaCompanheiroId` — `MapCompanionTokens::CAMPOS_DA_MONTARIA`); montando no companheiro
+  # (`remover_companheiro`), o token dele sai do mapa na mesma escrita.
+  def mount_token
+    return forbidden unless @map.readable_by?(@current_user)
+
+    token_id = params[:token_id].to_s
+    token = Array(map_session_layer.tokens).find { |t| (t['id'] || t[:id]).to_s == token_id }
+    return render(json: { error: 'Token nao encontrado' }, status: :not_found) unless token
+
+    character_id = token['characterId'] || token[:characterId]
+    return render(json: { error: 'Só o token de um personagem monta.' }, status: :unprocessable_entity) if character_id.blank?
+
+    character = MapCompanionTokens.personagem!(@current_user, character_id)
+    changes = MapCompanionTokens.campos_da_montaria(params[:changes] || {})
+    x = changes.fetch('x', token['x'] || token[:x]).to_i
+    y = changes.fetch('y', token['y'] || token[:y]).to_i
+    size = changes.fetch('size', token['size'] || token[:size] || 1).to_i
+    return posicao_fora_do_mapa unless cabe_no_mapa?(x, y, size)
+
+    delete_ids = []
+    if params[:remover_companheiro].present?
+      companion = MapCompanionTokens.companheiro!(character, params[:remover_companheiro])
+      delete_ids << MapCompanionTokens.token_id(companion['id'])
+    end
+    # desmontar manda os campos em `nil`: saem do token (não ficam gravados vazios)
+    unset = changes.select { |_, v| v.nil? }.keys
+    aplica_e_responde({ patches: [{ token_id: token_id, changes: changes.compact, unset: unset }], delete_ids: delete_ids })
+  rescue MapCompanionTokens::Proibido => e
+    render json: { error: e.message }, status: :forbidden
+  rescue MapCompanionTokens::Invalido, BattleMapTokenMutations::Invalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   def update
@@ -399,7 +430,8 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   #
   # Authorization especial:
   # - DM pode mover qualquer token.
-  # - Player so pode mover token cujo characterId e de um proprio Character.
+  # - Player so pode mover token cujo characterId e de um proprio Character —
+  #   ou o do COMPANHEIRO dele (`companheiroDe`, 04/10: o companheiro segue o dono).
   # - Token sem characterId (NPC efemero, marcador) so DM pode mexer.
   def move_token
     trace = Realtime::Telemetry.request_context(request)
@@ -420,6 +452,8 @@ class Api::V1::Player::BattleMapsController < ApplicationController
     token_id = params[:token_id].to_s
     new_x = params[:x].to_i
     new_y = params[:y].to_i
+    # o RASTRO desenhado (04/10): conferido contra a posicao de ANTES, lida dentro do lock
+    path = nil
 
     # O token e relido dentro do row lock. Sem isso, dois clientes podiam ler o
     # mesmo array e o ultimo save reaplicava posicao/equipamento/customizacao
@@ -437,6 +471,9 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
       unless Group.user_is_dm?(@current_user)
         owns = character_id.present? && @current_user.characters.exists?(id: character_id.to_s)
+        # o COMPANHEIRO (04/10): o token ligado a um personagem do jogador pelo `companheiroDe` segue o dono
+        dono = token['companheiroDe'] || token[:companheiroDe]
+        owns ||= dono.present? && @current_user.characters.exists?(id: dono.to_s)
         return forbidden unless owns
       end
 
@@ -445,6 +482,11 @@ class Api::V1::Player::BattleMapsController < ApplicationController
         return render(json: { error: 'Posicao fora dos limites' }, status: :unprocessable_entity)
       end
 
+      path = sanitized_move_path(
+        params[:path],
+        (token['x'] || token[:x]).to_i, (token['y'] || token[:y]).to_i,
+        new_x, new_y, size,
+      )
       tokens[idx] = token.merge('x' => new_x, 'y' => new_y)
       # Camada de MESA: com `schedule_id`, a criatura movida fica na sessao —
       # sem ele, grava no mapa como antes (Map Builder / cliente legado).
@@ -472,6 +514,7 @@ class Api::V1::Player::BattleMapsController < ApplicationController
       command_id: trace[:command_id],
       client_id: trace[:client_id],
       version: map_session_layer.persistence_version,
+      path: path,
     )
     # Resposta :tokens (base + tokens, sem cells/fundo/layers): o front reconcilia
     # só `battle_map.tokens`. Antes serializava o mapa FULL (base64 + 40k cells) a
@@ -598,6 +641,32 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
   private
 
+  # O RASTRO desenhado do move_token (04/10, o deslocamento por rastro): passos de UMA celula (vizinhas, a diagonal
+  # incluida), da posicao de antes a nova, com a pegada dentro do mapa, ate MAX_MOVE_PATH_STEPS passos. Fora disso, sem
+  # rastro: o movimento vale igual e os outros clientes veem o deslize de sempre. So enfeita o broadcast — a posicao
+  # gravada e sempre x/y.
+  MAX_MOVE_PATH_STEPS = 120
+
+  def sanitized_move_path(raw, from_x, from_y, to_x, to_y, size)
+    return nil unless raw.is_a?(Array) && raw.length.between?(2, MAX_MOVE_PATH_STEPS + 1)
+
+    cells = raw.map do |c|
+      pair = c.is_a?(Array) ? c : nil
+      return nil unless pair && pair.length == 2
+
+      col = Integer(pair[0], exception: false)
+      row = Integer(pair[1], exception: false)
+      return nil if col.nil? || row.nil?
+
+      [col, row]
+    end
+    return nil unless cells.first == [from_x, from_y] && cells.last == [to_x, to_y]
+    return nil unless cells.each_cons(2).all? { |(ax, ay), (bx, by)| [(bx - ax).abs, (by - ay).abs].max == 1 }
+    return nil unless cells.all? { |(x, y)| x >= 0 && y >= 0 && x + size <= @map.width && y + size <= @map.height }
+
+    cells
+  end
+
   def elapsed_ms(started_at)
     ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).round(2)
   end
@@ -647,6 +716,51 @@ class Api::V1::Player::BattleMapsController < ApplicationController
 
   def forbidden
     render(json: { error: 'Sem permissao' }, status: :forbidden)
+  end
+
+  def posicao_fora_do_mapa
+    render(json: { error: 'Posicao fora dos limites' }, status: :unprocessable_entity)
+  end
+
+  def cabe_no_mapa?(x, y, size)
+    x >= 0 && y >= 0 && x + size <= @map.width && y + size <= @map.height
+  end
+
+  # Aplica a mutação de tokens sob a trava da linha (na camada da mesa), avisa os outros clientes (`tokens_patched`) e
+  # responde os tokens e a mutação aplicada — o caminho do `mutate_tokens` e das ações do companheiro.
+  def aplica_e_responde(mutation)
+    result = BattleMapTokenMutations.call(
+      map: @map,
+      mutation: mutation,
+      session_layer: map_session_layer,
+    )
+    unless result.mutation.values.all?(&:empty?)
+      MapRealtime::Broadcaster.tokens_patched(
+        @map,
+        result.mutation,
+        version: result.version,
+        actor: @current_user,
+      )
+    end
+
+    render json: {
+      # COM a camada da sessão: a escrita foi para ela, e responder os tokens do
+      # ORIGINAL fazia o front reconciliar para a posição velha — o token
+      # "voltava sozinho" para quem mexeu, e o reload mostrava o lugar certo.
+      battle_map: BattleMapSerializer.serialize(@map, mode: :tokens, session_layer: session_layer_param),
+      token_mutation: {
+        additions: result.mutation[:additions],
+        patches: result.mutation[:patches].map do |patch|
+          {
+            tokenId: patch[:token_id],
+            changes: patch[:changes],
+            unset: patch[:unset],
+          }
+        end,
+        deleteIds: result.mutation[:delete_ids],
+        version: result.version,
+      },
+    }, status: :ok
   end
 
   # Strong params nao suporta nested arrays (cells e [[String]], tokens e

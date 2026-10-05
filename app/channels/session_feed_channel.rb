@@ -46,6 +46,10 @@ class SessionFeedChannel < ApplicationCable::Channel
   # `spell_fx` = FX animado one-shot de magia de área (não persiste; some no fim do turno).
   EPHEMERAL_PREVIEW_KINDS = %w[aoe_preview oa_threat spell_fx].freeze
   MAX_OA_THREATS = 24
+  # O rastro desenhado no arraste ao vivo (oa_threat.path): 120 passos, o mesmo
+  # teto do move_token. Coordenada de célula: inteiro de 0 até este teto.
+  MAX_OA_THREAT_PATH_CELLS = 121
+  MAX_OA_THREAT_PATH_COORD = 10_000
   # FX de magia de área (spell_fx): elementos/formas válidos (espelham SpellEffects).
   SPELL_FX_ELEMENTS = %w[fire cold lightning acid radiant necrotic force thunder poison psychic].freeze
   # `projectile`: NAO e area — e um PROJETIL magico voando do conjurador ate o
@@ -906,7 +910,24 @@ class SessionFeedChannel < ApplicationCable::Channel
                             .first(MAX_OA_THREATS)
                             .map { |t| t.to_s }
                             .reject { |t| t.empty? || t.length > MAX_ID_LENGTH }
+    # O RASTRO desenhado (deslocamento por rastro): os outros veem o caminho, não
+    # a reta. Opcional; fora do formato, cai fora e o fantasma segue sem ele.
+    path = sanitize_oa_threat_path(h['path'], out['dragCol'], out['dragRow'])
+    out['path'] = path if path
     out
+  end
+
+  # [[col, row], …] em passos de UMA célula (as 8 vizinhas), terminando na célula
+  # viva do arraste. Qualquer outra coisa: nil.
+  def sanitize_oa_threat_path(raw, drag_col, drag_row)
+    return nil unless raw.is_a?(Array) && raw.length.between?(2, MAX_OA_THREAT_PATH_CELLS)
+    return nil unless raw.all? do |c|
+      c.is_a?(Array) && c.length == 2 && c.all? { |v| v.is_a?(Integer) && v.between?(0, MAX_OA_THREAT_PATH_COORD) }
+    end
+    return nil unless raw.last == [drag_col, drag_row]
+    return nil unless raw.each_cons(2).all? { |a, b| a != b && (a[0] - b[0]).abs <= 1 && (a[1] - b[1]).abs <= 1 }
+
+    raw.map { |c| [c[0], c[1]] }
   end
 
   # FX efêmero: números de dano flutuantes sobre um token. Relayado a todos os

@@ -405,6 +405,10 @@ Rails.application.routes.draw do
             # dono do token — e misturar isso no move_token abriria a porta de lá.
             post :force_move_token
             post :mutate_tokens
+            # O COMPANHEIRO no mapa e o MONTAR do jogador (04/10): endpoints estreitos — o dono do personagem põe/tira o
+            # token do companheiro da ficha dele e muda só os campos da montaria do próprio token (`MapCompanionTokens`).
+            post :companion_token
+            post :mount_token
             post :launch_projectile
             post :resolve_projectile
             post :pick_up_projectile

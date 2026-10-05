@@ -719,6 +719,41 @@ RSpec.describe SessionFeedChannel, type: :channel do
     )
   end
 
+  it 'relaya o RASTRO desenhado do oa_threat (passo a passo até a célula viva)' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    item = {
+      'kind' => 'oa_threat', 'id' => 'oat-4', 'timestamp' => 1_700_000_000_023,
+      'sessionId' => schedule.id.to_s, 'draggedTokenId' => 'tok-mover', 'phase' => 'move',
+      'dragCol' => 7, 'dragRow' => 5, 'threatTokenIds' => [], 'path' => [[5, 4], [6, 4], [7, 5]],
+    }
+    expect do
+      perform :feed_item, item: item
+    end.to have_broadcasted_to("session_feed_#{schedule.id}").with(
+      a_hash_including('kind' => 'oa_threat', 'dragCol' => 7, 'dragRow' => 5, 'path' => [[5, 4], [6, 4], [7, 5]]),
+    )
+  end
+
+  it 'tira do oa_threat o rastro malformado (salto, fora da célula viva, não inteiro) — o fantasma segue sem ele' do
+    subscribe(token: token_for(player), schedule_id: schedule.id)
+    [
+      [[5, 4], [7, 4]],              # salto de duas células
+      [[5, 4], [6, 4]],              # não termina na célula viva (7, 4)
+      [[5, 4], [6.5, 4], [7, 4]],    # não inteiro
+      [[5, 4], [5, 4], [6, 4], [7, 4]], # parada
+      Array.new(130) { |i| [i, 4] }, # longo demais
+      'x',
+    ].each_with_index do |path, i|
+      item = {
+        'kind' => 'oa_threat', 'id' => "oat-5-#{i}", 'timestamp' => 1_700_000_000_024,
+        'sessionId' => schedule.id.to_s, 'draggedTokenId' => 'tok-mover', 'phase' => 'move',
+        'dragCol' => 7, 'dragRow' => 4, 'path' => path,
+      }
+      expect do
+        perform :feed_item, item: item
+      end.to(have_broadcasted_to("session_feed_#{schedule.id}").with { |data| expect(data).not_to have_key('path') })
+    end
+  end
+
   it 'descarta oa_threat sem draggedTokenId' do
     subscribe(token: token_for(player), schedule_id: schedule.id)
     item = {

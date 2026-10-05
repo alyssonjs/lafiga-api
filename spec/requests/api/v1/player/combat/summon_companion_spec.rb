@@ -75,6 +75,25 @@ RSpec.describe 'Invocar companion para o combate', type: :request do
     end
   end
 
+  describe 'o tamanho do livro (03/10: a criatura nasce do tamanho certo no mapa)' do
+    context 'a montaria Grande' do
+      let(:familiar) { super().merge('name' => 'Cavalo de Montaria', 'type' => 'mount', 'size' => 'Large') }
+
+      it 'nasce 2x2' do
+        invocar(dono)
+
+        expect(response).to have_http_status(:created), response.body
+        expect(CombatNpc.find_by(schedule: schedule, name: 'Cavalo de Montaria').token_size).to eq(2)
+      end
+    end
+
+    it 'sem o porte na ficha, fica sem tamanho (o front poe 1 celula)' do
+      invocar(dono)
+
+      expect(CombatNpc.find_by(schedule: schedule, name: 'Diabrete').token_size).to be_nil
+    end
+  end
+
   describe 'os dados do companion viram o NPC' do
     it 'copia PV, CA, atributos e ataques' do
       invocar(dono)

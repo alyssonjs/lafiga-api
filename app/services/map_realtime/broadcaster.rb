@@ -69,23 +69,27 @@ module MapRealtime
         envelope
       end
 
-      def token_moved(map, token_id, x, y, actor: nil, command_id: nil, client_id: nil, version: nil)
+      # `path:` o RASTRO desenhado (04/10), `[[col, row], ...]` da origem ao destino, ja conferido pelo controller: os
+      # outros clientes andam o token por ele. Ausente = o deslize em linha reta de sempre (a chave nem vai).
+      def token_moved(map, token_id, x, y, actor: nil, command_id: nil, client_id: nil, version: nil, path: nil)
+        payload = {
+          tokenId: token_id,
+          x: x,
+          y: y,
+          # O broadcast acontece depois que o row lock e liberado. Sob carga,
+          # um movimento mais novo pode ser transmitido antes de um antigo.
+          # A versao persistida permite ao cliente descartar esse evento tardio.
+          #
+          # `version:` vem de quem GRAVOU (MapSessionLayer#persistence_version).
+          # O fallback do mapa so serve a chamadas sem sessao — numa sessao ele
+          # fica congelado e o cliente descarta todo movimento apos o primeiro.
+          version: version || persistence_version(map),
+        }
+        payload[:path] = path if path.present?
         broadcast(
           map,
           :token_moved,
-          {
-            tokenId: token_id,
-            x: x,
-            y: y,
-            # O broadcast acontece depois que o row lock e liberado. Sob carga,
-            # um movimento mais novo pode ser transmitido antes de um antigo.
-            # A versao persistida permite ao cliente descartar esse evento tardio.
-            #
-            # `version:` vem de quem GRAVOU (MapSessionLayer#persistence_version).
-            # O fallback do mapa so serve a chamadas sem sessao — numa sessao ele
-            # fica congelado e o cliente descarta todo movimento apos o primeiro.
-            version: version || persistence_version(map),
-          },
+          payload,
           actor: actor,
           command_id: command_id,
           client_id: client_id,
