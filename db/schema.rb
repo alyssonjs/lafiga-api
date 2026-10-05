@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_29_180000) do
+ActiveRecord::Schema.define(version: 2026_10_05_180000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -472,6 +472,7 @@ ActiveRecord::Schema.define(version: 2026_09_29_180000) do
     t.string "cover_image_url"
     t.bigint "dm_user_id"
     t.jsonb "carts", default: [], null: false
+    t.datetime "no_session_notified_at"
     t.index ["dm_user_id"], name: "index_groups_on_dm_user_id"
   end
 

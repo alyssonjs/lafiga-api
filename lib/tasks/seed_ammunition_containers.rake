@@ -11,8 +11,9 @@ namespace :dnd do
   # completa o que falta sem sobrescrever o que o mestre editou.
   CONTAINERS = [
     # [nome, api_index, custo_cp, peso_kg, aceita, capacidade]
-    ['Aljava',            'aljava',            100, 0.5, %w[flecha],                        20],
-    ['Porta Virotes',     'porta-virotes',     100, 0.5, %w[virote],                        20],
+    # 05/10: cada arco/besta tem a municao dele — o recipiente aceita todas as do tipo
+    ['Aljava',            'aljava',            100, 0.5, %w[flecha flecha-de-arco-longo],   20],
+    ['Porta Virotes',     'porta-virotes',     100, 0.5, %w[virote virote-de-besta-de-mao virote-de-besta-pesada], 20],
     ['Bolsa de Munição',  'bolsa-de-municao',   50, 0.5, %w[pedra-de-funda agulha-de-zarabatana], 20],
   ].freeze
 
@@ -46,7 +47,9 @@ namespace :dnd do
       antes = props.dup
       # NAO sobrescreve o que o mestre ja declarou — so completa o que falta.
       props['equipment_slot'] ||= 'quiver'
-      props['ammunition_types'] = aceita if Array(props['ammunition_types']).empty?
+      # 05/10 (a municao por arma: cada besta/arco tem a dela): ACRESCENTA os tipos que faltam, mantendo os do mestre —
+      # sem isso o porta-virotes do jogador seguiria aceitando so o virote comum.
+      props['ammunition_types'] = (Array(props['ammunition_types']) | aceita)
       props['ammunition_capacity'] ||= capacidade
 
       if props == antes
