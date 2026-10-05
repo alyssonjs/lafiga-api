@@ -65,7 +65,8 @@ module Sheets
     ].freeze
     MAX_EFEITOS = 20
     TIPOS_DE_DANO_DA_ARMA = %w[piercing slashing bludgeoning].freeze
-    PROPRIEDADES_DA_ARMA = %w[light finesse reach thrown].freeze
+    # (sem `thrown`: o membro não se arremessa — e o arremesso no mapa procura o item na bolsa)
+    PROPRIEDADES_DA_ARMA = %w[light finesse reach].freeze
     DADO = /\A[1-9]\d?d(4|6|8|10|12)\z/
 
     module_function

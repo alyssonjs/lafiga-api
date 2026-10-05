@@ -49,7 +49,7 @@ RSpec.describe Sheets::Membros do
 
     it 'a arma natural: dado válido, tipo de dano e propriedades da lista; `nil` = sem arma', :aggregate_failures do
       limpo, = described_class.sanitize({ 'mao_esquerdo' => substituto('lamina', 'arma' => {
-        'nome' => 'Lâmina Serrilhada', 'dano' => '1D8', 'tipoDeDano' => 'slashing', 'propriedades' => %w[finesse heavy light],
+        'nome' => 'Lâmina Serrilhada', 'dano' => '1D8', 'tipoDeDano' => 'slashing', 'propriedades' => %w[finesse heavy thrown light],
       }) })
       expect(limpo.dig('mao_esquerdo', 'substituto', 'arma')).to eq(
         'nome' => 'Lâmina Serrilhada', 'dano' => '1d8', 'tipoDeDano' => 'slashing', 'propriedades' => %w[finesse light],
