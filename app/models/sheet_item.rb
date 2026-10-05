@@ -232,6 +232,12 @@ class SheetItem < ApplicationRecord
     rescue NameError
       nil
     end
+    # Peças do personagem LPC do mapa declaradas no catálogo (02/10). Ausente = o front deduz do tipo do item.
+    catalog_lpc_pecas = begin
+      EquipmentRules.lpc_pecas(self)
+    rescue NameError
+      nil
+    end
 
     {
       id: id,
@@ -254,6 +260,7 @@ class SheetItem < ApplicationRecord
       weapon_props: weapon_props,
       equip_slot: catalog_equip_slot,
       mount_props: catalog_mount_props,
+      lpc_pecas: catalog_lpc_pecas,
       # Recipiente de munição: o que aceita e quanto cabe. Do CATÁLOGO — sem
       # isto o front não sabe desenhar "12 / 20" nem qual munição oferecer.
       ammunition_container_props: ammunition_container_props,

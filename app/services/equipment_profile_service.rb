@@ -171,6 +171,9 @@ class EquipmentProfileService
     escudo = it.item if it.item&.shield?
     escudo ||= Item.find_by(api_index: it.item_index) if it.slot.to_s == 'shield' && it.item_index.present?
     linha[:shield_ac_bonus] = ItemArmorPropsMapper.shield_bonus_from_item(escudo) if escudo&.shield?
+    # Peças do personagem LPC declaradas no catálogo (02/10) — o mesmo campo do `SheetItem#as_inventory_json`.
+    pecas = EquipmentRules.lpc_pecas(it)
+    linha[:lpc_pecas] = pecas if pecas
     linha
   end
 
