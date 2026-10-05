@@ -38,7 +38,12 @@ class SheetItem < ApplicationRecord
   # (30/08); a escolha não aperta o arqueiro porque o CINTO tem slot livre que
   # aceita aljava, então mochila nas costas + aljava na cintura é possível.
   UTILITY_SLOTS   = %w[back instrument].freeze
-  ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS + UTILITY_SLOTS).freeze
+  # PEÇAS DE ARMADURA (04/10, a mesa: "slots de vestimenta e slots de armadura — os de armadura sobrescrevem os de
+  # vestimenta"): além do `armor` (o PEITORAL, que com o escudo é o único que dá CA), uma casa por parte do corpo — o
+  # elmo AO LADO do chapéu (`helmet`), a manopla ao lado da luva, o escarpe ao lado da bota. Não mexem na CA; no boneco
+  # do mapa, a armadura da parte vai por cima da vestimenta dela. O item declara a casa no catálogo (`equip_slot`).
+  ARMOR_PIECE_SLOTS = %w[armor_head armor_shoulders armor_arms armor_hands armor_legs armor_feet].freeze
+  ALL_SLOTS       = (COMBAT_SLOTS + ACCESSORY_SLOTS + ARMOR_PIECE_SLOTS + UTILITY_SLOTS).freeze
 
   # Slot legado → canônico, num lugar SÓ: o `equip` dos dois controllers valida
   # o param ANTES do modelo, então cada porta precisa da mesma tradução — e uma

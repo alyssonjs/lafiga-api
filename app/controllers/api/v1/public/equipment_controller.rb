@@ -501,6 +501,8 @@ class Api::V1::Public::EquipmentController < ApplicationController
         equipment_category: { index: 'armor', name: 'Armor' },
         armor_category: it.category.to_s.capitalize,
         armor_class: ac,
+        # a casa da armadura (04/10): `armor` (o peitoral) ou a de uma PEÇA (`armor_head`… `armor_feet`), que não dá CA
+        equip_slot: ap['equip_slot'].presence,
         str_minimum: ap['str_req'],
         stealth_disadvantage: !!ap['stealth_dis'],
         cost: cost_cp ? cp_to_cost_hash(cost_cp) : nil,

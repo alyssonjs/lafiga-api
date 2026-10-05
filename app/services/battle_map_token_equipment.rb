@@ -6,7 +6,8 @@ module BattleMapTokenEquipment
   HAND_SLOTS = %w[main_hand off_hand shield].freeze
   # O que o personagem LPC do mapa VESTE (02/10): sem estes na foto, os outros jogadores — que não têm a ficha —
   # veriam o personagem sem armadura. As mãos continuam sendo o que o chibi lê (ele escolhe pelo slot).
-  VISUAL_SLOTS = %w[armor boots clothing cloak helmet gloves belt].freeze
+  # e as PEÇAS DE ARMADURA (04/10): o elmo, a manopla, a grevas… vão por cima da vestimenta da parte deles
+  VISUAL_SLOTS = (%w[armor boots clothing cloak helmet gloves belt] + SheetItem::ARMOR_PIECE_SLOTS).freeze
   SNAPSHOT_SLOTS = (HAND_SLOTS + VISUAL_SLOTS).freeze
 
   module_function
