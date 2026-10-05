@@ -34,7 +34,8 @@ module CharacterSheetEdits
 
       ac = (sheet.avatar_customization || {}).deep_stringify_keys
       if cust.is_a?(Hash)
-        incoming = cust.deep_stringify_keys
+        # O MEMBRO PERDIDO e do Mestre (`Sheets::Membros`): o que o jogador manda nessa chave e descartado — o gravado fica.
+        incoming = Sheets::Membros.sem_membros(cust.deep_stringify_keys)
         # Se o flag veio aninhado, removemos do payload de customizacao para
         # nao colidir com o flag explicito raiz quando ambos estao presentes.
         incoming.delete(USER_EDITED_KEY)

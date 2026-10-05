@@ -167,6 +167,8 @@ Rails.application.routes.draw do
             # namespace admin: a MARCA na ficha é para todos, a escrita é dele.
             patch  :dm_overrides, to: 'sheet_dm_overrides#update'
             delete :dm_overrides, to: 'sheet_dm_overrides#destroy'
+            # MEMBRO PERDIDO (04/10): o Mestre marca, a aparência leva — e o desenho do LPC some com o membro.
+            patch  :membros, to: 'sheet_membros#update'
             # Horas de treino caso a caso: o catálogo diz o padrão, isto é a
             # exceção deste personagem.
             patch  :training, to: 'sheet_training#update'

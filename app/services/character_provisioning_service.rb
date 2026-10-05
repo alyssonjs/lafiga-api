@@ -442,7 +442,8 @@ class CharacterProvisioningService
           race_summary: race_sum.presence || sheet.race_summary || {},
           background_summary: bg_sum.presence || sheet.background_summary || {},
           metadata: (sheet.metadata || {}).merge(metadata),
-          avatar_customization: (avatar_cust.presence || sheet.avatar_customization.presence || {})
+          # o MEMBRO PERDIDO e do Mestre (`Sheets::Membros`): o do wizard e descartado, o gravado fica
+          avatar_customization: Sheets::Membros.preserva(avatar_cust.presence || sheet.avatar_customization.presence || {}, sheet.avatar_customization)
         }.merge(
           if skip_hp_reset
             {}
