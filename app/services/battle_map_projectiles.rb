@@ -50,13 +50,17 @@ module BattleMapProjectiles
         raise Invalid, 'Item sem unidades disponiveis' unless source.quantity.to_i.positive?
 
         projectile = build_projectile(map, source, attacker, target, params, kind)
-        if source.quantity.to_i == 1
+        ultima = source.quantity.to_i == 1
+        if ultima
           source.destroy!
+        elsif kind == 'thrown_weapon'
+          # 04/10: arremessar UMA das adagas da pilha nao tira as outras da mao — antes a pilha inteira desequipava
+          source.update!(quantity: source.quantity.to_i - 1)
         else
           source.update!(quantity: source.quantity.to_i - 1, equipped: false, slot: nil)
         end
         next_tokens = Array(layer(map).tokens)
-        if kind == 'thrown_weapon'
+        if kind == 'thrown_weapon' && ultima
           next_tokens, tokens_changed = remove_equipped_snapshot(next_tokens, attacker['id'], source)
         end
         layer(map).update!(
@@ -117,6 +121,12 @@ module BattleMapProjectiles
         'outcome' => normalized_outcome,
         'resolvedAt' => Time.current.iso8601
       )
+      # 04/10: o ERRO segue o rumo do tiro e cai ATRAS do alvo (o sorteado no lancamento podia cair do lado de quem
+      # atirou — a flecha voltava). O acerto fica onde caiu (ao pe do alvo).
+      if normalized_outcome == 'miss'
+        atras = landing_behind(map, projectile)
+        resolved = resolved.merge('landing' => atras) if atras
+      end
       list[idx] = resolved
       layer(map).update!(dropped_projectiles: list)
       changed = true
@@ -218,15 +228,63 @@ module BattleMapProjectiles
         'category' => source.category,
         'source' => source.source,
         'notes' => source.notes,
-        'propsJson' => source.props_json || {}
+        'propsJson' => props_do_projetil(source)
       },
       'createdAt' => Time.current.iso8601
     }
   end
 
+  # O PROJETIL NO MAPA (04/10): o desenho e o efeito que o Mestre escolheu no editor de municao moram no CATALOGO
+  # (`items.props.projetil`); a municao que ja estava na bolsa nao os carrega. O item da ficha vence (a municao magica
+  # pode declarar o seu).
+  def props_do_projetil(source)
+    props = (source.props_json || {}).deep_dup
+    return props if props.key?('projetil') || source.item_index.blank?
+
+    projetil = Item.find_by(api_index: source.item_index)&.props&.dig('projetil')
+    projetil.present? ? props.merge('projetil' => projetil) : props
+  end
+
   def token_center(token)
     size = [token['size'].to_i, 1].max
     { 'col' => token['x'].to_f + size / 2.0, 'row' => token['y'].to_f + size / 2.0 }
+  end
+
+  # A celula livre ao redor do alvo mais ATRAS dele no rumo do tiro (origem -> alvo); empate, a mais perto da reta.
+  # nil sem alvo no mapa (o token saiu) — fica a queda sorteada.
+  def landing_behind(map, projectile)
+    target = Array(layer(map).tokens).find { |t| t['id'].to_s == projectile['targetTokenId'].to_s }
+    return nil unless target
+
+    origin = projectile['origin'] || {}
+    center = token_center(target.stringify_keys)
+    dx = center['col'] - origin['col'].to_f
+    dy = center['row'] - origin['row'].to_f
+    len = Math.hypot(dx, dy)
+    return nil if len < 1e-6
+
+    ux = dx / len
+    uy = dy / len
+    x = target['x'].to_i
+    y = target['y'].to_i
+    size = [target['size'].to_i, 1].max
+    candidates = []
+    ((x - 1)..(x + size)).each do |col|
+      ((y - 1)..(y + size)).each do |row|
+        next if col >= x && col < x + size && row >= y && row < y + size
+        next if col.negative? || row.negative? || col >= map.width || row >= map.height
+        candidates << { 'col' => col, 'row' => row }
+      end
+    end
+    free = candidates.reject { |cell| occupied_cell?(layer(map).tokens, cell) }
+    pool = free.presence || candidates
+    pool.max_by do |cell|
+      vx = cell['col'] + 0.5 - center['col']
+      vy = cell['row'] + 0.5 - center['row']
+      along = (vx * ux) + (vy * uy)
+      across = ((vx * uy) - (vy * ux)).abs
+      along - (across * 0.5)
+    end
   end
 
   def random_adjacent_cell(map, target)
