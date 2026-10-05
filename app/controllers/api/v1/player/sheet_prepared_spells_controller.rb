@@ -48,7 +48,7 @@ class Api::V1::Player::SheetPreparedSpellsController < ApplicationController
           begin
             sub = sk.sub_klass
             if sub&.levels_json.present?
-              rows = JSON.parse(sub.levels_json) rescue []
+              rows = sub.linhas_de_nivel
               rows = Array(rows).select { |r| r.is_a?(Hash) && (r['level'].to_i <= lvl) }
               names = []
               rows.each do |r|

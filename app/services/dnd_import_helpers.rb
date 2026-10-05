@@ -83,6 +83,22 @@ module DndImportHelpers
     normalized
   end
 
+  # ⚠️ GUARDA DE CARIMBO. Os dois caminhos do import fazem replace-all do
+  # `levels_json` — re-rodar a rake apagava, em silêncio, tudo o que o mestre
+  # tivesse editado pela página do compêndio.
+  #
+  # `edited_at` NULL significa "é o livro": sub-classe nunca tocada continua
+  # sendo atualizada normalmente, e sub-classe NOVA do YAML continua entrando.
+  # `FORCE=1` volta ao comportamento antigo, de propósito e por pedido.
+  def editada_pelo_mestre?(sub, klass, mapped_idx)
+    return false unless sub.persisted? && sub.edited_at.present?
+    return false if ENV['FORCE'] == '1'
+
+    puts "    • Pulada (editada pelo mestre em #{sub.edited_at.strftime('%d/%m/%Y')}): " \
+         "#{klass.api_index}/#{mapped_idx} — use FORCE=1 para sobrescrever"
+    true
+  end
+
   def dedup_subclasses!(klass)
     to_slug = ->(s) { ActiveSupport::Inflector.transliterate(s.to_s).downcase.gsub(/[^a-z0-9]+/, '-').gsub(/^-+|-+$/, '') }
     list = klass.sub_klasses.to_a
@@ -119,6 +135,8 @@ module DndImportHelpers
       data = raw.respond_to?(:with_indifferent_access) ? raw.with_indifferent_access : raw
       mapped_idx = SUBCLASS_ALIASES.dig(klass.api_index.to_s, sub_idx.to_s) || sub_idx
       sub = SubKlass.find_or_initialize_by(api_index: mapped_idx, klass_id: klass.id)
+      next if editada_pelo_mestre?(sub, klass, mapped_idx)
+
       nm = (data[:name] || data['name'])
       fl = (data[:flavor] || data['flavor'])
       ds = (data[:description] || data['description'])
@@ -144,18 +162,15 @@ module DndImportHelpers
       mapped_idx = SUBCLASS_ALIASES.dig(klass.api_index.to_s, sub_idx.to_s) || sub_idx
       sub = SubKlass.find_by(api_index: mapped_idx, klass_id: klass.id)
       next unless sub
+      next if editada_pelo_mestre?(sub, klass, mapped_idx)
+
       begin
         SpellSource.where(source_type: 'SubKlass', source_id: sub.id, always_prepared: true).delete_all
         SpellSource.where(source_type: 'SubKlass', source_id: sub.id).where("coalesce(notes,'') = ?", 'expanded').delete_all
       rescue StandardError => e
         puts "    • Aviso: falha ao limpar SpellSource para #{klass.api_index}/#{mapped_idx}: #{e.message}"
       end
-      parsed = begin
-        JSON.parse(sub.levels_json.presence || '[]')
-      rescue StandardError
-        []
-      end
-      parsed = Array(parsed).compact.select { |r| r.is_a?(Hash) }
+      parsed = sub.linhas_de_nivel
       by_level = parsed.each_with_object({}) do |row, h|
         lvl = (row['level'] || row[:level]).to_i rescue 0
         next if lvl < 0

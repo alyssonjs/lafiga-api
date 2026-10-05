@@ -46,9 +46,10 @@ RSpec.describe SheetItem, type: :model do
       expect(item.errors[:slot]).to be_present
     end
 
-    it 'expõe ALL_SLOTS combinando combate + acessórios + utilitários' do
+    it 'expõe ALL_SLOTS combinando combate + acessórios + peças de armadura + utilitários' do
+      # 04/10: as PEÇAS DE ARMADURA (elmo, ombreiras, braçais, manoplas, grevas, escarpes) ao lado do peitoral
       expect(SheetItem::ALL_SLOTS).to eq(
-        SheetItem::COMBAT_SLOTS + SheetItem::ACCESSORY_SLOTS + SheetItem::UTILITY_SLOTS
+        SheetItem::COMBAT_SLOTS + SheetItem::ACCESSORY_SLOTS + SheetItem::ARMOR_PIECE_SLOTS + SheetItem::UTILITY_SLOTS
       )
       expect(SheetItem::ALL_SLOTS).to include('main_hand', 'off_hand', 'armor', 'shield')
       # 29/08: `face` (rosto) entrou; `circlet` foi FUNDIDO em `helmet`.

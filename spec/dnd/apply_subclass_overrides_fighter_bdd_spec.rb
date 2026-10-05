@@ -56,7 +56,7 @@ RSpec.describe 'DndImportHelpers — Guerreiro (subclass_overrides)', type: :mod
       DndImportHelpers.apply_subclass_overrides!(fighter_klass)
       sub = fighter_klass.sub_klasses.find_by!(api_index: 'campeao')
       expect(sub.levels_json).to be_present
-      arr = JSON.parse(sub.levels_json)
+      arr = sub.linhas_de_nivel
       expect(arr).to be_a(Array)
       expect(arr.map { |r| r['level'] }).to include(3, 7, 10, 15, 18)
     end
@@ -66,7 +66,7 @@ RSpec.describe 'DndImportHelpers — Guerreiro (subclass_overrides)', type: :mod
     it 'A3.1 — Mestre de Batalha: insere bloco level 0 com rules.superiority_dice (YAML de topo)' do
       apply_fighter_subclass_pipeline!
       sub = fighter_klass.sub_klasses.find_by!(api_index: 'mestre-de-batalha')
-      rows = JSON.parse(sub.levels_json)
+      rows = sub.linhas_de_nivel
       z = rows.find { |h| h['level'] == 0 }
       expect(z).to be_present, 'esperado level 0 após merge de `rules` de topo do YAML'
       expect(z['rules']['superiority_dice']['die_start']).to eq('d8')
@@ -75,7 +75,7 @@ RSpec.describe 'DndImportHelpers — Guerreiro (subclass_overrides)', type: :mod
     it 'A3.2 — Cavaleiro Arcano: level 0 com rules de topo (spellcasting/bonded_weapon/war_magic) do YAML' do
       apply_fighter_subclass_pipeline!
       sub = fighter_klass.sub_klasses.find_by!(api_index: 'cavaleiro-arcano')
-      rows = JSON.parse(sub.levels_json)
+      rows = sub.linhas_de_nivel
       z = rows.find { |h| h['level'] == 0 }
       expect(z).to be_present
       expect(z['rules']['spellcasting']['ability']).to eq('Inteligência')
@@ -86,7 +86,7 @@ RSpec.describe 'DndImportHelpers — Guerreiro (subclass_overrides)', type: :mod
     it 'A3.3 — Campeão: sem `rules` de nível 0 (YAML sem bloco `rules` no arquétipo)' do
       apply_fighter_subclass_pipeline!
       sub = fighter_klass.sub_klasses.find_by!(api_index: 'campeao')
-      levels = JSON.parse(sub.levels_json).map { |h| h['level'] }
+      levels = sub.linhas_de_nivel.map { |h| h['level'] }
       expect(levels).not_to include(0)
     end
   end
@@ -128,7 +128,7 @@ RSpec.describe 'DndImportHelpers — Guerreiro (subclass_overrides)', type: :mod
     it 'A4.3 — linha `level: 0` (metadados de rules) não gera SubKlassLevel' do
       apply_fighter_subclass_pipeline!
       sub = fighter_klass.sub_klasses.find_by!(api_index: 'mestre-de-batalha')
-      expect(JSON.parse(sub.levels_json).map { |h| h['level'] }).to include(0)
+      expect(sub.linhas_de_nivel.map { |h| h['level'] }).to include(0)
 
       Subclasses::SyncFeaturesFromLevelsJsonService.new(sub).call
 

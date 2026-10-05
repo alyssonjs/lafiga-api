@@ -17,12 +17,24 @@ module SubclassHpBonus
   module_function
 
   def overrides
-    @overrides ||= begin
-      path = Rails.root.join('config', 'subclass_overrides.yml')
-      File.exist?(path) ? (YAML.load_file(path) || {}) : {}
-    rescue StandardError
-      {}
-    end
+    Subclasses::OverridesYaml.dados
+  end
+
+  # ⚠️ BANCO PRIMEIRO. A regra canônica de uma sub-classe é o `levels_json`, e
+  # este serviço olhava SÓ o YAML: mexer no bônus de PV pela página do compêndio
+  # não fazia efeito nenhum — a ficha continuava com o número do livro, sem erro
+  # em lugar nenhum. O YAML fica como fallback, para sub-classe que exista no
+  # arquivo e ainda não tenha sido materializada no banco.
+  #
+  # Quem já tem o registo em mão passa-o em `sub:`; só quem tem apenas o slug
+  # paga a consulta.
+  def linhas_de_nivel(subclass_api, sub: nil)
+    registro = sub || SubKlass.find_by(api_index: subclass_api.to_s)
+    do_banco = registro&.linhas_de_nivel
+    return do_banco if do_banco.present?
+
+    bloco = subclass_block(subclass_api)
+    Array(bloco.is_a?(Hash) ? (bloco['levels'] || bloco[:levels]) : nil)
   end
 
   # Localiza o bloco da subclasse (`{ 'choose_level' =>, 'levels' => [...] }`)
@@ -42,13 +54,13 @@ module SubclassHpBonus
 
   # Bônus total de PV concedido por uma subclasse dado o nível NESSA classe.
   # Soma, para cada feature com as chaves: immediate + per_level × (nível - feature_level).
-  def bonus_for(subclass_api, class_level)
-    block = subclass_block(subclass_api)
-    return 0 unless block.is_a?(Hash)
+  def bonus_for(subclass_api, class_level, sub: nil)
+    linhas = linhas_de_nivel(subclass_api, sub: sub)
+    return 0 if linhas.blank?
 
     lvl = class_level.to_i
     total = 0
-    Array(block['levels'] || block[:levels]).each do |level_row|
+    Array(linhas).each do |level_row|
       next unless level_row.is_a?(Hash)
       feat_level = (level_row['level'] || level_row[:level]).to_i
       Array(level_row['features'] || level_row[:features]).each do |feature|
@@ -74,7 +86,7 @@ module SubclassHpBonus
     return 0 unless sub
     api = sub.api_index.presence || sub.name.to_s.parameterize(separator: '-')
     lv = new_level.to_i
-    bonus_for(api, lv) - bonus_for(api, lv - 1)
+    bonus_for(api, lv, sub: sub) - bonus_for(api, lv - 1, sub: sub)
   end
 
   # Soma o bônus de todas as subclasses da ficha, cada uma usando o nível da
@@ -87,7 +99,7 @@ module SubclassHpBonus
       sub = sk.sub_klass
       next 0 unless sub
       api = sub.api_index.presence || sub.name.to_s.parameterize(separator: '-')
-      bonus_for(api, sk.level)
+      bonus_for(api, sk.level, sub: sub)
     end.to_i.clamp(0, 999)
   rescue StandardError => e
     Rails.logger.warn("SubclassHpBonus: falha para sheet ##{sheet&.id}: #{e.class}: #{e.message}")

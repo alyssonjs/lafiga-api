@@ -288,11 +288,8 @@ class FeaturesAggregator
   # do nome canônico. Subclasses sem levels_json válido → mapa vazio (nenhuma
   # canônica detectada; dedup cai no critério de maior id).
   def canonical_names_by_level(sub_klass)
-    raw = sub_klass.levels_json
-    return {} if raw.blank?
-
-    rows = JSON.parse(raw) rescue nil
-    return {} unless rows.is_a?(Array)
+    rows = sub_klass.linhas_de_nivel
+    return {} if rows.empty?
 
     out = {}
     rows.each do |row|

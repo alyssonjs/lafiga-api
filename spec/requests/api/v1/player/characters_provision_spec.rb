@@ -39,6 +39,48 @@ RSpec.describe 'Api::V1::Player::CharactersController provision', type: :request
       end
     end
 
+    context 'with the LPC appearance (avatar.customization.lpc, 04/10)' do
+      it 'keeps it on the sheet — nested objects and lists' do
+        lpc = {
+          'v' => 1, 'corpo' => 'male', 'pele' => 'olive', 'olhos' => 'brown',
+          'cabelo' => { 'peca' => 'lpc:hair_braid', 'cor' => 'black' }, 'barba' => nil,
+          'expressao' => nil, 'acessorios' => ['lpc:facial_monocle_left']
+        }
+        payload = minimal_l1_barbarian_provision_payload(
+          race: human_race, sub_race: human_standard_subrace, klass: barbarian_klass,
+          background: acolyte_background, alignment: lawful_good_alignment
+        )
+        payload[:wizard][:avatar] = { customization: { 'gender' => 'masculine', 'lpc' => lpc } }
+
+        post '/api/v1/player/characters/provision', params: payload, headers: headers, as: :json
+
+        expect(response).to have_http_status(:created), -> { response.body }
+        character_id = response.parsed_body.dig('character', 'id')
+        expect(Character.find(character_id).sheet.avatar_customization['lpc']).to eq(lpc)
+      end
+
+      # MEMBRO PERDIDO (04/10): a escrita é do Mestre (`Sheets::Membros`) — o wizard do jogador não a traz nem a apaga.
+      it '⚠️ descarta `membros` vindo do wizard e conserva o gravado pelo Mestre ao reprovisionar', :aggregate_failures do
+        payload = minimal_l1_barbarian_provision_payload(
+          race: human_race, sub_race: human_standard_subrace, klass: barbarian_klass,
+          background: acolyte_background, alignment: lawful_good_alignment
+        )
+        payload[:wizard][:avatar] = { customization: { 'gender' => 'masculine', 'membros' => { 'olho_direito' => { 'estado' => 'perdido' } } } }
+        post '/api/v1/player/characters/provision', params: payload, headers: headers, as: :json
+        expect(response).to have_http_status(:created), -> { response.body }
+        character_id = response.parsed_body.dig('character', 'id')
+        sheet = Character.find(character_id).sheet
+        expect(sheet.avatar_customization).not_to have_key('membros')
+
+        sheet.update!(avatar_customization: sheet.avatar_customization.merge('membros' => { 'mao_direito' => { 'estado' => 'perdido' } }))
+        payload[:character][:id] = character_id
+        payload[:wizard][:avatar] = { customization: { 'gender' => 'feminine' } }
+        post '/api/v1/player/characters/provision', params: payload, headers: headers, as: :json
+        expect(response).to have_http_status(:created), -> { response.body }
+        expect(sheet.reload.avatar_customization).to include('gender' => 'feminine', 'membros' => { 'mao_direito' => { 'estado' => 'perdido' } })
+      end
+    end
+
     context 'when reprovisioning a character linked to a group' do
       it 'keeps group_id when payload omits character.group_id (edição Não desvincula do grupo/campanha)' do
         g = create(:group)

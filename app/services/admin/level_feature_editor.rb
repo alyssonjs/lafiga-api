@@ -38,6 +38,7 @@ module Admin
 
       ActiveRecord::Base.transaction do
         levels.each { |level| level.features.delete(feature) }
+        tira_do_levels_json!(feature, levels.map(&:level))
         destroy_orphan_custom_feature!(feature)
       end
 
@@ -62,6 +63,7 @@ module Admin
         dm_customized: true,
       )
       level_record.features << feature unless level_record.features.exists?(feature.id)
+      espelha_no_levels_json!(feature, level)
 
       Result.new(level_record: level_record, feature: feature)
     end
@@ -86,6 +88,7 @@ module Admin
           end
         end
         level_record.features << feature unless level_record.features.exists?(feature.id)
+        espelha_no_levels_json!(feature, level_record.level, saindo_de: (current_level_ids if moving_to_new_level))
       end
 
       Result.new(level_record: level_record, feature: feature.reload)
@@ -111,6 +114,70 @@ module Admin
       return if defined?(CharactersFeature) && CharactersFeature.where(feature_id: feature.id).exists?
 
       feature.destroy!
+    end
+
+    # ⚠️ DUAS escritas para a MESMA verdade. Este editor grava em
+    # `features`/`sub_klass_levels`, mas quem manda na regra da sub-classe é o
+    # `levels_json` — e é dele que o sync reconstrói as features. Enquanto as
+    # duas não convergiam, uma feature criada por aqui não aparecia na ficha, e
+    # o primeiro sync do `levels_json` a apagava de volta.
+    #
+    # Passa pelo `LevelsPatch` de propósito: um escritor só, com a mesma
+    # sanitização e a mesma mescla rasa do editor da página.
+    def espelha_no_levels_json!(feature, level, saindo_de: nil)
+      return unless owner_kind == :sub_klass
+
+      corpo = { 'name' => feature.name, 'description' => feature.description.to_s,
+                'index' => feature.api_index }
+      linha = linha_do_nivel(level)
+      feats = features_da_linha(linha)
+      i = feats.index { |f| mesma_feature?(f, feature) }
+      i ? feats[i] = feats[i].merge(corpo) : feats << corpo
+
+      patch = { 'set' => [linha.merge('features' => feats)] }
+      Array(saindo_de).each do |level_id|
+        anterior = SubKlassLevel.find_by(id: level_id)&.level
+        next if anterior.nil? || anterior.to_i == level.to_i
+
+        antiga = linha_do_nivel(anterior)
+        patch['set'] << antiga.merge('features' => features_da_linha(antiga).reject { |f| mesma_feature?(f, feature) })
+      end
+
+      grava_levels_json!(patch)
+    end
+
+    def tira_do_levels_json!(feature, niveis)
+      return unless owner_kind == :sub_klass
+
+      linhas = Array(niveis).uniq.map do |nivel|
+        linha = linha_do_nivel(nivel)
+        linha.merge('features' => features_da_linha(linha).reject { |f| mesma_feature?(f, feature) })
+      end
+      grava_levels_json!('set' => linhas)
+    end
+
+    def grava_levels_json!(patch)
+      novas, erros = Subclasses::LevelsPatch.aplicar(owner.linhas_de_nivel, patch)
+      raise ArgumentError, erros.join('; ') if erros.any?
+
+      owner.update!(levels_json: novas, edited_at: Time.current)
+    end
+
+    def linha_do_nivel(nivel)
+      owner.linhas_de_nivel.find { |l| l['level'].to_i == nivel.to_i } || { 'level' => nivel.to_i }
+    end
+
+    def features_da_linha(linha)
+      Array(linha['features']).select { |f| f.is_a?(Hash) }
+    end
+
+    # Casa pelo `index` (o api_index, que é o que o import grava) e, para as
+    # linhas antigas que não têm `index`, pelo nome normalizado.
+    def mesma_feature?(bruta, feature)
+      indice = bruta['index'].to_s
+      return indice == feature.api_index.to_s if indice.present?
+
+      parameterize(bruta['name']) == parameterize(feature.name)
     end
 
     def scoped_feature!

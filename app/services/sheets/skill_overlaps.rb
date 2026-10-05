@@ -47,7 +47,7 @@ module Sheets
         sub = sk.sub_klass
         next if sub.nil? || sub.levels_json.blank?
 
-        dados = sub.levels_json.is_a?(String) ? (JSON.parse(sub.levels_json) rescue []) : sub.levels_json
+        dados = sub.linhas_de_nivel
         nomes = Array(dados).flat_map do |linha|
           next [] unless linha.is_a?(Hash)
 

@@ -391,6 +391,37 @@ RSpec.describe 'Api::V1::Player::BattleMapsController', type: :request do
            params: { token_id: 't-npc', x: 2, y: 2 }, headers: bearer_headers_for(dm), as: :json
       expect(response).to have_http_status(:ok)
     end
+
+    describe 'o RASTRO desenhado (04/10, o deslocamento por rastro)' do
+      it 'repassa no token_moved o rastro de passos de uma celula, da posicao de antes a nova' do
+        path = [[0, 0], [1, 1], [2, 2], [2, 3]]
+        expect {
+          post "/api/v1/player/battle_maps/#{map.id}/move_token",
+               params: { token_id: 't-mine', x: 2, y: 3, path: path }, headers: headers, as: :json
+        }.to have_broadcasted_to("map_#{map.id}").with { |data|
+          data['event'] == 'token_moved' && data.dig('payload', 'path') == path
+        }
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'rastro que nao comeca na posicao de antes, pula celulas ou sai do mapa: move igual, sem rastro' do
+        [
+          [[1, 1], [2, 2], [2, 3]],          # nao comeca onde o token estava
+          [[0, 0], [2, 2], [2, 3]],          # pula uma celula
+          [[0, 0], [-1, 0], [0, 1], [1, 2], [2, 3]], # sai do mapa
+          [[0, 0], [1, 1]],                  # nao termina no destino
+        ].each do |path|
+          map.update!(tokens: map.tokens.map { |t| t['id'] == 't-mine' ? t.merge('x' => 0, 'y' => 0) : t })
+          expect {
+            post "/api/v1/player/battle_maps/#{map.id}/move_token",
+                 params: { token_id: 't-mine', x: 2, y: 3, path: path }, headers: headers, as: :json
+          }.to have_broadcasted_to("map_#{map.id}").with { |data|
+            data['event'] == 'token_moved' && !data['payload'].key?('path')
+          }
+          expect(response).to have_http_status(:ok)
+        end
+      end
+    end
   end
 
   describe 'POST /api/v1/player/battle_maps/:id/mutate_tokens' do

@@ -35,6 +35,29 @@ RSpec.describe BattleMapTokenEquipment, type: :service do
     expect(result.first[:chibi_equipment]).to eq(token['chibiEquipment'])
   end
 
+  it 'carries the versatile grip in three states (two hands, one hand, never chosen)' do
+    SheetItem.create!(
+      sheet: sheet, item_name: 'Espada Longa', category: 'Armas', quantity: 1,
+      equipped: true, slot: 'main_hand', props_json: { 'using_two_hands' => true },
+    )
+    # fora das regras de exclusividade de slot (a versátil em duas mãos derrubaria a outra mão): só a foto importa
+    lanca = SheetItem.create!(
+      sheet: sheet, item_name: 'Lança', category: 'Armas', quantity: 1,
+      equipped: false, props_json: { 'using_two_hands' => false },
+    )
+    lanca.update_columns(equipped: true, slot: 'off_hand')
+    SheetItem.create!(
+      sheet: sheet, item_name: 'Botas', category: 'Armaduras', quantity: 1,
+      equipped: true, slot: 'boots', props_json: {},
+    )
+
+    snapshot = described_class.snapshot_for(character).index_by { |item| item['name'] }
+
+    expect(snapshot['Espada Longa']['usingTwoHands']).to be(true)
+    expect(snapshot['Lança']['usingTwoHands']).to be(false)
+    expect(snapshot['Botas']).not_to have_key('usingTwoHands')
+  end
+
   it 'persists an explicit empty snapshot so clients do not revive stale weapons' do
     result = described_class.sync!(map: map, character: character)
 

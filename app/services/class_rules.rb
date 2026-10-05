@@ -162,13 +162,81 @@ class ClassRules
     }
   end
 
-  # Regras por `api_index`: DB (`klasses.rules`) tem prioridade sobre o hash em código
-  # (`CLASS_RULES`). Isto permite migrar gradualmente sem remover o legado de uma vez.
+  # Regras por `api_index`: o que o mestre gravou em `klasses.rules` SOBREPÕE o
+  # hash em código (`CLASS_RULES`), chave de topo a chave de topo.
+  #
+  # 🐞 Antes isto era REPLACE-ALL — `return from_db if from_db`. Como o
+  # controller admitia `rules: {}` no `permit` sem sanitizador nenhum, um PATCH
+  # que gravasse meia classe apagava a outra metade: `hit_die`, proficiências,
+  # `features_level1`, `subclass` e `feature_rules` sumiam para todos os
+  # personagens dela, sem erro em lado nenhum. Era latente só porque nenhuma
+  # das 13 tinha `rules` preenchido; deixaria de ser no primeiro save do editor.
+  #
+  # ⚠️ Sobreposição por CHAVE DE TOPO, não `deep_merge`. Aquele concatena
+  # arrays: o mestre que TIRASSE uma proficiência veria a lista antiga somar-se
+  # de volta, sem nada na tela a explicar porquê.
   def self.find(id)
-    from_db = KlassClassRulesProvider.call(id)
-    return from_db if from_db
+    base = find_from_rules_constant(id)
+    overlay = KlassClassRulesProvider.call(id)
+    return base if overlay.blank?
 
-    find_from_rules_constant(id)
+    # Classe que só existe no banco (homebrew): não há base, o overlay é tudo.
+    return overlay if base.blank?
+
+    sobrepoe(base, overlay)
+  end
+
+  # ⚠️ Devolve o `base` INTACTO quando não há overlay — é o que garante a
+  # paridade: sem nada gravado, esta camada é a identidade e `find` responde
+  # exatamente o que respondia antes.
+  def self.sobrepoe(base, overlay)
+    limpo = (overlay || {}).reject { |_k, v| v.nil? }
+    return base if limpo.empty?
+
+    base.deep_dup.merge(limpo)
+  end
+
+  # Escada de um recurso por nível, lida da REGRA (`resources.<chave>`).
+  #
+  # 🐞 Havia até QUATRO cópias do mesmo número: esta chave (que ninguém lia), o
+  # `case` escrito à mão no `CharacterSheetSummaryService`, o
+  # `classResources.ts` do front, e a tabela de progressão em HTML. No nível 20
+  # do bárbaro já discordavam — a regra dizia 6 fúrias e o resto dizia
+  # ilimitado. Cópia que ninguém lê é a que apodrece primeiro.
+  #
+  # ⚠️ Fica aqui, e não no serviço da ficha, porque é pergunta sobre a REGRA:
+  # não precisa de ficha nenhuma, e o editor de classes vai querer a mesma
+  # resposta.
+  #
+  # Devolve `nil` quando a classe não declara a chave OU quando a escada ainda
+  # não começou — é assim que Indomável só aparece do nível 9 em diante.
+  def self.escada_de_recurso(api_index, chave, level)
+    regra = find(api_index.to_s) rescue nil
+    dados = regra && (regra[:resources] || regra['resources'])
+    corpo = dados && (dados[chave] || dados[chave.to_s])
+    return nil unless corpo.is_a?(Hash)
+
+    usos = degrau(corpo[:uses_by_level] || corpo['uses_by_level'], level)
+    return nil if usos.nil?
+
+    extras = {}
+    (corpo[:values_by_level] || corpo['values_by_level'] || {}).each do |nome, escada|
+      valor = degrau(escada, level)
+      extras[nome.to_sym] = valor unless valor.nil?
+    end
+
+    { total: usos.to_i }.merge(extras)
+  end
+
+  # O maior valor cujo nível de entrada já foi alcançado.
+  def self.degrau(escada, level)
+    valor = nil
+    (escada || {}).each do |nivel, v|
+      next if level < nivel.to_i
+
+      valor = v.to_i if valor.nil? || v.to_i >= valor
+    end
+    valor
   end
 
   # Apenas o hash `ClassRules.rules` + tradução de saving_throws (comportamento pré-DB).
@@ -199,7 +267,7 @@ class ClassRules
         next if sub_klass.api_index.blank?
         grants_by_level = {}
         begin
-          parsed = JSON.parse(sub_klass.levels_json || '[]')
+          parsed = sub_klass.linhas_de_nivel
           parsed.each do |row|
             lvl = row['level'].to_i
             g = row['grants'] || {}
@@ -235,7 +303,7 @@ class ClassRules
 
         learn_any_map = {}
         begin
-          parsed = JSON.parse(sub_klass.levels_json || '[]')
+          parsed = sub_klass.linhas_de_nivel
           parsed.each do |row|
             lvl = row['level'].to_i
             next if lvl <= 0
@@ -301,9 +369,11 @@ class ClassRules
       # Fallbacks de YAML (subclass_overrides.yml)
       if always_map.blank? || choices_yaml_by_level.blank? || always_by_terrain.blank?
         begin
-          path = Rails.root.join('config','subclass_overrides.yml')
-          if File.exist?(path)
-            yml = YAML.load_file(path) || {}
+          # ⚠️ Era `YAML.load_file` A CADA REQUEST: ~5900 linhas relidas do disco
+          # uma vez por sub-classe da classe, numa leitura que a criação de
+          # personagem faz. Agora vem do leitor memoizado.
+          yml = Subclasses::OverridesYaml.dados
+          if yml.present?
             ent = yml.dig(api_key, key)
             if ent && ent['levels']
               ent['levels'].each do |row|
@@ -898,7 +968,17 @@ class ClassRules
           :'raivoso-elemental' => { id: 'raivoso-elemental', name: 'Caminho do Raivoso Elemental' },
         },
       },
-      resources: { rage: { uses_by_level: {1=>2, 3=>3, 6=>4, 12=>5, 17=>6}, recharge: 'LR' } },
+      # ⚠️ Esta escada era LETRA MORTA: ninguém lia `resources` da regra, e o
+      # `CharacterSheetSummaryService` tinha a mesma tabela escrita à mão — com
+      # um valor a mais, o ilimitado do nível 20, que aqui faltava. Agora é a
+      # fonte, e o `20=>999` fecha a divergência que a auditoria mediu.
+      resources: {
+        rage: {
+          recharge: 'LR',
+          uses_by_level: { 1 => 2, 3 => 3, 6 => 4, 12 => 5, 17 => 6, 20 => 999 },
+          values_by_level: { damage_bonus: { 1 => 2, 9 => 3, 16 => 4 } }
+        }
+      },
       required_choices_at_level: {},
       starting_gold: '2d4x10',
       starting_equipment: {
@@ -976,6 +1056,7 @@ class ClassRules
 
     cleric: {
       id: 'cleric', name: 'Clérigo', hit_die: 'd8',
+      resources: { channel_divinity: { recharge: 'SR', uses_by_level: { 1 => 1, 6 => 2, 18 => 3 } } },
       primary_abilities: %w[WIS], saving_throws: %w[WIS CHA],
       armor_proficiencies: %w[leve média escudos],
       weapon_proficiencies: ['armas simples'],
@@ -1027,6 +1108,8 @@ class ClassRules
 
     druid: {
       id: 'druid', name: 'Druida', hit_die: 'd8',
+      # Formas Selvagens: 2 por descanso curto; ilimitadas no 20 (Arquidruida).
+      resources: { wild_shape: { recharge: 'SR', uses_by_level: { 1 => 2, 20 => 999 } } },
       primary_abilities: %w[WIS], saving_throws: %w[INT WIS],
       armor_proficiencies: %w[leve média escudos],
       weapon_proficiencies: ['clavas','adagas','dardos','azagaias','maças','bordões','cimitarra','foices','fundas','lanças'],
@@ -1072,6 +1155,13 @@ class ClassRules
 
     fighter: {
       id: 'fighter', name: 'Guerreiro', hit_die: 'd10',
+      resources: {
+        action_surge: { recharge: 'SR', uses_by_level: { 1 => 1, 17 => 2 } },
+        second_wind:  { recharge: 'SR', uses_by_level: { 1 => 1 } },
+        # ⚠️ Começa no 9: abaixo disso o recurso NÃO é emitido, e é assim que
+        # o motor se comporta hoje.
+        indomitable:  { recharge: 'LR', uses_by_level: { 9 => 1, 13 => 2, 17 => 3 } }
+      },
       primary_abilities: %w[STR DEX CON], saving_throws: %w[STR CON],
       armor_proficiencies: %w[leve média pesada escudos],
       weapon_proficiencies: ['armas simples','armas marciais'],
@@ -1146,6 +1236,11 @@ class ClassRules
 
     paladin: {
       id: 'paladin', name: 'Paladino', hit_die: 'd10',
+      # ⚠️ A escada começa no nível 1 porque é o que o motor faz HOJE. O livro
+      # dá Canalizar Divindade ao paladino no 3 — divergência REAL do projeto,
+      # preservada aqui de propósito: a paridade vem primeiro, e mudar regra de
+      # jogo é decisão do mestre, não efeito colateral de uma refatoração.
+      resources: { channel_divinity: { recharge: 'SR', uses_by_level: { 1 => 1, 6 => 2, 18 => 3 } } },
       primary_abilities: %w[STR CHA], saving_throws: %w[WIS CHA],
       armor_proficiencies: %w[leve média pesada escudos],
       weapon_proficiencies: ['armas simples','armas marciais'],

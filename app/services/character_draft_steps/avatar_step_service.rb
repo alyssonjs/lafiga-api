@@ -28,7 +28,8 @@ module CharacterDraftSteps
       # `accent` salvos previamente. Deep_merge preserva sub-hashes e so
       # sobrescreve as chaves explicitamente enviadas. Front pode editar
       # incrementalmente sem precisar reenviar o objeto inteiro.
-      base = base.deep_merge(cust) if cust.is_a?(Hash)
+      # o MEMBRO PERDIDO e do Mestre (`Sheets::Membros`): o rascunho do jogador nao o carrega
+      base = base.deep_merge(Sheets::Membros.sem_membros(cust.deep_stringify_keys)) if cust.is_a?(Hash)
       merged['avatarCustomization'] = base
       merged['avatarUserEdited'] = flag unless flag.nil?
     end

@@ -112,8 +112,9 @@ namespace :dnd do
 
     # ── SUBCLASSE ──────────────────────────────────────────────────────────
     #
-    # ⚠️ Os grants vivem em `SubKlass#levels_json`, uma coluna JSON como STRING
-    # — não numa associação. A minha primeira sonda usou `sk.levels` e devolveu
+    # ⚠️ Os grants vivem em `SubKlass#levels_json` (jsonb; leia por
+    # `linhas_de_nivel`) — não numa associação. A minha primeira sonda usou
+    # `sk.levels` e devolveu
     # ZERO, o que me fez declarar que subclasse não era derivável. Era, e são 40
     # subclasses.
     #
@@ -137,13 +138,8 @@ namespace :dnd do
     ].freeze
 
     SubKlass.find_each do |sk|
-      next if sk.levels_json.blank?
-
-      rows = begin
-        JSON.parse(sk.levels_json)
-      rescue JSON::ParserError
-        []
-      end
+      rows = sk.linhas_de_nivel
+      next if rows.empty?
       nome_sk = sk.name
 
       Array(rows).each do |row|

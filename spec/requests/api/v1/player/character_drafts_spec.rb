@@ -127,7 +127,49 @@ RSpec.describe 'Api::V1::Player::CharacterDraftsController', type: :request do
   end
 
   describe 'PATCH avatar step (from ChibiEditor standalone)' do
+    # A aparência em LPC (04/10, a migração chibi → LPC, fase 4): mora em `avatarCustomization.lpc` — objetos e listas
+    # aninhados, gravados pelo editor do LPC. O backend não conhece os campos: guarda o que vier.
+    let(:lpc_salvo) do
+      {
+        'v' => 1,
+        'corpo' => 'female', 'pele' => 'bronze', 'olhos' => 'green', 'altura' => 0.9,
+        'cabelo' => { 'peca' => 'lpc:hair_braid', 'cor' => 'ginger' },
+        'barba' => nil,
+        'expressao' => 'lpc:face_angry',
+        'acessorios' => ['lpc:facial_eyepatch_left']
+      }
+    end
+
     context 'creation mode (status: draft)' do
+      it 'keeps the LPC appearance (lpc) intact — nested objects, lists and nulls' do
+        patch "/api/v1/player/character_drafts/#{character.id}", params: {
+          step: 'avatar',
+          data: { avatarCustomization: { 'gender' => 'feminine', 'lpc' => lpc_salvo }, avatarUserEdited: true }
+        }.to_json, headers: headers.merge('Content-Type' => 'application/json')
+
+        expect(response).to have_http_status(:ok)
+        expect(character.reload.draft_data.dig('avatarCustomization', 'lpc')).to eq(lpc_salvo)
+      end
+
+      it 'lpc: the merge is DEEP — the editor must send the whole lpc, with null for "none"' do
+        character.update!(draft_data: { 'avatarCustomization' => { 'lpc' => lpc_salvo } })
+        patch "/api/v1/player/character_drafts/#{character.id}", params: {
+          step: 'avatar',
+          data: {
+            avatarCustomization: {
+              'lpc' => { 'cabelo' => { 'peca' => 'lpc:hair_long' }, 'expressao' => nil, 'acessorios' => [] }
+            }
+          }
+        }.to_json, headers: headers.merge('Content-Type' => 'application/json')
+
+        expect(response).to have_http_status(:ok)
+        lpc = character.reload.draft_data.dig('avatarCustomization', 'lpc')
+        expect(lpc['cabelo']).to eq('peca' => 'lpc:hair_long', 'cor' => 'ginger') # a chave omitida FICA
+        expect(lpc['expressao']).to be_nil                                         # null apaga
+        expect(lpc['acessorios']).to eq([])                                        # a lista é trocada inteira
+        expect(lpc['corpo']).to eq('female')
+      end
+
       it 'persists avatarCustomization into draft_data via AvatarStepService' do
         patch "/api/v1/player/character_drafts/#{character.id}", params: {
           step: 'avatar',
@@ -222,6 +264,18 @@ RSpec.describe 'Api::V1::Player::CharacterDraftsController', type: :request do
         expect(response).to have_http_status(:ok)
         active_sheet.reload
         expect(active_sheet.avatar_customization).to include('outfit' => 'ranger-leathers')
+      end
+
+      it 'persists the LPC appearance (lpc) into Sheet.avatar_customization' do
+        patch "/api/v1/player/character_drafts/#{active_character.id}", params: {
+          step: 'avatar',
+          data: { avatarCustomization: { 'lpc' => lpc_salvo }, avatarUserEdited: true }
+        }.to_json, headers: headers.merge('Content-Type' => 'application/json')
+
+        expect(response).to have_http_status(:ok)
+        active_sheet.reload
+        expect(active_sheet.avatar_customization['lpc']).to eq(lpc_salvo)
+        expect(active_sheet.avatar_customization['outfit']).to eq('paladin-plate')
       end
 
       it 'deep merges Sheet avatar_customization (preserves keys not sent)' do

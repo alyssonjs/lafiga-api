@@ -21,6 +21,22 @@ class ClassSummaryRebuilder
   end
 
   def call
+    merged = compute
+    return false unless merged.is_a?(Hash)
+
+    persist!(merged)
+  end
+
+  # ⚠️ PURO: não grava nada.
+  #
+  # `Klasses::ResyncSummaries` precisa saber o que a gravação DARIA, para
+  # comparar, contar e relatar antes de escrever — e um "dry-run" implementado
+  # como "chamar o gravador pedindo-lhe que não grave" é a forma clássica de um
+  # dry-run gravar sem querer.
+  #
+  # Devolve o `class_summary` já MESCLADO (coluna + metadata + recomposto), ou
+  # `nil`/`false` quando não há de onde recompor.
+  def compute
     sheet = @sheet
     sk = sheet.sheet_klasses.order(level: :desc, id: :asc).first
     return log_skip(sheet, 'no_sheet_klass') unless sk
@@ -85,13 +101,27 @@ class ClassSummaryRebuilder
       fresh['skills'] = (col_summary['skills'].presence || meta_summary['skills']).to_a
     end
 
-    merged = col_summary.merge(meta_summary).merge(fresh)
+    col_summary.merge(meta_summary).merge(fresh)
+  rescue StandardError => e
+    Rails.logger.error("ClassSummaryRebuilder: sheet=#{@sheet&.id} #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+    nil
+  end
+
+  # ⚠️ DUPLA escrita de propósito: o override em `metadata['class_summary']`
+  # VENCE a coluna na leitura (`sheets_controller.rb:219`). Gravar só a coluna
+  # faria o rebuild não ter efeito nenhum nas fichas que têm o override — que é
+  # exatamente a armadilha que o resync das RAÇAS já tinha documentado.
+  def persist!(merged)
+    meta = (@sheet.metadata || {}).deep_dup
     meta['class_summary'] = merged
-    sheet.update_columns(metadata: meta, class_summary: merged)
-    Rails.logger.info("ClassSummaryRebuilder: rebuilt sheet=#{sheet.id} klass=#{api_index} armor=#{merged['armor_proficiencies'].size} weapons=#{merged['weapon_proficiencies'].size} tools=#{merged['tools'].size}")
+    @sheet.update_columns(metadata: meta, class_summary: merged)
+    Rails.logger.info(
+      "ClassSummaryRebuilder: rebuilt sheet=#{@sheet.id} armor=#{merged['armor_proficiencies'].to_a.size} " \
+      "weapons=#{merged['weapon_proficiencies'].to_a.size} tools=#{merged['tools'].to_a.size}"
+    )
     true
   rescue StandardError => e
-    Rails.logger.error("ClassSummaryRebuilder: sheet=#{sheet.id} #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+    Rails.logger.error("ClassSummaryRebuilder: sheet=#{@sheet&.id} #{e.class}: #{e.message}")
     false
   end
 

@@ -29,6 +29,18 @@ RSpec.describe CharacterSheetEdits::AvatarEditService do
   end
 
   describe '#apply!' do
+    # MEMBRO PERDIDO (04/10): a escrita e do Mestre (`Admin::SheetMembrosController`). O editor do jogador manda a
+    # aparencia inteira — com ou sem a chave — e a gravada fica.
+    it '⚠️ descarta `membros` vindo do jogador e conserva o que o Mestre gravou', :aggregate_failures do
+      sheet.update!(avatar_customization: { 'hair' => 'red', 'membros' => { 'mao_direito' => { 'estado' => 'perdido' } } })
+      described_class.new(character: character, data: {
+        'avatarCustomization' => { 'hair' => 'gold', 'membros' => { 'mao_direito' => nil, 'olho_esquerdo' => { 'estado' => 'perdido' } } }
+      }).call
+      sheet.reload
+      expect(sheet.avatar_customization['hair']).to eq('gold')
+      expect(sheet.avatar_customization['membros']).to eq({ 'mao_direito' => { 'estado' => 'perdido' } })
+    end
+
     it 'persiste avatarCustomization com merge raso (preserva keys nao incluidas)' do
       sheet.update!(avatar_customization: { 'hair' => 'red', 'eyes' => 'blue' })
       described_class.new(character: character, data: {

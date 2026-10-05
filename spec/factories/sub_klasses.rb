@@ -5,6 +5,9 @@ FactoryBot.define do
     association :klass
     sequence(:name) { |n| "Subklass #{n}" }
     sequence(:api_index) { |n| "spec_subklass_#{SecureRandom.hex(4)}" }
-    levels_json { '{}' }
+    # ⚠️ Lista de níveis, não objeto: o `'{}'` histórico era um shape que nenhum
+    # leitor produz (todos fazem `Array(parsed).select { |r| r.is_a?(Hash) }`) e
+    # escondia a forma real nas fixtures.
+    levels_json { [] }
   end
 end

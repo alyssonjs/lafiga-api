@@ -22,6 +22,19 @@ RSpec.describe MapRealtime::Broadcaster, type: :service do
       }
     end
 
+    it 'leva o RASTRO desenhado quando ha (04/10); sem ele, a chave nem vai' do
+      expect {
+        described_class.token_moved(map, 'tok-1', 2, 1, actor: user, path: [[0, 0], [1, 1], [2, 1]])
+      }.to have_broadcasted_to(stream).with { |data|
+        expect(data.dig('payload', 'path')).to eq([[0, 0], [1, 1], [2, 1]])
+      }
+      expect {
+        described_class.token_moved(map, 'tok-1', 3, 4, actor: user)
+      }.to have_broadcasted_to(stream).with { |data|
+        expect(data['payload']).not_to have_key('path')
+      }
+    end
+
     it 'propagates correlation metadata without changing the payload' do
       expect {
         described_class.token_moved(

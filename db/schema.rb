@@ -683,6 +683,7 @@ ActiveRecord::Schema.define(version: 2026_09_29_180000) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "api_index"
     t.boolean "playable", default: true, null: false
+    t.jsonb "rules_json", default: {}, null: false
     t.index ["api_index"], name: "index_races_on_api_index", unique: true
     t.index ["playable"], name: "index_races_on_playable"
   end
@@ -1022,10 +1023,13 @@ ActiveRecord::Schema.define(version: 2026_09_29_180000) do
     t.string "api_index"
     t.string "subclass_flavor"
     t.text "description"
-    t.text "levels_json"
+    t.jsonb "levels_json", default: [], null: false
     t.boolean "playable", default: true, null: false
     t.jsonb "terrain_spells"
     t.jsonb "bonus_spells"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "edited_at"
     t.index ["api_index"], name: "index_sub_klasses_on_api_index"
     t.index ["klass_id", "api_index"], name: "idx_sub_klasses_unique_klass_api", unique: true
     t.index ["klass_id"], name: "index_sub_klasses_on_klass_id"
@@ -1039,6 +1043,7 @@ ActiveRecord::Schema.define(version: 2026_09_29_180000) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "api_index"
     t.boolean "playable", default: true, null: false
+    t.jsonb "rules_json", default: {}, null: false
     t.index ["playable"], name: "index_sub_races_on_playable"
     t.index ["race_id", "api_index"], name: "index_sub_races_on_race_id_and_api_index", unique: true
     t.index ["race_id"], name: "index_sub_races_on_race_id"

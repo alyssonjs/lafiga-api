@@ -11,6 +11,10 @@ class EquipmentRules
   # com o fator fisico e divergiu da tela por 9%.
   LB_PER_KG = 2.0
 
+  # Materiais da troca de paleta do personagem LPC do mapa (02/10). No CORPO da classe pelo mesmo motivo do
+  # LB_PER_KG: no singleton, `EquipmentRules::LPC_MATERIAIS` não resolveria de fora.
+  LPC_MATERIAIS = %w[body hair cloth metal eye wood].freeze
+
   # Conversão de moedas -> sempre guardar em cp (cobre) para contas
   CURRENCY = {
     'pc' => 1,     # cobre
@@ -453,6 +457,45 @@ class EquipmentRules
         'capacity_lb' => props['capacity_lb'].presence,
         'barding_of' => props['barding_of'].presence,
       }.compact
+    end
+
+    # PEÇAS DO PERSONAGEM LPC declaradas no catálogo pelo mestre (02/10): a ligação item → peça do paper doll do
+    # mapa ("vamos ligar o catálogo de itens às peças LPC"). Mesmo caminho e mesmo guard de N+1 do `equip_slot`.
+    # Ausente = o front deduz a peça do TIPO do item (armadura pelo banco, arma pelo desenho do chibi).
+    #
+    # @return [Array<Hash>, nil] ex.: [{ 'parte' => 'placas', 'cor' => { 'metal' => 'gold' } }]
+    def lpc_pecas(item)
+      return nil unless item
+
+      db_item = item.respond_to?(:item) ? item.item : nil
+      already_resolved = item.respond_to?(:item_id) && item.item_id.present?
+      if !db_item && !already_resolved && defined?(Item)
+        db_item = Item.find_by(api_index: normalize_index(item))
+      end
+      return nil unless db_item
+
+      sanitize_lpc_pecas((db_item.props || {})['lpc_pecas'])
+    end
+
+    # Só o que o front sabe desenhar: `parte` (identificador) e `cor` (material → nome de paleta), até 8 peças.
+    # Sanitiza na SAÍDA — o `props` do catálogo é livre e o que sai daqui vai para a foto de TODOS os tokens.
+    def sanitize_lpc_pecas(raw)
+      return nil unless raw.is_a?(Array)
+
+      pecas = raw.first(8).filter_map do |peca|
+        next unless peca.is_a?(Hash)
+
+        peca = peca.stringify_keys
+        parte = peca['parte'].to_s
+        # do recorte escrito à mão (`placas`) ou da BIBLIOTECA do LPC (`lpc:<id da definição>`)
+        next unless parte.match?(/\A(lpc:)?[a-zA-Z0-9_]{1,80}\z/)
+
+        bruto = peca['cor'].is_a?(Hash) ? peca['cor'].stringify_keys : {}
+        cor = bruto.select { |m, v| LPC_MATERIAIS.include?(m) && v.to_s.match?(/\A[a-z_]{1,24}\z/) }
+                   .transform_values(&:to_s)
+        cor.empty? ? { 'parte' => parte } : { 'parte' => parte, 'cor' => cor }
+      end
+      pecas.presence
     end
 
     # Props de RECIPIENTE de munição, do catálogo.

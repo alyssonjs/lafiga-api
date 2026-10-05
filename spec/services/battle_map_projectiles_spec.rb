@@ -38,13 +38,13 @@ RSpec.describe BattleMapProjectiles do
     }
   end
 
-  it 'retira uma arma arremessada da mao e persiste a queda adjacente ao alvo' do
+  def machadinhas_na_mao(quantidade)
     source = SheetItem.create!(
       sheet: sheet,
       item_index: 'handaxe',
       item_name: 'Machadinha',
       category: 'Armas',
-      quantity: 2,
+      quantity: quantidade,
       equipped: true,
       slot: 'main_hand',
       props_json: {}
@@ -54,18 +54,34 @@ RSpec.describe BattleMapProjectiles do
       'id' => source.id.to_s,
       'refId' => source.item_index,
       'name' => source.item_name,
-      'quantity' => 2,
+      'quantity' => quantidade,
       'equipped' => true,
       'slot' => 'main_hand'
     }]
     map.update!(tokens: tokens)
+    source
+  end
 
-    projectile = described_class.launch!(map: map, user: player, params: launch_params(source))
+  # 04/10: arremessar UMA das machadinhas da pilha nao desequipa as outras (antes a pilha inteira saia da mao)
+  it 'arremessa uma machadinha da pilha: as outras continuam na mao' do
+    source = machadinhas_na_mao(2)
+
+    described_class.launch!(map: map, user: player, params: launch_params(source))
 
     source.reload
     expect(source.quantity).to eq(1)
-    expect(source).not_to be_equipped
-    expect(source.slot).to be_nil
+    expect(source).to be_equipped
+    expect(source.slot).to eq('main_hand')
+    expect(map.reload.tokens.first['chibiEquipment'].first['name']).to eq('Machadinha')
+    expect(MapRealtime::Broadcaster).not_to have_received(:token_equipment_changed)
+  end
+
+  it 'retira a ULTIMA arma arremessada da mao e persiste a queda adjacente ao alvo' do
+    source = machadinhas_na_mao(1)
+
+    projectile = described_class.launch!(map: map, user: player, params: launch_params(source))
+
+    expect(SheetItem.exists?(source.id)).to be(false)
     expect(projectile).to include(
       'id' => 'projectile-1',
       'kind' => 'thrown_weapon',
@@ -81,6 +97,29 @@ RSpec.describe BattleMapProjectiles do
     expect(map.tokens.first['chibiEquipment']).to eq([])
     expect(MapRealtime::Broadcaster).to have_received(:token_equipment_changed)
       .with(map, 'attacker', [], actor: player)
+  end
+
+  # 04/10: o desenho do projetil escolhido no editor de municao (catalogo) voa com a municao que ja estava na bolsa
+  it 'o projetil leva o desenho e o efeito escolhidos no catalogo da municao' do
+    Item.create!(api_index: 'virote-do-dragao', name: 'Virote do Dragão', kind: 'ammunition',
+                 props: { 'projetil' => { 'arte' => 'virote', 'efeito' => { 'type' => 'flame' } } })
+    virotes = SheetItem.create!(sheet: sheet, item_index: 'virote-do-dragao', item_name: 'Virote do Dragão', category: 'Munição',
+                                quantity: 2, props_json: {})
+    projectile = described_class.launch!(map: map, user: player, params: launch_params(virotes, kind: 'bolt'))
+    expect(projectile.dig('item', 'propsJson', 'projetil')).to eq('arte' => 'virote', 'efeito' => { 'type' => 'flame' })
+  end
+
+  # 04/10: o ERRO segue o rumo do tiro — a flecha cai ATRAS do alvo, nao do lado de quem atirou
+  it 'o erro cai atras do alvo, no rumo do tiro; o acerto fica ao pe dele', :aggregate_failures do
+    flechas = SheetItem.create!(sheet: sheet, item_index: 'arrow', item_name: 'Flecha', category: 'Munição', quantity: 3, props_json: {})
+    erro = described_class.launch!(map: map, user: player, params: launch_params(flechas, kind: 'arrow'))
+    resolvido = described_class.resolve!(map: map, user: dm, projectile_id: erro['id'], outcome: 'miss')
+    # atacante em (1,1), alvo em (5,5): o rumo e a diagonal para baixo-direita
+    expect(resolvido['landing']).to eq('col' => 6, 'row' => 6)
+
+    acerto = described_class.launch!(map: map, user: player, params: launch_params(flechas, kind: 'arrow').merge(projectile_id: 'p-2', roll_group_id: 'r-2'))
+    queda = acerto['landing']
+    expect(described_class.resolve!(map: map, user: dm, projectile_id: 'p-2', outcome: 'hit')['landing']).to eq(queda)
   end
 
   it 'consome a ultima flecha e a devolve ao inventario quando um personagem adjacente a recolhe' do

@@ -1,5 +1,9 @@
 class RaceRules
   CACHE_KEY = 'race_rules_v1'.freeze
+  # ⚠️ Chave SEPARADA da do YAML, e é deliberado: o YAML muda por deploy e pode
+  # ficar 12h em cache; o overlay muda quando o mestre edita e tem de aparecer
+  # já. Misturar os dois congelaria a edição dele por meio dia.
+  OVERLAY_CACHE_KEY = 'race_rules_overlay_v1'.freeze
   YAML_PATH = Rails.root.join('config', 'race_rules.yml')
   CACHE_TTL = 12.hours
 
@@ -11,11 +15,32 @@ class RaceRules
     bundle[:trait_definitions]
   end
 
+  # ⚠️ O nó do YAML SEM o overlay. É contra ISTO que o editor decide o que
+  # DIVERGE: se a base já viesse sobreposta, o que o mestre gravou pareceria
+  # igual à base, `serializar` não o emitiria e o overlay DESAPARECIA no save
+  # seguinte — ele mudava a descrição e perdia o deslocamento que tinha posto.
+  def self.base_do_yaml(api_index, sub_index = nil)
+    return nil if api_index.blank?
+
+    racas = Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_TTL) { load_rules }[:races]
+    raca = racas[api_index.to_s.to_sym] || racas[api_index.to_s]
+    return raca if sub_index.blank? || raca.nil?
+
+    subs = raca[:subraces] || {}
+    subs[sub_index.to_s.to_sym] || subs[sub_index.to_s]
+  end
+
   def self.reload!
     Rails.cache.delete(CACHE_KEY)
+    Rails.cache.delete(OVERLAY_CACHE_KEY)
     data = load_rules
     Rails.cache.write(CACHE_KEY, data, expires_in: CACHE_TTL)
     data
+  end
+
+  # O mestre gravou uma raça: o overlay tem de ser relido no próximo acesso.
+  def self.reload_overlay!
+    Rails.cache.delete(OVERLAY_CACHE_KEY)
   end
 
   def self.find(id)
@@ -386,7 +411,131 @@ class RaceRules
   end
 
   def self.bundle
-    Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_TTL) { load_rules }
+    base = Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_TTL) { load_rules }
+    aplicar_overlay(base, overlay)
+  end
+
+  # O que o mestre gravou no banco, por `api_index`.
+  #
+  #   { races: { tiefling: {...}, subraces: { tiefling: { infernal: {...} } },
+  #     trait_definitions: { meu_traco: {...} } }
+  def self.overlay
+    Rails.cache.fetch(OVERLAY_CACHE_KEY, expires_in: CACHE_TTL) { load_overlay }
+  end
+
+  # ⚠️ Devolve o `base` INTACTO quando não há overlay — e é o que garante a
+  # paridade: sem nada gravado, esta função é a identidade, e `apply` responde
+  # exatamente o que respondia antes.
+  def self.aplicar_overlay(base, ov)
+    return base if ov.blank? || (ov[:races].blank? && ov[:subraces].blank? && ov[:trait_definitions].blank?)
+
+    racas = base[:races].deep_dup
+    defs = base[:trait_definitions].deep_dup
+
+    (ov[:races] || {}).each do |chave, regras|
+      atual = racas[chave] || racas[chave.to_s] || {}
+      racas[chave] = sobrepoe(atual, regras)
+    end
+
+    (ov[:subraces] || {}).each do |chave_raca, subs|
+      raca = racas[chave_raca] || racas[chave_raca.to_s]
+      next if raca.nil?
+
+      atuais = raca[:subraces] || {}
+      subs.each do |chave_sub, regras|
+        atuais[chave_sub] = sobrepoe(atuais[chave_sub] || atuais[chave_sub.to_s] || {}, regras)
+      end
+      raca[:subraces] = atuais
+    end
+
+    # ⚠️ `custom_traits` de uma raça entram no catálogo GLOBAL de definições.
+    # É o que permite a raça nova declarar traços próprios sem o mestre ter de
+    # os cadastrar à parte — e o `key` do trait ref resolve do mesmo jeito.
+    defs = defs.merge(ov[:trait_definitions] || {})
+
+    { races: racas, trait_definitions: defs }
+  end
+
+  # ⚠️ Sobreposição por CHAVE DE TOPO: a chave presente no overlay vence
+  # INTEIRA.
+  #
+  # Não é `deep_merge` de propósito. Aquele concatena arrays (`Array(v1) +
+  # Array(v2)`) — é o que faz os traços da sub-raça SOMAREM aos da raça, e está
+  # certo para aquilo. Aqui seria desastre: o mestre que tira um traço da lista
+  # veria o traço continuar lá, somado de volta pela base, sem nada na tela a
+  # explicar porquê.
+  def self.sobrepoe(atual, regras)
+    limpo = (regras || {}).reject { |_k, v| v.nil? }
+    (atual || {}).merge(limpo)
+  end
+
+  def self.load_overlay
+    return {} unless defined?(Race) && Race.table_exists? && Race.column_names.include?('rules_json')
+
+    racas = {}
+    Race.where.not(rules_json: {}).find_each do |r|
+      next if r.api_index.blank?
+
+      racas[r.api_index.to_sym] = (r.rules_json || {}).deep_symbolize_keys
+    end
+
+    subs = Hash.new { |h, k| h[k] = {} }
+    if defined?(SubRace) && SubRace.column_names.include?('rules_json')
+      SubRace.where.not(rules_json: {}).includes(:race).find_each do |sr|
+        next if sr.api_index.blank? || sr.race&.api_index.blank?
+
+        subs[sr.race.api_index.to_sym][sr.api_index.to_sym] = (sr.rules_json || {}).deep_symbolize_keys
+      end
+    end
+
+    # As definições próprias saem de dentro de cada raça e sobem para o
+    # catálogo — é lá que `trait_definitions` as procura.
+    defs = {}
+    racas.each { |slug, regras| extrai_proprios!(regras, slug, defs) }
+    subs.each do |slug_raca, por_sub|
+      por_sub.each { |slug_sub, regras| extrai_proprios!(regras, :"#{slug_raca}__#{slug_sub}", defs) }
+    end
+
+    # ⚠️ Reconstrói o hash para largar o proc default do `Hash.new`: o cache do
+    # Rails serializa com `Marshal`, e hash com proc não passa por lá ("can't
+    # dump hash with default proc"). `to_h` NÃO serve — num Hash ele devolve
+    # `self`, com o proc e tudo. Falha só ao GRAVAR no cache, não ao construir,
+    # então passa despercebido em teste que não exercita o cache.
+    { races: racas, subraces: subs.to_a.to_h, trait_definitions: defs }
+  rescue StandardError => e
+    # ⚠️ Overlay indisponível NÃO pode derrubar o catálogo: sem ele a raça vale
+    # o YAML, que é exatamente o comportamento de antes desta camada.
+    Rails.logger.warn("RaceRules: overlay indisponível: #{e.message}") if defined?(Rails.logger)
+    {}
+  end
+
+  # ⚠️ A chave de um traço PRÓPRIO é escolhida dentro de uma raça (o editor
+  # sugere `traco_1`), mas `trait_definitions` é um catálogo GLOBAL: duas raças
+  # caseiras com um `traco_1` cada colidiam, e a última lida apagava a outra em
+  # silêncio — a ficha passava a mostrar o traço da raça errada. Por isso a
+  # definição sobe PREFIXADA pelo dono, e a referência dentro da raça é
+  # reescrita no mesmo passo.
+  def self.extrai_proprios!(regras, prefixo, defs)
+    proprias = regras.delete(:custom_traits)
+    return unless proprias.is_a?(Hash) && proprias.any?
+
+    mapa = {}
+    proprias.each do |chave, definicao|
+      nova = :"#{prefixo}__#{chave}"
+      mapa[chave.to_s] = nova.to_s
+      defs[nova] = definicao.deep_symbolize_keys if definicao.is_a?(Hash)
+    end
+
+    # ⚠️ Só reescreve se a raça JÁ declara `traits`. Criar a chave aqui faria o
+    # overlay sobrepor `traits: []` sobre o YAML e apagar os traços do livro.
+    return unless regras.key?(:traits)
+
+    regras[:traits] = Array(regras[:traits]).map do |t|
+      next t unless t.is_a?(Hash)
+
+      alvo = mapa[t[:key].to_s]
+      alvo ? t.merge(key: alvo) : t
+    end
   end
 
   def self.load_rules

@@ -1,0 +1,5170 @@
+{
+  "class_rules": {
+    "barbarian": {
+      "armor_proficiencies": [
+        "leve",
+        "média",
+        "escudos"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "brutal_critical": {
+          "scaling_by_level": {
+            "13": 2,
+            "17": 3,
+            "9": 1
+          }
+        },
+        "fast_movement": {
+          "add": 3,
+          "level": 5,
+          "unless": {
+            "armor_category": "heavy"
+          }
+        },
+        "indomitable_might": {
+          "level": 18
+        },
+        "primal_champion": {
+          "caps": {
+            "CON": 24,
+            "STR": 24
+          },
+          "fixed": {
+            "CON": 4,
+            "STR": 4
+          },
+          "level": 20
+        },
+        "unarmored_defense": {
+          "allows_shield": true,
+          "formula": "10 + DEX + CON",
+          "level": 1
+        }
+      },
+      "features_level1": [
+        "Fúria",
+        "Defesa sem Armadura"
+      ],
+      "hit_die": "d12",
+      "id": "barbarian",
+      "name": "Bárbaro",
+      "primary_abilities": [
+        "STR",
+        "CON"
+      ],
+      "required_choices_at_level": {
+      },
+      "resources": {
+        "rage": {
+          "recharge": "LR",
+          "uses_by_level": {
+            "1": 2,
+            "12": 5,
+            "17": 6,
+            "20": 999,
+            "3": 3,
+            "6": 4
+          },
+          "values_by_level": {
+            "damage_bonus": {
+              "1": 2,
+              "16": 4,
+              "9": 3
+            }
+          }
+        }
+      },
+      "saving_throws": [
+        "FOR",
+        "CON"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Lidar com Animais",
+          "Atletismo",
+          "Intimidação",
+          "Natureza",
+          "Percepção",
+          "Sobrevivência"
+        ]
+      },
+      "starting_equipment": {
+        "choices": [
+          {
+            "choose": 1,
+            "options": [
+              "greataxe",
+              "martial-melee:any"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "handaxe:2",
+              "simple:any"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "explorer-pack",
+              "dungeoneer-pack"
+            ]
+          }
+        ],
+        "extras": [
+          "javelin:4"
+        ]
+      },
+      "starting_gold": "2d4x10",
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "barbaro-cicatrizes-runicas": {
+            "id": "barbaro-cicatrizes-runicas",
+            "name": "Caminho do Bárbaro das Cicatrizes Rúnicas"
+          },
+          "berserker": {
+            "id": "berserker",
+            "name": "Caminho do Furioso"
+          },
+          "desistente": {
+            "id": "desistente",
+            "name": "Caminho do Desistente"
+          },
+          "furioso-imortal": {
+            "id": "furioso-imortal",
+            "name": "Caminho do Furioso Imortal"
+          },
+          "guerreiro-urso": {
+            "id": "guerreiro-urso",
+            "name": "Caminho do Guerreiro Urso"
+          },
+          "protetor-tribal": {
+            "id": "protetor-tribal",
+            "name": "Caminho do Protetor Tribal"
+          },
+          "raivoso-elemental": {
+            "id": "raivoso-elemental",
+            "name": "Caminho do Raivoso Elemental"
+          },
+          "totem": {
+            "id": "totem",
+            "name": "Caminho do Guerreiro Totêmico"
+          },
+          "zealot": {
+            "id": "zealot",
+            "name": "Caminho do Zelote"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "armas simples",
+        "armas marciais"
+      ]
+    },
+    "bard": {
+      "armor_proficiencies": [
+        "leve"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "bardic_inspiration": {
+          "level": 1
+        },
+        "expertise": {
+          "gains": [
+            {
+              "count": 2,
+              "level": 3
+            },
+            {
+              "count": 2,
+              "level": 10
+            }
+          ]
+        },
+        "jack_of_all_trades": {
+          "level": 2
+        },
+        "magical_secrets": {
+          "gains": [
+            {
+              "learn": 2,
+              "level": 10
+            },
+            {
+              "learn": 2,
+              "level": 14
+            },
+            {
+              "learn": 2,
+              "level": 18
+            }
+          ]
+        },
+        "song_of_rest": {
+          "level": 2
+        },
+        "spellcasting": {
+          "ability": "CHA",
+          "focus": "instrument",
+          "list": "bard",
+          "mode": "known",
+          "ritual": "if_known"
+        }
+      },
+      "features_level1": [
+        "Inspiração Bárdica (d6)",
+        "Conjuração"
+      ],
+      "hit_die": "d8",
+      "id": "bard",
+      "name": "Bardo",
+      "primary_abilities": [
+        "CHA"
+      ],
+      "required_choices_at_level": {
+        "10": {
+          "expertise_skills": {
+            "choose": 2
+          },
+          "learn_any_class_spells": {
+            "choose": 2
+          }
+        },
+        "14": {
+          "learn_any_class_spells": {
+            "choose": 2
+          }
+        },
+        "18": {
+          "learn_any_class_spells": {
+            "choose": 2
+          }
+        },
+        "3": {
+          "expertise_skills": {
+            "choose": 2
+          }
+        }
+      },
+      "saving_throws": [
+        "DES",
+        "CAR"
+      ],
+      "skill_proficiencies": {
+        "choose": 3,
+        "options": "any"
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 2,
+        "casting_ability": "CHA",
+        "focus": "instrument",
+        "list": "bard",
+        "preparation": "known",
+        "ritual": "if_known",
+        "spells_known_at_1": 4,
+        "type": "full"
+      },
+      "starting_equipment": {
+        "choices": [
+          {
+            "choose": 1,
+            "options": [
+              "rapieira",
+              "espada-longa",
+              "simple:any"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "pacote-diplomata",
+              "pacote-artista"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "Gaita de Foles",
+              "Tambor",
+              "Saltério",
+              "Flauta",
+              "Alaúde",
+              "Lira",
+              "Trompa",
+              "Flauta de Pã",
+              "Charamela",
+              "Violino"
+            ]
+          }
+        ],
+        "extras": [
+          "armadura-couro",
+          "adaga"
+        ]
+      },
+      "starting_gold": "5d4x10",
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "colegio-busca-cancao": {
+            "id": "colegio-busca-cancao",
+            "name": "Colégio da Busca da Canção"
+          },
+          "colegio-comedia": {
+            "id": "colegio-comedia",
+            "name": "Colégio da Comédia"
+          },
+          "colegio-do-glamour": {
+            "id": "colegio-do-glamour",
+            "name": "Colégio do Glamour"
+          },
+          "colegio-fortuna": {
+            "id": "colegio-fortuna",
+            "name": "Colégio da Fortuna"
+          },
+          "colegio-pavor": {
+            "id": "colegio-pavor",
+            "name": "Colégio do Pavor"
+          },
+          "colegio-quietude": {
+            "id": "colegio-quietude",
+            "name": "Colégio da Quietude"
+          },
+          "colegio-virtuosismo": {
+            "id": "colegio-virtuosismo",
+            "name": "Colégio do Virtuosismo"
+          },
+          "lore": {
+            "id": "lore",
+            "name": "Colégio do Conhecimento"
+          },
+          "valor": {
+            "id": "valor",
+            "name": "Colégio da Bravura"
+          }
+        }
+      },
+      "tool_proficiencies": {
+        "instruments": {
+          "choices": [
+            "Gaita de Foles",
+            "Tambor",
+            "Saltério",
+            "Flauta",
+            "Alaúde",
+            "Lira",
+            "Trompa",
+            "Flauta de Pã",
+            "Charamela",
+            "Violino"
+          ],
+          "choose": 3
+        }
+      },
+      "weapon_proficiencies": [
+        "armas simples",
+        "bestas de mão",
+        "espadas longas",
+        "rapieiras",
+        "espadas curtas"
+      ]
+    },
+    "cleric": {
+      "armor_proficiencies": [
+        "leve",
+        "média",
+        "escudos"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "channel_divinity": {
+          "recharge": "SR",
+          "uses_by_level": {
+            "18": 3,
+            "2": 1,
+            "6": 2
+          }
+        },
+        "destroy_undead": {
+          "cr_threshold_by_level": {
+            "11": 2,
+            "14": 3,
+            "17": 4,
+            "5": 0.5,
+            "8": 1
+          }
+        },
+        "divine_intervention": {
+          "auto_success_at": 20,
+          "available_at": 10
+        },
+        "spellcasting": {
+          "ability": "WIS",
+          "focus": "holy_symbol",
+          "list": "cleric",
+          "mode": "prepared",
+          "ritual": "if_prepared"
+        }
+      },
+      "features_level1": [
+        "Conjuração",
+        "Domínio Divino"
+      ],
+      "hit_die": "d8",
+      "id": "cleric",
+      "name": "Clérigo",
+      "primary_abilities": [
+        "WIS"
+      ],
+      "required_choices_at_level": {
+      },
+      "resources": {
+        "channel_divinity": {
+          "recharge": "SR",
+          "uses_by_level": {
+            "1": 1,
+            "18": 3,
+            "6": 2
+          }
+        }
+      },
+      "saving_throws": [
+        "SAB",
+        "CAR"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "História",
+          "Intuição",
+          "Medicina",
+          "Persuasão",
+          "Religião"
+        ]
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 3,
+        "casting_ability": "WIS",
+        "focus": "holy_symbol",
+        "list": "cleric",
+        "preparation": "prepared",
+        "ritual": "if_prepared",
+        "spells_known_at_1": null,
+        "type": "full"
+      },
+      "starting_equipment": {
+        "choices": [
+          {
+            "choose": 1,
+            "options": [
+              "mace",
+              "warhammer"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "scale-mail",
+              "leather",
+              "chain-mail"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "light-crossbow:1+bolts:20",
+              "simple:any"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "priest-pack",
+              "explorer-pack"
+            ]
+          }
+        ],
+        "extras": [
+          "shield",
+          "holy-symbol"
+        ]
+      },
+      "starting_gold": "5d4x10",
+      "subclass": {
+        "choose_level": 1,
+        "options": {
+          "dominio-agua": {
+            "id": "dominio-agua",
+            "name": "Domínio da Água"
+          },
+          "dominio-ar": {
+            "id": "dominio-ar",
+            "name": "Domínio do Ar"
+          },
+          "dominio-criacao": {
+            "id": "dominio-criacao",
+            "name": "Domínio da Criação"
+          },
+          "dominio-da-guerra": {
+            "id": "dominio-da-guerra",
+            "name": "Domínio da Guerra"
+          },
+          "dominio-da-luz": {
+            "id": "dominio-da-luz",
+            "name": "Domínio da Luz"
+          },
+          "dominio-da-natureza": {
+            "id": "dominio-da-natureza",
+            "name": "Domínio da Natureza"
+          },
+          "dominio-da-tempestade": {
+            "id": "dominio-da-tempestade",
+            "name": "Domínio da Tempestade"
+          },
+          "dominio-da-trapaca": {
+            "id": "dominio-da-trapaca",
+            "name": "Domínio da Enganação"
+          },
+          "dominio-da-vida": {
+            "id": "dominio-da-vida",
+            "name": "Domínio da Vida"
+          },
+          "dominio-do-conhecimento": {
+            "id": "dominio-do-conhecimento",
+            "name": "Domínio do Conhecimento"
+          },
+          "dominio-mente": {
+            "id": "dominio-mente",
+            "name": "Domínio da Mente"
+          },
+          "dominio-tempo": {
+            "id": "dominio-tempo",
+            "name": "Domínio do Tempo"
+          },
+          "dominio-terra": {
+            "id": "dominio-terra",
+            "name": "Domínio da Terra"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "armas simples"
+      ]
+    },
+    "cozinheiro": {
+      "armor_proficiencies": [
+        "leve",
+        "média"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            5,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "cook": {
+          "aromatic_salts": {
+            "available_at": 1,
+            "repeat_saves_against": [
+              "charmed",
+              "frightened"
+            ],
+            "upgrades_at": {
+              "13": {
+                "add": [
+                  "paralyzed"
+                ]
+              },
+              "7": {
+                "add": [
+                  "stunned"
+                ]
+              }
+            }
+          },
+          "comforting_meal": {
+            "available_at": 17,
+            "double_snack_duration_if_shared_long_rest": true
+          },
+          "cook_bag": {
+            "available_at": 1,
+            "preserve_snacks": true,
+            "recreate_if_lost": {
+              "cost_gp": 100,
+              "time_hours": 8
+            },
+            "replenish_interval_days": 30,
+            "replenish_methods": [
+              {
+                "cost_gp": 10,
+                "time_hours": 0,
+                "type": "buy"
+              },
+              {
+                "time_hours": 8,
+                "type": "forage"
+              }
+            ]
+          },
+          "expertise": {
+            "allow_tools": true,
+            "gains": [
+              {
+                "count": 2,
+                "level": 2
+              },
+              {
+                "count": 2,
+                "level": 9
+              }
+            ]
+          },
+          "leftovers": {
+            "available_at": 20,
+            "on_initiative_if_no_snacks": {
+              "conjure_one_snack": true
+            }
+          },
+          "mise_en_place": {
+            "available_at": 2,
+            "suggested_tool_bonus": 1
+          },
+          "ostrich_stomach": {
+            "available_at": 9,
+            "immune_conditions": [
+              "poisoned"
+            ],
+            "immune_sources": [
+              "ingested_poisons"
+            ]
+          },
+          "rotund_reflection": {
+            "available_at": 4,
+            "on_fail": {
+              "choose": [
+                "push_3m",
+                "prone"
+              ],
+              "speed_to_0": true
+            },
+            "range_m": 1.5,
+            "save": {
+              "ability": "DEX",
+              "dc": "snack_dc"
+            },
+            "size_cap": "Large",
+            "trigger": "hit_by_melee"
+          },
+          "snacks": {
+            "ability": "CON",
+            "dc_formula": "8 + Prof + CON",
+            "enabled": true,
+            "expires_when_removed_seconds": 6,
+            "feed_action": "action",
+            "known_by_level": {
+              "1": 3,
+              "10": 11,
+              "11": 12,
+              "12": 12,
+              "13": 13,
+              "14": 13,
+              "15": 14,
+              "16": 14,
+              "17": 14,
+              "18": 15,
+              "19": 15,
+              "2": 3,
+              "20": 15,
+              "3": 4,
+              "4": 5,
+              "5": 6,
+              "6": 7,
+              "7": 8,
+              "8": 9,
+              "9": 10
+            },
+            "one_active_per_creature": true,
+            "recharge": "SR/LR"
+          },
+          "soul_of_food": {
+            "available_at": 15,
+            "conjure_ingredients_when_out": true,
+            "create_food_and_water": {
+              "non_perishable_days": 7,
+              "recharge": "LR",
+              "tasty": true,
+              "uses": 1
+            }
+          },
+          "taking_orders": {
+            "available_at": 7,
+            "extra_requires_no_prereq": true,
+            "extra_snacks": "CON",
+            "short_rest_enabled_at": 11
+          }
+        }
+      },
+      "features_level1": [
+        "Bolsa de Cozinheiro",
+        "Petiscos",
+        "Temperos Aromáticos"
+      ],
+      "hit_die": "d8",
+      "id": "cozinheiro",
+      "name": "Cozinheiro",
+      "primary_abilities": [
+        "CON",
+        "DEX"
+      ],
+      "required_choices_at_level": {
+        "2": {
+          "expertise_skills": {
+            "choose": 2
+          }
+        },
+        "9": {
+          "expertise_skills": {
+            "choose": 2
+          }
+        }
+      },
+      "resources": {
+        "snacks": {
+          "dc_formula": "8 + Prof + CON",
+          "recharge": "SR/LR",
+          "uses": "Mod. CON por descanso curto ou longo"
+        }
+      },
+      "saving_throws": [
+        "CON",
+        "CAR"
+      ],
+      "skill_proficiencies": {
+        "choose": 3,
+        "options": [
+          "Lidar com Animais",
+          "Arcanismo",
+          "Atletismo",
+          "Medicina",
+          "Natureza",
+          "Atuação",
+          "Persuasão",
+          "Prestidigitação",
+          "Sobrevivência"
+        ]
+      },
+      "spellcasting": null,
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "amassador-de-monstros": {
+            "id": "amassador-de-monstros",
+            "name": "Amassador de Monstros"
+          },
+          "doceiro-encantado": {
+            "id": "doceiro-encantado",
+            "name": "Doceiro Encantado"
+          },
+          "mestre-cervejeiro": {
+            "id": "mestre-cervejeiro",
+            "name": "Mestre Cervejeiro"
+          },
+          "mestre-cuca": {
+            "id": "mestre-cuca",
+            "name": "Mestre-Cuca"
+          },
+          "sargento-alimentar": {
+            "id": "sargento-alimentar",
+            "name": "Sargento Alimentar"
+          },
+          "sous-chef": {
+            "id": "sous-chef",
+            "name": "Sous Chef"
+          }
+        }
+      },
+      "tool_proficiencies": [
+        "Ferramentas de Artesão (Cozinheiro)"
+      ],
+      "weapon_proficiencies": [
+        "armas simples",
+        "bestas leves",
+        "espadas curtas",
+        "espadas longas",
+        "rapieiras"
+      ]
+    },
+    "druid": {
+      "armor_proficiencies": [
+        "leve",
+        "média",
+        "escudos"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "armor_restriction": {
+          "forbid_metal_armor": true
+        },
+        "druidic": {
+          "known": true
+        },
+        "spellcasting": {
+          "ability": "WIS",
+          "focus": "druidic_focus",
+          "list": "druid",
+          "mode": "prepared",
+          "ritual": "if_prepared"
+        },
+        "wild_shape": {
+          "cr_limit_by_level": {
+            "2": 0.25,
+            "4": 0.5,
+            "8": 1
+          },
+          "fly_at_level": 8,
+          "recharge": "SR",
+          "swim_at_level": 4,
+          "uses": 2
+        }
+      },
+      "features_level1": [
+        "Conjuração",
+        "Druídico"
+      ],
+      "hit_die": "d8",
+      "id": "druid",
+      "name": "Druida",
+      "primary_abilities": [
+        "WIS"
+      ],
+      "required_choices_at_level": {
+      },
+      "resources": {
+        "wild_shape": {
+          "recharge": "SR",
+          "uses_by_level": {
+            "1": 2,
+            "20": 999
+          }
+        }
+      },
+      "saving_throws": [
+        "INT",
+        "SAB"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Arcanismo",
+          "Lidar com Animais",
+          "Intuição",
+          "Medicina",
+          "Natureza",
+          "Percepção",
+          "Religião",
+          "Sobrevivência"
+        ]
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 2,
+        "casting_ability": "WIS",
+        "focus": "druidic_focus",
+        "list": "druid",
+        "preparation": "prepared",
+        "ritual": "if_prepared",
+        "spells_known_at_1": null,
+        "type": "full"
+      },
+      "starting_equipment": {
+        "choices": [
+          {
+            "choose": 1,
+            "options": [
+              "shield",
+              "simple:any"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "scimitar",
+              "simple-melee:any"
+            ]
+          },
+          {
+            "choose": 1,
+            "options": [
+              "scholar-pack",
+              "explorer-pack"
+            ]
+          }
+        ],
+        "extras": [
+          "leather",
+          "explorer-pack",
+          "druidic-focus"
+        ]
+      },
+      "starting_gold": "2d4x10",
+      "subclass": {
+        "choose_level": 2,
+        "options": {
+          "circulo_da_lua": {
+            "id": "circulo-da-lua",
+            "name": "Círculo da Lua"
+          },
+          "circulo_da_terra": {
+            "id": "circulo-da-terra",
+            "name": "Círculo da Terra"
+          },
+          "circulo_fadas": {
+            "id": "circulo-fadas",
+            "name": "Círculo das Fadas"
+          },
+          "circulo_feras": {
+            "id": "circulo-feras",
+            "name": "Círculo das Feras"
+          },
+          "circulo_infestacao": {
+            "id": "circulo-infestacao",
+            "name": "Círculo da Infestação"
+          },
+          "circulo_mundos": {
+            "id": "circulo-mundos",
+            "name": "Círculo dos Mundos"
+          },
+          "circulo_verdejante": {
+            "id": "circulo-verdejante",
+            "name": "Círculo Verdejante"
+          },
+          "circulo_vida": {
+            "id": "circulo-vida",
+            "name": "Círculo da Vida"
+          }
+        }
+      },
+      "tool_proficiencies": [
+        "Kit de Herbalismo"
+      ],
+      "weapon_proficiencies": [
+        "clavas",
+        "adagas",
+        "dardos",
+        "azagaias",
+        "maças",
+        "bordões",
+        "cimitarra",
+        "foices",
+        "fundas",
+        "lanças"
+      ]
+    },
+    "fighter": {
+      "armor_proficiencies": [
+        "leve",
+        "média",
+        "pesada",
+        "escudos"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            6,
+            8,
+            12,
+            14,
+            16,
+            19
+          ]
+        },
+        "action_surge": {
+          "limit_one_per_turn": true,
+          "recharge": "SR",
+          "uses_by_level": {
+            "17": 2,
+            "2": 1
+          }
+        },
+        "fighting_style": {
+          "options": {
+            "Arquearia": {
+              "attack_bonus_ranged": 2
+            },
+            "Combate com Duas Armas": {
+              "add_mod_to_offhand_damage": true
+            },
+            "Defesa": {
+              "ac_bonus": 1,
+              "requires_armor": true
+            },
+            "Duelos": {
+              "damage_bonus_melee_one_handed": 2
+            },
+            "Grande Arma": {
+              "reroll_damage_dice": [
+                1,
+                2
+              ],
+              "weapons": "two_handed_or_versatile_melee"
+            },
+            "Proteção": {
+              "reaction_impose_disadvantage": true,
+              "requires_shield": true
+            }
+          }
+        },
+        "indomitable": {
+          "recharge": "LR",
+          "uses_by_level": {
+            "13": 2,
+            "17": 3,
+            "9": 1
+          }
+        },
+        "second_wind": {
+          "heal_formula": "1d10 + fighter_level",
+          "recharge": "SR",
+          "uses": 1
+        }
+      },
+      "features_level1": [
+        "Estilo de Luta (escolha 1)",
+        "Segundo Fôlego"
+      ],
+      "hit_die": "d10",
+      "id": "fighter",
+      "name": "Guerreiro",
+      "primary_abilities": [
+        "STR",
+        "DEX",
+        "CON"
+      ],
+      "required_choices_at_level": {
+        "1": {
+          "fighting_style": {
+            "choose": 1,
+            "options": [
+              "Defesa",
+              "Arquearia",
+              "Duelos",
+              "Combate com Duas Armas",
+              "Proteção",
+              "Grande Arma"
+            ]
+          }
+        }
+      },
+      "resources": {
+        "action_surge": {
+          "recharge": "SR",
+          "uses_by_level": {
+            "1": 1,
+            "17": 2
+          }
+        },
+        "indomitable": {
+          "recharge": "LR",
+          "uses_by_level": {
+            "13": 2,
+            "17": 3,
+            "9": 1
+          }
+        },
+        "second_wind": {
+          "recharge": "SR",
+          "uses_by_level": {
+            "1": 1
+          }
+        }
+      },
+      "saving_throws": [
+        "FOR",
+        "CON"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Acrobacia",
+          "Lidar com Animais",
+          "Atletismo",
+          "História",
+          "Intuição",
+          "Intimidação",
+          "Percepção",
+          "Sobrevivência"
+        ]
+      },
+      "starting_gold": "5d4x10",
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "atirador_inigualavel": {
+            "id": "atirador_inigualavel",
+            "name": "Atirador Inigualável"
+          },
+          "battlemaster": {
+            "id": "battlemaster",
+            "name": "Mestre de Batalha"
+          },
+          "cavaleiro_implacavel": {
+            "id": "cavaleiro_implacavel",
+            "name": "Cavaleiro Implacável"
+          },
+          "champion": {
+            "id": "champion",
+            "name": "Campeão"
+          },
+          "defensor_dedicado": {
+            "id": "defensor_dedicado",
+            "name": "Defensor Dedicado"
+          },
+          "eldritch_knight": {
+            "grants": {
+              "spellcasting": {
+                "cantrips_known_at_1": 0,
+                "casting_ability": "INT",
+                "focus": "arcane_focus",
+                "list": "wizard",
+                "preparation": "known",
+                "ritual": false,
+                "school_bias": [
+                  "Abjuração",
+                  "Evocação"
+                ],
+                "spells_known_at_1": 0,
+                "type": "third"
+              }
+            },
+            "id": "eldritch_knight",
+            "name": "Cavaleiro Arcano"
+          },
+          "kensai": {
+            "id": "kensai",
+            "name": "Kensai"
+          },
+          "mestre_arremesso": {
+            "id": "mestre_arremesso",
+            "name": "Mestre do Arremesso"
+          },
+          "mestre_correntes": {
+            "id": "mestre_correntes",
+            "name": "Mestre das Correntes"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "armas simples",
+        "armas marciais"
+      ]
+    },
+    "monk": {
+      "armor_proficiencies": [
+
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "evasion": {
+          "available_at": 7
+        },
+        "ki": {
+          "points_by_level": "monk_level",
+          "recharge": "SR"
+        },
+        "martial_arts": {
+          "bonus_unarmed_after_attack": true,
+          "die_by_level": {
+            "1": "d4",
+            "11": "d8",
+            "17": "d10",
+            "5": "d6"
+          },
+          "finesse_for_monk_weapons_and_unarmed": true
+        },
+        "purity_of_body": {
+          "available_at": 10,
+          "immune": [
+            "poison",
+            "disease"
+          ]
+        },
+        "unarmored_defense": {
+          "allows_shield": false,
+          "formula": "10 + DEX + WIS",
+          "level": 1
+        },
+        "unarmored_movement": {
+          "bonus_ft_by_level": {
+            "10": 20,
+            "14": 25,
+            "18": 30,
+            "2": 10,
+            "6": 15
+          },
+          "special_at_level": {
+            "9": [
+              "water_run",
+              "wall_run"
+            ]
+          }
+        }
+      },
+      "features_level1": [
+        "Defesa sem Armadura",
+        "Artes Marciais"
+      ],
+      "hit_die": "d8",
+      "id": "monk",
+      "name": "Monge",
+      "primary_abilities": [
+        "DEX",
+        "WIS"
+      ],
+      "required_choices_at_level": {
+      },
+      "saving_throws": [
+        "FOR",
+        "DES"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Acrobacia",
+          "Atletismo",
+          "História",
+          "Intuição",
+          "Religião",
+          "Furtividade"
+        ]
+      },
+      "starting_gold": "5d4",
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "caminho_aco": {
+            "id": "caminho_aco",
+            "name": "Caminho do Aço"
+          },
+          "caminho_mestre_bebado": {
+            "id": "caminho_mestre_bebado",
+            "name": "Caminho do Mestre Bêbado"
+          },
+          "caminho_monge_tatuado": {
+            "id": "caminho_monge_tatuado",
+            "name": "Caminho do Monge Tatuado"
+          },
+          "caminho_ninjuts": {
+            "id": "caminho_ninjuts",
+            "name": "Caminho do Ninjútsu"
+          },
+          "caminho_punho_sagrado": {
+            "id": "caminho_punho_sagrado",
+            "name": "Caminho do Punho Sagrado"
+          },
+          "caminho_sadhaka": {
+            "id": "caminho_sadhaka",
+            "name": "Caminho do Sadhaka"
+          },
+          "four_elements": {
+            "id": "four_elements",
+            "name": "Caminho dos Quatro Elementos"
+          },
+          "open_hand": {
+            "id": "open_hand",
+            "name": "Caminho da Mão Aberta"
+          },
+          "shadow": {
+            "id": "shadow",
+            "name": "Caminho da Sombra"
+          }
+        }
+      },
+      "tool_proficiencies": {
+        "choose": 1,
+        "options": [
+          "artisan_tools_any",
+          "instrument_any"
+        ]
+      },
+      "weapon_proficiencies": [
+        "armas simples",
+        "espadas curtas"
+      ]
+    },
+    "paladin": {
+      "armor_proficiencies": [
+        "leve",
+        "média",
+        "pesada",
+        "escudos"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "aura_of_courage": {
+          "available_at": 10,
+          "immune": [
+            "frightened"
+          ],
+          "radius_ft_by_level": {
+            "10": 10,
+            "18": 30
+          }
+        },
+        "aura_of_protection": {
+          "add_mod": {
+            "mod": "CHA",
+            "to": "saving_throws"
+          },
+          "available_at": 6,
+          "radius_ft_by_level": {
+            "18": 30,
+            "6": 10
+          }
+        },
+        "channel_divinity": {
+          "recharge": "SR",
+          "uses_by_level": {
+            "3": 1
+          }
+        },
+        "divine_sense": {
+          "uses_per_long_rest": "1 + CHA"
+        },
+        "fighting_style": {
+          "options": {
+            "Defesa": {
+              "ac_bonus": 1,
+              "requires_armor": true
+            },
+            "Duelos": {
+              "damage_bonus_melee_one_handed": 2
+            },
+            "Grande Arma": {
+              "reroll_damage_dice": [
+                1,
+                2
+              ],
+              "weapons": "two_handed_or_versatile_melee"
+            },
+            "Proteção": {
+              "reaction_impose_disadvantage": true,
+              "requires_shield": true
+            }
+          }
+        },
+        "lay_on_hands": {
+          "pool_per_long_rest": "5 * paladin_level"
+        },
+        "spellcasting": {
+          "ability": "CHA",
+          "focus": "holy_symbol",
+          "list": "paladin",
+          "mode": "prepared",
+          "ritual": "if_prepared",
+          "type": "half"
+        }
+      },
+      "features_level1": [
+        "Sentido Divino",
+        "Imposição das Mãos"
+      ],
+      "hit_die": "d10",
+      "id": "paladin",
+      "name": "Paladino",
+      "primary_abilities": [
+        "STR",
+        "CHA"
+      ],
+      "required_choices_at_level": {
+        "2": {
+          "fighting_style": {
+            "choose": 1,
+            "options": [
+              "Defesa",
+              "Duelos",
+              "Proteção",
+              "Grande Arma"
+            ]
+          }
+        }
+      },
+      "resources": {
+        "channel_divinity": {
+          "recharge": "SR",
+          "uses_by_level": {
+            "1": 1,
+            "18": 3,
+            "6": 2
+          }
+        }
+      },
+      "saving_throws": [
+        "SAB",
+        "CAR"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Atletismo",
+          "Intuição",
+          "Intimidação",
+          "Medicina",
+          "Persuasão",
+          "Religião"
+        ]
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 0,
+        "casting_ability": "CHA",
+        "focus": "holy_symbol",
+        "list": "paladin",
+        "preparation": "prepared",
+        "ritual": "if_prepared",
+        "spells_known_at_1": null,
+        "type": "half"
+      },
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "ancients": {
+            "id": "ancients",
+            "name": "Juramento dos Anciões"
+          },
+          "devotion": {
+            "id": "devotion",
+            "name": "Juramento de Devoção"
+          },
+          "juramento-danacao": {
+            "id": "juramento-danacao",
+            "name": "Juramento de Danação"
+          },
+          "juramento-equilibrio": {
+            "id": "juramento-equilibrio",
+            "name": "Juramento de Equilíbrio"
+          },
+          "juramento-liberdade": {
+            "id": "juramento-liberdade",
+            "name": "Juramento de Liberdade"
+          },
+          "juramento-misericordia": {
+            "id": "juramento-misericordia",
+            "name": "Juramento de Misericórdia"
+          },
+          "juramento-ordenacao": {
+            "id": "juramento-ordenacao",
+            "name": "Juramento de Ordenação"
+          },
+          "juramento-pureza": {
+            "id": "juramento-pureza",
+            "name": "Juramento de Pureza"
+          },
+          "vengeance": {
+            "id": "vengeance",
+            "name": "Juramento de Vingança"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "armas simples",
+        "armas marciais"
+      ]
+    },
+    "ranger": {
+      "armor_proficiencies": [
+        "leve",
+        "média",
+        "escudos"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "favored_enemy": {
+          "knowledge_bonus": true,
+          "track_advantage": true
+        },
+        "fighting_style": {
+          "options": {
+            "Arquearia": {
+              "attack_bonus_ranged": 2
+            },
+            "Combate com Duas Armas": {
+              "add_mod_to_offhand_damage": true
+            },
+            "Defesa": {
+              "ac_bonus": 1,
+              "requires_armor": true
+            },
+            "Duelos": {
+              "damage_bonus_melee_one_handed": 2
+            }
+          }
+        },
+        "natural_explorer": {
+          "advantage_on_initiative_in_nat_env": true,
+          "ignore_difficult_terrain_travel": true
+        },
+        "primeval_awareness": {
+          "available_at": 3
+        },
+        "spellcasting": {
+          "ability": "WIS",
+          "list": "ranger",
+          "mode": "known",
+          "ritual": false,
+          "type": "half"
+        }
+      },
+      "features_level1": [
+        "Inimigo Favorito",
+        "Explorador Natural"
+      ],
+      "hit_die": "d10",
+      "id": "ranger",
+      "name": "Patrulheiro",
+      "primary_abilities": [
+        "DEX",
+        "WIS"
+      ],
+      "required_choices_at_level": {
+        "1": {
+          "favored_enemy": {
+            "choose": 1,
+            "options": "ranger_favored_enemy_types"
+          },
+          "favored_terrain": {
+            "choose": 1,
+            "options": "ranger_favored_terrain_types"
+          }
+        },
+        "10": {
+          "favored_terrain": {
+            "choose": 1,
+            "options": "ranger_favored_terrain_types"
+          }
+        },
+        "14": {
+          "favored_enemy": {
+            "choose": 1,
+            "options": "ranger_favored_enemy_types"
+          }
+        },
+        "2": {
+          "fighting_style": {
+            "choose": 1,
+            "options": [
+              "Defesa",
+              "Arquearia",
+              "Duelos",
+              "Combate com Duas Armas",
+              "Proteção",
+              "Grande Arma"
+            ]
+          }
+        },
+        "6": {
+          "favored_enemy": {
+            "choose": 1,
+            "options": "ranger_favored_enemy_types"
+          },
+          "favored_terrain": {
+            "choose": 1,
+            "options": "ranger_favored_terrain_types"
+          }
+        }
+      },
+      "saving_throws": [
+        "FOR",
+        "DES"
+      ],
+      "skill_proficiencies": {
+        "choose": 3,
+        "options": [
+          "Acrobacia",
+          "Lidar com Animais",
+          "Atletismo",
+          "Furtividade",
+          "Intuição",
+          "Investigação",
+          "Natureza",
+          "Percepção",
+          "Sobrevivência"
+        ]
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 0,
+        "casting_ability": "WIS",
+        "focus": null,
+        "list": "ranger",
+        "preparation": "known",
+        "ritual": false,
+        "spells_known_at_1": 0,
+        "type": "half"
+      },
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "arqueiro_floresta_alta": {
+            "id": "arqueiro_floresta_alta",
+            "name": "Arqueiro da Floresta Alta"
+          },
+          "batedor": {
+            "id": "batedor",
+            "name": "Batedor"
+          },
+          "beast_master": {
+            "id": "beast_master",
+            "name": "Mestre das Bestas"
+          },
+          "flagelo-dos-inimigos": {
+            "id": "flagelo-dos-inimigos",
+            "name": "Flagelo dos Inimigos"
+          },
+          "guardiao_selvagem": {
+            "id": "guardiao_selvagem",
+            "name": "Guardião Selvagem"
+          },
+          "hunter": {
+            "id": "hunter",
+            "name": "Caçador"
+          },
+          "rastreador_urbano": {
+            "id": "rastreador_urbano",
+            "name": "Rastreador Urbano"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "armas simples",
+        "armas marciais"
+      ]
+    },
+    "rogue": {
+      "armor_proficiencies": [
+        "leve"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            10,
+            12,
+            16,
+            19
+          ]
+        },
+        "elusive": {
+          "attackers_cannot_have_advantage": true,
+          "available_at": 18
+        },
+        "evasion": {
+          "available_at": 7
+        },
+        "expertise": {
+          "gains": [
+            {
+              "count": 2,
+              "level": 1
+            },
+            {
+              "count": 2,
+              "level": 6
+            }
+          ]
+        },
+        "reliable_talent": {
+          "available_at": 11,
+          "d20_min_floor": 10
+        },
+        "slippery_mind": {
+          "available_at": 15,
+          "grant_save_proficiency": "WIS"
+        },
+        "sneak_attack": {
+          "dice_by_level": {
+            "1": 1,
+            "10": 5,
+            "11": 6,
+            "12": 6,
+            "13": 7,
+            "14": 7,
+            "15": 8,
+            "16": 8,
+            "17": 9,
+            "18": 9,
+            "19": 10,
+            "2": 1,
+            "20": 10,
+            "3": 2,
+            "4": 2,
+            "5": 3,
+            "6": 3,
+            "7": 4,
+            "8": 4,
+            "9": 5
+          },
+          "die": "d6",
+          "finesse_or_ranged": true,
+          "once_per_turn": true,
+          "requires_advantage_or_ally": true
+        },
+        "stroke_of_luck": {
+          "available_at": 20,
+          "recharge": "LR"
+        },
+        "uncanny_dodge": {
+          "available_at": 5
+        }
+      },
+      "features_level1": [
+        "Perícia (escolha 2)",
+        "Ataque Furtivo",
+        "Gíria de Ladrão"
+      ],
+      "hit_die": "d8",
+      "id": "rogue",
+      "name": "Ladino",
+      "primary_abilities": [
+        "DEX"
+      ],
+      "required_choices_at_level": {
+        "1": {
+          "expertise_skills": {
+            "choose": 2,
+            "options": "selected_from_class_skills"
+          }
+        },
+        "6": {
+          "expertise_skills": {
+            "choose": 2,
+            "options": "selected_from_class_skills"
+          }
+        }
+      },
+      "saving_throws": [
+        "DES",
+        "INT"
+      ],
+      "skill_proficiencies": {
+        "choose": 4,
+        "options": [
+          "Acrobacia",
+          "Atletismo",
+          "Enganação",
+          "Intuição",
+          "Intimidação",
+          "Investigação",
+          "Percepção",
+          "Atuação",
+          "Persuasão",
+          "Prestidigitação",
+          "Furtividade"
+        ]
+      },
+      "starting_gold": "4d4x10",
+      "subclass": {
+        "choose_level": 3,
+        "options": {
+          "assassino": {
+            "id": "assassino",
+            "name": "Assassino"
+          },
+          "cacador-de-tesouros": {
+            "id": "cacador-de-tesouros",
+            "name": "Caçador de Tesouros"
+          },
+          "dancarino-das-sombras": {
+            "id": "dancarino-das-sombras",
+            "name": "Dançarino das Sombras"
+          },
+          "face-fantasmagorica": {
+            "id": "face-fantasmagorica",
+            "name": "Face Fantasmagórica"
+          },
+          "ladrao": {
+            "id": "ladrao",
+            "name": "Ladrão"
+          },
+          "lamina-invisivel": {
+            "id": "lamina-invisivel",
+            "name": "Lâmina Invisível"
+          },
+          "larapio-de-almas": {
+            "id": "larapio-de-almas",
+            "name": "Larápio de Almas"
+          },
+          "mimetizador": {
+            "id": "mimetizador",
+            "name": "Mimetizador"
+          },
+          "trapaceiro-arcano": {
+            "grants": {
+              "spellcasting": {
+                "cantrips_known_at_1": 0,
+                "casting_ability": "INT",
+                "focus": "arcane_focus",
+                "list": "wizard",
+                "preparation": "known",
+                "ritual": false,
+                "school_bias": [
+                  "Ilusão",
+                  "Encantamento"
+                ],
+                "spells_known_at_1": 0,
+                "type": "third"
+              }
+            },
+            "id": "trapaceiro-arcano",
+            "name": "Trapaceiro Arcano"
+          }
+        }
+      },
+      "tool_proficiencies": [
+        "Ferramentas de Ladrão"
+      ],
+      "weapon_proficiencies": [
+        "armas simples",
+        "bestas de mão",
+        "espadas longas",
+        "rapieiras",
+        "espadas curtas"
+      ]
+    },
+    "sorcerer": {
+      "armor_proficiencies": [
+
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "flexible_casting": {
+          "enabled": true
+        },
+        "metamagic": {
+          "choices_by_level": {
+            "10": 1,
+            "17": 1,
+            "3": 2
+          }
+        },
+        "sorcery_points": {
+          "by_level": {
+            "1": 0,
+            "10": 10,
+            "11": 11,
+            "12": 12,
+            "13": 13,
+            "14": 14,
+            "15": 15,
+            "16": 16,
+            "17": 17,
+            "18": 18,
+            "19": 19,
+            "2": 2,
+            "20": 20,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+            "9": 9
+          },
+          "recharge": "LR"
+        },
+        "spellcasting": {
+          "ability": "CHA",
+          "focus": "arcane_focus",
+          "list": "sorcerer",
+          "mode": "known",
+          "ritual": false
+        }
+      },
+      "features_level1": [
+        "Conjuração",
+        "Origem de Feitiçaria"
+      ],
+      "hit_die": "d6",
+      "id": "sorcerer",
+      "name": "Feiticeiro",
+      "primary_abilities": [
+        "CHA"
+      ],
+      "required_choices_at_level": {
+        "10": {
+          "metamagic": {
+            "choose": 1,
+            "options": "metamagic",
+            "validate_subset": true
+          }
+        },
+        "17": {
+          "metamagic": {
+            "choose": 1,
+            "options": "metamagic",
+            "validate_subset": true
+          }
+        },
+        "3": {
+          "metamagic": {
+            "choose": 2,
+            "options": "metamagic",
+            "validate_subset": true
+          }
+        }
+      },
+      "saving_throws": [
+        "CON",
+        "CAR"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Arcanismo",
+          "Enganação",
+          "Intuição",
+          "Intimidação",
+          "Persuasão",
+          "Religião"
+        ]
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 4,
+        "casting_ability": "CHA",
+        "focus": "arcane_focus",
+        "list": "sorcerer",
+        "preparation": "known",
+        "ritual": false,
+        "spells_known_at_1": 2,
+        "type": "full"
+      },
+      "subclass": {
+        "choose_level": 1,
+        "options": {
+          "draconic": {
+            "id": "draconic",
+            "name": "Linhagem Dracônica"
+          },
+          "feiticaria-da-espada": {
+            "id": "feiticaria-da-espada",
+            "name": "Feitiçaria da Espada"
+          },
+          "feiticaria-do-sangue": {
+            "id": "feiticaria-do-sangue",
+            "name": "Feitiçaria do Sangue"
+          },
+          "linhagem-elemental": {
+            "id": "linhagem-elemental",
+            "name": "Linhagem Elemental"
+          },
+          "origem-aberrante": {
+            "id": "origem-aberrante",
+            "name": "Origem Aberrante"
+          },
+          "origem-abissal": {
+            "id": "origem-abissal",
+            "name": "Origem Abissal"
+          },
+          "origem-mutavel": {
+            "id": "origem-mutavel",
+            "name": "Origem Mutável"
+          },
+          "wild": {
+            "id": "wild",
+            "name": "Magia Selvagem"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "adagas",
+        "dardos",
+        "fundas",
+        "bordões",
+        "bestas leves"
+      ]
+    },
+    "warlock": {
+      "armor_proficiencies": [
+        "leve"
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "eldritch_invocations": {
+          "count_by_level": {
+            "10": 5,
+            "11": 5,
+            "12": 6,
+            "13": 6,
+            "14": 6,
+            "15": 7,
+            "16": 7,
+            "17": 7,
+            "18": 8,
+            "19": 8,
+            "2": 2,
+            "20": 8,
+            "3": 2,
+            "4": 2,
+            "5": 3,
+            "6": 3,
+            "7": 4,
+            "8": 4,
+            "9": 5
+          }
+        },
+        "mystic_arcanum": {
+          "grants": {
+            "11": {
+              "level": 6,
+              "uses": 1
+            },
+            "13": {
+              "level": 7,
+              "uses": 1
+            },
+            "15": {
+              "level": 8,
+              "uses": 1
+            },
+            "17": {
+              "level": 9,
+              "uses": 1
+            }
+          }
+        },
+        "pact_boon": {
+          "choose_at_level": 3,
+          "options": [
+            "Pacto da Lâmina",
+            "Pacto da Corrente",
+            "Pacto do Tomo"
+          ]
+        },
+        "pact_magic": {
+          "ability": "CHA",
+          "list": "warlock",
+          "mode": "known",
+          "recharge": "SR",
+          "slot_level_by_level": {
+            "1": 1,
+            "10": 5,
+            "11": 5,
+            "12": 5,
+            "13": 5,
+            "14": 5,
+            "15": 5,
+            "16": 5,
+            "17": 5,
+            "18": 5,
+            "19": 5,
+            "2": 1,
+            "20": 5,
+            "3": 2,
+            "4": 2,
+            "5": 3,
+            "6": 3,
+            "7": 4,
+            "8": 4,
+            "9": 5
+          },
+          "slots_by_level": {
+            "1": 1,
+            "10": 2,
+            "11": 3,
+            "12": 3,
+            "13": 3,
+            "14": 3,
+            "15": 3,
+            "16": 3,
+            "17": 4,
+            "18": 4,
+            "19": 4,
+            "2": 2,
+            "20": 4,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 2,
+            "8": 2,
+            "9": 2
+          }
+        }
+      },
+      "features_level1": [
+        "Patrono Sobrenatural",
+        "Magia de Pacto"
+      ],
+      "hit_die": "d8",
+      "id": "warlock",
+      "name": "Bruxo",
+      "primary_abilities": [
+        "CHA"
+      ],
+      "required_choices_at_level": {
+        "2": {
+          "invocations": {
+            "choose": 2,
+            "options": "eldritch_invocations",
+            "validate_subset": true
+          }
+        },
+        "3": {
+          "pact_boon": {
+            "choose": 1,
+            "options": [
+              "Pacto da Lâmina",
+              "Pacto da Corrente",
+              "Pacto do Tomo"
+            ]
+          }
+        }
+      },
+      "saving_throws": [
+        "SAB",
+        "CAR"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Arcanismo",
+          "Enganação",
+          "História",
+          "Intimidação",
+          "Investigação",
+          "Natureza",
+          "Religião"
+        ]
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 2,
+        "casting_ability": "CHA",
+        "focus": "arcane_focus",
+        "list": "warlock",
+        "preparation": "known",
+        "ritual": false,
+        "spells_known_at_1": 2,
+        "type": "pact"
+      },
+      "subclass": {
+        "choose_level": 1,
+        "options": {
+          "archfey": {
+            "id": "archfey",
+            "name": "Arquifada"
+          },
+          "fiend": {
+            "id": "fiend",
+            "name": "Corruptor"
+          },
+          "great_old_one": {
+            "id": "great_old_one",
+            "name": "O Grande Antigo"
+          },
+          "patrono-arcanjo-vingador": {
+            "id": "patrono-arcanjo-vingador",
+            "name": "O Arcanjo Vingador"
+          },
+          "patrono-espirito-heroico": {
+            "id": "patrono-espirito-heroico",
+            "name": "O Espírito Heroico"
+          },
+          "patrono-morte": {
+            "id": "patrono-morte",
+            "name": "A Morte"
+          },
+          "patrono-supragenio": {
+            "id": "patrono-supragenio",
+            "name": "O Supragênio"
+          },
+          "patrono-tita-caido": {
+            "id": "patrono-tita-caido",
+            "name": "O Titã Caído"
+          },
+          "patrono-vazio": {
+            "id": "patrono-vazio",
+            "name": "O Vazio"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "armas simples"
+      ]
+    },
+    "wizard": {
+      "armor_proficiencies": [
+
+      ],
+      "feature_rules": {
+        "ability_score_improvement": {
+          "levels": [
+            4,
+            8,
+            12,
+            16,
+            19
+          ]
+        },
+        "arcane_recovery": {
+          "max_slot_levels_sum": "ceil(wizard_level / 2)",
+          "once_per_day": true,
+          "requires_short_rest": true,
+          "slot_level_cap_by_level": {
+            "1": 1,
+            "3": 2,
+            "5": 3,
+            "7": 4,
+            "9": 5
+          }
+        },
+        "spellbook_progression": {
+          "copy_from_scrolls": true,
+          "learn_on_level_up": 2
+        },
+        "spellcasting": {
+          "ability": "INT",
+          "focus": "arcane_focus",
+          "list": "wizard",
+          "mode": "prepared",
+          "ritual": "spellbook"
+        }
+      },
+      "features_level1": [
+        "Conjuração",
+        "Recuperação Arcana"
+      ],
+      "hit_die": "d6",
+      "id": "wizard",
+      "name": "Mago",
+      "primary_abilities": [
+        "INT"
+      ],
+      "required_choices_at_level": {
+      },
+      "saving_throws": [
+        "INT",
+        "SAB"
+      ],
+      "skill_proficiencies": {
+        "choose": 2,
+        "options": [
+          "Arcanismo",
+          "História",
+          "Intuição",
+          "Investigação",
+          "Medicina",
+          "Religião"
+        ]
+      },
+      "spellcasting": {
+        "cantrips_known_at_1": 3,
+        "casting_ability": "INT",
+        "focus": "arcane_focus",
+        "list": "wizard",
+        "preparation": "prepared",
+        "ritual": "spellbook",
+        "spells_known_at_1": 6,
+        "type": "full"
+      },
+      "subclass": {
+        "choose_level": 2,
+        "options": {
+          "arquearia-arcana": {
+            "id": "arquearia-arcana",
+            "name": "Arquearia Arcana"
+          },
+          "escola-de-abjuracao": {
+            "id": "escola-de-abjuracao",
+            "name": "Escola de Abjuração"
+          },
+          "escola-de-adivinhacao": {
+            "id": "escola-de-adivinhacao",
+            "name": "Escola de Adivinhação"
+          },
+          "escola-de-conjuracao": {
+            "id": "escola-de-conjuracao",
+            "name": "Escola de Conjuração"
+          },
+          "escola-de-encantamento": {
+            "id": "escola-de-encantamento",
+            "name": "Escola de Encantamento"
+          },
+          "escola-de-evocacao": {
+            "id": "escola-de-evocacao",
+            "name": "Escola de Evocação"
+          },
+          "escola-de-ilusao": {
+            "id": "escola-de-ilusao",
+            "name": "Escola de Ilusão"
+          },
+          "escola-de-necromancia": {
+            "id": "escola-de-necromancia",
+            "name": "Escola de Necromancia"
+          },
+          "escola-de-transmutacao": {
+            "id": "escola-de-transmutacao",
+            "name": "Escola de Transmutação"
+          },
+          "iniciacao-demonologia": {
+            "id": "iniciacao-demonologia",
+            "name": "Iniciação em Demonologia"
+          },
+          "maestria-alquimica": {
+            "id": "maestria-alquimica",
+            "name": "Maestria Alquímica"
+          },
+          "maestria-dos-automatos": {
+            "id": "maestria-dos-automatos",
+            "name": "Maestria dos Autômatos"
+          },
+          "navegacao-planar": {
+            "id": "navegacao-planar",
+            "name": "Navegação Planar"
+          },
+          "teurgia-mistica": {
+            "id": "teurgia-mistica",
+            "name": "Teurgia Mística"
+          }
+        }
+      },
+      "tool_proficiencies": [
+
+      ],
+      "weapon_proficiencies": [
+        "adagas",
+        "dardos",
+        "fundas",
+        "bordões",
+        "bestas leves"
+      ]
+    }
+  },
+  "available_subclasses": {
+    "barbarian": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "barbaro-cicatrizes-runicas",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Bárbaro das Cicatrizes Rúnicas",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "desistente",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Desistente",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "berserker",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Furioso",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "furioso-imortal",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Furioso Imortal",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "totem",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Guerreiro Totêmico",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "guerreiro-urso",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Guerreiro Urso",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "protetor-tribal",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Protetor Tribal",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "raivoso-elemental",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Raivoso Elemental",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "zealot",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Zelote",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "bard": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "valor",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio da Bravura",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "colegio-busca-cancao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio da Busca da Canção",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "colegio-comedia",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio da Comédia",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "colegio-fortuna",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio da Fortuna",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "colegio-quietude",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio da Quietude",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "lore",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio do Conhecimento",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "colegio-do-glamour",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio do Glamour",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "colegio-pavor",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio do Pavor",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "colegio-virtuosismo",
+        "learn_any_class_by_level": {
+        },
+        "name": "Colégio do Virtuosismo",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "cleric": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "create-or-destroy-water",
+            "unseen-servant"
+          ],
+          "3": [
+            "continual-flame",
+            "web"
+          ],
+          "5": [
+            "create-food-and-water",
+            "phantom-steed"
+          ],
+          "7": [
+            "fabricate",
+            "stoneskin"
+          ],
+          "9": [
+            "creation",
+            "passwall"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-criacao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Criação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "enfeitiçar pessoa",
+            "disfarçar-se"
+          ],
+          "3": [
+            "mirror-image",
+            "pass-without-trace"
+          ],
+          "5": [
+            "piscar",
+            "dissipar magia"
+          ],
+          "7": [
+            "porta dimensional",
+            "metamorfose"
+          ],
+          "9": [
+            "dominar pessoa",
+            "modificar memória"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-da-trapaca",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Enganação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "divine-favor",
+            "escudo da fé"
+          ],
+          "3": [
+            "arma mágica",
+            "arma espiritual"
+          ],
+          "5": [
+            "manto do cruzado",
+            "espíritos guardiões"
+          ],
+          "7": [
+            "movimentação livre",
+            "pele de pedra"
+          ],
+          "9": [
+            "coluna de chamas",
+            "imobilizar monstro"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-da-guerra",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Guerra",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "mãos flamejantes",
+            "fogo das fadas"
+          ],
+          "3": [
+            "esfera flamejante",
+            "raio ardente"
+          ],
+          "5": [
+            "luz do dia",
+            "bola de fogo"
+          ],
+          "7": [
+            "guardião da fé",
+            "muralha de fogo"
+          ],
+          "9": [
+            "coluna de chamas",
+            "vidência"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-da-luz",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Luz",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "command",
+            "charm-person"
+          ],
+          "3": [
+            "detect-thoughts",
+            "suggestion"
+          ],
+          "5": [
+            "tongues",
+            "fear"
+          ],
+          "7": [
+            "confusion",
+            "dominate-beast"
+          ],
+          "9": [
+            "telepathic-bond",
+            "modify-memory"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-mente",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Mente",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+          "1": {
+            "cantrips": {
+              "choose": 1,
+              "from_class": "druid"
+            },
+            "skill_prof": {
+              "choose": 1,
+              "options": [
+                "Adestrar Animais",
+                "Natureza",
+                "Sobrevivência"
+              ]
+            }
+          }
+        },
+        "always_prepared": {
+          "1": [
+            "amizade animal",
+            "falar com animais"
+          ],
+          "3": [
+            "pele de árvore",
+            "crescer espinhos"
+          ],
+          "5": [
+            "ampliar plantas",
+            "muralha de vento"
+          ],
+          "7": [
+            "dominar besta",
+            "vinha esmagadora"
+          ],
+          "9": [
+            "praga de insetos",
+            "caminhar em árvores"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-da-natureza",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Natureza",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "névoa obscurecente",
+            "onda trovejante"
+          ],
+          "3": [
+            "lufada de vento",
+            "despedaçar"
+          ],
+          "5": [
+            "convocar relâmpagos",
+            "nevasca"
+          ],
+          "7": [
+            "controlar a água",
+            "tempestade de gelo"
+          ],
+          "9": [
+            "onda destrutiva",
+            "praga de insetos"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-da-tempestade",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Tempestade",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "longstrider",
+            "shield-of-faith"
+          ],
+          "3": [
+            "pass-without-trace",
+            "protection-from-poison"
+          ],
+          "5": [
+            "meld-into-stone",
+            "glyph-of-warding"
+          ],
+          "7": [
+            "stone-shape",
+            "stoneskin"
+          ],
+          "9": [
+            "passwall",
+            "wall-of-stone"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-terra",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Terra",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "bênção",
+            "curar ferimentos"
+          ],
+          "3": [
+            "restauração menor",
+            "arma espiritual"
+          ],
+          "5": [
+            "sinal de esperança",
+            "revivificar"
+          ],
+          "7": [
+            "proteção contra a morte",
+            "guardião da fé"
+          ],
+          "9": [
+            "curar ferimentos em massa",
+            "reviver os mortos"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-da-vida",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Vida",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "grease",
+            "create-or-destroy-water"
+          ],
+          "3": [
+            "misty-step",
+            "lesser-restoration"
+          ],
+          "5": [
+            "water-walk",
+            "water-breathing"
+          ],
+          "7": [
+            "control-water",
+            "blight"
+          ],
+          "9": [
+            "conjure-elemental",
+            "scrying"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-agua",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio da Água",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "feather-fall",
+            "jump"
+          ],
+          "3": [
+            "levitate",
+            "gust-of-wind"
+          ],
+          "5": [
+            "gaseous-form",
+            "wind-wall"
+          ],
+          "7": [
+            "freedom-of-movement",
+            "ice-storm"
+          ],
+          "9": [
+            "cone-of-cold",
+            "conjure-elemental"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-ar",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio do Ar",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+          "1": {
+            "expertise_skills": {
+              "choose": 2,
+              "options": [
+                "Arcanismo",
+                "História",
+                "Natureza",
+                "Religião"
+              ]
+            }
+          }
+        },
+        "always_prepared": {
+          "1": [
+            "comando",
+            "identificação"
+          ],
+          "3": [
+            "augúrio",
+            "sugestão"
+          ],
+          "5": [
+            "dificultar detecção",
+            "falar com os mortos"
+          ],
+          "7": [
+            "olho arcano",
+            "confusão"
+          ],
+          "9": [
+            "conhecimento lendário",
+            "vidência"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-do-conhecimento",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio do Conhecimento",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+          "1": [
+            "feather-fall",
+            "expeditious-retreat"
+          ],
+          "3": [
+            "levitate",
+            "misty-step"
+          ],
+          "5": [
+            "slow",
+            "haste"
+          ],
+          "7": [
+            "blink",
+            "dimension-door"
+          ],
+          "9": [
+            "teleportation-circle",
+            "hold-monster"
+          ]
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dominio-tempo",
+        "learn_any_class_by_level": {
+        },
+        "name": "Domínio do Tempo",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "cozinheiro": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "amassador-de-monstros",
+        "learn_any_class_by_level": {
+        },
+        "name": "Amassador de Monstros",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "doceiro-encantado",
+        "learn_any_class_by_level": {
+        },
+        "name": "Doceiro Encantado",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "mestre-cervejeiro",
+        "learn_any_class_by_level": {
+        },
+        "name": "Mestre Cervejeiro",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "mestre-cuca",
+        "learn_any_class_by_level": {
+        },
+        "name": "Mestre-Cuca",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "sargento-alimentar",
+        "learn_any_class_by_level": {
+        },
+        "name": "Sargento Alimentar",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "sous-chef",
+        "learn_any_class_by_level": {
+        },
+        "name": "Sous Chef",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "druid": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_verdejante",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo Verdejante",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_infestacao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo da Infestação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_da_lua",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo da Lua",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_da_terra",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo da Terra",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_vida",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo da Vida",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_fadas",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo das Fadas",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_feras",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo das Feras",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "circulo_mundos",
+        "learn_any_class_by_level": {
+        },
+        "name": "Círculo dos Mundos",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "fighter": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "atirador_inigualavel",
+        "learn_any_class_by_level": {
+        },
+        "name": "Atirador Inigualável",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "champion",
+        "learn_any_class_by_level": {
+        },
+        "name": "Campeão",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "eldritch_knight",
+        "learn_any_class_by_level": {
+        },
+        "name": "Cavaleiro Arcano",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "cavaleiro_implacavel",
+        "learn_any_class_by_level": {
+        },
+        "name": "Cavaleiro Implacável",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "defensor_dedicado",
+        "learn_any_class_by_level": {
+        },
+        "name": "Defensor Dedicado",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+          "3": {
+            "kensai_blade": {
+              "choose": 1,
+              "options": [
+                {
+                  "id": "adaga",
+                  "name": "Adaga"
+                },
+                {
+                  "id": "cimitarra",
+                  "name": "Cimitarra"
+                },
+                {
+                  "id": "espada-curta",
+                  "name": "Espada curta"
+                },
+                {
+                  "id": "espada-longa",
+                  "name": "Espada longa"
+                },
+                {
+                  "id": "rapieira",
+                  "name": "Rapieira"
+                }
+              ]
+            }
+          }
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "kensai",
+        "learn_any_class_by_level": {
+        },
+        "name": "Kensai",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "mestre_correntes",
+        "learn_any_class_by_level": {
+        },
+        "name": "Mestre das Correntes",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "battlemaster",
+        "learn_any_class_by_level": {
+        },
+        "name": "Mestre de Batalha",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "mestre_arremesso",
+        "learn_any_class_by_level": {
+        },
+        "name": "Mestre do Arremesso",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "monk": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "open_hand",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho da Mão Aberta",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "shadow",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho da Sombra",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "caminho_aco",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Aço",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "caminho_mestre_bebado",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Mestre Bêbado",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "caminho_monge_tatuado",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Monge Tatuado",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "caminho_ninjuts",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Ninjútsu",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "caminho_punho_sagrado",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Punho Sagrado",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "caminho_sadhaka",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho do Sadhaka",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "four_elements",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caminho dos Quatro Elementos",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "paladin": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "juramento-danacao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Danação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "devotion",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Devoção",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "juramento-equilibrio",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Equilíbrio",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "juramento-liberdade",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Liberdade",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "juramento-misericordia",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Misericórdia",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "juramento-ordenacao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Ordenação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "juramento-pureza",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Pureza",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "vengeance",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento de Vingança",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "ancients",
+        "learn_any_class_by_level": {
+        },
+        "name": "Juramento dos Anciões",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "ranger": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "arqueiro_floresta_alta",
+        "learn_any_class_by_level": {
+        },
+        "name": "Arqueiro da Floresta Alta",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "batedor",
+        "learn_any_class_by_level": {
+        },
+        "name": "Batedor",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "hunter",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caçador",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+          "10": {
+            "favored_enemy": {
+              "choose": 1,
+              "options": [
+                {
+                  "id": "aberration",
+                  "name": "Aberração"
+                },
+                {
+                  "id": "beast",
+                  "name": "Fera"
+                },
+                {
+                  "id": "celestial",
+                  "name": "Celestial"
+                },
+                {
+                  "id": "construct",
+                  "name": "Construto"
+                },
+                {
+                  "id": "dragon",
+                  "name": "Dragão"
+                },
+                {
+                  "id": "elemental",
+                  "name": "Elemental"
+                },
+                {
+                  "id": "fey",
+                  "name": "Feérico"
+                },
+                {
+                  "id": "fiend",
+                  "name": "Infernal/Abissal"
+                },
+                {
+                  "id": "giant",
+                  "name": "Gigante"
+                },
+                {
+                  "id": "humanoid",
+                  "name": "Humanóide (subtipo)"
+                },
+                {
+                  "id": "monstrosity",
+                  "name": "Monstruosidade"
+                },
+                {
+                  "id": "ooze",
+                  "name": "Lodo"
+                },
+                {
+                  "id": "plant",
+                  "name": "Planta"
+                },
+                {
+                  "id": "undead",
+                  "name": "Morto-vivo"
+                }
+              ]
+            }
+          },
+          "3": {
+            "favored_enemy": {
+              "choose": 1,
+              "options": [
+                {
+                  "id": "aberration",
+                  "name": "Aberração"
+                },
+                {
+                  "id": "beast",
+                  "name": "Fera"
+                },
+                {
+                  "id": "celestial",
+                  "name": "Celestial"
+                },
+                {
+                  "id": "construct",
+                  "name": "Construto"
+                },
+                {
+                  "id": "dragon",
+                  "name": "Dragão"
+                },
+                {
+                  "id": "elemental",
+                  "name": "Elemental"
+                },
+                {
+                  "id": "fey",
+                  "name": "Feérico"
+                },
+                {
+                  "id": "fiend",
+                  "name": "Infernal/Abissal"
+                },
+                {
+                  "id": "giant",
+                  "name": "Gigante"
+                },
+                {
+                  "id": "humanoid",
+                  "name": "Humanóide (subtipo)"
+                },
+                {
+                  "id": "monstrosity",
+                  "name": "Monstruosidade"
+                },
+                {
+                  "id": "ooze",
+                  "name": "Lodo"
+                },
+                {
+                  "id": "plant",
+                  "name": "Planta"
+                },
+                {
+                  "id": "undead",
+                  "name": "Morto-vivo"
+                }
+              ]
+            }
+          }
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "flagelo-dos-inimigos",
+        "learn_any_class_by_level": {
+        },
+        "name": "Flagelo dos Inimigos",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "guardiao_selvagem",
+        "learn_any_class_by_level": {
+        },
+        "name": "Guardião Selvagem",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "beast_master",
+        "learn_any_class_by_level": {
+        },
+        "name": "Mestre das Bestas",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "rastreador_urbano",
+        "learn_any_class_by_level": {
+        },
+        "name": "Rastreador Urbano",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "rogue": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "assassino",
+        "learn_any_class_by_level": {
+        },
+        "name": "Assassino",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "cacador-de-tesouros",
+        "learn_any_class_by_level": {
+        },
+        "name": "Caçador de Tesouros",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "dancarino-das-sombras",
+        "learn_any_class_by_level": {
+        },
+        "name": "Dançarino das Sombras",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "face-fantasmagorica",
+        "learn_any_class_by_level": {
+        },
+        "name": "Face Fantasmagórica",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "ladrao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Ladrão",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "larapio-de-almas",
+        "learn_any_class_by_level": {
+        },
+        "name": "Larápio de Almas",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "lamina-invisivel",
+        "learn_any_class_by_level": {
+        },
+        "name": "Lâmina Invisível",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "mimetizador",
+        "learn_any_class_by_level": {
+        },
+        "name": "Mimetizador",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "trapaceiro-arcano",
+        "learn_any_class_by_level": {
+        },
+        "name": "Trapaceiro Arcano",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "sorcerer": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "feiticaria-da-espada",
+        "learn_any_class_by_level": {
+        },
+        "name": "Feitiçaria da Espada",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "feiticaria-do-sangue",
+        "learn_any_class_by_level": {
+        },
+        "name": "Feitiçaria do Sangue",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "draconic",
+        "learn_any_class_by_level": {
+        },
+        "name": "Linhagem Dracônica",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "linhagem-elemental",
+        "learn_any_class_by_level": {
+        },
+        "name": "Linhagem Elemental",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "wild",
+        "learn_any_class_by_level": {
+        },
+        "name": "Magia Selvagem",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "origem-aberrante",
+        "learn_any_class_by_level": {
+        },
+        "name": "Origem Aberrante",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "origem-abissal",
+        "learn_any_class_by_level": {
+        },
+        "name": "Origem Abissal",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "origem-mutavel",
+        "learn_any_class_by_level": {
+        },
+        "name": "Origem Mutável",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "warlock": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "patrono-morte",
+        "learn_any_class_by_level": {
+        },
+        "name": "A Morte",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "archfey",
+        "learn_any_class_by_level": {
+        },
+        "name": "Arquifada",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "fiend",
+        "learn_any_class_by_level": {
+        },
+        "name": "Corruptor",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "patrono-arcanjo-vingador",
+        "learn_any_class_by_level": {
+        },
+        "name": "O Arcanjo Vingador",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "patrono-espirito-heroico",
+        "learn_any_class_by_level": {
+        },
+        "name": "O Espírito Heroico",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "great_old_one",
+        "learn_any_class_by_level": {
+        },
+        "name": "O Grande Antigo",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "patrono-supragenio",
+        "learn_any_class_by_level": {
+        },
+        "name": "O Supragênio",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "patrono-tita-caido",
+        "learn_any_class_by_level": {
+        },
+        "name": "O Titã Caído",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "patrono-vazio",
+        "learn_any_class_by_level": {
+        },
+        "name": "O Vazio",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ],
+    "wizard": [
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "arquearia-arcana",
+        "learn_any_class_by_level": {
+        },
+        "name": "Arquearia Arcana",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-abjuracao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Abjuração",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-adivinhacao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Adivinhação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-conjuracao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Conjuração",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-encantamento",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Encantamento",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-evocacao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Evocação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-ilusao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Ilusão",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-necromancia",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Necromancia",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "escola-de-transmutacao",
+        "learn_any_class_by_level": {
+        },
+        "name": "Escola de Transmutação",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "iniciacao-demonologia",
+        "learn_any_class_by_level": {
+        },
+        "name": "Iniciação em Demonologia",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "maestria-alquimica",
+        "learn_any_class_by_level": {
+        },
+        "name": "Maestria Alquímica",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "maestria-dos-automatos",
+        "learn_any_class_by_level": {
+        },
+        "name": "Maestria dos Autômatos",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "navegacao-planar",
+        "learn_any_class_by_level": {
+        },
+        "name": "Navegação Planar",
+        "school_restrictions": null,
+        "spellcasting": null
+      },
+      {
+        "additional_choices_by_level": {
+        },
+        "always_prepared": {
+        },
+        "always_prepared_by_terrain": {
+        },
+        "custom": false,
+        "description": null,
+        "expanded_spells": {
+        },
+        "id": "teurgia-mistica",
+        "learn_any_class_by_level": {
+        },
+        "name": "Teurgia Mística",
+        "school_restrictions": null,
+        "spellcasting": null
+      }
+    ]
+  },
+  "yaml_levels": {
+    "barbarian/barbaro-cicatrizes-runicas": "4 linhas · fdcb7805c7724a42dc8c0ff0847b676d",
+    "barbarian/berserker": "4 linhas · 100cb5eb4dd1d0b55cb9f0145e42d73a",
+    "barbarian/desistente": "4 linhas · fd991b4931797cd7e42a468b7fbcc730",
+    "barbarian/furioso-imortal": "4 linhas · f65472e4934ab7e903faf61a21a5db1b",
+    "barbarian/guerreiro-urso": "4 linhas · e0dfc625a7a7669d8420639993f919f3",
+    "barbarian/protetor-tribal": "4 linhas · 1afb80d5a4d5a8a6e1cf3b6ac3ba19a4",
+    "barbarian/raivoso-elemental": "4 linhas · 5780456276c517ad1732c5cd5db17833",
+    "barbarian/totem": "4 linhas · fe9a14c41755911c8f8e524c4756dd7d",
+    "bard/colegio-busca-cancao": "3 linhas · 03f4c5022f0ce7232abfb926764d9a6f",
+    "bard/colegio-comedia": "3 linhas · e811297b8d61f9065a25cb5f35af25d4",
+    "bard/colegio-do-glamour": "3 linhas · 27a586a9978fefa40f63f28158a16713",
+    "bard/colegio-fortuna": "3 linhas · 3bf355f3ed888657b90c53ea2b1d1169",
+    "bard/colegio-pavor": "3 linhas · a448060c6a3d45cf145797c9913a93d9",
+    "bard/colegio-quietude": "3 linhas · 7789c36b501f8124333e819b8d581323",
+    "bard/colegio-virtuosismo": "3 linhas · daec56cd67eeb369bd24db966be790c0",
+    "bard/lore": "3 linhas · ea03564e92ea49b5df2b84fafd89bce4",
+    "bard/valor": "3 linhas · 864721c0a99f083c3018574420433bde",
+    "cleric/dominio-agua": "5 linhas · 451338f2fb5a84dae73ad0f29b2d79a0",
+    "cleric/dominio-ar": "5 linhas · 30c8a727fbfb26bde1db5e34815bb4e6",
+    "cleric/dominio-criacao": "5 linhas · 0a3a0e0f815ccd9a3f7e336288e75cc7",
+    "cleric/dominio-da-guerra": "5 linhas · 3063f31e0206857cd0daae58e7921006",
+    "cleric/dominio-da-luz": "5 linhas · 4f91a8064a33c39a0bedc4c4a46cd491",
+    "cleric/dominio-da-natureza": "5 linhas · 36f4f7a9c496ee978914ff57269b4a7c",
+    "cleric/dominio-da-tempestade": "5 linhas · 845a165ee055300be03f84f02ef4dfe5",
+    "cleric/dominio-da-trapaca": "5 linhas · c2b8a0abe8cb50b2fb474c51ad2b97a1",
+    "cleric/dominio-da-vida": "5 linhas · 5cedfc3e770d85a65f814511969dbdfd",
+    "cleric/dominio-do-conhecimento": "5 linhas · f8d329df6dbb3e3f43960aa6ffd4d45d",
+    "cleric/dominio-mente": "5 linhas · 8c60febdbb5ef91460fa4548ec43ac89",
+    "cleric/dominio-tempo": "5 linhas · 303ed5962958b294dc39477c09bf27d3",
+    "cleric/dominio-terra": "5 linhas · ce21c11c593acfb07603632597b8de0d",
+    "cozinheiro/amassador-de-monstros": "5 linhas · eef82dfcf0d3a91a19dc7582a1398021",
+    "cozinheiro/doceiro-encantado": "4 linhas · 47c820e04648682475506ca1ff3ced33",
+    "cozinheiro/mestre-cervejeiro": "5 linhas · 27c1d779d51d20b42d024185b14bc145",
+    "cozinheiro/mestre-cuca": "5 linhas · dcf81c783d2c0a70783ba42b97344303",
+    "cozinheiro/sargento-alimentar": "5 linhas · 17560f1751d5252a94bf5f24165f7f73",
+    "cozinheiro/sous-chef": "5 linhas · 34d033432668f1a6903cae379bb9814c",
+    "druid/circulo-da-lua": "4 linhas · f69f4969dd4e18be1a04245c0f0a9909",
+    "druid/circulo-da-terra": "5 linhas · 4ac92f4b281e1c6805859399b469e881",
+    "druid/circulo-fadas": "4 linhas · b4d7a52f60704aba54cb805b910ed1ff",
+    "druid/circulo-feras": "4 linhas · ce891305ce1de8ea4c6ad7b1a91082bd",
+    "druid/circulo-infestacao": "4 linhas · 0a608cb2353af3233c373cb91e8754f4",
+    "druid/circulo-mundos": "4 linhas · 839dcdc0b1ce82e78f9f27baf0b9fd10",
+    "druid/circulo-verdejante": "4 linhas · 7b7126fcd0f34604d1271772bcef51ae",
+    "druid/circulo-vida": "4 linhas · 4b5799f243ad07b60676a93abdf79ce6",
+    "fighter/atirador_inigualavel": "5 linhas · c4f61d4a528ef0a6ba13b26b957c35a5",
+    "fighter/campeao": "5 linhas · d58927add9049843b9bdd1732d2d5b60",
+    "fighter/cavaleiro-arcano": "5 linhas · 39e9b4bd3b087374e765b8c7c4e7558d",
+    "fighter/cavaleiro_implacavel": "7 linhas · d955db6494074e4bb4aec6bcb9de69cf",
+    "fighter/defensor_dedicado": "5 linhas · b730cc6ebed5c71875995882e9dd125b",
+    "fighter/kensai": "5 linhas · 11db6e3fab7b310e26554e5bbb36c597",
+    "fighter/mestre-de-batalha": "5 linhas · ca918d3a7eab5e3b9b5f9a929ecb1a9b",
+    "fighter/mestre_arremesso": "6 linhas · 4ec637b40512bf5360753f9e0ffdb184",
+    "fighter/mestre_correntes": "5 linhas · 37c2fa220ccbd310d6060efcfba85800",
+    "monk/caminho_aco": "4 linhas · 280de050ac2304acfa6afcd61a5fd0c3",
+    "monk/caminho_mestre_bebado": "4 linhas · 1d3af2d96b938390ee1c1078d7a3f163",
+    "monk/caminho_monge_tatuado": "5 linhas · 1f99f918de66cff09fbadf2190c48afd",
+    "monk/caminho_ninjuts": "4 linhas · 2fec22e73a16c53ef6b8e6d381cf86ef",
+    "monk/caminho_punho_sagrado": "4 linhas · f075eaf17700739c972aafaac35cc89b",
+    "monk/caminho_sadhaka": "4 linhas · 0a0ae52117fefc18c47ebbe6224a4add",
+    "monk/mao-aberta": "4 linhas · f9c260e8e73c1ed38b7261ad51e7dc87",
+    "monk/quatro-elementos": "5 linhas · 35a0ffb59c24d2fefad8061c73736946",
+    "monk/sombra": "4 linhas · 4df10fe2ad17ff031924203a617b14b4",
+    "paladin/ancients": "4 linhas · 37d0554ff6be50b2a7747d286ce19d10",
+    "paladin/devotion": "4 linhas · 277a992dd182e427e61b4ca43cdfada8",
+    "paladin/juramento-danacao": "4 linhas · 1cca106bc60e423f4207bbfb10b270f9",
+    "paladin/juramento-equilibrio": "4 linhas · a8925378aeca252ee1c958cef75d7916",
+    "paladin/juramento-liberdade": "4 linhas · 034756eb06012da54cb121fe80acc248",
+    "paladin/juramento-misericordia": "4 linhas · f93d9ec964856839618c34e5fdd4ce80",
+    "paladin/juramento-ordenacao": "4 linhas · d76211332f0757f856797e785a1bebcc",
+    "paladin/juramento-pureza": "4 linhas · 6a0bf6f9a065d6a8b52dd80dc3f2391c",
+    "paladin/vengeance": "4 linhas · 4dc2459fa6c621e396acbf5bfc45fe27",
+    "ranger/arqueiro_floresta_alta": "3 linhas · e69812814ac32899a4e1c0e2087670d3",
+    "ranger/batedor": "4 linhas · b98e273ae9902d6e20696d737da3338a",
+    "ranger/beast_master": "6 linhas · 8a692169516935755086d0fc0201005c",
+    "ranger/flagelo-dos-inimigos": "5 linhas · 80164d36e6d05f0ba28e53a3e4d7c957",
+    "ranger/guardiao_selvagem": "4 linhas · 3a89890ea1ec2daa9d4121873852cf1e",
+    "ranger/hunter": "4 linhas · 01b639dc701787cde4cd49459613622b",
+    "ranger/rastreador_urbano": "4 linhas · 9eff8cfbda2645b6fb00d35182cb5faf",
+    "rogue/assassino": "4 linhas · 04aea183bbd1f4fa76f99cf05c259528",
+    "rogue/cacador-de-tesouros": "4 linhas · a86c77b2d22940a137aca0a0dd2a0075",
+    "rogue/dancarino-das-sombras": "4 linhas · cb6891a1b67b793785d178da777d21b9",
+    "rogue/face-fantasmagorica": "4 linhas · 0319b181535f26a72e1f9927456a597f",
+    "rogue/ladrao": "4 linhas · 01761e69e2dc74f4b6479f3fe0d16592",
+    "rogue/lamina-invisivel": "4 linhas · 03d5dcd9d48f05bd344b2988014738ae",
+    "rogue/larapio-de-almas": "4 linhas · 3856195e5eae1a724cd188686ef39345",
+    "rogue/mimetizador": "4 linhas · 7ee1dede5ed133b64c85fc1a5efbfc21",
+    "rogue/trapaceiro-arcano": "4 linhas · ca11211abd664697cf95a387fdd71044",
+    "sorcerer/draconic": "4 linhas · 00bc5d2ea35d787acc3e28a9a1e765d8",
+    "sorcerer/feiticaria-da-espada": "4 linhas · 540ce96eb4bd0c1e66ee34b2e793f94e",
+    "sorcerer/feiticaria-do-sangue": "4 linhas · 045f5af31f440b8645dd80e5c4821eb0",
+    "sorcerer/linhagem-elemental": "4 linhas · 7466d97d9b6b0d91a76342d8078e9ca0",
+    "sorcerer/origem-aberrante": "4 linhas · 8c9322beada649db134c240cf581dc43",
+    "sorcerer/origem-abissal": "4 linhas · 4da4669119123a868deafcf929deb172",
+    "sorcerer/origem-mutavel": "4 linhas · eda60c897dfd9b98e04b377fb9f4e80a",
+    "sorcerer/wild": "4 linhas · d345ba0648a17db2ff8809e681aa7900",
+    "warlock/archfey": "4 linhas · f00a69844c6291c03c26bb708d4c15ed",
+    "warlock/fiend": "4 linhas · 954076686d145b9d31e2db9e72d2c06e",
+    "warlock/great_old_one": "4 linhas · 7b5276eafea49c790e0b3c25fdaf2f14",
+    "warlock/patrono-arcanjo-vingador": "4 linhas · f2139f826518889acdb30fcf6f8d1e56",
+    "warlock/patrono-espirito-heroico": "4 linhas · b4b9404c1cf8caf4ebbe5dee1c2f92c9",
+    "warlock/patrono-morte": "4 linhas · 34a9e5a9d9f6051469f23e81baed3f89",
+    "warlock/patrono-supragenio": "4 linhas · 04b6d0f81bf6224c42218eee08dc6803",
+    "warlock/patrono-tita-caido": "4 linhas · 547e3ae5f4e66b4d2ccb9f8dff6a66b0",
+    "warlock/patrono-vazio": "4 linhas · 624ee731aba674c14d4268d0b6e0be43",
+    "wizard/arquearia-arcana": "4 linhas · ca583742dd091acc39bf24059b1cffaf",
+    "wizard/escola-de-abjuracao": "4 linhas · 64508b9aa4c9ccb45b4106c7ad6a0c0f",
+    "wizard/escola-de-adivinhacao": "4 linhas · d945b5f07b03a44e4df5bb99fc300ea5",
+    "wizard/escola-de-conjuracao": "4 linhas · 4ca35df0fe38dfbf94c70c3fa6fe83ac",
+    "wizard/escola-de-encantamento": "4 linhas · bcae619586b5ab51d2b1134924483e8a",
+    "wizard/escola-de-ilusao": "4 linhas · 406723a9658dd35ccab8eb6451d8c881",
+    "wizard/escola-de-necromancia": "4 linhas · 68b074ce8fbf03f06003f7e46880ce20",
+    "wizard/escola-de-transmutacao": "4 linhas · 9ae48e9bc0ff3ed0bc25286ec5813045",
+    "wizard/evocation": "4 linhas · c88b5e0d49cdd52a5a658bba7549dece",
+    "wizard/iniciacao-demonologia": "4 linhas · 205724b5f0686504e3b65e48fe25b732",
+    "wizard/maestria-alquimica": "4 linhas · 8bfd80ae37882ae137cab9d0e1a850e1",
+    "wizard/maestria-dos-automatos": "4 linhas · 97a416eb9549c7407cb61cf3cb4c7c10",
+    "wizard/navegacao-planar": "4 linhas · 557934a2d89bcd69f8d268c09d0c0d6b",
+    "wizard/teurgia-mistica": "4 linhas · e38a688935e71a5d9f5a85198bf6172e"
+  }
+}

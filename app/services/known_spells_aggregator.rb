@@ -378,7 +378,7 @@ class KnownSpellsAggregator
         begin
           sub = sk.sub_klass
           if !terrain_override_applied && sub&.levels_json.present? && chosen_terrain
-            rows = JSON.parse(sub.levels_json) rescue []
+            rows = sub.linhas_de_nivel
             rows = Array(rows).select { |r| r.is_a?(Hash) && (r['level'].to_i <= lvl) }
             names = []
             rows.each do |r|
@@ -415,9 +415,10 @@ class KnownSpellsAggregator
         # - always_prepared_by_terrain (quando chosen_terrain estiver presente)
         begin
           next unless sk.sub_klass && sk.sub_klass.api_index.present?
-          ypath = Rails.root.join('config','subclass_overrides.yml')
-          if File.exist?(ypath)
-            yml = YAML.load_file(ypath) || {}
+          # ⚠️ Era `YAML.load_file` por ficha E por classe da ficha: ~5900 linhas
+          # relidas do disco a cada montagem de magias conhecidas.
+          yml = Subclasses::OverridesYaml.dados
+          if yml.present?
             cls_key = sk.klass.api_index.to_s
             sub_key = sk.sub_klass.api_index.to_s
             ent = yml.dig(cls_key, sub_key)

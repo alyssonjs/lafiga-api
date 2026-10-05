@@ -37,7 +37,7 @@ namespace :dnd do
         puts "  ⚠️  #{target[:klass]}/#{target[:sub_api]}: AUSENTE — precisa criar"
       elsif sub.name != target[:sub_name]
         puts "  ⚠️  #{target[:klass]}/#{target[:sub_api]}: nome '#{sub.name}' (esperado '#{target[:sub_name]}')"
-      elsif sub.levels_json.blank? || sub.levels_json == '[]'
+      elsif sub.levels_json.blank?
         puts "  ⚠️  #{target[:klass]}/#{target[:sub_api]}: sem levels_json (rode apply_subclass_overrides)"
       else
         puts "  ✅ #{target[:klass]}/#{target[:sub_api]}: '#{sub.name}' OK"

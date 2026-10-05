@@ -37,7 +37,8 @@ class EquipmentProfileService
     # Mapa slot → SheetItem para todos os accessory slots equipados.
     # Inclui ring_left/ring_right (até 2 anéis), amulet, cloak, boots,
     # helmet (cabeça), face (rosto), gloves, belt, earrings, braceletes. Usado por MagicItemRules para varrer efeitos.
-    accessory_slots = SheetItem::ACCESSORY_SLOTS
+    # e as PEÇAS DE ARMADURA (04/10): o elmo mágico vale como o chapéu mágico
+    accessory_slots = SheetItem::ACCESSORY_SLOTS + SheetItem::ARMOR_PIECE_SLOTS
     accessories = accessory_slots.each_with_object({}) do |slot_name, acc|
       it = equipped.find { |e| e.slot.to_s == slot_name }
       acc[slot_name.to_sym] = it if it
@@ -171,6 +172,9 @@ class EquipmentProfileService
     escudo = it.item if it.item&.shield?
     escudo ||= Item.find_by(api_index: it.item_index) if it.slot.to_s == 'shield' && it.item_index.present?
     linha[:shield_ac_bonus] = ItemArmorPropsMapper.shield_bonus_from_item(escudo) if escudo&.shield?
+    # Peças do personagem LPC declaradas no catálogo (02/10) — o mesmo campo do `SheetItem#as_inventory_json`.
+    pecas = EquipmentRules.lpc_pecas(it)
+    linha[:lpc_pecas] = pecas if pecas
     linha
   end
 

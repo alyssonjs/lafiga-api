@@ -598,7 +598,7 @@ namespace :dnd do
 
         # Populate normalized SubKlassLevels + features linkage (idempotent)
         begin
-          parsed = JSON.parse(sub.levels_json) rescue []
+          parsed = sub.linhas_de_nivel
           parsed.each do |row|
             lvl = sub.sub_klass_levels.find_or_create_by!(level: row['level'].to_i)
             Array(row['features']).each do |f|
@@ -743,12 +743,7 @@ namespace :dnd do
     puts "-" * 72
     missing = []
     SubKlass.includes(:klass).order('klasses.name asc, sub_klasses.name asc').find_each do |s|
-      level_count = begin
-        lj = s.levels_json.to_s
-        lj.present? ? (JSON.parse(lj) rescue []).size : 0
-      rescue
-        0
-      end
+      level_count = s.linhas_de_nivel.size
       has_desc = s.description.present? ? 1 : 0
       row = [s.id, s.klass&.name || '-', s.api_index || '-', s.name || '-', has_desc, level_count]
       puts row.join(" | ")
@@ -759,7 +754,9 @@ namespace :dnd do
 
   desc "Remove SubKlasses legadas sem api_index e sem dados (não referenciadas)"
   task cleanup_subclasses_legacy: :environment do
-    doomed = SubKlass.where("(api_index IS NULL OR api_index = '' OR api_index = '-') AND (COALESCE(description,'') = '' OR COALESCE(levels_json,'') = '')")
+    # ⚠️ `levels_json` é jsonb: `COALESCE(levels_json,'')` levantaria
+    # "invalid input syntax for type json" — comparar com o literal tipado.
+    doomed = SubKlass.where("(api_index IS NULL OR api_index = '' OR api_index = '-') AND (COALESCE(description,'') = '' OR levels_json IS NULL OR levels_json = '[]'::jsonb)")
     doomed = doomed.left_joins(:klass).left_joins("LEFT JOIN sheet_klasses sk ON sk.sub_klass_id = sub_klasses.id")
     doomed = doomed.where("sk.id IS NULL") # não remover se houver referência em sheet_klasses
     count = doomed.count

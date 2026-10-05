@@ -1065,7 +1065,7 @@ class CharacterSheetSummaryService
       # ficavam só no JSON e não apareciam em proficiencies.tools na ficha.
       sk = primary_sheet_klass
       if sk&.sub_klass && sk.sub_klass.levels_json.present?
-        rows = JSON.parse(sk.sub_klass.levels_json) rescue []
+        rows = subklass_levels_json(sk.sub_klass)
         lvl = sk.level.to_i
         Array(rows).each do |row|
           rlevel = (row.is_a?(Hash) ? (row['level'] || row[:level]) : 0).to_i
@@ -1508,13 +1508,42 @@ class CharacterSheetSummaryService
     main_hand_weapon && off_hand_weapon
   end
 
+  # A lista branca existe para um snapshot velho não mostrar traço de uma raça
+  # que o personagem já não é.
+  #
+  # ⚠️ Só as linhas `race_traits` não bastam: um traço PRÓPRIO criado no editor
+  # de raças vive em `rules_json` e não tem linha nenhuma na tabela. A ficha
+  # passava a ter a resistência dele em combate (o `RaceProducer` lê a regra ao
+  # vivo) e a lista de traços não mencionava porquê — a ficha contradizia-se.
+  # Por isso a lista branca é a UNIÃO: as linhas mais o que a regra canônica
+  # concede.
   def allowed_trait_names_for_sheet(sheet)
     allowed = Set.new
     (sheet.race&.base_traits&.to_a || []).each { |tr| allowed.add(tr.name.to_s.downcase.strip) }
     if sheet.sub_race_id.present?
       (sheet.sub_race&.traits&.to_a || []).each { |tr| allowed.add(tr.name.to_s.downcase.strip) }
     end
+    allowed.merge(rule_trait_names_for_sheet(sheet))
     allowed
+  end
+
+  # Nomes dos traços que `RaceRules.apply` concede a esta raça/sub-raça.
+  # Silencioso por desenho: sem regra (raça só no banco, YAML indisponível) a
+  # lista branca volta a ser só a das linhas, que é o comportamento de antes.
+  def rule_trait_names_for_sheet(sheet)
+    slug = sheet.race&.api_index
+    return [] if slug.blank?
+
+    regra = RaceRules.apply(race_id: slug, subrace_id: sheet.sub_race&.api_index, choices: {})
+    defs = RaceRules.trait_definitions || {}
+    Array(regra[:traits]).filter_map do |ref|
+      chave = (ref.is_a?(Hash) ? ref[:key] : ref).to_s
+      d = defs[chave.to_sym] || defs[chave]
+      (d && (d[:name] || d['name']).to_s.downcase.strip).presence
+    end
+  rescue StandardError => e
+    Rails.logger.warn("allowed_trait_names_for_sheet: #{e.class}: #{e.message}") if defined?(Rails.logger)
+    []
   end
 
   def build_traits(sheet)
@@ -1810,21 +1839,10 @@ class CharacterSheetSummaryService
     end
 
     # Rage (Bárbaro) — PHB pg. 49
-    if api_idx.include?('barbar')
-      total = case
-              when level >= 20 then 999 # ilimitada
-              when level >= 17 then 6
-              when level >= 12 then 5
-              when level >= 6  then 4
-              when level >= 3  then 3
-              else 2
-              end
-      damage = case
-               when level >= 16 then 4
-               when level >= 9  then 3
-               else 2
-               end
-      out[:rage] = { total: total, used: [used_for.call('rage'), total].min, damage_bonus: damage }
+    if (escada = ClassRules.escada_de_recurso(klass.api_index, :rage, level))
+      total = escada[:total]
+      out[:rage] = { total: total, used: [used_for.call('rage'), total].min,
+                     damage_bonus: escada[:damage_bonus] }
     end
 
     # Ki (Monge) — PHB pg. 78: 0@1, começa no nv 2 (total = nível de monge)
@@ -1834,31 +1852,24 @@ class CharacterSheetSummaryService
     end
 
     # Wild Shape (Druida) — usos por descanso curto: 2 (3 desde nv 20)
-    if api_idx.include?('druid')
-      total = level >= 20 ? 999 : 2
+    if (escada = ClassRules.escada_de_recurso(klass.api_index, :wild_shape, level))
+      total = escada[:total]
       out[:wild_shape] = { total: total, used: [used_for.call('wild_shape'), total].min }
     end
 
     # Channel Divinity (Clérigo/Paladino)
-    if api_idx.include?('cleric') || api_idx == 'clerigo' || api_idx.include?('paladin')
-      total = case
-              when level >= 18 then 3
-              when level >= 6  then 2
-              else 1
-              end
+    if (escada = ClassRules.escada_de_recurso(klass.api_index, :channel_divinity, level))
+      total = escada[:total]
       out[:channel_divinity] = { total: total, used: [used_for.call('channel_divinity'), total].min }
     end
 
     # Action Surge + Second Wind + Indomitable (Guerreiro)
-    if api_idx.include?('fighter') || api_idx == 'guerreiro'
-      total = level >= 17 ? 2 : 1
-      out[:action_surge] = { total: total, used: [used_for.call('action_surge'), total].min }
-      out[:second_wind]  = { total: 1, used: [used_for.call('second_wind'), 1].min }
+    %i[action_surge second_wind indomitable].each do |chave|
+      escada = ClassRules.escada_de_recurso(klass.api_index, chave, level)
+      next if escada.nil?
 
-      if level >= 9
-        ind_total = level >= 17 ? 3 : (level >= 13 ? 2 : 1)
-        out[:indomitable] = { total: ind_total, used: [used_for.call('indomitable'), ind_total].min }
-      end
+      total = escada[:total]
+      out[chave] = { total: total, used: [used_for.call(chave.to_s), total].min }
     end
 
     # Divine Sense + Lay on Hands (Paladino)
