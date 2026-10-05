@@ -437,7 +437,8 @@ weapons:
     hands: 1
     damage_die: 1d6
     properties: [ammunition, light, loading]
-    ammunition_index: virote
+    # 05/10 (a mesa: "cada tipo de besta tem seu tipo específico de virote")
+    ammunition_index: virote-de-besta-de-mao
     range: 30/120
     weight_kg: 1.5
     cost_cp: 7500
@@ -451,7 +452,7 @@ weapons:
     hands: 2
     damage_die: 1d10
     properties: [ammunition, heavy, loading, two-handed]
-    ammunition_index: virote
+    ammunition_index: virote-de-besta-pesada
     range: 100/400
     weight_kg: 4.5
     cost_cp: 5000
@@ -465,7 +466,8 @@ weapons:
     hands: 2
     damage_die: 1d8
     properties: [ammunition, heavy, two-handed]
-    ammunition_index: flecha
+    # 05/10 (a mesa: "o mesmo também deve servir para arcos"): cada arco puxa a flecha dele
+    ammunition_index: flecha-de-arco-longo
     range: 150/600
     weight_kg: 1.5
     cost_cp: 5000
@@ -650,7 +652,8 @@ gear:
     cost: { amount: 1, unit: po }
     props:
       equipment_slot: quiver
-      ammunition_types: [flecha, virote]
+      # 05/10: cada arco/besta tem a munição dele (`ammunition_index`); o recipiente aceita todas
+      ammunition_types: [flecha, flecha-de-arco-longo, virote, virote-de-besta-de-mao, virote-de-besta-pesada]
 
   bolsa-de-componentes:
     name: Bolsa de Componentes
@@ -668,6 +671,17 @@ gear:
     category: ammunition
     weight_kg: 0.02
     cost_cp: 5
+    notes: "Munição do arco curto."
+
+  # 05/10 (a mesa, depois dos virotes: "o mesmo também deve servir para arcos"): a flecha do arco longo é maior.
+  flecha-de-arco-longo:
+    name: Flecha de Arco Longo
+    aliases: [longbow-arrow]
+    kind: ammunition
+    category: ammunition
+    weight_kg: 0.02
+    cost_cp: 5
+    notes: "Munição do arco longo."
 
   virote:
     name: Virote de Besta
@@ -676,6 +690,27 @@ gear:
     category: ammunition
     weight_kg: 0.04
     cost_cp: 5
+    notes: "Munição da besta leve."
+
+  # 05/10 (a mesa: "cada tipo de besta tem seu tipo específico de virote"): um virote por besta. Peso e custo iguais aos
+  # do virote comum — a mesa ajusta no editor se quiser diferenciar.
+  virote-de-besta-de-mao:
+    name: Virote de Besta de Mão
+    aliases: [hand-crossbow-bolt]
+    kind: ammunition
+    category: ammunition
+    weight_kg: 0.04
+    cost_cp: 5
+    notes: "Munição da besta de mão."
+
+  virote-de-besta-pesada:
+    name: Virote de Besta Pesada
+    aliases: [heavy-crossbow-bolt]
+    kind: ammunition
+    category: ammunition
+    weight_kg: 0.04
+    cost_cp: 5
+    notes: "Munição da besta pesada."
 
   # Munição SRD usada por funda / zarabatana (slugs referenciados em props.ammunition_index do rake).
   pedra-de-funda:
