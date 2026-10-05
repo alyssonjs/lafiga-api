@@ -185,6 +185,12 @@ class Schedule < ApplicationRecord
 
   # Sessões cronologicamente ordenadas (ASC) — usado pela timeline da campanha.
   scope :chronological, -> { joins(:date_dimension).order('date_dimensions.date ASC, schedules.scheduled_time ASC NULLS LAST') }
+  # O INVERSO exato da `chronological` (a sessão sem horário conta como o fim do dia, como na timeline), com o id de
+  # desempate — para pegar a ÚLTIMA com `.first`. ⚠️ `.chronological.last` dá 500: o Rails não inverte `NULLS LAST`
+  # sozinho (ActiveRecord::IrreversibleOrderError — o "Onde paramos" e a timeline caíam em prod, 05/10).
+  scope :reverse_chronological, lambda {
+    joins(:date_dimension).order(Arel.sql('date_dimensions.date DESC, schedules.scheduled_time DESC NULLS FIRST, schedules.id DESC'))
+  }
   scope :active,        -> { where.not(status: :cancelled) }
   # Sessões que ocupam o "slot único" de agendamento. Sandbox (teste do DM) NÃO
   # bloqueia a agenda real, por isso o `.non_sandbox`.

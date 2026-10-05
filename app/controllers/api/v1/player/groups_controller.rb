@@ -74,7 +74,7 @@ class Api::V1::Player::GroupsController < ApplicationController
 
     notes = @group.campaign_notes.visible_to(@current_user).pinned_first.limit(50)
 
-    last = @group.schedules.concluded.chronological.last
+    last = @group.schedules.concluded.reverse_chronological.first
     render json: {
       group: GroupSerializer.serialize(@group),
       schedules: ScheduleSerializer.serialize_collection(schedules, viewer: @current_user),
@@ -127,7 +127,7 @@ class Api::V1::Player::GroupsController < ApplicationController
   # o último recap concluído (ou em andamento) e as notas pinned, em payload
   # enxuto para popular o modal de criação.
   def last_session
-    last = @group.schedules.where(status: [:completed, :in_progress]).chronological.last
+    last = @group.schedules.where(status: [:completed, :in_progress]).reverse_chronological.first
 
     render json: {
       last_session: last&.recap_payload,
