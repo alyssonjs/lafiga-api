@@ -363,6 +363,19 @@ RSpec.describe 'Api::V1::Player::CharacterDraftsController', type: :request do
       expect(foreign_character.reload.draft_data['name']).to eq('Editado pelo Mestre')
     end
 
+    # 06/10: o botao "Editar avatar" do hub passou a aparecer para o Mestre tambem — ele grava pelo MESMO endpoint do
+    # jogador (`updateCharacterAvatar`, step `avatar`), entao o escopo do DM tem de valer tambem para esse passo.
+    it 'allows DM to PATCH the AVATAR of another player character' do
+      patch "/api/v1/player/character_drafts/#{foreign_character.id}",
+            params: { step: 'avatar', data: { avatarCustomization: { 'skinColor' => '#C49A6C', 'lpc' => { 'v' => 1 } } } }.to_json,
+            headers: bearer_headers_for(dm_user).merge('Content-Type' => 'application/json')
+
+      expect(response).to have_http_status(:ok)
+      gravado = foreign_character.reload.draft_data['avatarCustomization']
+      expect(gravado['skinColor']).to eq('#C49A6C')
+      expect(gravado['lpc']).to eq({ 'v' => 1 })
+    end
+
     it 'still returns 404 to a non-DM player accessing someone else\'s draft' do
       get "/api/v1/player/character_drafts/#{foreign_character.id}",
           params: { step: 'general' },
