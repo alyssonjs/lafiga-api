@@ -43,6 +43,8 @@ Rails.application.routes.draw do
         end
         get 'dm_user_picker', to: 'dm_user_picker#index'
         resources :dm_users, only: %i[index show create update] do
+          # Os papéis que o Mestre pode atribuir (lista branca, sem os legados).
+          collection { get :roles }
           member do
             post :reset_password
           end

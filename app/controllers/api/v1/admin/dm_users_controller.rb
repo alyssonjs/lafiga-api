@@ -10,6 +10,21 @@ module Api
       class DmUsersController < ApplicationController
         DEFAULT_END_USER_PLAINTEXT = 'password'
 
+        # Papéis que o Mestre pode ATRIBUIR nesta tela, na ordem em que o
+        # seletor os mostra. Lista branca, e não `Role.all`, porque o banco
+        # ainda guarda os legados (`Admin`, `User`, `Guest`) que ninguém deve
+        # voltar a distribuir — `Admin` é alias de DM e os outros dois não têm
+        # significado nenhum no produto de hoje.
+        ASSIGNABLE_ROLE_NAMES = %w[DM Editor Player].freeze
+
+        # O que cada papel é, em português, para o seletor explicar a escolha
+        # em vez de só mostrar a sigla.
+        ROLE_DESCRIPTIONS = {
+          'DM'     => 'Mestra o site todo: combate, NPCs, catálogo, utilizadores.',
+          'Editor' => 'Redige a wiki e as páginas do site. Não mestra nem vê combate.',
+          'Player' => 'Joga: cria personagens, entra em grupos e sessões.'
+        }.freeze
+
         before_action :authorize_site_wide_dm
         before_action :set_user, only: %i[show update reset_password]
 
@@ -60,7 +75,25 @@ module Api
           render json: { user: user_payload(@user, include_characters: true) }, status: :ok
         end
 
+        # GET /api/v1/admin/dm_users/roles
+        # Os papéis atribuíveis, para o seletor da tela. Existe aqui, e não no
+        # `RolesController`, porque aquele exige `role.name == "Admin"` — e não
+        # há um único Admin em produção, então o endpoint nunca responde a
+        # ninguém. Este segue o portão do resto da tela (`authorize_site_wide_dm`).
+        def roles
+          papeis = Role.where(name: ASSIGNABLE_ROLE_NAMES)
+                       .sort_by { |r| ASSIGNABLE_ROLE_NAMES.index(r.name) }
+                       .map { |r| { id: r.id, name: r.name, description: ROLE_DESCRIPTIONS[r.name] } }
+
+          render json: { roles: papeis, meta: { total: papeis.length } }, status: :ok
+        end
+
         def update
+          papel = papel_pedido
+          return if performed?
+
+          @user.role = papel if papel
+
           if @user.update(dm_user_params)
             render json: { user: user_payload(@user.reload, include_characters: true) }, status: :ok
           else
@@ -113,6 +146,34 @@ module Api
 
         def dm_user_params
           params.require(:user).permit(:name, :email)
+        end
+
+        # O papel pedido no PATCH, já validado. `nil` quando a chamada não
+        # mexe em papel (editar nome/email continua sendo o caso comum).
+        #
+        # Duas recusas, e as duas importam:
+        #   1. Papel fora da lista branca — ninguém volta a distribuir `Guest`
+        #      nem o `Admin` legado por um PATCH à mão.
+        #   2. ⚠️ Mudar o PRÓPRIO papel. O Mestre que se rebaixasse perdia o
+        #      acesso a esta tela no mesmo instante e não teria por onde
+        #      desfazer — e, se fosse o último, ninguém teria. Trocar de papel
+        #      é sempre sobre OUTRA pessoa.
+        def papel_pedido
+          id = params.dig(:user, :role_id)
+          return nil if id.blank?
+
+          if @user.id == @current_user.id
+            render json: { errors: ['Não dá para mudar o seu próprio papel — peça a outro Mestre.'] },
+                   status: :unprocessable_entity
+            return nil
+          end
+
+          papel = Role.where(name: ASSIGNABLE_ROLE_NAMES).find_by(id: id)
+          return papel if papel
+
+          render json: { errors: ["Papel inválido. Permitidos: #{ASSIGNABLE_ROLE_NAMES.join(', ')}."] },
+                 status: :unprocessable_entity
+          nil
         end
 
         def dm_create_params
