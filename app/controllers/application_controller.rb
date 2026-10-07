@@ -47,6 +47,30 @@ class ApplicationController < ActionController::API
       render json: { error: 'Access denied. DM or Admin only.' }, status: 403
     end
 
+    # REDATOR do site — Mestre ou Editor (`User#may_edit_content?`).
+    #
+    # ⚠️ Portão SEPARADO do `authorize_site_wide_dm` de propósito, e é a razão
+    # de existir. Aquele vale para 38 controllers: combate, NPCs, usuários,
+    # catálogo, fichas alheias. Pôr o Editor lá dentro — um nome a mais no
+    # `Group.user_is_dm?` — era uma linha só, e entregava a mesa inteira a quem
+    # foi convidado para corrigir um texto. Quem redige texto só precisa de
+    # texto, então este portão guarda SÓ a wiki e as páginas institucionais.
+    #
+    # O Editor continua REPROVADO em `authorize_site_wide_dm`, porque
+    # `Group.user_is_dm?` só aceita `DM`/`Admin` — o spec de autorização prova
+    # os dois sentidos.
+    def authorize_content_editor
+      @current_user = ApiRequestAuth.call(request.headers).result
+      unless @current_user
+        render json: { error: 'Access deneid! Please, sign in to update your credentials.' }, status: 401
+        return
+      end
+
+      return if @current_user.may_edit_content?
+
+      render json: { error: 'Access denied. Editor or DM only.' }, status: 403
+    end
+
     # Dono do personagem da ficha ou Mestre (DM/Admin do site) — mesmo critério de
     # SheetsController#sheets_scope_for_current_user e GET/PATCH em sheets alheias.
     def current_user_may_access_sheet?(sheet)

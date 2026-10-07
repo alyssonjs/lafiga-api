@@ -35,6 +35,21 @@ class User < ApplicationRecord
 
     belongs_to :role
 
+    # Papéis que podem REDIGIR o conteúdo editorial do site — a wiki e as
+    # páginas institucionais (Quem Somos, O que é Lafiga, House Rules).
+    #
+    # `Editor` (07/10/2026) é o papel novo: redige texto e NADA mais. Não entra
+    # em `Group.user_is_dm?`, então segue sem combate, sem NPCs, sem usuários,
+    # sem catálogo e sem ficha alheia — ver `authorize_content_editor`.
+    # DM e Admin entram por herança: quem manda na mesa também escreve.
+    CONTENT_EDITOR_ROLES = %w[DM Admin Editor].freeze
+
+    def may_edit_content?
+      return false unless role
+
+      CONTENT_EDITOR_ROLES.include?(role.name)
+    end
+
     before_save :mark_password_changed_at, if: :will_save_change_to_password_digest?
 
     # DM: custom XP thresholds (levels 2–20) for progression UI; see DmProgressionSettingsMerge.

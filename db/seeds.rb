@@ -99,6 +99,9 @@ end
 
 puts 'Criando perfis e usuários base…'
 # Roles do produto:
+#   - Editor => redator. Reescreve, cria e apaga ARTIGO da wiki e edita as
+#               páginas institucionais. NÃO mestra, não vê combate, não mexe em
+#               usuários nem no catálogo. As SEÇÕES da sidebar seguem do DM.
 #   - DM     => admin do site todo. Mestra qualquer grupo/sessão. Único papel
 #               com permissão para mutar estado de combate, NPCs, session_logs
 #               e configurações globais.
@@ -111,6 +114,10 @@ puts 'Criando perfis e usuários base…'
 roles = [
   { name: 'DM',     permissions: %w[manage_users manage_groups manage_sessions manage_combat manage_catalog view_reports] },
   { name: 'Player', permissions: %w[view_groups view_characters create_character join_session] },
+  # Editor (07/10/2026): redige a wiki e as páginas institucionais, e NADA
+  # mais. Fora de `Group.user_is_dm?` de propósito — sem combate, NPCs,
+  # usuários, catálogo ou ficha alheia. Ver `User::CONTENT_EDITOR_ROLES`.
+  { name: 'Editor', permissions: %w[edit_wiki edit_site_pages] },
   { name: 'Admin',  permissions: %w[manage_users manage_groups view_reports] },  # legado — alias de DM
   { name: 'User',   permissions: %w[view_groups view_characters] },               # legado — alias de Player
   { name: 'Guest',  permissions: [] }

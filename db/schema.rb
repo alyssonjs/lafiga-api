@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_10_05_180000) do
+ActiveRecord::Schema.define(version: 2026_10_07_120000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1097,6 +1097,17 @@ ActiveRecord::Schema.define(version: 2026_10_05_180000) do
     t.index ["api_index"], name: "index_weapons_on_api_index", unique: true
     t.index ["category"], name: "index_weapons_on_category"
     t.index ["range_type"], name: "index_weapons_on_range_type"
+  end
+
+  create_table "wiki_articles", force: :cascade do |t|
+    t.string "section", null: false
+    t.string "slug", null: false
+    t.jsonb "data", default: {}, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["section", "position"], name: "index_wiki_articles_on_section_and_position"
+    t.index ["section", "slug"], name: "index_wiki_articles_on_section_and_slug", unique: true
   end
 
   create_table "wiki_sections", force: :cascade do |t|

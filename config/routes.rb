@@ -157,6 +157,9 @@ Rails.application.routes.draw do
             post :reorder
           end
         end
+        # O texto da wiki (o lápis). `:id` é o SLUG do artigo e `section` viaja
+        # junto — o front nunca conheceu a chave primária. Mestre OU Editor.
+        resources :wiki_articles, only: %i[create update destroy]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
           member do
             get :summary
@@ -472,6 +475,9 @@ Rails.application.routes.draw do
         post 'backgrounds/apply', to: 'backgrounds#apply'
         resources :alignments, only: [:index, :show]
         resources :wiki_sections, only: [:index]
+        # O TEXTO da wiki. Leitura aberta como a sidebar: o lore já aparecia
+        # para visitante deslogado quando vinha hardcoded do front.
+        resources :wiki_articles, only: [:index]
         resources :feats, only: [:index, :show]
         resources :skills, only: [:index, :show]
         resources :saving_throws, only: [:index, :show]

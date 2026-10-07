@@ -1,0 +1,1292 @@
+# Conteúdo INICIAL da wiki — o texto que até 07/10/2026 vivia escrito à mão
+# em cada página do front (`const SEED` em `WikiGods.tsx` e irmãs).
+#
+# Extraído de lá UMA vez e semeado por `rake wiki:semear_artigos`. Daqui em
+# diante a fonte é o BANCO: quem reescreve é o Mestre ou o Editor, pelo lápis.
+# Este arquivo é o ponto de partida, não o espelho — a rake é idempotente e
+# NUNCA sobrescreve artigo que já existe, para não desfazer o que a mesa
+# escreveu.
+#
+# Formato: <slug da seção> => lista de artigos; cada artigo é o registro
+# inteiro que a página desenha, com `id` como slug.
+---
+planes:
+- id: pl-01
+  name: Plano Material
+  alias: O Mundo Mortal
+  description: O plano central onde se desenrola a maior parte das aventuras. Lafiga,
+    os seus reinos, cidades e masmorras existem aqui.
+  longDescription: O Plano Material e o eixo em torno do qual todos os outros planos
+    orbitam. E um mundo de contrastes — florestas antigas, desertos impiedosos, montanhas
+    que tocam as nuvens e oceanos sem fim. A magia flui naturalmente, mas nao domina.
+    Os mortais — humanos, elfos, anoes, halflings e dezenas de outras racas — constroem
+    civilizacoes, guerreiam e sonham. E aqui que os deuses Lafigardianos projectam
+    a sua influencia, e e aqui que os herois nascem.
+  inhabitants:
+  - Humanos
+  - Elfos
+  - Anoes
+  - Halflings
+  - Draconatos
+  - Tieflings
+  - Gnomes
+  - Meia-Elfos
+  - Meia-Orcs
+  dangers:
+  - Guerras entre reinos
+  - Masmorras ancestrais
+  - Dragoes territoriais
+  - Cultos sombrios
+  traits:
+  - Magia natural
+  - Gravidade normal
+  - Tempo linear
+  image: https://images.unsplash.com/photo-1596968654418-7973f1d59632?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhdXR1bW4lMjBmb3Jlc3QlMjBmYWlyeSUyMGVuY2hhbnRlZCUyMHN1bmxpZ2h0fGVufDF8fHx8MTc3MzE1ODM5NHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral
+  accentColor: var(--lf-success)
+- id: pl-02
+  name: Feywild
+  alias: O Plano Feerico
+  description: Uma versao exuberante e magica do Plano Material. As emocoes sao amplificadas,
+    o tempo passa de forma imprevisivel e as criaturas feylidas governam cortes caprichosas.
+  longDescription: 'O Feywild e um reflexo distorcido do Plano Material — mais brilhante,
+    mais vibrante, mais perigoso. Florestas crescem ate alturas impossiveis, flores
+    brilham com luz propria e rios cantam melodias encantadas. E governado pelas Cortes
+    — a Corte do Verao (Titania) e a Corte do Inverno (a Rainha das Neves). O tempo
+    no Feywild e traicoeiro: um dia aqui pode ser um seculo no Plano Material, ou
+    vice-versa. Os viajantes regressam mudados, enfeiticados ou simplesmente... nao
+    regressam.'
+  inhabitants:
+  - Eladrin
+  - Fadas
+  - Satiros
+  - Dríades
+  - Hags (parte)
+  - Centauros feericos
+  - Archfey
+  dangers:
+  - Perda de tempo
+  - Encantamentos involuntarios
+  - Contratos feericos
+  - Caprichos dos Archfey
+  traits:
+  - Magia amplificada
+  - Tempo instavel
+  - Emocoes intensificadas
+  image: https://images.unsplash.com/photo-1596968654418-7973f1d59632?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhdXR1bW4lMjBmb3Jlc3QlMjBmYWlyeSUyMGVuY2hhbnRlZCUyMHN1bmxpZ2h0fGVufDF8fHx8MTc3MzE1ODM5NHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral
+  accentColor: var(--lf-success)
+- id: pl-03
+  name: Shadowfell
+  alias: O Plano das Sombras
+  description: O reflexo sombrio do Plano Material. Um mundo de escuridao, melancolia
+    e morte. A cor e a esperanca sao sugadas pela propria realidade.
+  longDescription: O Shadowfell e o eco escuro do mundo — tudo aqui e mais cinzento,
+    mais frio, mais morto. Ruinas de cidades que existem no Material erguem-se como
+    esqueletos de pedra. A luz e fraca e difusa, como um eterno crepusculo. A emocao
+    dominante e o desespero; viajantes prolongados podem cair em apatia profunda.
+    E o lar dos mortos-vivos, dos shadar-kai (servos da Rainha Corvo) e da propria
+    Rainha Corvo, divindade da morte e do destino. Em Lafiga, o Shadowfell e onde
+    as almas transitam antes de chegar ao dominio do deus que serviram.
+  inhabitants:
+  - Shadar-kai
+  - Mortos-vivos
+  - Sombras
+  - Espectros
+  - Vampiros
+  - A Rainha Corvo (divindade)
+  dangers:
+  - Desespero sobrenatural
+  - Mortos-vivos errantes
+  - Perda de vitalidade
+  - Domínios do Medo
+  traits:
+  - Luz reduzida
+  - Emocoes suprimidas
+  - Necromancia amplificada
+  image: https://images.unsplash.com/photo-1576095318448-5a3dc29d535a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaGFkb3clMjBkYXJrJTIwbWlzdCUyMGVlcmllJTIwY2VtZXRlcnl8ZW58MXx8fHwxNzczMTU4MzkzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral
+  accentColor: var(--lf-text-subtle)
+- id: pl-04
+  name: Planos Elementais
+  alias: Os Quatro Reinos
+  description: Quatro planos de pura energia elemental — Fogo, Agua, Terra e Ar. Na
+    fronteira entre eles existe o Caos Elemental.
+  longDescription: Os Planos Elementais sao reinos de materia pura. O Plano do Fogo
+    e um inferno de lavas e chamas eternas, governado por efreets; o da Agua e um
+    oceano infinito sem superficie, lar dos marid; o da Terra e um labirinto de cavernas
+    e cristais, dominio dos dao; e o do Ar e um ceu sem fim de tempestades e serenidade,
+    governado pelos djinn. Na interseccao caótica dos quatro existe o Caos Elemental,
+    onde materia e energia colidem sem logica. Elementais de todas as formas nascem
+    e morrem aqui num ciclo eterno.
+  inhabitants:
+  - Efreets
+  - Marid
+  - Dao
+  - Djinn
+  - Elementais
+  - Genasi (originarios)
+  - Mephits
+  dangers:
+  - Ambiente letal
+  - Elementais hostis
+  - Caos Elemental
+  - Falta de ar/chao/estabilidade
+  traits:
+  - Materia elemental pura
+  - Sem ciclo dia/noite
+  - Magia elemental amplificada
+  image: https://images.unsplash.com/photo-1760367112859-f595cd20e2a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2b2xjYW5pYyUyMGxhbmRzY2FwZSUyMGZpcmUlMjBsYXZhfGVufDF8fHx8MTc3MzE1ODM4OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral
+  accentColor: var(--lf-orange)
+- id: pl-05
+  name: Plano Astral
+  alias: O Mar Prateado
+  description: Um vazio infinito de luz prateada que conecta todos os planos. Corpos
+    astrais de viajantes flutuam entre ilhas de realidade.
+  longDescription: O Plano Astral e o "entre" — o tecido que liga todos os planos
+    de existencia. E um vazio infinito de luz prateada e suave, sem gravidade, sem
+    fome, sem envelhecimento. Viajantes flutuam como pensamentos, movendo-se pela
+    forca da vontade. Aqui encontram-se os restos de deuses mortos — corpos titanicos
+    que flutuam como ilhas de materia, colonizados por criaturas oportunistas. Os
+    githyanki construiram o seu imperio neste plano, usando navios astrais para raiar
+    planetas inteiros. Em Lafiga, o Plano Astral e onde os Asthrsherans meditam entre
+    intervencoes.
+  inhabitants:
+  - Githyanki
+  - Corpos de deuses mortos
+  - Asthrsherans (em transito)
+  - Couatls astrais
+  dangers:
+  - Githyanki hostis
+  - Perda de orientacao
+  - Turbulencias planares
+  - Criaturas psíquicas
+  traits:
+  - Sem gravidade
+  - Tempo parado
+  - Movimento por vontade
+  - Conexao a todos os planos
+  image: https://images.unsplash.com/photo-1708559831534-44c30eb3ab0e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYW50YXN5JTIwY29zbWljJTIwbmVidWxhJTIwZXRoZXJlYWx8ZW58MXx8fHwxNzczMTU4Mzg0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral
+  accentColor: var(--lf-info-blue)
+- id: pl-06
+  name: Plano Etereo
+  alias: O Veu Nebuloso
+  description: Uma dimensao sobreposta ao Material. Criaturas etereas podem ver o
+    mundo real como formas nebulosas, mas nao podem ser vistas.
+  longDescription: O Plano Etereo existe como uma camada sobreposta ao Plano Material
+    e aos planos interiores. Quem entra no Etereo ve o mundo real como formas nebulosas
+    e difusas — como olhar atraves de vidro embaciado. E possivel mover-se atraves
+    de paredes e objectos solidos, mas nao interagir com eles. O Etereo Profundo e
+    uma zona de nevoeiro denso onde se perdem viajantes — e onde residem criaturas
+    como fantasmas, naga etereos e os temidos devourers. Em Lafiga, o Plano Etereo
+    e o caminho preferido dos espiritos antes de chegarem ao Shadowfell.
+  inhabitants:
+  - Fantasmas
+  - Naga etereos
+  - Phase spiders
+  - Criaturas em transicao
+  dangers:
+  - Desorientacao
+  - Criaturas invisíveis
+  - Etereo Profundo
+  - Armadilhas planares
+  traits:
+  - Sobreposicao ao Material
+  - Movimento atraves de solidos
+  - Invisibilidade para mortais
+  image: https://images.unsplash.com/photo-1708559831534-44c30eb3ab0e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYW50YXN5JTIwY29zbWljJTIwbmVidWxhJTIwZXRoZXJlYWx8ZW58MXx8fHwxNzczMTU4Mzg0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral
+  accentColor: var(--lf-arcane)
+- id: pl-07
+  name: Os Planos Exteriores
+  alias: Os Reinos Divinos
+  description: Dezasseis planos que representam os alinhamentos morais e eticos. Cada
+    plano e governado por deuses ou entidades do alinhamento correspondente.
+  longDescription: Os Planos Exteriores sao os reinos dos deuses e dos mortos. Organizam-se
+    num anel (a Grande Roda) em torno do Outlands, com cada plano a representar um
+    alinhamento. Mount Celestia (Leal Bom) e o lar dos anjos e dos deuses de justica;
+    Baator (Leal Mau) sao os Nove Infernos dos diabos; o Abyss (Caotico Mau) e o dominio
+    infinito dos demonios; Arborea (Caotico Bom) e a terra dos herois e das festas
+    eternas. Em Lafiga, os deuses Lafigardianos residem no plano correspondente ao
+    seu alinhamento, e as almas dos mortos viajam para o plano do deus que serviram
+    em vida.
+  inhabitants:
+  - Deuses
+  - Celestiais
+  - Fiends
+  - Modrons
+  - Slaadi
+  - Almas dos mortos
+  dangers:
+  - Deuses hostis
+  - Exercitos de fiends
+  - Corrupcao planar
+  - Impossibilidade de regresso
+  traits:
+  - Moldado por alinhamento
+  - Deuses residem fisicamente
+  - Almas migram para ca
+  image: https://images.unsplash.com/photo-1659834013683-dff8900c1845?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdGFycnklMjBuaWdodCUyMHNreSUyMG15dGhvbG9neXxlbnwxfHx8fDE3NzMxNTgzODl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral
+  accentColor: var(--lf-gold)
+entities:
+- id: ent-01
+  name: Aethon
+  title: O Tecelao do Vazio
+  alignment: Sem Alinhamento
+  domain: Criacao / Vazio
+  description: A entidade mais antiga conhecida. Existia antes dos planos, antes dos
+    deuses, antes do conceito de "antes". Aethon e o vazio consciente que sonhou o
+    multiverso.
+  lore: Os estudiosos de Lafiga debatem se Aethon e uma entidade ou um fenomeno. Nao
+    tem forma, nao tem vontade no sentido mortal — mas o multiverso existe porque
+    Aethon "quis" que existisse. Alguns theologos acreditam que Aethon e o proprio
+    tecido da realidade, e que se alguma vez "acordar", tudo deixara de existir. Os
+    Asthrsherans foram os primeiros seres que Aethon criou conscientemente, para servirem
+    de guardioes do que tinha sido sonhado.
+  powers:
+  - Criacao de realidade
+  - Omnisciencia passiva
+  - Imortalidade absoluta
+  - Manipulacao do tempo
+  tier: Primordial
+- id: ent-02
+  name: Khael'thar
+  title: A Serpente Infinita
+  alignment: Caotico Neutro
+  domain: Caos / Transformacao
+  description: Uma serpente cosmica cujo corpo circunda os Planos Exteriores.
+  lore: Khael'thar e a personificacao do caos criativo. Enquanto Aethon sonhou a ordem
+    do multiverso, Khael'thar sonhou as possibilidades — tudo o que poderia ter sido
+    mas nao foi. A serpente e tao vasta que o seu corpo e confundido com as fronteiras
+    entre planos.
+  powers:
+  - Distorcao planar
+  - Geracao de possibilidades
+  - Mutacao da realidade
+  - Criacao de Slaadi
+  tier: Primordial
+- id: ent-03
+  name: Solhara
+  title: A Chama Eterna
+  alignment: Neutro Bom
+  domain: Luz / Vida / Renascimento
+  description: Uma entidade de luz pura que reside no nucleo do Plano Positivo.
+  lore: Solhara nao fala, nao ordena, nao julga — simplesmente irradia. A sua luz
+    e a materia-prima da vida.
+  powers:
+  - Geracao de energia vital
+  - Cura cosmica
+  - Renascimento planar
+  - Proteccao contra necromancia
+  tier: Maior
+- id: ent-04
+  name: Nyxara
+  title: A Sombra Que Observa
+  alignment: Neutro Mau
+  domain: Escuridao / Segredos / Entropia
+  description: A contraparte de Solhara. Reside nos abismos mais profundos do Shadowfell.
+  lore: Nyxara e a ausencia feita entidade. Onde Solhara irradia, Nyxara absorve.
+  powers:
+  - Absorcao de luz
+  - Omnisciencia de segredos
+  - Controlo de mortos-vivos
+  - Manipulacao de sombras
+  tier: Maior
+- id: ent-05
+  name: Os Asthrsherans
+  title: Os Guardioes Primordiais
+  alignment: Leal Neutro
+  domain: Equilibrio / Ordem Cosmica
+  description: Nao uma unica entidade, mas um colectivo de seres criados por Aethon
+    para manter o equilibrio entre os planos.
+  lore: Os Asthrsherans sao 7 seres de poder quase divino que existem desde o inicio
+    da criacao.
+  powers:
+  - Manutencao planar
+  - Restauracao de equilibrio
+  - Poder quase divino
+  - Imortalidade funcional
+  tier: Primordial
+- id: ent-06
+  name: Vorthek
+  title: O Devorador de Estrelas
+  alignment: Caotico Mau
+  domain: Destruicao / Fome Cosmica
+  description: Uma entidade parasita que se alimenta de planos inteiros.
+  lore: Vorthek e o pesadelo dos cosmologos. Vem de fora — do Far Realm.
+  powers:
+  - Consumo de realidade
+  - Loucura induzida
+  - Corrupcao dimensional
+  - Regeneracao infinita
+  tier: Primordial
+- id: ent-07
+  name: Illyreth
+  title: A Tecela do Destino
+  alignment: Leal Neutro
+  domain: Destino / Profecia / Fios do Tempo
+  description: Uma entidade que ve todos os futuros possiveis simultaneamente.
+  lore: Illyreth nao interfere — observa e tece.
+  powers:
+  - Visao de todos os futuros
+  - Tecedura do destino
+  - Profecia verdadeira
+  - Imunidade temporal
+  tier: Maior
+gods:
+- id: god-01
+  name: Solarius
+  title: O Senhor da Aurora
+  alignment: Leal Bom
+  domains:
+  - Luz
+  - Vida
+  symbol: Sol dourado com 12 raios
+  iconKey: Sun
+  description: Deus do sol, da justica e da verdade. Patrono dos paladinos e dos que
+    combatem a escuridao.
+  lore: Solarius foi o primeiro deus a manifestar-se no Plano Material de Lafiga,
+    trazendo a luz que separou o dia da noite. E representado como um guerreiro radiante
+    com armadura dourada. Os seus templos sao sempre orientados a nascente, e os seus
+    clerigos levantam-se antes do amanhecer para rezar.
+  clericNote: Clerigos de Solarius usam dominios de Luz ou Vida. Ganham proficiencia
+    em armadura pesada e resistencia a dano radiante no nivel 6.
+  accentColor: var(--lf-gold)
+- id: god-02
+  name: Lunara
+  title: A Tecela da Noite
+  alignment: Caotico Bom
+  domains:
+  - Twilight
+  - Conhecimento
+  symbol: Lua crescente com estrelas
+  iconKey: Moon
+  description: Deusa da lua, dos sonhos e da sabedoria oculta.
+  lore: Lunara surgiu quando Solarius criou a noite como descanso — ela preencheu
+    a escuridao com luz suave.
+  clericNote: Clerigos de Lunara usam dominios de Twilight ou Conhecimento.
+  accentColor: var(--lf-info-blue)
+- id: god-03
+  name: Korrath
+  title: O Martelo da Guerra
+  alignment: Caotico Neutro
+  domains:
+  - Guerra
+  - Tempestade
+  symbol: Martelo partido sobre bigorna
+  iconKey: Sword
+  description: Deus da guerra, da tempestade e da forca bruta.
+  lore: Korrath nao se importa com o lado "certo" — importa-se com a luta.
+  clericNote: Clerigos de Korrath usam dominios de Guerra ou Tempestade.
+  accentColor: var(--lf-cancel-red)
+- id: god-04
+  name: Velmira
+  title: A Mae Terna
+  alignment: Neutro Bom
+  domains:
+  - Vida
+  - Natureza
+  symbol: Arvore com raizes em forma de coracao
+  iconKey: Heart
+  description: Deusa da cura, da fertilidade e da compaixao.
+  lore: Velmira e a deusa mais amada pelo povo comum.
+  clericNote: Clerigos de Velmira usam dominios de Vida ou Natureza.
+  accentColor: var(--lf-success)
+- id: god-05
+  name: Mordekai
+  title: O Ceifador Silencioso
+  alignment: Leal Neutro
+  domains:
+  - Morte
+  - Tumulo
+  symbol: Foice envolta em pano negro
+  iconKey: Skull
+  description: Deus da morte, do transito e do julgamento final.
+  lore: Mordekai nao e mau — e inevitavel.
+  clericNote: Clerigos de Mordekai usam dominios de Morte ou Tumulo.
+  accentColor: var(--lf-text-subtle)
+- id: god-06
+  name: Pyrakos
+  title: A Forja Viva
+  alignment: Leal Bom
+  domains:
+  - Forja
+  - Luz
+  symbol: Bigorna em chamas
+  iconKey: Flame
+  description: Deus da forja, da criacao e do artesanato.
+  lore: Pyrakos forjou as primeiras armas dos deuses.
+  clericNote: Clerigos de Pyrakos usam dominio de Forja.
+  accentColor: var(--lf-orange)
+- id: god-07
+  name: Thassara
+  title: A Senhora dos Mares
+  alignment: Caotico Neutro
+  domains:
+  - Tempestade
+  - Natureza
+  symbol: Tridente com onda
+  iconKey: Waves
+  description: Deusa dos oceanos, das tempestades maritimas e dos marinheiros.
+  lore: Thassara governa todos os corpos de agua de Lafiga.
+  clericNote: Clerigos de Thassara usam dominios de Tempestade ou Natureza.
+  accentColor: var(--lf-info-blue)
+- id: god-08
+  name: Vaelkris
+  title: O Arcanista Eterno
+  alignment: Neutro
+  domains:
+  - Arcana
+  - Conhecimento
+  symbol: Olho aberto rodeado de runas
+  iconKey: Eye
+  description: Deus da magia, do conhecimento arcano e dos segredos do multiverso.
+  lore: Vaelkris e o guardiao do Weave.
+  clericNote: Clerigos de Vaelkris usam dominio de Arcana.
+  accentColor: var(--lf-arcane)
+- id: god-09
+  name: Sylvara
+  title: A Guardia do Bosque
+  alignment: Neutro Bom
+  domains:
+  - Natureza
+  - Vida
+  symbol: Coroa de folhas com veado
+  iconKey: TreePine
+  description: Deusa das florestas, dos animais e do ciclo natural.
+  lore: Sylvara e a voz da natureza.
+  clericNote: Clerigos de Sylvara usam dominio de Natureza.
+  accentColor: var(--lf-success)
+- id: god-10
+  name: Tyraeus
+  title: O Juiz Imparcial
+  alignment: Leal Neutro
+  domains:
+  - Ordem
+  - Conhecimento
+  symbol: Balanca com espada
+  iconKey: Scale
+  description: Deus da lei, da ordem e da justica.
+  lore: Tyraeus nao e misericordioso nem cruel — e justo.
+  clericNote: Clerigos de Tyraeus usam dominio de Ordem.
+  accentColor: var(--lf-gold)
+- id: god-11
+  name: Zephyra
+  title: A Danca dos Ventos
+  alignment: Caotico Bom
+  domains:
+  - Trapaca
+  - Twilight
+  symbol: Redemoinho com mascara sorridente
+  iconKey: Wind
+  description: Deusa da liberdade, da sorte, da musica e dos viajantes.
+  lore: Zephyra e a deusa mais divertida.
+  clericNote: Clerigos de Zephyra usam dominios de Trapaca ou Twilight.
+  accentColor: var(--lf-orange)
+- id: god-12
+  name: Xaroth
+  title: O Sussurro Sombrio
+  alignment: Neutro Mau
+  domains:
+  - Trapaca
+  - Morte
+  symbol: Punhal gotejando veneno verde
+  iconKey: Zap
+  description: Deus da traicao, do veneno e da ambicao sem limites.
+  lore: Xaroth e o deus que ninguem admite adorar.
+  clericNote: Clerigos de Xaroth usam dominios de Trapaca ou Morte.
+  accentColor: var(--lf-cancel-red)
+creation:
+- id: era-0
+  title: O Vazio Consciente
+  subtitle: Antes do Tempo
+  period: Pre-existencia
+  narrative: 'Antes de haver "antes", existia Aethon — nao como um ser, mas como uma
+    possibilidade. O Vazio nao era vazio: era potencial puro, infinito e indeciso.'
+  details:
+  - Aethon nao "decide" criar — a criacao emerge dele como sonhos emergem do sono.
+  - Os cosmologos de Lafiga chamam a este estado "A Noite Sem Estrelas".
+  keyFigures:
+  - Aethon
+  accentColor: var(--lf-text-subtle)
+- id: era-1
+  title: O Primeiro Sonho
+  subtitle: A Criacao dos Guardioes
+  period: Era Zero
+  narrative: Aethon "sonhou" — e desse sonho nasceram os Asthrsherans, os primeiros
+    seres conscientes. Cada um dos 7 incorporou um aspecto fundamental da realidade.
+  details:
+  - Os 7 Asthrsherans nao se "lembram" da sua criacao.
+  - Khael'thar nasceu das possibilidades rejeitadas.
+  keyFigures:
+  - Aethon
+  - Os 7 Asthrsherans
+  - Khael'thar
+  accentColor: var(--lf-arcane)
+- id: era-2
+  title: A Separacao dos Planos
+  subtitle: Estrutura do Multiverso
+  period: Era Primordial
+  narrative: 'Os Asthrsherans comecaram a dar forma ao caos. Assim nasceram os planos:
+    o Material como eixo central, os Elementais como materia-prima, o Astral como
+    tecido conectivo.'
+  details:
+  - O Plano Material foi o primeiro a solidificar-se.
+  - O Feywild e o Shadowfell surgiram como reflexos emparelhados.
+  keyFigures:
+  - Asthrsheran do Espaco
+  - Asthrsheran do Tempo
+  accentColor: var(--lf-info-blue)
+- id: era-3
+  title: O Despertar dos Deuses
+  subtitle: O Panteao Nasce
+  period: Era Divina
+  narrative: A energia da criacao cristalizou-se em seres de imenso poder — os deuses.
+    Solarius foi o primeiro, trazendo a luz.
+  details:
+  - Solarius trouxe a luz e separou o dia da noite.
+  - Xaroth e considerado um "acidente divino".
+  keyFigures:
+  - Solarius
+  - Lunara
+  - Korrath
+  - Mordekai
+  - Xaroth
+  accentColor: var(--lf-gold)
+- id: era-4
+  title: A Criacao dos Mortais
+  subtitle: Racas e Civilizacoes
+  period: Era dos Primeiros
+  narrative: Os deuses decidiram preencher o Plano Material com vida inteligente.
+    Num acto coletivo, todos os 12 deuses contribuiram para criar as racas mortais.
+  details:
+  - Os Elfos foram moldados por Lunara e Sylvara.
+  - Os Humanos foram o "compromisso" — todos os deuses contribuiram.
+  keyFigures:
+  - Sylvara
+  - Velmira
+  - Pyrakos
+  - Lunara
+  accentColor: var(--lf-success)
+- id: era-5
+  title: A Primeira Ameaca
+  subtitle: Vorthek e a Guerra Primordial
+  period: Era da Ruptura
+  narrative: Vorthek, o Devorador de Estrelas, estendeu os seus tentaculos desde o
+    Far Realm. Os Asthrsherans e os deuses lutaram juntos, contendo-o mas sem o destruir.
+  details:
+  - A Guerra Primordial e o unico evento em que Asthrsherans e deuses lutaram lado
+    a lado.
+  - Vorthek foi contido, nao morto.
+  keyFigures:
+  - Vorthek
+  - Os 7 Asthrsherans
+  - Solarius
+  accentColor: var(--lf-cancel-red)
+- id: era-6
+  title: A Era dos Reinos
+  subtitle: Civilizacao e Conflito
+  period: Era Actual
+  narrative: Com Vorthek contido, os mortais ficaram "sozinhos". Construiram reinos,
+    declararam guerras, fundaram guildas. Os aventureiros sao a resposta mortal as
+    ameacas.
+  details:
+  - O continente tem 7 reinos maiores.
+  - Os Cultos de Xaroth operam nas sombras.
+  - Os Asthrsherans observam... e esperam.
+  keyFigures:
+  - Os mortais
+  - A Guilda dos Aventureiros
+  accentColor: var(--lf-orange)
+asthrsherans:
+- id: ast-01
+  name: Chronael
+  title: O Relojoeiro Silencioso
+  aspect: Tempo
+  description: Guardiao do fluxo temporal. Chronael garante que o tempo avanca num
+    unico sentido e que paradoxos temporais nao destroem a realidade.
+  lore: Chronael nao "vive" no tempo como os mortais — existe em todos os momentos
+    simultaneamente. Aparece como uma figura imovel, sem rosto, rodeada por engrenagens
+    visiveis que giram em velocidades impossiveis. Diz-se que quando uma magia de
+    manipulacao temporal e lancada, Chronael "nota" — e se a distorcao for demasiado
+    grande, intervem subtilmente, criando o que os magos chamam de "deslizamentos
+    temporais". Os monges da Ordem Temporal dedicam a vida a estudar e proteger os
+    pontos do Plano Material onde o tempo e mais fragil.
+  abilities:
+  - Manipulacao temporal absoluta
+  - Presciencia infinita
+  - Congelamento do tempo
+  - Restauracao de paradoxos
+  weakness: Nao pode alterar eventos que ja foram "observados" por multiplas consciencias
+    — a realidade partilhada resiste.
+  status: Activo
+  accentColor: var(--lf-info-blue)
+- id: ast-02
+  name: Vasthari
+  title: A Tecela de Horizontes
+  aspect: Espaco
+  description: Guardia das distancias e das fronteiras entre planos. Vasthari definiu
+    o "onde" do multiverso.
+  lore: Vasthari e descrita como uma mulher de quatro bracos, cada um apontando para
+    um ponto cardinal de um compasso que nao existe. E ela quem mantem os planos separados
+    — as barreiras entre o Material e o Feywild, entre o Astral e os Exteriores, sao
+    a sua obra. Quando portais se abrem entre planos, Vasthari "permite". Os locais
+    onde os planos se tocam (crossings) sao os pontos mais finos do seu tecido, e
+    por isso os mais vigiados.
+  abilities:
+  - Distorcao espacial
+  - Criacao/destruicao de portais
+  - Manutencao de fronteiras planares
+  - Teleportacao ilimitada
+  weakness: E vulneravel onde os planos ja sao naturalmente finos — Crossings e Thin
+    Points.
+  status: Activo
+  accentColor: var(--lf-arcane)
+- id: ast-03
+  name: Vitara
+  title: A Semente Eterna
+  aspect: Vida
+  description: Guardia de toda a vida no multiverso. Vitara e a forca que impulsiona
+    a germinacao, o crescimento e a reproducao de todos os seres vivos.
+  lore: 'Vitara e a mais "presente" dos Asthrsherans — a sua influencia e sentida
+    em cada nascimento, em cada flor que abre, em cada criatura que respira pela primeira
+    vez. Nao tem forma fixa: aparece como raizes, como luz solar, como o choro de
+    um recem-nascido. Os druidas acreditam que Sylvara (deusa da natureza) e uma manifestacao
+    parcial de Vitara.'
+  abilities:
+  - Geracao de vida
+  - Cura universal
+  - Aceleracao de crescimento
+  - Ressurreicao em escala cosmica
+  weakness: Nao pode criar vida "do nada" — precisa de materia pre-existente e energia
+    de Solhara.
+  status: Activo
+  accentColor: var(--lf-success)
+- id: ast-04
+  name: Morthaen
+  title: O Porteiro do Fim
+  aspect: Morte
+  description: Guardiao do ciclo de morte e transicao das almas. Morthaen garante
+    que a morte e definitiva e que as almas chegam ao destino correcto.
+  lore: Morthaen e o complemento de Vitara — enquanto ela da vida, ele recolhe-a.
+    Aparece como uma sombra longa sem corpo que a projete. Trabalha em tandem com
+    Mordekai (deus da morte), mas enquanto Mordekai julga as almas, Morthaen garante
+    que o processo funciona. Os liches sao a sua maior afronta.
+  abilities:
+  - Recolha de almas
+  - Dissolucao de mortos-vivos
+  - Transicao planar de espiritos
+  - Selagem de almas fugitivas
+  weakness: Liches com phylacteries estao parcialmente fora do seu alcance — a alma
+    esta "escondida".
+  status: Activo
+  accentColor: var(--lf-text-subtle)
+- id: ast-05
+  name: Axiomar
+  title: O Arquitecto das Leis
+  aspect: Ordem
+  description: Guardiao das leis fundamentais da realidade. Axiomar define as constantes
+    do multiverso — gravidade, causalidade, logica.
+  lore: Axiomar e o mais "rigido" dos Asthrsherans. Nao tem personalidade no sentido
+    mortal — e pura estrutura. As leis da fisica, a logica matematica, a relacao entre
+    accao e consequencia — tudo isso e Axiomar. Sem ele, o fogo poderia congelar,
+    a gravidade poderia inverter-se. Os Modrons de Mechanus sao expressoes autonomas
+    da mesma forca.
+  abilities:
+  - Definicao de constantes fisicas
+  - Imposicao de causalidade
+  - Supressao de anomalias
+  - Estabilizacao planar
+  weakness: O Caos e a sua contraparte — nao pode eliminar o caos sem eliminar a possibilidade
+    de mudanca.
+  status: Activo
+  accentColor: var(--lf-gold)
+- id: ast-06
+  name: Entropia
+  title: A Danca do Imprevisto
+  aspect: Caos
+  description: Guardia do caos, da mudanca e da imprevisibilidade. Entropia garante
+    que a realidade nunca se torna completamente deterministica.
+  lore: Entropia e a contraparte de Axiomar — e tambem a mais "divertida" dos Asthrsherans.
+    E ela que garante que mutacoes acontecem, que eventos improvaveis ocorrem, que
+    a Magia Selvagem existe. Os Slaadi do Limbo sao filhos indirectos de Entropia,
+    e Zephyra (deusa da sorte) canaliza involuntariamente a sua forca.
+  abilities:
+  - Geracao de aleatoriedade
+  - Mutacao de realidade
+  - Disrupcao de padroes
+  - Criacao de possibilidades
+  weakness: Nao pode destruir a Ordem — so pode desafia-la. O equilibrio entre ambos
+    e inviolavel.
+  status: Adormecido
+  accentColor: var(--lf-orange)
+- id: ast-07
+  name: Arcanis
+  title: O Tecelao do Weave
+  aspect: Magia
+  description: Guardiao da magia em todas as suas formas. Arcanis e o ser que mantem
+    o Weave — a teia mistica que permite a conjuracao em todo o multiverso.
+  lore: Arcanis e talvez o Asthrsheran mais "visivel" — cada vez que uma magia e lancada,
+    o Weave vibra. Vaelkris (deus da magia) e o seu principal intermediario. Diz-se
+    que Arcanis foi gravemente ferido na Guerra Primordial contra Vorthek, e que as
+    "zonas mortas de magia" que existem em Lafiga sao cicatrizes no Weave que nunca
+    curaram.
+  abilities:
+  - Manutencao do Weave
+  - Concessao de poder arcano
+  - Supressao de magia selvagem
+  - Restauracao de zonas mortas
+  weakness: As feridas da Guerra Primordial — zonas mortas de magia persistem como
+    cicatrizes.
+  status: Ferido
+  accentColor: var(--lf-cancel-red)
+racesLore:
+- id: rl-01
+  name: Humanos
+  alias: Os Adaptaveis
+  description: A raca mais numerosa e diversificada de Lafiga.
+  culture: Nao existe uma "cultura humana" unica — cada reino moldou os seus humanos
+    de forma diferente.
+  territory: Presentes em todos os 7 reinos maiores.
+  allies:
+  - Meia-Elfos
+  - Halflings
+  - Gnomes
+  rivals:
+  - Orcs (historicamente)
+  - Drow
+  traits:
+  - Adaptabilidade
+  - Ambicao
+  - Diversidade cultural
+  - Ciclo de vida curto
+  creatorGod: Todos os 12 deuses
+  population: Muito alta
+  accentColor: var(--lf-gold)
+- id: rl-02
+  name: Elfos
+  alias: Os Eternos
+  description: Graceis, longevos e profundamente ligados a natureza e a magia.
+  culture: A sociedade elfica divide-se em Altos Elfos, Elfos da Floresta e Drow.
+  territory: Sylvandel, Torres de Aetheris, Underdark (Drow).
+  allies:
+  - Meia-Elfos
+  - Gnomes
+  - Eladrin
+  rivals:
+  - Orcs
+  - Drow
+  - Anoes (tensao)
+  traits:
+  - Longevidade
+  - Afinidade magica
+  - Visao no escuro
+  - Ligacao a natureza
+  creatorGod: Lunara e Sylvara
+  population: Media
+  accentColor: var(--lf-success)
+- id: rl-03
+  name: Anoes
+  alias: Os Filhos da Pedra
+  description: Robustos, tenazes e orgulhosos. Os anoes sao os mestres da forja e
+    da montanha.
+  culture: 'A sociedade anoe gira em torno de tres pilares: Cla, Forja e Honra.'
+  territory: Khaz-Durrath (as montanhas Ironspine).
+  allies:
+  - Humanos (Valdoria)
+  - Gnomes
+  rivals:
+  - Elfos (cultural)
+  - Drow
+  - Criaturas do Underdark
+  traits:
+  - Resistencia
+  - Mestria na forja
+  - Teimosia
+  - Visao no escuro
+  creatorGod: Pyrakos
+  population: Media
+  accentColor: var(--lf-orange)
+- id: rl-04
+  name: Halflings
+  alias: Os Pezinhos Silenciosos
+  description: Pequenos, sortudos e despreocupados.
+  culture: Os halflings vivem em comunidades agrarias pacificas.
+  territory: Comarcas halfling espalhadas pelos reinos humanos.
+  allies:
+  - Humanos
+  - Gnomes
+  rivals:
+  - Nenhum significativo
+  traits:
+  - Sorte natural
+  - Furtividade
+  - Coragem inesperada
+  - Amor pela comida
+  creatorGod: Zephyra
+  population: Media-baixa
+  accentColor: var(--lf-gold)
+- id: rl-05
+  name: Gnomes
+  alias: Os Inventores
+  description: Curiosos, inventivos e incansaveis.
+  culture: A cultura gnoma gira em torno da invencao e da descoberta.
+  territory: Tiknarin (cidade-relogio nas montanhas).
+  allies:
+  - Anoes
+  - Halflings
+  - Humanos
+  rivals:
+  - Kobolds
+  traits:
+  - Genialidade inventiva
+  - Curiosidade
+  - Afinidade com ilusoes
+  - Tamanho pequeno
+  creatorGod: Pyrakos e Vaelkris
+  population: Baixa
+  accentColor: var(--lf-info-blue)
+- id: rl-06
+  name: Meia-Elfos
+  alias: Os Pontes Vivas
+  description: Filhos de dois mundos, aceites em ambos mas pertencentes a nenhum.
+  culture: Nao existe uma "cultura meia-elfa" — cada meia-elfo navega entre mundos.
+  territory: Sem territorio proprio. Presentes em comunidades elficas e humanas.
+  allies:
+  - Elfos
+  - Humanos
+  - Halflings
+  rivals:
+  - Nenhum especifico
+  traits:
+  - Versatilidade
+  - Carisma
+  - Visao no escuro
+  - Heranca dupla
+  creatorGod: Nenhum (nascidos de uniao natural)
+  population: Baixa-media
+  accentColor: var(--lf-arcane)
+- id: rl-07
+  name: Tieflings
+  alias: Os Marcados
+  description: Descendentes de mortais que fizeram pactos infernais.
+  culture: Os tieflings nao escolheram a sua heranca, mas carregam-na.
+  territory: Sem territorio. Maior concentracao em Ashenmoor.
+  allies:
+  - Outros marginalizados
+  - Meia-Orcs
+  rivals:
+  - Clerigos de Solarius
+  - Comunidades rurais
+  traits:
+  - Resistencia a fogo
+  - Visao no escuro
+  - Magia infernal inata
+  - Carisma inato
+  creatorGod: Xaroth (indirectamente)
+  population: Baixa
+  accentColor: var(--lf-cancel-red)
+- id: rl-08
+  name: Draconatos
+  alias: Os Filhos do Dragao
+  description: Humanoides draconicos com escamas, sopro elemental e um sentido de
+    honra feroz.
+  culture: A sociedade draconata e organizada em clas baseados na cor das escamas.
+  territory: Drakenmoor (planicie vulcanica no nordeste).
+  allies:
+  - Humanos (Valdoria)
+  - Anoes
+  rivals:
+  - Dragoes cromaticos
+  - Kobolds
+  traits:
+  - Sopro elemental
+  - Resistencia elemental
+  - Honra draconata
+  - Presenca imponente
+  creatorGod: Korrath (com Pyrakos)
+  population: Baixa
+  accentColor: var(--lf-orange)
+kingdoms:
+- id: kd-01
+  name: Valdoria
+  alias: O Escudo do Oeste
+  government: Monarquia Constitucional
+  ruler: Rei Aldric Valorian III
+  capital: Solhaven
+  population: Alta (~2M)
+  majorRaces:
+  - Humanos
+  - Anoes
+  - Draconatos
+  resources:
+  - Ferro
+  - Trigo
+  - Cavalos de guerra
+  description: O reino mais militarmente poderoso de Lafiga.
+  lore: Fundada ha 800 anos pelo lendario General Valorian.
+  notableLocations:
+  - Solhaven (capital)
+  - A Muralha Valoriana
+  - Campo de Torneios Eterno
+  - Catedral de Solarius
+  allies:
+  - Khaz-Durrath
+  - Thornwall
+  rivals:
+  - Merethis
+  - Ashenmoor
+  image: https://images.unsplash.com/photo-1772833146697-80d23a40c198?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb3VudGFpbiUyMGZvcnRyZXNzJTIwdmFsbGV5JTIwcGFub3JhbWF8ZW58MXx8fHwxNzczMTU4OTE5fDA&ixlib=rb-4.1.0&q=80&w=1080
+  accentColor: var(--lf-gold)
+- id: kd-02
+  name: Merethis
+  alias: A Cidade das Mil Moedas
+  government: Republica Mercantil
+  ruler: Conselho dos 7 Principes Mercantes
+  capital: Porto Aureo
+  population: Alta (~1.8M)
+  majorRaces:
+  - Humanos
+  - Halflings
+  - Gnomes
+  - Meia-Elfos
+  resources:
+  - Comercio maritimo
+  - Especiarias
+  - Artefactos
+  description: O centro economico de Lafiga.
+  lore: Merethis comecou como um porto de pesca e tornou-se o maior hub comercial
+    do mundo.
+  notableLocations:
+  - Porto Aureo
+  - A Bolsa de Lafiga
+  - O Bazar Infinito
+  allies:
+  - Todos (comercialmente)
+  rivals:
+  - Valdoria
+  - Ashenmoor
+  image: https://images.unsplash.com/photo-1644857018286-5bfdaf4fdb69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXJib3IlMjBzaGlwcyUyMHNhaWxpbmclMjBib2F0cyUyMHBvcnR8ZW58MXx8fHwxNzczMTU4OTMwfDA&ixlib=rb-4.1.0&q=80&w=1080
+  accentColor: var(--lf-orange)
+- id: kd-03
+  name: Sylvandel
+  alias: O Dominio Verde
+  government: Teocracia Druidica
+  ruler: Archdruid Elenara Silvaleaf
+  capital: Raiz-Mae
+  population: Media (~600K)
+  majorRaces:
+  - Elfos
+  - Elfos da Floresta
+  - Firbolgs
+  - Centauros
+  resources:
+  - Madeira encantada
+  - Ervas medicinais
+  - Cristais naturais
+  description: A maior floresta do continente, governada por druidas elfos.
+  lore: Sylvandel existe ha mais tempo do que qualquer outro reino.
+  notableLocations:
+  - Raiz-Mae
+  - Clareira da Lua
+  - Os Bosques Proibidos
+  allies:
+  - Nenhum formal
+  rivals:
+  - Ashenmoor
+  image: https://images.unsplash.com/photo-1761639929252-8084685a481e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJrJTIwZm9yZXN0JTIwZW5jaGFudGVkJTIwbWFnaWNhbHxlbnwxfHx8fDE3NzMxNTgzODV8MA&ixlib=rb-4.1.0&q=80&w=1080
+  accentColor: var(--lf-success)
+- id: kd-04
+  name: Ashenmoor
+  alias: A Terra das Cinzas
+  government: Meritocracia Arcana
+  ruler: Archmagus Theron Blackstaff
+  capital: Cinderhold
+  population: Media (~700K)
+  majorRaces:
+  - Humanos
+  - Tieflings
+  - Genasi
+  - Meia-Elfos
+  resources:
+  - Magia
+  - Conhecimento arcano
+  - Cristais de mana
+  description: Um reino construido sobre um vulcao adormecido, governado por magos.
+  lore: Ashenmoor foi fundada pelos seguidores de Vaelkris.
+  notableLocations:
+  - Cinderhold
+  - A Academia de Vaelkris
+  - Monte Cinza
+  allies:
+  - Merethis
+  rivals:
+  - Valdoria
+  - Sylvandel
+  image: https://images.unsplash.com/photo-1760367112859-f595cd20e2a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2b2xjYW5pYyUyMGxhbmRzY2FwZSUyMGZpcmUlMjBsYXZhfGVufDF8fHx8MTc3MzE1ODM4OHww&ixlib=rb-4.1.0&q=80&w=1080
+  accentColor: var(--lf-arcane)
+- id: kd-05
+  name: Thornwall
+  alias: A Fronteira Selvagem
+  government: Federacao de Cidades Livres
+  ruler: Conselho dos Alcaides
+  capital: Thornkeep
+  population: Media-baixa (~400K)
+  majorRaces:
+  - Humanos
+  - Meia-Orcs
+  - Goliaths
+  - Firbolgs
+  resources:
+  - Peles
+  - Minerios raros
+  - Guerreiros mercenarios
+  description: A fronteira norte de Lafiga — territorio duro, frio e perigoso.
+  lore: Thornwall nao e tanto um reino como uma coleccao de cidades fortificadas.
+  notableLocations:
+  - Thornkeep
+  - O Muro de Gelo
+  - As Minas de Cinza
+  allies:
+  - Valdoria
+  rivals:
+  - Tribos orc do norte
+  image: https://images.unsplash.com/photo-1694559218403-11d4983100ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbm93eSUyMG5vcnRoZXJuJTIwdmlsbGFnZSUyMHdpbnRlcnxlbnwxfHx8fDE3NzMxNTg5MjB8MA&ixlib=rb-4.1.0&q=80&w=1080
+  accentColor: var(--lf-text-subtle)
+- id: kd-06
+  name: Drakenmoor
+  alias: As Planicies de Fogo
+  government: Clanismo Draconato
+  ruler: Clan-Lord Voraghar Ashscale
+  capital: Emberspire
+  population: Baixa (~250K)
+  majorRaces:
+  - Draconatos
+  - Humanos
+  - Genasi de Fogo
+  resources:
+  - Obsidiana
+  - Metais vulcanicos
+  - Guerreiros de elite
+  description: Um territorio vulcanico habitado principalmente por draconatos.
+  lore: Drakenmoor e um territorio hostil para a maioria.
+  notableLocations:
+  - Emberspire
+  - A Arena dos Clas
+  - Templo de Korrath
+  allies:
+  - Valdoria
+  rivals:
+  - Thornwall
+  image: https://images.unsplash.com/photo-1760367112859-f595cd20e2a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2b2xjYW5pYyUyMGxhbmRzY2FwZSUyMGZpcmUlMjBsYXZhfGVufDF8fHx8MTc3MzE1ODM4OHww&ixlib=rb-4.1.0&q=80&w=1080
+  accentColor: var(--lf-cancel-red)
+- id: kd-07
+  name: Khaz-Durrath
+  alias: A Grande Fortaleza
+  government: Monarquia de Cla (Thane)
+  ruler: Thane Brokdin Ironmantle
+  capital: Saloes de Pedra
+  population: Media (~500K)
+  majorRaces:
+  - Anoes
+  - Gnomes
+  - Humanos (superficie)
+  resources:
+  - Mithril
+  - Ouro
+  - Armas e armaduras superiores
+  - Cerveja lendaria
+  description: A fortaleza subterranea dos anoes.
+  lore: Khaz-Durrath foi escavada ha 1200 anos e nunca foi conquistada.
+  notableLocations:
+  - Saloes de Pedra
+  - A Grande Forja de Pyrakos
+  - Os Profundos
+  allies:
+  - Valdoria
+  rivals:
+  - Elfos de Sylvandel
+  image: https://images.unsplash.com/photo-1762359999319-c3d211cddb61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpZXZhbCUyMGtpbmdkb20lMjBjYXN0bGUlMjBsYW5kc2NhcGV8ZW58MXx8fHwxNzczMTU4OTE1fDA&ixlib=rb-4.1.0&q=80&w=1080
+  accentColor: var(--lf-info-blue)
+guilds:
+- id: gld-01
+  className: Barbaro
+  guildName: A Horda Sangrenta
+  alias: Os que nao recuam
+  leader: Throgar Quebramontes
+  headquarters: O Campo de Ossos
+  kingdom: Thornwall
+  motto: '"O sangue fervente nao congela."'
+  description: Nao e tanto uma "guilda" como um bando de guerreiros furiosos que respeitam
+    a forca bruta.
+  history: A Horda Sangrenta surgiu das tribos barbaras do norte de Thornwall.
+  entryRitual: Sobreviver 3 dias no deserto gelado de Thornwall sem armas nem armadura.
+  iconKey: Swords
+  accentColor: var(--lf-cancel-red)
+  memberCount: "~800"
+- id: gld-02
+  className: Bardo
+  guildName: O Coro das Vozes
+  alias: As palavras que mudam o mundo
+  leader: Lyralei Silvervoz
+  headquarters: O Anfiteatro Eterno
+  kingdom: Merethis
+  motto: '"Uma cancao bem cantada derruba muralhas."'
+  description: A guilda dos artistas, espioes e diplomatas.
+  history: Fundada por um bardo lendario que descobriu que cancoes podiam alterar
+    a realidade.
+  entryRitual: Compor e executar uma cancao original perante um juri de mestres bardos.
+  iconKey: Music
+  accentColor: var(--lf-orange)
+  memberCount: "~500"
+- id: gld-03
+  className: Clerigo
+  guildName: A Ordem da Chama Sagrada
+  alias: A fe feita accao
+  leader: Sumo Sacerdotisa Althena
+  headquarters: A Catedral das Sete Luzes
+  kingdom: Valdoria
+  motto: '"A fe sem accao e silencio; a accao sem fe e caos."'
+  description: A uniao inter-religiosa dos clerigos de Lafiga.
+  history: Fundada apos a Guerra dos Templos.
+  entryRitual: Completar um "Percurso de Fe" por 3 templos diferentes.
+  iconKey: Shield
+  accentColor: var(--lf-gold)
+  memberCount: "~1200"
+- id: gld-04
+  className: Druida
+  guildName: O Circulo da Raiz
+  alias: A voz da natureza
+  leader: Archdruid Elenara Silvaleaf
+  headquarters: A Clareira Primordial
+  kingdom: Sylvandel
+  motto: '"A floresta lembra tudo."'
+  description: Os guardioes da natureza.
+  history: O Circulo e tao antigo quanto Sylvandel.
+  entryRitual: 30 dias sozinho numa floresta, sem falar.
+  iconKey: TreePine
+  accentColor: var(--lf-success)
+  memberCount: "~400"
+- id: gld-05
+  className: Fighter
+  guildName: A Companhia de Aco
+  alias: Profissionais da guerra
+  leader: Comandante Kellan Ironfist
+  headquarters: A Fortaleza do Treino
+  kingdom: Valdoria
+  motto: '"Disciplina e a arma mais afiada."'
+  description: A maior organizacao militar independente de Lafiga.
+  history: Fundada por um ex-general de Valdoria.
+  entryRitual: Exame de combate em 3 fases.
+  iconKey: Swords
+  accentColor: var(--lf-gold)
+  memberCount: "~3000"
+- id: gld-06
+  className: Monge
+  guildName: A Ordem do Punho Silencioso
+  alias: Corpo e mente como um
+  leader: Mestre Zenkai
+  headquarters: O Mosteiro da Montanha Sussurrante
+  kingdom: Thornwall
+  motto: '"O vazio e a plenitude."'
+  description: Monges que dedicam a vida a perfeiccao do corpo e da mente.
+  history: A Ordem foi fundada por um monge que viu os Asthrsherans em meditacao profunda.
+  entryRitual: Escalar a Montanha Sussurrante e meditar 7 dias.
+  iconKey: Eye
+  accentColor: var(--lf-arcane)
+  memberCount: "~150"
+- id: gld-07
+  className: Paladino
+  guildName: Os Cavaleiros do Juramento
+  alias: A espada da justica
+  leader: Sir Aldric Dawnshield
+  headquarters: A Torre do Juramento
+  kingdom: Valdoria
+  motto: '"O juramento e a armadura da alma."'
+  description: A elite dos guerreiros sagrados.
+  history: Fundados por 7 paladinos que juraram proteger os inocentes.
+  entryRitual: Vigilia de 3 noites na Torre do Juramento.
+  iconKey: Shield
+  accentColor: var(--lf-gold)
+  memberCount: "~600"
+- id: gld-08
+  className: Ranger
+  guildName: Os Vigias da Fronteira
+  alias: Os olhos da floresta
+  leader: Ranger-Capitao Thalia Greenbough
+  headquarters: O Acampamento das Sombras
+  kingdom: Sylvandel / Thornwall
+  motto: '"Vemos tudo. Ninguem nos ve."'
+  description: Patrulheiros de elite das fronteiras.
+  history: Os Vigias surgiram da necessidade de patrulhar fronteiras.
+  entryRitual: Encontrar o Acampamento das Sombras sem pistas.
+  iconKey: TreePine
+  accentColor: var(--lf-success)
+  memberCount: "~700"
+- id: gld-09
+  className: Ladino
+  guildName: A Sombra
+  alias: O que nao se ve nao existe
+  leader: Desconhecido ("O Fantasma")
+  headquarters: Desconhecida
+  kingdom: Merethis
+  motto: '"Se soubesses onde estamos, ja nao estariamos la."'
+  description: A guilda dos ladinos, assassinos e espioes.
+  history: A Sombra e o segredo pior guardado de Lafiga.
+  entryRitual: A Sombra recruta — ninguem se candidata.
+  iconKey: Skull
+  accentColor: var(--lf-text-subtle)
+  memberCount: Desconhecido
+- id: gld-10
+  className: Feiticeiro
+  guildName: O Sangue Arcano
+  alias: Nascidos com o dom
+  leader: Matriarca Seraphina Bloodfire
+  headquarters: A Casa do Sangue
+  kingdom: Ashenmoor
+  motto: '"O poder e nosso por direito de nascenca."'
+  description: Comunidade de apoio para sorcerers.
+  history: A Casa do Sangue foi fundada por uma sorcerer que quase destruiu uma aldeia.
+  entryRitual: Demonstracao controlada de poderes inatos.
+  iconKey: Sparkles
+  accentColor: var(--lf-orange)
+  memberCount: "~300"
+- id: gld-11
+  className: Warlock
+  guildName: O Pacto Eterno
+  alias: Os que negociaram com o alem
+  leader: Nenhum
+  headquarters: Varios
+  kingdom: Espalhado por Lafiga
+  motto: '"Todo o poder tem um preco."'
+  description: Rede de contacto entre warlocks de todos os patronos.
+  history: O Pacto Eterno surgiu quando warlocks perceberam que partilhavam experiencias
+    comuns.
+  entryRitual: Partilhar os termos exactos do teu pacto.
+  iconKey: Zap
+  accentColor: var(--lf-arcane)
+  memberCount: "~250"
+- id: gld-12
+  className: Mago
+  guildName: A Academia de Vaelkris
+  alias: O conhecimento e poder
+  leader: Archmagus Theron Blackstaff
+  headquarters: A Torre Arcana
+  kingdom: Ashenmoor
+  motto: '"Compreender e dominar."'
+  description: A maior instituicao de ensino magico do mundo.
+  history: Fundada pelos primeiros seguidores de Vaelkris.
+  entryRitual: 'Exame de admissao: 3 provas escritas + 1 pratica. Taxa: 50 gp.'
+  iconKey: Wand2
+  accentColor: var(--lf-info-blue)
+  memberCount: "~2000"
+- id: gld-13
+  className: Cozinheiro
+  guildName: A Confraria do Caldeirão
+  alias: Sabor que cura, sabor que mata
+  leader: Chef-Mestre Gordulio Pancirone
+  headquarters: A Grande Cozinha
+  kingdom: Merethis
+  motto: '"O estomago governa o mundo."'
+  description: Cozinheiros magicos cujas receitas curam feridas e concedem forcas.
+  history: A Confraria nasceu nas cozinhas de campanha.
+  entryRitual: 'Preparar 3 pratos: um que cure, um que fortaleça, um que surpreenda.'
+  iconKey: CookingPot
+  accentColor: var(--lf-orange)
+  memberCount: "~200"
