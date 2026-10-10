@@ -1,5 +1,11 @@
+# frozen_string_literal: true
+
 module Chat
+  # Os comandos do chat da campanha: `!help` e as rolagens (`!d20+1`, `!2d6-1`, `!d8`, `!2d20kh1+3`…). A gramática e o
+  # sorteio são os dados do servidor (L0.6): `Dados::Expressao` e `Dados::Fonte::Segura`.
   class CommandProcessor
+    AJUDA = 'Comandos: !d20+1, !2d6-1, !d8, !2d20kh1 (vantagem), !2d20kl1 (desvantagem), !help'
+
     def self.call(text)
       new(text).call
     end
@@ -10,28 +16,25 @@ module Chat
 
     def call
       return nil unless @text.start_with?('!')
-      # Supported: !d20+1, !2d6-1, !d8, !help
-      if @text =~ /^!help$/i
-        return { type: 'help', text: 'Comandos: !d20+1, !2d6-1, !d8, !help' }
-      end
-      if @text =~ /^!(\d*)d(\d+)([+-]\d+)?$/i
-        times = ($1.blank? ? 1 : $1.to_i)
-        sides = $2.to_i
-        mod   = ($3 || '+0').to_i
-        return roll(times, sides, mod)
-      end
+      return { type: 'help', text: AJUDA } if @text.match?(/\A!help\z/i)
+
+      roll(Dados::Expressao.parse(@text.delete_prefix('!')))
+    rescue Dados::Expressao::Invalida
       { type: 'unknown', text: 'Comando desconhecido. Use !help' }
     end
 
     private
-    def roll(times, sides, mod)
-      times = [[times, 1].max, 20].min
-      sides = [[sides, 2].max, 1000].min
-      rolls = Array.new(times) { 1 + rand(sides) }
-      total = rolls.sum + mod
-      txt = "Rolagem: #{rolls.join(' + ')} #{mod >= 0 ? '+ ' : '- '}#{mod.abs} = #{total}"
-      { type: 'roll', times: times, sides: sides, mod: mod, rolls: rolls, total: total, text: txt }
+
+    # as chaves de antes (`times`, `sides`, `mod`, `rolls`, `total`, `text`) continuam: a mensagem guarda o resultado
+    def roll(expr)
+      r = expr.rola(Dados::Fonte::Segura.new)
+      primeiro = expr.grupos.first
+      texto = Dados::Expressao.texto(grupos: r['grupos'], modificador: r['modificador'], total: r['total'])
+      {
+        type: 'roll', times: primeiro.quantidade, sides: primeiro.lados, mod: expr.modificador,
+        rolls: r['grupos'].flat_map { |g| g['rolagens'] }, total: r['total'], expression: expr.to_s,
+        text: "Rolagem: #{texto}",
+      }
     end
   end
 end
-

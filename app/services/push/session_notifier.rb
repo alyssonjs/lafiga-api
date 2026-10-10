@@ -28,6 +28,7 @@ module Push
       return 0 unless EVENTS.include?(@event)
       return 0 if @schedule.nil?
       return 0 if @schedule.respond_to?(:sandbox?) && @schedule.sandbox?
+      return 0 unless @schedule.de_campanha? # a mesa da vila e as outras não avisam como sessão (L0.8)
       return 0 unless Push::Sender.vapid_configured?
 
       title = title_for(@event)

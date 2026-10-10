@@ -137,9 +137,11 @@ module Push
       nil
     end
 
+    # só a sessão de campanha conta como "próximo encontro marcado": a mesa da vila não (L0.8)
     def em_aberto(group)
       group.schedules.select do |s|
-        Schedule::SCHEDULING_BLOCKING_STATUSES.include?(s.status.to_s) && !(s.respond_to?(:sandbox?) && s.sandbox?)
+        Schedule::SCHEDULING_BLOCKING_STATUSES.include?(s.status.to_s) && !(s.respond_to?(:sandbox?) && s.sandbox?) &&
+          s.de_campanha?
       end
     end
 

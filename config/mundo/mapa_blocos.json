@@ -1,0 +1,11 @@
+{
+  "_comentario": "O formato do MAPA EM BLOCOS (L1.2; plano B3 e D5; o contrato semântico da C0 de jogo/composicao-do-mapa.md). Lido pelo servidor (MapaBloco) e conferido pelo front (lpcMapa/blocosDoServidor.ts, no Vitest, via /api-canonical). `lado`: as células de um bloco de cada lado. `terrenos`: as camadas de chão que um bloco pode ter, na ORDEM de desenho, de baixo para cima (os nomes do Terrain.xml do pacote Tiled Terrains do LPC; é a ordem do gerador do protótipo, lpcMundo.ts). `especies_de_arvore`: a árvore guarda a espécie, e a arte escolhe o desenho. `pecas`: o catálogo dos carimbos (lpcMapa/lpcCatalogo.ts); o bloco guarda a peça, nunca a folha nem o recorte. Uma camada, uma espécie ou uma peça nova entra aqui, nos dois lados.",
+  "lado": 40,
+  "terrenos": ["Grass", "Long Grass", "Dark Grass", "Sand", "Grey Dirt", "Trans Dirt", "Wheat", "Earth", "Snow", "Water", "Ice"],
+  "tipos_de_objeto": ["arvore", "casa", "pedra", "carimbo", "piso"],
+  "especies_de_arvore": ["carvalho", "pinheiro"],
+  "pecas": [
+    "montanhaGrande", "plato", "paredao", "fenda", "pedregulho", "estalagmite",
+    "ponte", "tabuas", "cerca", "barril", "barris", "balde", "vitoriaRegia", "flores"
+  ]
+}

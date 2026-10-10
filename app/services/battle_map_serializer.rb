@@ -40,6 +40,13 @@ class BattleMapSerializer
       cellWorldFt: map.cell_world_ft.to_f,
       fogMode: map.fog_mode.presence || 'hidden_cells',
       mapKind: map.map_kind.presence || 'battle',
+      # a casca da vila (L1.2): o conteúdo vem da API de blocos, não deste payload
+      armazenamento: map.try(:armazenamento).presence || 'inteiro',
+      semente: map.try(:semente),
+      # quem gerou o mapa (C0): com a semente, refaz o mesmo mapa
+      versaoDoGerador: map.try(:versao_do_gerador),
+      versaoDosBiomas: map.try(:versao_dos_biomas),
+      setorId: map.try(:setor_id),
       publicListed: map.try(:public_listed) || false,
       publicMain: map.try(:public_main) || false,
       createdAt: map.created_at&.iso8601,

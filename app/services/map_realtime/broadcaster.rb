@@ -14,6 +14,7 @@
 ##   - :fog_changed      { fog: [[..]] }
 ##   - :map_updated      { battle_map: <full payload> }
 ##   - :map_deleted      { id }
+##   - :bloco_mudou      { bc, bl, versao }   # mapa em blocos (L1.2): recarregar só aquele bloco
 ##
 ## Cada broadcast carrega `event` (string), `payload` (hash) e `actor_id`
 ## (id do usuario que originou — para o front skipar echo).
@@ -33,7 +34,8 @@ module MapRealtime
       dropped_projectiles_changed: 'dropped_projectiles_changed',
       projectile_resolved:  'projectile_resolved',
       map_updated:          'map_updated',
-      map_deleted:          'map_deleted'
+      map_deleted:          'map_deleted',
+      bloco_mudou:          'bloco_mudou'
     }.freeze
 
     class << self
@@ -182,6 +184,12 @@ module MapRealtime
 
       def map_deleted(map_id, actor: nil)
         broadcast(map_id, :map_deleted, { id: map_id }, actor: actor)
+      end
+
+      # Um bloco do mapa da vila mudou (L1.2): só a posição e a versão. Quem tem o bloco recarrega só ele
+      # (`GET .../blocos?raio=0`); quem não tem, ignora.
+      def bloco_mudou(map, bloco, actor: nil)
+        broadcast(map, :bloco_mudou, { bc: bloco.bc, bl: bloco.bl, versao: bloco.versao }, actor: actor)
       end
 
       private

@@ -37,6 +37,11 @@ class Schedule < ApplicationRecord
   COMBAT_GROUPS_COL = 'combat_groups'.freeze
   COMBAT_GROUP_MEMBER_TYPES = %w[character combat_npc].freeze
   SCHEDULING_BLOCKING_STATUSES = %w[reserved waiting in_progress].freeze
+  # O MODO da mesa (L0.8; plano B3): a sessão de CAMPANHA (a de sempre, com o Mestre), a mesa da VILA (o jogo
+  # persistente), a MISSÃO (um contrato) e o ENCONTRO (o combate automático). Só a campanha ocupa o "slot único" do
+  # grupo e do criador e dispara os pushes de sessão: as outras convivem com ela.
+  MODOS = %w[campanha vila missao encontro].freeze
+  MODO_CAMPANHA = 'campanha'.freeze
 
   # Coluna JSONB opcional até `db:migrate`; evita NoMethodError se o deploy
   # adiantar o código sem o schema.
@@ -107,6 +112,7 @@ class Schedule < ApplicationRecord
   # Sessão real exige grupo; sandbox (teste do DM) pode nascer sem grupo.
   validates :group, presence: true, unless: :sandbox_session?
   validates :xp_awarded, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :modo, inclusion: { in: MODOS }, if: -> { self.class.supports_modo? }
   validates :scheduled_time,
             format: { with: /\A([01]?\d|2[0-3]):[0-5]\d\z/, message: "deve estar no formato HH:MM" },
             allow_blank: true
@@ -194,7 +200,7 @@ class Schedule < ApplicationRecord
   scope :active,        -> { where.not(status: :cancelled) }
   # Sessões que ocupam o "slot único" de agendamento. Sandbox (teste do DM) NÃO
   # bloqueia a agenda real, por isso o `.non_sandbox`.
-  scope :blocking_new_schedule, -> { where(status: SCHEDULING_BLOCKING_STATUSES).non_sandbox }
+  scope :blocking_new_schedule, -> { where(status: SCHEDULING_BLOCKING_STATUSES).non_sandbox.de_campanha }
   scope :concluded,     -> { where(status: :completed) }
 
   # Sessões-fantasma de teste do DM. Guard de coluna (como os jsonb) evita erro
@@ -205,6 +211,17 @@ class Schedule < ApplicationRecord
 
   # Só sessões reais (exclui as sandbox). No-op se a coluna ainda não existe.
   scope :non_sandbox, -> { supports_sandbox? ? where(sandbox: false) : all }
+
+  # O modo (L0.8), com o mesmo guard de coluna do `sandbox`: sem a coluna, toda mesa é de campanha.
+  def self.supports_modo?
+    column_names.include?('modo')
+  end
+
+  scope :de_campanha, -> { supports_modo? ? where(modo: MODO_CAMPANHA) : all }
+
+  def de_campanha?
+    !self.class.supports_modo? || modo == MODO_CAMPANHA
+  end
   # Sessões de teste de um DM específico (usadas na lista "Sessões de teste").
   scope :sandbox_of,  ->(user) { supports_sandbox? && user ? where(sandbox: true, created_by_user_id: user.id) : none }
 
@@ -357,6 +374,7 @@ class Schedule < ApplicationRecord
   # fora de SCHEDULING_BLOCKING_STATUSES).
   def unique_active_slot_per_group
     return if sandbox_session?
+    return unless de_campanha? # a mesa da vila (e as outras) convive com a sessão de campanha (L0.8)
     return unless SCHEDULING_BLOCKING_STATUSES.include?(status)
     return if group_id.blank?
 
@@ -373,6 +391,7 @@ class Schedule < ApplicationRecord
   # mesmo em grupos diferentes. Sessões canceladas liberam o dia.
   def unique_active_slot_per_creator
     return if sandbox_session?
+    return unless de_campanha?
     return unless SCHEDULING_BLOCKING_STATUSES.include?(status)
     return if created_by_user_id.blank? || date_dimension_id.blank?
 

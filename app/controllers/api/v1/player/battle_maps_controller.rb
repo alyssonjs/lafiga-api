@@ -15,8 +15,11 @@ class Api::V1::Player::BattleMapsController < ApplicationController
   # Lista todos os mapas que o user pode ver: proprios + compartilhados via group.
   # Retorna no shape SLIM (sem cells/tokens/fog/backgroundImage) — abrir um mapa
   # individual via GET /:id traz o payload full.
+  #
+  # Os mapas da vila (`armazenamento: 'blocos'`, L1.2) ficam FORA: não têm `cells` e não se editam no Map Builder. Eles
+  # têm a lista deles, por grupo: `GET /groups/:group_id/mapas_da_vila`.
   def index
-    maps = BattleMap.visible_to(@current_user).recent
+    maps = BattleMap.visible_to(@current_user).where(armazenamento: 'inteiro').recent
     render json: { battle_maps: BattleMapSerializer.serialize_collection(maps, mode: :slim) }, status: 200
   end
 

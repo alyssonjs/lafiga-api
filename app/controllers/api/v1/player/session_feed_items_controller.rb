@@ -74,13 +74,51 @@ module Api::V1::Player
       raw_item = raw_item.to_unsafe_h if raw_item.is_a?(ActionController::Parameters)
       normalized = SessionFeed::RollNormalizer.call(schedule_id: @schedule.id, item: raw_item)
       return render(json: { error: 'rolagem inválida' }, status: :unprocessable_entity) unless normalized
+      return unless rolagem_permitida?(normalized['audience'].presence || SessionFeedItem::AUDIENCE_ALL)
 
+      publica_rolagem(raw_item, normalized)
+    end
+
+    # POST /api/v1/player/schedules/:schedule_id/session_feed_items/rolar
+    # body: { rolagem: { id, expressao, timestamp, label?, type?, audience?, rollGroupId?, revealAt?,
+    #                    playerName?, characterName? } }
+    #
+    # O SERVIDOR rola (L0.6): a expressão vira uma `Dados::Rolagem` selada (fonte segura), e o item do feed sai com o
+    # `selo`. Idempotente pelo `id`, como o `create`: o retry devolve a mesma rolagem, sem rolar de novo.
+    def rolar
+      bruto = params[:rolagem]
+      bruto = bruto.to_unsafe_h if bruto.is_a?(ActionController::Parameters)
+      unless bruto.is_a?(Hash) && bruto['id'].to_s.present?
+        return render(json: { error: 'rolagem inválida' }, status: :unprocessable_entity)
+      end
+      return unless rolagem_permitida?(bruto['audience'].to_s.presence_in(SessionFeedItem::AUDIENCES) || SessionFeedItem::AUDIENCE_ALL)
+
+      expressao = Dados::Expressao.parse(bruto['expressao'])
+      rolagem = Dados::Rola.call(
+        expressao: expressao, chave: "feed:#{@schedule.id}:#{bruto['id']}", fonte: :segura,
+        contexto: { 'schedule_id' => @schedule.id, 'user_id' => @current_user.id, 'rotulo' => bruto['label'].to_s.truncate(200) },
+      )
+      normalized = SessionFeed::RollNormalizer.call(
+        schedule_id: @schedule.id, item: SessionFeed::RolagemDoServidor.item(rolagem, bruto),
+      )
+      return render(json: { error: 'rolagem inválida' }, status: :unprocessable_entity) unless normalized
+
+      normalized['selo'] = SessionFeed::RolagemDoServidor.selo(rolagem)
+      publica_rolagem(bruto, normalized)
+    rescue Dados::Expressao::Invalida => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    end
+
+    private
+
+    # A guarda das rolagens: o canal e o limite. Devolve true, ou já respondeu.
+    def rolagem_permitida?(audiencia)
       # O CORPO pede o canal; quem concede é o servidor. Sem esta guarda, o
       # `audience` que o normalizador agora preserva viraria escalação: bastava
       # POSTar `audience: 'dm'` para escrever no caderno do Mestre.
-      audiencia = normalized['audience'].presence || SessionFeedItem::AUDIENCE_ALL
       unless SessionFeed::Audience.may_write?(@schedule, @current_user, audiencia)
-        return render(json: { error: 'sem permissão para este canal' }, status: :forbidden)
+        render(json: { error: 'sem permissão para este canal' }, status: :forbidden)
+        return false
       end
 
       unless SessionFeed::RateLimit.allow?(
@@ -89,9 +127,16 @@ module Api::V1::Player
         bucket: 'roll-command',
         limit: 120,
       )
-        return render json: { error: 'muitas rolagens; tente novamente' }, status: :too_many_requests
+        render json: { error: 'muitas rolagens; tente novamente' }, status: :too_many_requests
+        return false
       end
 
+      true
+    end
+
+    # Grava, transmite no canal gravado e responde com o item: o mesmo caminho para a rolagem do cliente (`create`) e a
+    # do servidor (`rolar`).
+    def publica_rolagem(raw_item, normalized)
       trace = Realtime::Telemetry.request_context(request)
       client_id = trace[:client_id] || Realtime::Telemetry.identifier(raw_item['clientId'])
       command_id = trace[:command_id] ||
@@ -155,8 +200,6 @@ module Api::V1::Player
       )
       render json: { error: 'não foi possível confirmar a rolagem' }, status: :service_unavailable
     end
-
-    private
 
     # O chat NÃO recomeça do zero a cada sessão.
     #

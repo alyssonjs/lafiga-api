@@ -25,7 +25,12 @@ class BattleMap < ApplicationRecord
   # Tipo do mapa: organiza a biblioteca e define o padrão do grid no front
   # (área ampla nasce sem grid — ver `isWideAreaMapKind`). Lista aditiva:
   # `battle`/`world` são os originais e continuam válidos.
-  MAP_KINDS = %w[battle dungeon interior city region world].freeze
+  # `vila` (09/10, L1.2): a CASCA do mapa de um setor da vila — o conteúdo mora em `mapa_blocos` (ver ARMAZENAMENTOS).
+  MAP_KINDS = %w[battle dungeon interior city region world vila].freeze
+  # Onde mora o conteúdo do mapa (L1.2; plano B3 e D5): `inteiro` = nas colunas JSON deste registro (o mapa de sempre);
+  # `blocos` = em `mapa_blocos`, 40×40 células por bloco, carregados em volta de quem está jogando. Só a vila é em
+  # blocos, e a vila é sempre em blocos: um mapa desses nunca tem a matriz `cells`.
+  ARMAZENAMENTOS = %w[inteiro blocos].freeze
   # Caps defensivos (front é a fonte da verdade do shape, mas limitamos
   # tamanho p/ proteger o JSONB e o broadcast). Generosos, raramente batidos.
   MAX_LAYERS = 64
@@ -55,8 +60,11 @@ class BattleMap < ApplicationRecord
 
   belongs_to :user
   belongs_to :group, optional: true
+  # o setor da campanha que este mapa desenha (L1.2): o assentamento, a floresta…
+  belongs_to :setor, optional: true
   has_many :schedules, dependent: :nullify
   has_many :schedule_battle_maps, dependent: :destroy
+  has_many :mapa_blocos, dependent: :delete_all
 
   # Fase perf — o fundo FULL do mapa passou a viver no Active Storage (antes era
   # base64 inline na coluna text `background_image_url`, que estourava o payload
@@ -110,6 +118,10 @@ class BattleMap < ApplicationRecord
   validates :distance_display_unit, inclusion: { in: %w[ft m] }
   validates :fog_mode, inclusion: { in: FOG_MODES }
   validates :map_kind, inclusion: { in: MAP_KINDS }
+  validates :armazenamento, inclusion: { in: ARMAZENAMENTOS }
+  validate :vila_em_blocos
+  # a identidade da geração (C0): a semente e as versões do gerador e dos biomas que fizeram o mapa
+  validates :versao_do_gerador, :versao_dos_biomas, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :background_image_pixel_width,
             numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 8192 },
             allow_nil: true
@@ -166,6 +178,11 @@ class BattleMap < ApplicationRecord
   }
 
   scope :recent, -> { order(updated_at: :desc) }
+
+  # o conteúdo mora em `mapa_blocos` (a casca da vila)
+  def blocos?
+    armazenamento == 'blocos'
+  end
 
   def writable_by?(user)
     return false if user.nil?
@@ -289,9 +306,21 @@ class BattleMap < ApplicationRecord
     Schedule.where(battle_map_id: id, group_id: gids).exists?
   end
 
+  # só a vila é em blocos, e a vila é sempre em blocos
+  def vila_em_blocos
+    return if blocos? == (map_kind == 'vila')
+
+    errors.add(:armazenamento, blocos? ? 'em blocos só para o mapa da vila' : 'o mapa da vila é em blocos')
+  end
+
   def cells_matrix_well_formed
     unless cells.is_a?(Array)
       errors.add(:cells, 'must be an array')
+      return
+    end
+    # o mapa em blocos não tem a matriz: o terreno e os objetos moram em `mapa_blocos` (D5)
+    if blocos?
+      errors.add(:cells, 'deve ficar vazio num mapa em blocos') unless cells.empty?
       return
     end
 

@@ -1,0 +1,26 @@
+# Os EVENTOS SISTÊMICOS do mundo (09/10; L0.7, plano I7, GDD §116). Em vez de uma tabela aleatória, a chance de cada
+# evento é a soma do estado do mundo: a base, mais o peso de cada fator que vale agora. Só depois se rola o d100
+# (`Dados::Estrategico`). As decisões do grupo mexem na chance.
+#
+# Cada evento:
+#   nome, descricao
+#   base:  a chance sem fator nenhum, em pontos percentuais
+#   piso, teto: os limites da chance (0..100). Um piso acima de 0 = sempre há risco
+#   fatores: o peso de cada um (+ sobe, − desce), em pontos. Quem diz quais valem agora, e quantas vezes, é o estado
+#            do mundo (`Mundo::Eventos.chance(evento, ativos:)`)
+#
+# Só inteiros (plano D11). Os números da doença são o EXEMPLO do L0.7, a calibrar com a mesa.
+doenca:
+  nome: Doença
+  descricao: Um surto de doença no assentamento.
+  base: 5
+  piso: 1
+  teto: 95
+  fatores:
+    populacao_alta:   { nome: população alta, valor: 10 }
+    agua_contaminada: { nome: água contaminada, valor: 15 }
+    estacao_umida:    { nome: estação úmida, valor: 5 }
+    pantano:          { nome: pântano, valor: 10 }
+    curandeiro:       { nome: curandeiro, valor: -10 }
+    poco:             { nome: poço, valor: -10 }
+    hospital:         { nome: hospital, valor: -20 }

@@ -10,6 +10,8 @@ class Group < ApplicationRecord
   has_many :characters, dependent: :nullify
   has_many :campaign_notes, dependent: :destroy
   has_many :battle_maps, dependent: :nullify
+  # O relógio da vila (L0.2): separado do calendário da campanha (`day`/`season`), que o Mestre anda à mão.
+  has_one :mundo, dependent: :destroy
 
   # Capa da campanha (Fase 4c). `cover_image_url` continua existindo para o
   # legado/seed e como fallback para URLs externas (Imgur/Unsplash) — o

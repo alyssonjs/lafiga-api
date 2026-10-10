@@ -1,0 +1,173 @@
+{
+  "_sobre": "A ESTAÇÃO CONTÍNUA (09/10; a E1 de jogo/composicao-do-mapa.md): os casos do estado da estação, os mesmos no RSpec (spec/services/mundo/estacao_spec.rb) e no Vitest (front-lafiga/src/app/utils/estacaoDoMundo.bdd.test.ts). O degrau é o dia. A ponte entre duas estações tem 40 dias: os últimos 30 de uma e os primeiros 10 da seguinte. `passo_da_ponte` vai de 1 a 40 (0 fora da ponte); a `mistura` é o passo sobre 40, e o `progresso` é o dia da estação (de 0) sobre 120.",
+  "estados": [
+    {
+      "nome": "o começo do mundo: o fim da ponte do inverno para a primavera",
+      "minuto": 0,
+      "esperado": {
+        "dia_do_ano": 0,
+        "estacao": "primavera",
+        "dia_da_estacao": 1,
+        "progresso": 0.0,
+        "de": "inverno",
+        "para": "primavera",
+        "passo_da_ponte": 31,
+        "mistura": 0.775
+      }
+    },
+    {
+      "nome": "o 10º dia da primavera fecha a ponte: a primavera inteira",
+      "minuto": 12960,
+      "esperado": {
+        "dia_do_ano": 9,
+        "estacao": "primavera",
+        "dia_da_estacao": 10,
+        "progresso": 0.075,
+        "de": "inverno",
+        "para": "primavera",
+        "passo_da_ponte": 40,
+        "mistura": 1.0
+      }
+    },
+    {
+      "nome": "o 11º dia da primavera: estável, a ponte para o verão ainda não começou",
+      "minuto": 14400,
+      "esperado": {
+        "dia_do_ano": 10,
+        "estacao": "primavera",
+        "dia_da_estacao": 11,
+        "progresso": 0.08333333333333333,
+        "de": "primavera",
+        "para": "verao",
+        "passo_da_ponte": 0,
+        "mistura": 0.0
+      }
+    },
+    {
+      "nome": "o 90º dia da primavera: o último estável",
+      "minuto": 128160,
+      "esperado": {
+        "dia_do_ano": 89,
+        "estacao": "primavera",
+        "dia_da_estacao": 90,
+        "progresso": 0.7416666666666667,
+        "de": "primavera",
+        "para": "verao",
+        "passo_da_ponte": 0,
+        "mistura": 0.0
+      }
+    },
+    {
+      "nome": "o 91º dia da primavera abre a ponte para o verão",
+      "minuto": 129600,
+      "esperado": {
+        "dia_do_ano": 90,
+        "estacao": "primavera",
+        "dia_da_estacao": 91,
+        "progresso": 0.75,
+        "de": "primavera",
+        "para": "verao",
+        "passo_da_ponte": 1,
+        "mistura": 0.025
+      }
+    },
+    {
+      "nome": "o último minuto da primavera: o passo 30 de 40",
+      "minuto": 172799,
+      "esperado": {
+        "dia_do_ano": 119,
+        "estacao": "primavera",
+        "dia_da_estacao": 120,
+        "progresso": 0.9916666666666667,
+        "de": "primavera",
+        "para": "verao",
+        "passo_da_ponte": 30,
+        "mistura": 0.75
+      }
+    },
+    {
+      "nome": "a virada para o verão continua a mesma ponte (o passo 31)",
+      "minuto": 172800,
+      "esperado": {
+        "dia_do_ano": 120,
+        "estacao": "verao",
+        "dia_da_estacao": 1,
+        "progresso": 0.0,
+        "de": "primavera",
+        "para": "verao",
+        "passo_da_ponte": 31,
+        "mistura": 0.775
+      }
+    },
+    {
+      "nome": "o 10º dia do verão fecha a ponte",
+      "minuto": 185760,
+      "esperado": {
+        "dia_do_ano": 129,
+        "estacao": "verao",
+        "dia_da_estacao": 10,
+        "progresso": 0.075,
+        "de": "primavera",
+        "para": "verao",
+        "passo_da_ponte": 40,
+        "mistura": 1.0
+      }
+    },
+    {
+      "nome": "o meio da tarde de um dia qualquer do verão: o degrau é o dia, não o minuto",
+      "minuto": 250000,
+      "esperado": {
+        "dia_do_ano": 173,
+        "estacao": "verao",
+        "dia_da_estacao": 54,
+        "progresso": 0.44166666666666665,
+        "de": "verao",
+        "para": "outono",
+        "passo_da_ponte": 0,
+        "mistura": 0.0
+      }
+    },
+    {
+      "nome": "o 91º dia do outono abre a ponte para o inverno",
+      "minuto": 475200,
+      "esperado": {
+        "dia_do_ano": 330,
+        "estacao": "outono",
+        "dia_da_estacao": 91,
+        "progresso": 0.75,
+        "de": "outono",
+        "para": "inverno",
+        "passo_da_ponte": 1,
+        "mistura": 0.025
+      }
+    },
+    {
+      "nome": "o último dia do ano: a ponte do inverno para a primavera",
+      "minuto": 689760,
+      "esperado": {
+        "dia_do_ano": 479,
+        "estacao": "inverno",
+        "dia_da_estacao": 120,
+        "progresso": 0.9916666666666667,
+        "de": "inverno",
+        "para": "primavera",
+        "passo_da_ponte": 30,
+        "mistura": 0.75
+      }
+    },
+    {
+      "nome": "a virada do ano: o dia do ano volta a 0, na mesma ponte",
+      "minuto": 691200,
+      "esperado": {
+        "dia_do_ano": 0,
+        "estacao": "primavera",
+        "dia_da_estacao": 1,
+        "progresso": 0.0,
+        "de": "inverno",
+        "para": "primavera",
+        "passo_da_ponte": 31,
+        "mistura": 0.775
+      }
+    }
+  ]
+}

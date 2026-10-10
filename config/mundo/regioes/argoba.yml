@@ -1,0 +1,169 @@
+# A FICHA DE ARGOBA (09/10; L1.1 do roadmap da vila, plano I2, A14 e B3). Quem lê: `Regioes::Ficha`, que confere o
+# arquivo inteiro ao carregar. Só inteiros (plano D11).
+#
+# De onde vem cada parte:
+#   - o reino: decisão de 09/10 (Parte D, item 12): Argoba fica em Zandria, o reino da floresta;
+#   - os biomas: GDD §92 (floresta temperada, costa e pequenas cavernas), com os recursos e os perigos do GDD §48 e as
+#     estações do GDD §49. As chaves seguem o vocabulário de bioma do projeto (`front-lafiga/src/app/data/biomes.ts`);
+#   - o clima: plano I2 (chuva; tempestade na costa). As chances por estação ficam para o L1.9;
+#   - `coleta`: os terrenos de coleta do `db/data/herbs_seed.json` (`foraging.locations`) que valem no bioma. As ervas,
+#     com a estação e a CD de cada uma, saem de lá (L2.5);
+#   - `fauna`: as criaturas da PRESSÃO SELVAGEM (I6), por `monsters.slug`, de ND 0 a 3. A fonte é o ambiente do
+#     `front-lafiga/src/app/data/monsterDatabase.ts` e o Apêndice B do DMG (monstros por ambiente), filtrados ao que
+#     existe no banco. As tropas do Colonizador (mortos-vivos, aberrações ou culto) ficam de fora: são do L4.1;
+#   - a CD do acampamento: plano A15 (comum 10, infestado 15, amaldiçoado 18);
+#   - a campanha: GDD §86 ("A Retomada de Argoba") e a corrente de setores do GDD §91 / plano I2.
+#
+# ⚠️ PADRÕES A CALIBRAR COM A MESA (nenhum documento diz os números): o estado inicial, o território e as duas pressões
+# de cada setor, e a lista de fauna. Mudar aqui vale para as campanhas NOVAS: `Campanhas::Inicia` não reescreve o
+# estado de um setor que já existe, porque ele muda em jogo.
+chave: argoba
+nome: Argoba
+reino: zandria
+
+biomas:
+  floresta:
+    nome: Floresta temperada
+    recursos: [madeira, caca, ervas, cogumelos, frutas]
+    perigos: [animais, emboscadas, incendios, baixa_visibilidade]
+    estacoes:
+      primavera: flores
+      verao: abundancia
+      outono: folhas
+      inverno: frio
+    clima: [chuva]
+    coleta: [floresta]
+    fauna:
+      - open5e-deer              # ND 0
+      - open5e-bandit            # ND 1/8
+      - open5e-stirge            # ND 1/8
+      - open5e-boar              # ND 1/4
+      - open5e-elk               # ND 1/4
+      - open5e-giant-badger      # ND 1/4
+      - open5e-giant-wolf-spider # ND 1/4
+      - open5e-goblin            # ND 1/4
+      - open5e-panther           # ND 1/4
+      - open5e-wolf              # ND 1/4
+      - open5e-black-bear        # ND 1/2
+      - open5e-brown-bear        # ND 1
+      - open5e-bugbear           # ND 1
+      - open5e-dire-wolf         # ND 1
+      - open5e-giant-spider      # ND 1
+      - open5e-giant-boar        # ND 2
+      - open5e-owlbear           # ND 3
+
+  costa:
+    nome: Costa
+    recursos: [peixe, sal, plantas_aquaticas, recursos_costeiros]
+    perigos: [tempestades, piratas, criaturas_aquaticas, enchentes]
+    # o GDD §49 não diz como a costa lê as estações
+    estacoes: {}
+    clima: [chuva, tempestade]
+    coleta: [costa, aquatico]
+    fauna:
+      - open5e-crab              # ND 0
+      - open5e-bandit            # ND 1/8 (os piratas do GDD §48.8)
+      - open5e-giant-crab        # ND 1/8
+      - open5e-sahuagin          # ND 1/2
+      - open5e-giant-eagle       # ND 1
+      - open5e-harpy             # ND 1
+      - open5e-merrow            # ND 2
+
+  subterraneo:
+    nome: Pequenas cavernas
+    recursos: [pedra, minerios, fungos, cristais, venenos]
+    perigos: [escuridao, gases, umidade, desabamentos, falta_de_ar, criaturas]
+    # GDD §48.6, a dinâmica sazonal; e a chuva aumenta as infiltrações
+    estacoes:
+      verao: rios_secos
+      inverno: frio
+    clima: []
+    coleta: [subterraneo]
+    fauna:
+      - open5e-bat               # ND 0
+      - open5e-giant-centipede   # ND 1/4
+      - open5e-goblin            # ND 1/4
+      - open5e-swarm-of-bats     # ND 1/4
+      - open5e-darkmantle        # ND 1/2
+      - open5e-bugbear           # ND 1
+      - open5e-giant-spider      # ND 1
+      - open5e-grick             # ND 2
+
+# o teste de acampamento: d20 + SAB (Sobrevivência) contra a CD do território do setor (plano A15)
+cd_acampamento:
+  comum: 10
+  infestado: 15
+  amaldicoado: 18
+
+campanha:
+  chave: retomada-de-argoba
+  nome: A Retomada de Argoba
+  ameaca:
+    chave: colonizador
+    nome: O Colonizador
+    natureza: um poder sombrio
+    # as tropas e as criaturas dele: L4.1 (Parte D, item 12)
+    tropas: []
+  # GDD §86: assentamento → postos avançados → periferia → distritos → cidade. O MVP fecha no primeiro distrito (I5).
+  etapas: [assentamento, postos, periferia, distritos, cidade]
+  # A corrente do GDD §91, na ordem. O primeiro distrito ainda não tem nome (Parte D, item 14).
+  setores:
+    - chave: assentamento
+      nome: Assentamento do grupo
+      tipo: assentamento
+      bioma: floresta
+      estado: recuperado
+      territorio: comum
+      pressao_selvagem: 20
+      influencia: 0
+      # o mapa do setor (L1.2): 200×200 células, o tamanho já medido no protótipo (`/dev/mapa-lpc?tamanho=200`). É o
+      # único setor com mapa na Fase 1; os outros ganham o seu quando abrirem.
+      mapa: { colunas: 200, linhas: 200 }
+    - chave: floresta
+      nome: Floresta e arredores
+      tipo: selvagem
+      bioma: floresta
+      estado: disputado
+      territorio: comum
+      pressao_selvagem: 35
+      influencia: 10
+    - chave: buzios
+      nome: Vila Búzios
+      tipo: vila_aliada
+      bioma: costa
+      estado: recuperado
+      territorio: comum
+      pressao_selvagem: 30
+      influencia: 15
+    - chave: estrada
+      nome: Estrada regional
+      tipo: estrada
+      bioma: floresta
+      estado: disputado
+      territorio: comum
+      pressao_selvagem: 40
+      influencia: 30
+    - chave: posto
+      nome: Primeiro Posto Avançado
+      tipo: posto
+      bioma: floresta
+      estado: perdido
+      territorio: infestado
+      pressao_selvagem: 45
+      influencia: 50
+    - chave: periferia
+      nome: Periferia de Argoba
+      tipo: periferia
+      bioma: urbano
+      estado: perdido
+      territorio: infestado
+      pressao_selvagem: 55
+      influencia: 70
+    - chave: primeiro-distrito
+      nome: Primeiro Distrito
+      tipo: distrito
+      bioma: urbano
+      estado: perdido
+      territorio: amaldicoado
+      pressao_selvagem: 60
+      influencia: 85

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_10_07_120000) do
+ActiveRecord::Schema.define(version: 2026_10_09_150000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -120,9 +120,15 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
     t.jsonb "regions", default: [], null: false
     t.boolean "public_listed", default: false, null: false
     t.boolean "public_main", default: false, null: false
+    t.string "armazenamento", default: "inteiro", null: false
+    t.bigint "semente"
+    t.bigint "setor_id"
+    t.integer "versao_do_gerador"
+    t.integer "versao_dos_biomas"
     t.index ["group_id", "updated_at"], name: "index_battle_maps_on_group_id_and_updated_at"
     t.index ["group_id"], name: "index_battle_maps_on_group_id"
     t.index ["public_listed"], name: "index_battle_maps_on_public_listed", where: "public_listed"
+    t.index ["setor_id"], name: "index_battle_maps_on_setor_id"
     t.index ["user_id", "updated_at"], name: "index_battle_maps_on_user_id_and_updated_at"
     t.index ["user_id"], name: "index_battle_maps_on_user_id"
   end
@@ -163,6 +169,19 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
     t.index ["group_id"], name: "index_campaign_notes_on_group_id"
     t.index ["schedule_id"], name: "index_campaign_notes_on_schedule_id"
     t.index ["user_id"], name: "index_campaign_notes_on_user_id"
+  end
+
+  create_table "campanhas", force: :cascade do |t|
+    t.bigint "mundo_id", null: false
+    t.bigint "regiao_id", null: false
+    t.string "chave", null: false
+    t.string "nome", null: false
+    t.string "ameaca", null: false
+    t.string "etapa", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["mundo_id", "chave"], name: "index_campanhas_on_mundo_id_and_chave", unique: true
+    t.index ["regiao_id"], name: "index_campanhas_on_regiao_id"
   end
 
   create_table "channel_memberships", force: :cascade do |t|
@@ -574,6 +593,18 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
     t.index ["user_id"], name: "index_map_assets_on_user_id"
   end
 
+  create_table "mapa_blocos", force: :cascade do |t|
+    t.bigint "battle_map_id", null: false
+    t.integer "bc", null: false
+    t.integer "bl", null: false
+    t.jsonb "terreno", default: {}, null: false
+    t.jsonb "objetos", default: [], null: false
+    t.integer "versao", default: 1, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["battle_map_id", "bc", "bl"], name: "index_mapa_blocos_on_battle_map_id_and_bc_and_bl", unique: true
+  end
+
   create_table "messages", force: :cascade do |t|
     t.bigint "channel_id", null: false
     t.bigint "user_id", null: false
@@ -611,6 +642,46 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
     t.index ["slug"], name: "index_monsters_on_slug", unique: true
     t.index ["source"], name: "index_monsters_on_source"
     t.index ["token_map_asset_id"], name: "index_monsters_on_token_map_asset_id"
+  end
+
+  create_table "mundo_agenda", force: :cascade do |t|
+    t.bigint "mundo_id", null: false
+    t.bigint "minuto", null: false
+    t.string "tipo", null: false
+    t.string "chave", null: false
+    t.jsonb "dados", default: {}, null: false
+    t.datetime "processado_em"
+    t.jsonb "resultado"
+    t.integer "tentativas", default: 0, null: false
+    t.text "erro"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["mundo_id", "chave"], name: "index_mundo_agenda_on_mundo_id_and_chave", unique: true
+    t.index ["mundo_id", "minuto", "id"], name: "index_mundo_agenda_pendentes", where: "(processado_em IS NULL)"
+  end
+
+  create_table "mundos", force: :cascade do |t|
+    t.bigint "group_id", null: false
+    t.datetime "epoca_em", null: false
+    t.bigint "minuto_na_epoca", default: 0, null: false
+    t.integer "fator", default: 40, null: false
+    t.datetime "pausado_desde"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["group_id"], name: "index_mundos_on_group_id", unique: true
+  end
+
+  create_table "presencas", force: :cascade do |t|
+    t.bigint "character_id", null: false
+    t.bigint "schedule_id", null: false
+    t.bigint "battle_map_id"
+    t.jsonb "pilha", default: [], null: false
+    t.datetime "batimento_em", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["battle_map_id"], name: "index_presencas_on_battle_map_id"
+    t.index ["character_id"], name: "index_presencas_on_character_id", unique: true
+    t.index ["schedule_id"], name: "index_presencas_on_schedule_id"
   end
 
   create_table "proficiencies", force: :cascade do |t|
@@ -689,6 +760,28 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
     t.index ["playable"], name: "index_races_on_playable"
   end
 
+  create_table "regioes", force: :cascade do |t|
+    t.string "chave", null: false
+    t.string "nome", null: false
+    t.string "reino", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["chave"], name: "index_regioes_on_chave", unique: true
+  end
+
+  create_table "rolagens", force: :cascade do |t|
+    t.string "chave", null: false
+    t.string "fonte", null: false
+    t.string "expressao", null: false
+    t.jsonb "dados", default: [], null: false
+    t.integer "total", null: false
+    t.jsonb "detalhe", default: {}, null: false
+    t.jsonb "contexto", default: {}, null: false
+    t.string "selo", null: false
+    t.datetime "created_at", null: false
+    t.index ["chave"], name: "index_rolagens_on_chave", unique: true
+  end
+
   create_table "roles", force: :cascade do |t|
     t.string "name"
     t.string "permissions", default: [], array: true
@@ -743,11 +836,12 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
     t.boolean "sandbox", default: false, null: false
     t.jsonb "combat_groups", default: {}, null: false
     t.jsonb "reminders_sent", default: {}, null: false
+    t.string "modo", default: "campanha", null: false
     t.index ["battle_map_id"], name: "index_schedules_on_battle_map_id"
     t.index ["campaign_name"], name: "index_schedules_on_campaign_name"
-    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_open_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])) AND (sandbox = false))"
+    t.index ["created_by_user_id", "date_dimension_id"], name: "idx_schedules_open_per_creator_date", unique: true, where: "((created_by_user_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])) AND (sandbox = false) AND ((modo)::text = 'campanha'::text))"
     t.index ["created_by_user_id"], name: "index_schedules_on_created_by_user_id"
-    t.index ["group_id"], name: "idx_schedules_open_per_group", unique: true, where: "((group_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])) AND (sandbox = false))"
+    t.index ["group_id"], name: "idx_schedules_open_per_group", unique: true, where: "((group_id IS NOT NULL) AND (status = ANY (ARRAY[0, 1, 2])) AND (sandbox = false) AND ((modo)::text = 'campanha'::text))"
     t.index ["group_id"], name: "index_schedules_on_group_id"
     t.index ["highlights"], name: "index_schedules_on_highlights", using: :gin
     t.index ["sandbox"], name: "index_schedules_on_sandbox_true", where: "(sandbox = true)"
@@ -783,6 +877,23 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
     t.index ["schedule_id", "kind"], name: "index_session_logs_on_schedule_id_and_kind"
     t.index ["schedule_id", "posted_at"], name: "index_session_logs_on_schedule_and_posted_at_desc", order: { posted_at: :desc }
     t.index ["schedule_id"], name: "index_session_logs_on_schedule_id"
+  end
+
+  create_table "setores", force: :cascade do |t|
+    t.bigint "campanha_id", null: false
+    t.string "chave", null: false
+    t.string "nome", null: false
+    t.string "tipo", null: false
+    t.string "bioma", null: false
+    t.string "estado", null: false
+    t.string "territorio", null: false
+    t.integer "pressao_selvagem", default: 0, null: false
+    t.integer "influencia", default: 0, null: false
+    t.integer "ordem", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["campanha_id", "chave"], name: "index_setores_on_campanha_id_and_chave", unique: true
+    t.index ["campanha_id", "ordem"], name: "index_setores_on_campanha_id_and_ordem", unique: true
   end
 
   create_table "sheet_crafts", force: :cascade do |t|
@@ -1125,11 +1236,14 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "battle_maps", "groups"
+  add_foreign_key "battle_maps", "setores"
   add_foreign_key "battle_maps", "users"
   add_foreign_key "bug_reports", "users"
   add_foreign_key "campaign_notes", "groups"
   add_foreign_key "campaign_notes", "schedules"
   add_foreign_key "campaign_notes", "users"
+  add_foreign_key "campanhas", "mundos"
+  add_foreign_key "campanhas", "regioes"
   add_foreign_key "channel_memberships", "channels"
   add_foreign_key "channel_memberships", "users"
   add_foreign_key "character_dm_level_unlocks", "characters"
@@ -1151,8 +1265,14 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
   add_foreign_key "diary_entries", "schedules"
   add_foreign_key "groups", "users", column: "dm_user_id"
   add_foreign_key "map_assets", "users"
+  add_foreign_key "mapa_blocos", "battle_maps"
   add_foreign_key "messages", "channels"
   add_foreign_key "messages", "users"
+  add_foreign_key "mundo_agenda", "mundos"
+  add_foreign_key "mundos", "groups"
+  add_foreign_key "presencas", "battle_maps"
+  add_foreign_key "presencas", "characters"
+  add_foreign_key "presencas", "schedules"
   add_foreign_key "proficiency_aliases", "proficiencies"
   add_foreign_key "proficiency_sources", "proficiencies"
   add_foreign_key "push_subscriptions", "users"
@@ -1169,6 +1289,7 @@ ActiveRecord::Schema.define(version: 2026_10_07_120000) do
   add_foreign_key "schedules", "users", column: "created_by_user_id"
   add_foreign_key "session_feed_items", "schedules"
   add_foreign_key "session_logs", "schedules"
+  add_foreign_key "setores", "campanhas"
   add_foreign_key "sheet_crafts", "crafting_recipes", on_delete: :nullify
   add_foreign_key "sheet_crafts", "sheets", on_delete: :cascade
   add_foreign_key "sheet_feats", "feats"

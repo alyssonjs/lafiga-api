@@ -14,3 +14,10 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym 'RESTful'
 # end
+
+# O domínio da vila e da campanha é em português (09/10; L1.1): a tabela `regioes` é do `Regiao` e a `setores`, do
+# `Setor` (o padrão daria `regiaos` e `setors`).
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.irregular 'regiao', 'regioes'
+  inflect.irregular 'setor', 'setores'
+end

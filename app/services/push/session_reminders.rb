@@ -72,7 +72,8 @@ module Push
     private
 
     def schedules_today
-      Schedule.where(status: %i[reserved waiting], sandbox: false)
+      # só a sessão de campanha avisa: a mesa da vila não é "Sessão hoje" (L0.8)
+      Schedule.where(status: %i[reserved waiting], sandbox: false).de_campanha
               .joins(:date_dimension)
               .where(date_dimensions: { date: @today })
               .includes(:group, characters: :user)

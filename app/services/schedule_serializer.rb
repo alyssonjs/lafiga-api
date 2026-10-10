@@ -33,6 +33,8 @@ class ScheduleSerializer
       created_at: schedule.created_at,
       updated_at: schedule.updated_at,
       sandbox: (Schedule.supports_sandbox? ? schedule.sandbox : false),
+      # o modo da mesa (L0.8): campanha, vila, missao, encontro
+      modo: (Schedule.supports_modo? ? schedule.modo : Schedule::MODO_CAMPANHA),
       group_id: schedule.group_id,
       group: schedule.group&.as_json(only: [:id, :name]),
       # `battle_map_id` = mapa ATIVO (o que a mesa vê agora).

@@ -296,7 +296,10 @@ Rails.application.routes.draw do
 
           # Histórico + comando durável de rolagem. ActionCable distribui os
           # resultados confirmados e continua atendendo eventos efêmeros.
-          resources :session_feed_items, only: [:index, :create]
+          # `rolar` (L0.6): o SERVIDOR rola a expressão e o item sai com o selo.
+          resources :session_feed_items, only: [:index, :create] do
+            collection { post :rolar }
+          end
         end
         resources :schedule_characters, only: [:index, :show, :update]
         resources :groups, only: [:index, :show, :create, :update, :destroy] do
@@ -320,6 +323,10 @@ Rails.application.routes.draw do
               post :stow
             end
           end
+          # O relógio da vila (L0.3): a âncora do mundo do grupo e o agora do servidor; a hora sai de conta no front
+          resource :mundo, only: [:show], controller: 'group_mundos'
+          # Os mapas da vila do grupo (L1.2): a lista deles, à parte da biblioteca de mapas de sempre
+          get 'mapas_da_vila', to: 'group_mapas_da_vila#index'
         end
         resources :bug_reports, only: [:index, :create]
         resources :sheets, only: [:index, :show, :create, :update, :destroy] do
@@ -401,6 +408,8 @@ Rails.application.routes.draw do
         # do localStorage para o backend); Member: move_token (endpoint hot
         # path para arrasto de token, evita PATCH do tokens inteiro).
         resources :battle_maps, only: [:index, :show, :create, :update, :destroy] do
+          # os BLOCOS do mapa da vila (L1.2): a janela em volta do jogador
+          resources :blocos, only: [:index], controller: 'mapa_blocos'
           member do
             get :background          # serve o blob do fundo (Active Storage) p/ <img>, autz por sig
             get :land_mask           # silhueta de terra importada (Inkarnate), mesma autz por sig
@@ -492,6 +501,19 @@ Rails.application.routes.draw do
         get 'equipment_profile', to: 'equipment#profile'
         get 'starting_equipment', to: 'equipment#starting_equipment'
         resources :date_dimensions, only: [:index]
+      end
+
+      # Ferramentas de DESENVOLVIMENTO do jogo da vila (L0.3): criar o relógio de um grupo e avançá-lo de propósito; e
+      # (L1.2) gravar os blocos do mapa da vila. Não existem em produção.
+      unless Rails.env.production?
+        namespace :dev do
+          resources :mundos, only: [:create] do
+            member { post :avancar }
+          end
+          # o mapa em blocos (L1.2): o protótipo envia o mundo gerado; um bloco muda de propósito
+          put 'battle_maps/:battle_map_id/blocos', to: 'mapa_blocos#update_all'
+          patch 'battle_maps/:battle_map_id/blocos/:bc/:bl', to: 'mapa_blocos#update'
+        end
       end
     end
   end
