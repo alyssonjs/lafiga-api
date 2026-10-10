@@ -579,6 +579,9 @@ class CharacterSheetSummaryService
             condition_immunities:   modifier_bag.granted('condition_immunity'),
             save_advantages:        modifier_bag.granted('advantage.save'),
             skill_advantages:       modifier_bag.granted('advantage.skill'),
+            # L0.9 (antecedente, Nível 1): a vantagem que depende da cena — [{ pericia, quando, fonte }]. Marcador honesto,
+            # não automação: quem decide se vale é a mesa (o front mostra no detalhamento da rolagem, L0.10)
+            situational_advantages: modifier_bag.matching('situational_advantage.').map(&:value).uniq,
             ability_bonuses: %w[str dex con int wis cha].each_with_object({}) { |ab, acc|
               v = modifier_bag.sum_for("ability.#{ab}")
               acc[ab] = v if v != 0
