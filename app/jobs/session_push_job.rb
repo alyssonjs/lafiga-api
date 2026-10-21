@@ -14,6 +14,7 @@ class SessionPushJob < ApplicationJob
     schedule = Schedule.includes(:group, :date_dimension, characters: :user).find_by(id: schedule_id)
     return if schedule.nil?
 
-    Push::SessionNotifier.call(schedule: schedule, event: event, actor_id: actor_id)
+    delivered = Push::SessionNotifier.call(schedule: schedule, event: event, actor_id: actor_id)
+    Rails.logger.info("[SessionPushJob] schedule ##{schedule_id} #{event} → #{delivered} device(s)")
   end
 end

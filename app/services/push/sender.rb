@@ -8,6 +8,12 @@ module Push
   class Sender
     DEAD_CODES = [404, 410].freeze
     DEFAULT_TTL = 24 * 60 * 60 # segundos
+    # 'high' (21/10): com o 'normal' (o padrão da gem) o FCM segura o aviso no Android em repouso (Doze) e entrega
+    # em lote quando o aparelho acorda — a "fila presa" de prod. Os timeouts: sem eles o Net::HTTP espera 60 s por
+    # assinatura e um endpoint lento segura o job (e a thread do :async) inteiro.
+    URGENCY = 'high'
+    OPEN_TIMEOUT = 5 # segundos
+    READ_TIMEOUT = 10 # segundos
 
     # `actions`: os BOTÕES da notificação (05/10) — `[{ action: '/sessions?nova=…', title: 'qui, 09/10' }]`. O `action`
     # é a URL que o clique abre (o service worker a usa direto). O Chrome desenha 2; o iPhone não desenha nenhum e só
@@ -48,6 +54,9 @@ module Push
         auth: sub.auth_key,
         vapid: vapid_options,
         ttl: DEFAULT_TTL,
+        urgency: URGENCY,
+        open_timeout: OPEN_TIMEOUT,
+        read_timeout: READ_TIMEOUT,
       )
       sub.update_column(:last_seen_at, Time.current)
       true
